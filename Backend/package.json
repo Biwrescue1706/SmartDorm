@@ -2,24 +2,25 @@
   "name": "backend",
   "version": "1.0.0",
   "description": "SmartDorm backend service for dormitory management system",
-  "main": "dist/index.js",
-  "type": "module",
-  "author": "BiwBoong",
-  "license": "ISC",
+  "main": "dist/src/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon src/index.ts",
+    "prisma:push": "prisma db push",
+    "build": "tsc && npx prisma db push && npx prisma generate",
+    "start": "node dist/index.js"
+  },
   "repository": {
     "type": "git",
-    "url": "https://github.com/Biwrescue1706/SmartDorm.git"
+    "url": "git+https://github.com/Biwrescue1706/SmartDorm.git"
   },
-  "scripts": {
-    "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
-    "build": "rimraf dist && tsc",
-    "start": "node dist/index.js",
-    "lint": "eslint . --ext .ts",
-    "format": "prettier --write .",
-    "migrate": "prisma migrate deploy",
-    "studio": "prisma studio",
-    "test": "jest"
+  "keywords": [],
+  "author": "BiwBoong",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Biwrescue1706/SmartDorm/issues"
   },
+  "homepage": "https://github.com/Biwrescue1706/SmartDorm#readme",
   "dependencies": {
     "@asteasolutions/zod-to-openapi": "^7.1.2",
     "@line/bot-sdk": "^10.2.0",
@@ -45,6 +46,7 @@
     "nodemon": "^3.1.10",
     "object-hash": "^3.0.0",
     "pino": "^9.4.0",
+    "prettier": "^3.3.3",
     "prisma-pagination": "^0.2.3",
     "redis": "^4.7.0",
     "supertest": "^7.0.0",
@@ -84,14 +86,5 @@
     "rimraf": "^6.0.1",
     "ts-jest": "^29.2.5",
     "ts-node-dev": "^2.0.0"
-  },
-  "husky": {
-    "hooks": {
-      "pre-commit": "lint-staged",
-      "commit-msg": "commitlint --edit"
-    }
-  },
-  "lint-staged": {
-    "*.{ts,js,json,md}": ["prettier --write"]
   }
 }

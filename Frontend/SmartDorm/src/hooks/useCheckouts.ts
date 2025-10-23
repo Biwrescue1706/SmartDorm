@@ -71,6 +71,8 @@ export function useCheckouts() {
         icon: "error",
         title: "ล้มเหลว",
         text: "ไม่สามารถอนุมัติได้",
+        timer: 1500,
+        showConfirmButton: false,
       });
     }
   };
@@ -104,6 +106,8 @@ export function useCheckouts() {
         icon: "error",
         title: "ล้มเหลว",
         text: "ไม่สามารถปฏิเสธการคืนได้",
+        timer: 1500,
+        showConfirmButton: false,
       });
     }
   };
@@ -137,6 +141,8 @@ export function useCheckouts() {
         icon: "error",
         title: "ล้มเหลว",
         text: "ไม่สามารถลบข้อมูลได้",
+        timer: 1500,
+        showConfirmButton: false,
       });
     }
   };
@@ -167,6 +173,8 @@ export function useCheckouts() {
         icon: "error",
         title: "ล้มเหลว",
         text: "ไม่สามารถแก้ไขข้อมูลได้",
+        timer: 1500,
+        showConfirmButton: false,
       });
     }
   };
@@ -201,6 +209,8 @@ export function useCheckouts() {
         icon: "error",
         title: "เกิดข้อผิดพลาด",
         text: "ไม่สามารถบันทึกการคืนห้องได้",
+        timer: 1500,
+        showConfirmButton: false,
       });
     }
   };

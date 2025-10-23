@@ -137,13 +137,21 @@ export function useBookings() {
         {},
         { withCredentials: true }
       );
-      Swal.fire("สำเร็จ", "เช็คอินสำเร็จแล้ว", "success");
+      Swal.fire({
+        icon: "success",
+        title: "เช็คอินสำเร็จแล้ว",
+        timer: 1500,
+        showConfirmButton: false,
+      });
       fetchBookings(); //  ต้องรีโหลดข้อมูลใหม่ด้วย
     } catch (err: any) {
-      Swal.fire(
-        "เกิดข้อผิดพลาด",
-        err.response?.data?.error || "ไม่สามารถเช็คอินได้",
-        "error"
+      Swal.fire({
+        icon : "warning",
+        title : "ไม่สามารถเช็คอินได้",
+        text : err.response?.data?.error || "ไม่สามารถเช็คอินได้",
+        timer: 1500,
+        showConfirmButton: false,
+      }
       );
     }
   };

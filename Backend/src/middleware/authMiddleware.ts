@@ -1,10 +1,10 @@
-// src/middleware/authMiddleware.ts
 import { Request, Response, NextFunction } from "express";
 import jwt, { JwtPayload, SignOptions, Secret } from "jsonwebtoken";
 
 const JWT_SECRET = process.env.JWT_SECRET as string;
 if (!JWT_SECRET) throw new Error("JWT_SECRET must be defined in .env file");
 
+//  เพิ่ม type ให้ Express Request รองรับทั้ง admin และ user
 declare global {
   namespace Express {
     interface Request {
@@ -23,7 +23,7 @@ declare global {
   }
 }
 
-//ฟังก์ชันออก Token ใหม่
+//  ฟังก์ชันออก Token ใหม่
 function generateToken(payload: object) {
   const options: SignOptions = {
     expiresIn: "2h",
@@ -32,8 +32,12 @@ function generateToken(payload: object) {
   return jwt.sign(payload, JWT_SECRET as Secret, options);
 }
 
-// ตรวจสอบ token + ต่ออายุอัตโนมัติ
-export function authMiddleware(req: Request, res: Response, next: NextFunction) {
+//  ตรวจสอบ token + ต่ออายุอัตโนมัติ
+export function authMiddleware(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
   const token =
     req.cookies?.token ||
     (req.headers.authorization?.startsWith("Bearer ")
@@ -47,11 +51,11 @@ export function authMiddleware(req: Request, res: Response, next: NextFunction) 
       algorithms: ["HS256"],
     }) as JwtPayload & { exp: number };
 
-    //  รองรับทั้ง admin และ user
+    // รองรับทั้ง admin และ user
     if ((decoded as any).adminId) req.admin = decoded as any;
     else req.user = decoded as any;
 
-    //  ตรวจสอบเวลาเหลือ ถ้าน้อยกว่า 30 นาที ให้ต่ออายุ token อัตโนมัติ
+    // ตรวจสอบเวลาเหลือ ถ้าน้อยกว่า 30 นาทีให้ต่ออายุอัตโนมัติ
     const now = Math.floor(Date.now() / 1000);
     const timeLeft = (decoded.exp || 0) - now;
 
@@ -75,7 +79,7 @@ export function authMiddleware(req: Request, res: Response, next: NextFunction) 
   }
 }
 
-//ตรวจสอบ role เฉพาะ (เช่น SuperAdmin)
+//  ตรวจสอบ role เฉพาะ (เช่น SuperAdmin)
 export function roleMiddleware(requiredRole: number) {
   return (req: Request, res: Response, next: NextFunction) => {
     if (!req.admin)

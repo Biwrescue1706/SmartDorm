@@ -15,7 +15,6 @@ router.post("/register", async (req: Request, res: Response) => {
   }
 });
 
-// ดึงข้อมูลลูกค้าพร้อม booking/bill
 // ดึงข้อมูล profile ของผู้ใช้
 router.get("/me", lineAuth, async (req, res) => {
   try {

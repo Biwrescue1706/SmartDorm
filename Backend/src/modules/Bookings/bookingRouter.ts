@@ -30,17 +30,32 @@ router.get("/:bookingId", async (req: Request, res: Response) => {
 });
 
 //  ผู้ใช้ส่งคำขอจองห้อง
-router.post("/create", upload.single("slip"), async (req, res) => {
-  try {
-    const booking = await bookingService.createBooking({
-      ...req.body,
-      slip: req.file,
-    });
-    res.json({ message: "จองสำเร็จ", booking });
-  } catch (err: any) {
-    res.status(500).json({ error: err.message });
+router.post(
+  "/create",
+  authMiddleware,
+  upload.single("slip"),
+  async (req: Request, res: Response) => {
+    try {
+      const { userId, displayName } = req.user as any; // จาก token ที่ decode แล้ว
+
+      const booking = await bookingService.createBooking({
+        ...req.body,
+        slip: req.file,
+        userId,
+        userName: displayName,
+      });
+
+      res.json({ message: "จองสำเร็จ", booking });
+    } catch (err: any) {
+      console.error("❌ Booking create error:", err);
+      res.status(500).json({ error: err.message });
+    }
   }
-});
+);
+
+/* ============================================================
+   ✅ อนุมัติ / ❌ ปฏิเสธ / 🏠 เช็คอิน / 🚪 เช็คเอาท์ / ✏️ แก้ไข / 🗑️ ลบ
+============================================================ */
 
 //  Admin อนุมัติการจอง
 router.put("/:bookingId/approve", authMiddleware, async (req, res) => {
@@ -102,17 +117,14 @@ router.get("/:bookingId/qrcode", async (req, res) => {
     const booking = await bookingService.getBookingById(bookingId);
     if (!booking) return res.status(404).json({ error: "ไม่พบการจอง" });
 
-    //  URL สำหรับแอดมินดูข้อมูลการจอง
     const adminUrl = `https://smartdorm-admin.biwbong.shop/booking/${bookingId}`;
-
-    //  สร้าง QR Code เป็น Base64
     const qrCode = await QRCode.toDataURL(adminUrl);
 
     res.json({
       bookingId,
       room: booking.room.number,
       adminUrl,
-      qrCode, // base64 image data
+      qrCode,
     });
   } catch (err: any) {
     res.status(500).json({ error: err.message });

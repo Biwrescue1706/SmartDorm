@@ -52,6 +52,8 @@ export function useBills() {
         icon: "error",
         title: "อัปเดตบิลล้มเหลว",
         text: "ไม่สามารถอัปเดตข้อมูลได้",
+        timer: 1500,
+        showConfirmButton: false,
       });
     }
   };
@@ -84,6 +86,8 @@ export function useBills() {
         icon: "error",
         title: "ลบไม่สำเร็จ",
         text: "เกิดข้อผิดพลาด",
+        timer: 1500,
+        showConfirmButton: false,
       });
     }
   };

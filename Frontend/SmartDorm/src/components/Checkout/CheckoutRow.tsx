@@ -1,3 +1,4 @@
+// src/components/Checkout/CheckoutRow.tsx
 import type { Booking } from "../../types/Checkout";
 
 interface Props {
@@ -7,6 +8,7 @@ interface Props {
   onReject: (id: string) => void;
   onEdit: (booking: Booking) => void;
   onDelete: (id: string, roomNum: string) => void;
+  onConfirmReturn: (id: string) => void; // ✅ เพิ่ม prop ใหม่
 }
 
 export default function CheckoutRow({
@@ -16,6 +18,7 @@ export default function CheckoutRow({
   onReject,
   onEdit,
   onDelete,
+  onConfirmReturn, // ✅ รับ prop
 }: Props) {
   const renderStatus = (status: number | null) => {
     switch (status) {
@@ -26,7 +29,7 @@ export default function CheckoutRow({
       case 2:
         return <span className="badge bg-danger">ถูกปฏิเสธ</span>;
       default:
-        return "-";
+        return <span className="text-muted">-</span>;
     }
   };
 
@@ -43,6 +46,26 @@ export default function CheckoutRow({
           : "-"}
       </td>
       <td>{renderStatus(booking.returnStatus)}</td>
+
+      {/* ✅ ปุ่ม "จัดการ" หรือแสดงวันคืนจริง */}
+      <td>
+        {booking.checkoutStatus === 0 ? (
+          <button
+            className="btn btn-warning btn-sm fw-semibold"
+            onClick={() => onConfirmReturn(booking.bookingId)}
+          >
+            จัดการ
+          </button>
+        ) : (
+          <span className="text-success fw-semibold">
+            {booking.actualCheckout
+              ? new Date(booking.actualCheckout).toLocaleDateString("th-TH")
+              : "คืนแล้ว"}
+          </span>
+        )}
+      </td>
+
+      {/* ปุ่มอนุมัติ/ปฏิเสธ/แก้ไข/ลบ */}
       <td>
         {booking.returnStatus === 0 && (
           <>
@@ -53,15 +76,13 @@ export default function CheckoutRow({
               อนุมัติ
             </button>
             <button
-              className="btn btn-danger btn-sm"
+              className="btn btn-danger btn-sm me-1"
               onClick={() => onReject(booking.bookingId)}
             >
               ปฏิเสธ
             </button>
           </>
         )}
-      </td>
-      <td>
         <button
           className="btn btn-outline-primary btn-sm me-1"
           onClick={() => onEdit(booking)}

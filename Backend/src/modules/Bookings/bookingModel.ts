@@ -1,4 +1,3 @@
-// src/modules/Bookings/bookingModel.ts
 export interface BookingInput {
   userId: string;
   userName: string;
@@ -8,26 +7,33 @@ export interface BookingInput {
   cphone: string;
   cmumId: string;
   roomId: string;
-  checkin: string;
+  checkin: string; // วันที่ระบุว่าจะเช็คอิน
+  checkout?: string; // วันที่ระบุว่าจะเช็คเอาท์
   slip?: Express.Multer.File;
 }
 
 export interface BookingUpdateInput {
-  ctitle?: string;
-  cname?: string;
-  csurname?: string;
-  cmumId?: string;
-  cphone?: string;
-  checkin?: string;
-  status?: number;
+  approveStatus?: number;
+  checkinStatus?: number;
+  checkoutStatus?: number;
+  actualCheckin?: Date;
+  actualCheckout?: Date;
+  returnStatus?: number;
 }
 
 export interface Booking {
   bookingId: string;
   roomId: string;
   customerId: string;
+  slipUrl?: string;
   checkin: Date;
-  slipUrl: string;
-  status: number;
+  checkout?: Date;
+  actualCheckin?: Date;
+  actualCheckout?: Date;
+  approveStatus: number;
+  checkinStatus: number;
+  checkoutStatus: number;
+  returnStatus?: number;
   createdAt: Date;
+  updatedAt: Date;
 }

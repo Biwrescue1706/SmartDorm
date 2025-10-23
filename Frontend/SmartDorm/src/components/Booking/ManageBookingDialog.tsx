@@ -1,3 +1,4 @@
+// src/components/Booking/ManageBookingDialog.tsx
 import { useEffect, useRef, useState } from "react";
 import type { Booking } from "../../types/Booking";
 
@@ -20,11 +21,11 @@ export default function ManageBookingDialog({
   const [zoom, setZoom] = useState(false);
   const overlayRef = useRef<HTMLDivElement>(null);
 
-  const isPending = booking.status === 0;
+  const isPending = booking.approveStatus === 0;
   const statusText =
-    booking.status === 0
+    booking.approveStatus === 0
       ? "รอตรวจสอบ"
-      : booking.status === 1
+      : booking.approveStatus === 1
       ? "อนุมัติแล้ว"
       : "ไม่อนุมัติ";
 
@@ -147,9 +148,9 @@ export default function ManageBookingDialog({
                 สถานะปัจจุบัน:{" "}
                 <span
                   className={
-                    booking.status === 1
+                    booking.approveStatus === 1
                       ? "text-success fw-semibold"
-                      : booking.status === 2
+                      : booking.approveStatus === 2
                       ? "text-danger fw-semibold"
                       : "text-warning fw-semibold"
                   }

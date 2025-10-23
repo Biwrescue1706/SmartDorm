@@ -1,3 +1,4 @@
+// src/components/Booking/EditBookingDialog.tsx
 import * as Dialog from "@radix-ui/react-dialog";
 import { useState } from "react";
 import { API_BASE } from "../../config";
@@ -17,7 +18,7 @@ export default function EditBookingDialog({ booking, onSuccess }: Props) {
     csurname: booking.customer.csurname || "",
     cphone: booking.customer.cphone || "",
     cmumId: booking.customer.cmumId || "",
-    status: booking.status ?? 0,
+    approveStatus: booking.approveStatus ?? 0,
   });
 
   const handleSave = async () => {
@@ -199,9 +200,9 @@ export default function EditBookingDialog({ booking, onSuccess }: Props) {
               <div className="col-7">
                 <select
                   className="form-select border-0 bg-light shadow-sm rounded-3 text-center"
-                  value={form.status}
+                  value={form.approveStatus}
                   onChange={(e) =>
-                    setForm({ ...form, status: Number(e.target.value) })
+                    setForm({ ...form, approveStatus: Number(e.target.value) })
                   }
                 >
                   <option value={0}>รออนุมัติ</option>

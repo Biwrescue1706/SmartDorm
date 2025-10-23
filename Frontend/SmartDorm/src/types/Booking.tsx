@@ -1,4 +1,3 @@
-// src/types/Booking.tsx
 export interface Customer {
   userName: string;
   ctitle: string;
@@ -15,11 +14,14 @@ export interface Room {
 }
 
 export interface Booking {
+  actualCheckin: any;
   bookingId: string;
   createdAt: string;
   checkin: string;
-  checkout: string;
-  status: number; // 0=รออนุมัติ, 1=อนุมัติ, 2=ไม่อนุมัติ
+  checkout?: string;
+  approveStatus: number;   // 0=รออนุมัติ, 1=อนุมัติแล้ว
+  checkinStatus: number;   // 0=ยังไม่เช็คอิน, 1=เช็คอินแล้ว
+  checkoutStatus: number;  // 0=ยังไม่เช็คเอาท์, 1=เช็คเอาท์แล้ว
   slipUrl?: string;
   room: Room;
   customer: Customer;

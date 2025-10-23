@@ -1,3 +1,4 @@
+//src/components/Checkout/CheckoutEditDialog.tsx
 import { useState } from "react";
 import Swal from "sweetalert2";
 import type { Booking } from "../../types/Checkout";
@@ -8,7 +9,11 @@ interface Props {
   onClose: () => void;
 }
 
-export default function CheckoutEditDialog({ booking, onSave, onClose }: Props) {
+export default function CheckoutEditDialog({
+  booking,
+  onSave,
+  onClose,
+}: Props) {
   const [checkoutDate, setCheckoutDate] = useState<string>(
     booking?.checkout
       ? new Date(booking.checkout).toISOString().split("T")[0]
@@ -29,19 +34,26 @@ export default function CheckoutEditDialog({ booking, onSave, onClose }: Props) 
 
   return (
     <div className="modal show d-block" tabIndex={-1}>
-      <div className="modal-dialog modal-dialog-centered" style={{ maxWidth: "450px" }}>
+      <div
+        className="modal-dialog modal-dialog-centered"
+        style={{ maxWidth: "450px" }}
+      >
         <div className="modal-content shadow-lg rounded-4 border-0">
           {/* Header */}
           <div
             className="modal-header text-white"
             style={{
-              background: "linear-gradient(135deg, #00b09b, #96c93d)",
+              background: "linear-gradient(135deg, #007bff, #00d4ff)",
               borderTopLeftRadius: "1rem",
               borderTopRightRadius: "1rem",
             }}
           >
-            <h5 className="modal-title fw-bold">แก้ไขการคืนห้อง</h5>
-            <button type="button" className="btn-close btn-close-white" onClick={onClose}></button>
+            <h5 className="modal-title fw-bold">แก้ไขวันที่ขอคืนห้อง</h5>
+            <button
+              type="button"
+              className="btn-close btn-close-white"
+              onClick={onClose}
+            ></button>
           </div>
 
           {/* Body */}

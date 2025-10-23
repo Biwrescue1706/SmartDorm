@@ -64,16 +64,21 @@ model Customer {
 }
 
 model Booking {
-  bookingId    String    @id @default(auto()) @map("_id") @db.ObjectId
-  roomId       String    @db.ObjectId
-  customerId   String    @db.ObjectId
-  slipUrl      String?
-  checkin      DateTime
-  checkout     DateTime?
-  status       Int  // 0=รอ, 1=เข้าพัก, 2=คืน
-  returnStatus Int?
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
+  bookingId  String    @id @default(auto()) @map("_id") @db.ObjectId
+  roomId     String    @db.ObjectId
+  customerId String    @db.ObjectId
+  slipUrl    String?
+  checkin    DateTime // วันที่ลูกค้าระบุว่าจะเช็คอิน
+  actualCheckin  DateTime? // วันที่เช็คอินจริง
+  approveStatus  Int @default(0) // 0=รออนุมัติ, 1=อนุมัติแล้ว
+  checkinStatus  Int @default(0) // 0=ยังไม่เช็คอิน, 1=เช็คอินแล้ว ,2=เช็คอินไม่สำเร็จ
+  checkout   DateTime? // วันที่ลูกค้าระบุว่าจะเช็คเอาท์
+  actualCheckout DateTime? // วันที่เช็คเอาท์จริง
+  checkoutStatus Int @default(0) // 0=ยังไม่เช็คเอาท์, 1=เช็คเอาท์แล้ว ,2=เช็คเอาท์ไม่สำเร็จ
+  returnStatus Int? // สำหรับคืนห้อง (ถ้ายังใช้)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   room     Room     @relation(fields: [roomId], references: [roomId])
   customer Customer @relation(fields: [customerId], references: [customerId])

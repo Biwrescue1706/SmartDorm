@@ -7,6 +7,7 @@ import {
   DeleteBooking,
 } from "../apis/endpoint.api";
 import Swal from "sweetalert2";
+import axios from "axios";
 
 export function useBookings() {
   const [bookings, setBookings] = useState<any[]>([]);
@@ -129,6 +130,24 @@ export function useBookings() {
     }
   };
 
+  const checkinBooking = async (id: string) => {
+    try {
+      await axios.put(
+        `${API_BASE}/booking/${id}/checkin`,
+        {},
+        { withCredentials: true }
+      );
+      Swal.fire("สำเร็จ", "เช็คอินสำเร็จแล้ว", "success");
+      fetchBookings(); // ✅ ต้องรีโหลดข้อมูลใหม่ด้วย
+    } catch (err: any) {
+      Swal.fire(
+        "เกิดข้อผิดพลาด",
+        err.response?.data?.error || "ไม่สามารถเช็คอินได้",
+        "error"
+      );
+    }
+  };
+
   useEffect(() => {
     fetchBookings();
   }, []);
@@ -140,5 +159,6 @@ export function useBookings() {
     approveBooking,
     rejectBooking,
     deleteBooking,
+    checkinBooking,
   };
 }

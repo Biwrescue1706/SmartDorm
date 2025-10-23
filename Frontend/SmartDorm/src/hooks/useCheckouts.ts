@@ -7,12 +7,15 @@ import {
   ApproveCheckout,
   RejectCheckout,
   DeleteCheckout,
+  EditCheckout,
+  ConfirmReturn,
 } from "../apis/endpoint.api";
 
 export function useCheckouts() {
   const [checkouts, setCheckouts] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
 
+  //  ดึงข้อมูลทั้งหมด
   const fetchCheckouts = async () => {
     try {
       const res = await fetch(`${API_BASE}${GetAllCheckout}`, {
@@ -39,6 +42,7 @@ export function useCheckouts() {
     fetchCheckouts();
   }, []);
 
+  //  อนุมัติการคืน
   const approveCheckout = async (id: string) => {
     const confirm = await Swal.fire({
       title: "ยืนยันอนุมัติ?",
@@ -58,7 +62,6 @@ export function useCheckouts() {
       Swal.fire({
         icon: "success",
         title: "อนุมัติการคืนสำเร็จ",
-        text: "ระบบได้บันทึกข้อมูลของคุณแล้ว",
         timer: 1500,
         showConfirmButton: false,
       });
@@ -68,12 +71,11 @@ export function useCheckouts() {
         icon: "error",
         title: "ล้มเหลว",
         text: "ไม่สามารถอนุมัติได้",
-        timer: 1500,
-        showConfirmButton: false,
       });
     }
   };
 
+  // ❌ ปฏิเสธการคืน
   const rejectCheckout = async (id: string) => {
     const confirm = await Swal.fire({
       title: "ยืนยันปฏิเสธ?",
@@ -93,7 +95,6 @@ export function useCheckouts() {
       Swal.fire({
         icon: "success",
         title: "ปฏิเสธการคืนสำเร็จ",
-        text: "ระบบได้บันทึกข้อมูลของคุณแล้ว",
         timer: 1500,
         showConfirmButton: false,
       });
@@ -103,12 +104,11 @@ export function useCheckouts() {
         icon: "error",
         title: "ล้มเหลว",
         text: "ไม่สามารถปฏิเสธการคืนได้",
-        timer: 1500,
-        showConfirmButton: false,
       });
     }
   };
 
+  // 🗑️ ลบข้อมูลการคืน
   const deleteCheckout = async (id: string, roomNum: string) => {
     const confirm = await Swal.fire({
       title: `ลบข้อมูลการคืนห้อง ${roomNum}?`,
@@ -127,8 +127,7 @@ export function useCheckouts() {
       if (!res.ok) throw new Error();
       Swal.fire({
         icon: "success",
-        title: "ลบการคืนสำเร็จ",
-        text: "ระบบได้ลบข้อมูลของคุณแล้ว",
+        title: "ลบข้อมูลสำเร็จ",
         timer: 1500,
         showConfirmButton: false,
       });
@@ -137,31 +136,28 @@ export function useCheckouts() {
       Swal.fire({
         icon: "error",
         title: "ล้มเหลว",
-        text: "ลบการคืนไม่สำเร็จ",
-        timer: 1500,
-        showConfirmButton: false,
+        text: "ไม่สามารถลบข้อมูลได้",
       });
     }
   };
 
-  //  ฟังก์ชันใหม่: แก้ไขข้อมูลการคืนห้อง
+  // ✏️ แก้ไขข้อมูลคืนห้อง
   const editCheckout = async (
     bookingId: string,
     values: { checkout: string }
   ) => {
     try {
-      const res = await fetch(`${API_BASE}/checkout/${bookingId}`, {
+      const res = await fetch(`${API_BASE}${EditCheckout(bookingId)}`, {
         method: "PUT",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(values),
       });
       if (!res.ok) throw new Error();
-
       Swal.fire({
         icon: "success",
         title: "แก้ไขสำเร็จ",
-        text: "การคืนห้องได้รับการอัปเดตแล้ว",
+        text: "อัปเดตข้อมูลการคืนแล้ว",
         timer: 1500,
         showConfirmButton: false,
       });
@@ -171,8 +167,40 @@ export function useCheckouts() {
         icon: "error",
         title: "ล้มเหลว",
         text: "ไม่สามารถแก้ไขข้อมูลได้",
+      });
+    }
+  };
+
+  // 🚪 ลูกค้าคืนห้องจริง (Confirm Return)
+  const confirmReturn = async (id: string) => {
+    const confirm = await Swal.fire({
+      title: "ลูกค้าคืนห้องแล้วใช่ไหม?",
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonText: "ยืนยัน",
+      cancelButtonText: "ยกเลิก",
+    });
+    if (!confirm.isConfirmed) return;
+
+    try {
+      const res = await fetch(`${API_BASE}${ConfirmReturn(id)}`, {
+        method: "PUT",
+        credentials: "include",
+      });
+      if (!res.ok) throw new Error();
+      Swal.fire({
+        icon: "success",
+        title: "บันทึกสำเร็จ",
+        text: "ลูกค้าคืนห้องแล้ว",
         timer: 1500,
         showConfirmButton: false,
+      });
+      fetchCheckouts();
+    } catch {
+      Swal.fire({
+        icon: "error",
+        title: "เกิดข้อผิดพลาด",
+        text: "ไม่สามารถบันทึกการคืนห้องได้",
       });
     }
   };
@@ -184,6 +212,7 @@ export function useCheckouts() {
     approveCheckout,
     rejectCheckout,
     deleteCheckout,
-    editCheckout, // export ออกมาใช้
+    editCheckout,
+    confirmReturn, //  เพิ่มให้ใช้งานในตาราง
   };
 }

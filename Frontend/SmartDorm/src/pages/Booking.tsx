@@ -15,6 +15,7 @@ export default function Booking() {
     approveBooking,
     rejectBooking,
     deleteBooking,
+    checkinBooking,
   } = useBookings();
 
   const [filtered, setFiltered] = useState<typeof bookings>([]);
@@ -26,11 +27,11 @@ export default function Booking() {
   useEffect(() => {
     if (active === "all") setFiltered(bookings);
     else if (active === "pending")
-      setFiltered(bookings.filter((b) => b.status === 0));
+      setFiltered(bookings.filter((b) => b.approveStatus === 0));
     else if (active === "approved")
-      setFiltered(bookings.filter((b) => b.status === 1));
+      setFiltered(bookings.filter((b) => b.approveStatus === 1));
     else if (active === "rejected")
-      setFiltered(bookings.filter((b) => b.status === 2));
+      setFiltered(bookings.filter((b) => b.approveStatus === 2));
   }, [bookings, active]);
 
   // เปลี่ยนสถานะการกรอง
@@ -73,6 +74,7 @@ export default function Booking() {
               onReject={rejectBooking}
               onDelete={deleteBooking}
               onEditSuccess={() => fetchBookings()}
+              onCheckin={checkinBooking}
             />
           )}
         </div>

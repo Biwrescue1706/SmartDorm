@@ -58,8 +58,8 @@ export default function Bills() {
   const loadBookings = async () => {
     const res = await fetch(`${API_BASE}/booking/getall`, { credentials: "include" });
     const data: Booking[] = await res.json();
-    setBookings(data.filter((b) => b.status === 1));
-    setPendingBookings(data.filter((b) => b.status === 0).length);
+    setBookings(data.filter((b) => b.approveStatus === 1));
+    setPendingBookings(data.filter((b) => b.actualCheckin === 0).length);
   };
 
   const loadExistingBills = async () => {
@@ -159,7 +159,7 @@ export default function Bills() {
                 <tbody>
                   {rooms.map((room, index) => {
                     const booking = bookings.find((b) => b.room.number === room.number);
-                    const checkinText = booking ? formatThaiDate(booking.checkin) : "-";
+                    const checkinText = booking ? formatThaiDate(booking.actualCheckin) : "-";
                     const hasBillThisMonth = existingBills.includes(room.roomId);
 
                     return (

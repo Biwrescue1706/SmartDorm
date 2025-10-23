@@ -17,7 +17,8 @@ export interface Booking {
   customer: Customer;
   checkin: string;
   checkout: string | null;
-  status: number;
-  returnStatus: number | null;
+  actualCheckout?: string | null;   // ✅ วันที่เช็คเอาท์จริง
+  checkoutStatus: number;           // ✅ 0=ยังไม่เช็คเอาท์, 1=เช็คเอาท์แล้ว
+  returnStatus: number | null;      // ✅ 0=รออนุมัติ, 1=อนุมัติ, 2=ปฏิเสธ
   createdAt: string;
 }

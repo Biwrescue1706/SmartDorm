@@ -10,6 +10,7 @@ interface Props {
   onReject: (id: string) => void;
   onDelete: (id: string, roomNum: string) => void;
   onEditSuccess: () => void;
+  onCheckin?: (id: string) => void; // ✅ เพิ่ม callback สำหรับเช็คอิน
   index: number;
 }
 
@@ -19,14 +20,15 @@ export default function BookingRow({
   onReject,
   onDelete,
   onEditSuccess,
+  onCheckin,
   index,
 }: Props) {
   const [showSlip, setShowSlip] = useState(false);
+  const [showCheckinModal, setShowCheckinModal] = useState(false);
 
-  const formatThaiDate = (d?: string) => {
+  const formatThaiDate = (d?: string | null) => {
     if (!d) return "-";
-    const date = new Date(d);
-    return date.toLocaleDateString("th-TH", {
+    return new Date(d).toLocaleDateString("th-TH", {
       year: "numeric",
       month: "short",
       day: "numeric",
@@ -35,25 +37,39 @@ export default function BookingRow({
 
   return (
     <>
-      {/* แถวข้อมูลหลักในตาราง */}
       <tr>
         <td>{index}</td>
-        <td>{booking.room.number}</td>
-        <td>{booking.customer.userName}</td>
-        <td>{booking.customer.fullName}</td>
-        <td>{booking.customer.cphone}</td>
+        <td>{booking.room?.number}</td>
+        <td>{booking.customer?.userName || "-"}</td>
+        <td>{booking.customer?.fullName}</td>
+        <td>{booking.customer?.cphone}</td>
         <td>{formatThaiDate(booking.createdAt)}</td>
         <td>{formatThaiDate(booking.checkin)}</td>
-        <td>{formatThaiDate(booking.checkout)}</td>
+
+        {/* ✅ วันเข้าพักจริง */}
+        <td>
+          {booking.actualCheckin ? (
+            <span className="text-success fw-semibold">
+              {formatThaiDate(booking.actualCheckin)}
+            </span>
+          ) : (
+            <button
+              className="btn btn-sm btn-warning fw-semibold"
+              onClick={() => setShowCheckinModal(true)}
+            >
+              จัดการ
+            </button>
+          )}
+        </td>
 
         {/* ปุ่มดูสลิป */}
         <td>
           {booking.slipUrl ? (
             <button
-              className="btn btn-sm btn-primary mt3 mx-1 my-1"
+              className="btn btn-sm btn-outline-primary"
               onClick={() => setShowSlip(true)}
             >
-              สลิป
+              ดูสลิป
             </button>
           ) : (
             <span className="text-muted">-</span>
@@ -62,7 +78,7 @@ export default function BookingRow({
 
         {/* สถานะการจอง */}
         <td>
-          {booking.status === 0 ? (
+          {booking.approveStatus === 0 ? (
             <ManageBookingDialog
               booking={booking}
               onApprove={onApprove}
@@ -70,7 +86,7 @@ export default function BookingRow({
               triggerClassName="btn btn-sm btn-warning"
               triggerLabel="จัดการ"
             />
-          ) : booking.status === 1 ? (
+          ) : booking.approveStatus === 1 ? (
             <span className="text-success fw-semibold">อนุมัติแล้ว</span>
           ) : (
             <span className="text-danger fw-semibold">ไม่อนุมัติ</span>
@@ -79,22 +95,74 @@ export default function BookingRow({
 
         {/* ✏️ ปุ่มแก้ไขและลบ */}
         <td>
-          <EditBookingDialog booking={booking} onSuccess={onEditSuccess} />
-          <button
-            className="btn btn-sm fw-semibold text-white ms-2 mt-1 mx-2 my-1 "
-            style={{
-              background: "linear-gradient(100deg, #ff0505ff, #f645c4ff)",
-              border: "none",
-              padding: "4px 8px",
-            }}
-            onClick={() => onDelete(booking.bookingId, booking.room.number)}
-          >
-            🗑️
-          </button>
+          <div className="d-flex flex-wrap gap-1 justify-content-center">
+            <EditBookingDialog booking={booking} onSuccess={onEditSuccess} />
+            <button
+              className="btn btn-sm fw-semibold text-white"
+              style={{
+                background: "linear-gradient(100deg, #ff0505, #f645c4)",
+                border: "none",
+              }}
+              onClick={() => onDelete(booking.bookingId, booking.room.number)}
+            >
+              🗑️
+            </button>
+          </div>
         </td>
       </tr>
 
-      {/* Modal แสดงสลิป — ใช้ React Portal */}
+      {/* ===== Modal: จัดการเช็คอินจริง ===== */}
+      {showCheckinModal &&
+        createPortal(
+          <div
+            className="modal fade show"
+            style={{
+              display: "block",
+              backgroundColor: "rgba(0,0,0,0.5)",
+              zIndex: 1060,
+            }}
+            onClick={() => setShowCheckinModal(false)}
+          >
+            <div
+              className="modal-dialog modal-dialog-centered"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="modal-content border-0 shadow-lg rounded-4">
+                <div className="modal-header bg-primary text-white">
+                  <h5 className="modal-title fw-bold">
+                    จัดการวันเข้าพักจริง
+                  </h5>
+                </div>
+                <div className="modal-body text-center">
+                  <p className="fw-semibold fs-5 mb-3">
+                    ห้อง {booking.room.number}
+                  </p>
+                  <p>ลูกค้าท่านนี้มาเช็คอินแล้วหรือยัง?</p>
+                </div>
+                <div className="modal-footer justify-content-center">
+                  <button
+                    className="btn btn-success px-4"
+                    onClick={() => {
+                      onCheckin?.(booking.bookingId);
+                      setShowCheckinModal(false);
+                    }}
+                  >
+                    มาเช็คอินแล้ว
+                  </button>
+                  <button
+                    className="btn btn-secondary px-4"
+                    onClick={() => setShowCheckinModal(false)}
+                  >
+                    ปิด
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>,
+          document.body
+        )}
+
+      {/* ===== Modal: แสดงสลิป ===== */}
       {showSlip &&
         createPortal(
           <div
@@ -104,7 +172,6 @@ export default function BookingRow({
               backgroundColor: "rgba(0,0,0,0.5)",
               zIndex: 1050,
             }}
-            tabIndex={-1}
             onClick={() => setShowSlip(false)}
           >
             <div
@@ -119,7 +186,7 @@ export default function BookingRow({
                 </div>
                 <div className="modal-body text-center">
                   <img
-                    src={booking.slipUrl}
+                    src={booking.slipUrl || ""}
                     alt="Slip"
                     className="img-fluid rounded shadow-sm"
                     style={{ maxHeight: "75vh", objectFit: "contain" }}

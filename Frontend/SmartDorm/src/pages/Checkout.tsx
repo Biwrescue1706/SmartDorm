@@ -1,10 +1,10 @@
-// src/pages/Checkout.tsx
 import { useState } from "react";
 import Nav from "../components/Nav";
 import { useAuth } from "../hooks/useAuth";
 import { useCheckouts } from "../hooks/useCheckouts";
 import CheckoutTable from "../components/Checkout/CheckoutTable";
 import CheckoutFilter from "../components/Checkout/CheckoutFilter";
+import CheckoutEditDialog from "../components/Checkout/CheckoutEditDialog";
 import type { Booking } from "../types/Checkout";
 
 export default function Checkout() {
@@ -15,14 +15,17 @@ export default function Checkout() {
     approveCheckout,
     rejectCheckout,
     deleteCheckout,
+    editCheckout,
+    confirmReturn,
   } = useCheckouts();
 
   const [pendingBookings] = useState(0);
   const [filter, setFilter] = useState<
     "all" | "pending" | "approved" | "rejected"
   >("all");
-  const [, setEditingBooking] = useState<Booking | null>(null);
+  const [editingBooking, setEditingBooking] = useState<Booking | null>(null);
 
+  // ✅ ฟิลเตอร์ข้อมูลตามสถานะการคืน
   const filteredCheckouts = checkouts.filter((b) => {
     if (filter === "pending") return b.returnStatus === 0;
     if (filter === "approved") return b.returnStatus === 1;
@@ -32,12 +35,15 @@ export default function Checkout() {
 
   return (
     <div className="d-flex min-vh-100 bg-white">
+      {/* 🔹 Navbar */}
       <Nav
         message={message}
         onLogout={handleLogout}
         pendingBookings={pendingBookings}
         role={role}
       />
+
+      {/* 🔹 Main Content */}
       <main className="main-content flex-grow-1 px-1 py-5 mt-3 mt-lg-5">
         <div className="mx-auto container-max">
           <h2
@@ -51,8 +57,10 @@ export default function Checkout() {
             จัดการการคืนห้อง
           </h2>
 
+          {/* 🔹 ตัวกรองสถานะ */}
           <CheckoutFilter active={filter} onChange={setFilter} />
 
+          {/* 🔹 ตารางแสดงข้อมูล */}
           {loading ? (
             <p className="text-center text-muted mt-3">กำลังโหลดข้อมูล...</p>
           ) : (
@@ -62,10 +70,20 @@ export default function Checkout() {
               onReject={rejectCheckout}
               onEdit={(b) => setEditingBooking(b)}
               onDelete={deleteCheckout}
+              onConfirmReturn={confirmReturn}
             />
           )}
         </div>
       </main>
+
+      {/* 🔹 Modal แก้ไขข้อมูลการคืน */}
+      {editingBooking && (
+        <CheckoutEditDialog
+          booking={editingBooking}
+          onSave={editCheckout}
+          onClose={() => setEditingBooking(null)}
+        />
+      )}
     </div>
   );
 }

@@ -1,9 +1,9 @@
-// src/modules/Bookings/bookingService.ts
 import { bookingRepository } from "./bookingRepository";
 import { notifyUser } from "../../utils/lineNotify";
 import { BookingInput, BookingUpdateInput } from "./bookingModel";
 import prisma from "../../prisma";
 
+/* 🗓️ ฟังก์ชันแปลงวันที่แบบไทย */
 const formatThaiDate = (dateInput: string | Date) => {
   const date = typeof dateInput === "string" ? new Date(dateInput) : dateInput;
   return date.toLocaleDateString("th-TH", {
@@ -14,16 +14,19 @@ const formatThaiDate = (dateInput: string | Date) => {
 };
 
 export const bookingService = {
+  /* 📋 ดึงข้อมูลทั้งหมด */
   async getAllBookings() {
     return await bookingRepository.findAll();
   },
 
+  /* 🔍 ดึงข้อมูลตาม bookingId */
   async getBookingById(bookingId: string) {
     const booking = await bookingRepository.findById(bookingId);
-    if (!booking) throw new Error("ไม่พบการจอง");
+    if (!booking) throw new Error("ไม่พบข้อมูลการจอง");
     return booking;
   },
 
+  /* 🧾 ลูกค้าสร้างคำขอจองห้อง */
   async createBooking(input: BookingInput) {
     const {
       userId,
@@ -35,6 +38,7 @@ export const bookingService = {
       cmumId,
       roomId,
       checkin,
+      checkout,
       slip,
     } = input;
 
@@ -63,42 +67,44 @@ export const bookingService = {
           roomId,
           customerId: customer.customerId,
           checkin: new Date(checkin),
+          checkout: checkout ? new Date(checkout) : null,
           slipUrl,
-          status: 0,
+          approveStatus: 0,
+          checkinStatus: 0,
+          checkoutStatus: 0,
         },
         tx
       );
 
+      // เปลี่ยนสถานะห้องเป็น "ไม่ว่าง"
       await bookingRepository.updateRoomStatus(roomId, 1, tx);
-
       return newBooking;
     });
 
-    const adminMsg = `📢 มีการส่งคำขอจองห้อง 
-ของคุณ ${booking.customer.userName}
-
------------ข้อมูลลูกค้า----------
+    // 🔔 แจ้งเตือน LINE
+    const adminMsg = `📢 มีคำขอจองห้องใหม่
+ของคุณ : ${booking.customer.userName} \n
+-----------ข้อมูลลูกค้า-----------\n
+ห้อง : ${booking.room.number}
 ชื่อ : ${booking.customer.fullName}
 เบอร์โทร : ${booking.customer.cphone}
-ห้อง : ${booking.room.number}
 วันที่จอง : ${formatThaiDate(booking.createdAt)}
-วันที่เช็คอิน : ${formatThaiDate(booking.checkin)}
-สลิปการโอนเงิน : ${booking.slipUrl || "ไม่มีสลิป"}
---------------------
-เข้าไปตรวจสอบได้ที่ : https://smartdorm-frontend.onrender.com`;
+วันที่ต้องการเช็คอิน : ${formatThaiDate(booking.checkin)}
+สลิป : ${booking.slipUrl || "ไม่มี"}\n
+-------------------\n
+สามารถตรวจสอบได้ที่ : https://smartdorm-admin.biwbong.shop/bookings`;
 
     const userMsg = `📢 ได้ส่งคำขอจองห้อง ${booking.room.number}
 ของคุณ ${booking.customer.userName} เรียบร้อยแล้ว
-กรุณารอการอนุมัติจากผู้ดูแลระบบ
-
------------ข้อมูลลูกค้า----------
+สถานะ: กรุณารอการอนุมัติจากผู้ดูแลระบบ\n
+-----------ข้อมูลลูกค้า----------\n
 รหัสการจอง: ${booking.bookingId}
 ชื่อ: ${booking.customer.fullName}
-วันที่เช็คอิน: ${formatThaiDate(booking.checkin)}
-สถานะ: รอการอนุมัติ
+วันที่เช็คอิน: ${formatThaiDate(booking.checkin)}\n
+ดูข้อมูลการจองของคุณ: \n
 
---------------------
-ขอบคุณที่ใช้บริการ SmartDorm ครับ`;
+--------------------\n
+ขอบคุณที่ใช้บริการ 🏫SmartDorm🎉 ครับ`;
 
     await notifyUser(booking.customer.userId, userMsg);
     if (process.env.ADMIN_LINE_ID)
@@ -107,29 +113,33 @@ export const bookingService = {
     return booking;
   },
 
+  /*  อนุมัติการจอง */
   async approveBooking(bookingId: string) {
     const booking = await bookingRepository.findById(bookingId);
     if (!booking) throw new Error("ไม่พบการจอง");
-    if (booking.status === 1) throw new Error("การจองนี้ถูกอนุมัติแล้ว");
+    if (booking.approveStatus === 1) throw new Error("การจองนี้อนุมัติแล้ว");
 
     const updated = await bookingRepository.updateBooking(bookingId, {
-      status: 1,
+      approveStatus: 1,
     });
 
-    const msg = `📢 การจองห้อง ${booking.room.number}
+    const userMsg = `📢 ผลการจองห้อง
 ของคุณ : ${booking.customer.userName}
+-----------ข้อมูลลูกค้า----------\n
+ห้อง: ${booking.room.number}
+ชื่อ: ${booking.customer.fullName}
+รหัสการจอง: ${booking.bookingId}
+สถานะ: การจองของคุณได้รับการอนุมัติแล้ว\n
+กรุณาเตรียมตัวเข้าพักตามวันที่ระบุ: ${formatThaiDate(booking.checkin)}\n
+เปิดลิงค์ให้เจ้าหน้าที่ดูแลหอพัก เช็คด้วย ด้วยนะครับ: 
+--------------------\n
+ขอบคุณที่ใช้บริการ 🏫SmartDorm🎉 ครับ`;
 
------------ข้อมูลลูกค้า----------
-
-ชื่อ : ${booking.customer.fullName}
-
-
-เช็คอิน : ${formatThaiDate(booking.checkin)}`;
-
-    await notifyUser(booking.customer.userId, msg);
+    await notifyUser(booking.customer.userId, userMsg);
     return updated;
   },
 
+  /*  ปฏิเสธการจอง */
   async rejectBooking(bookingId: string) {
     const booking = await bookingRepository.findById(bookingId);
     if (!booking) throw new Error("ไม่พบการจอง");
@@ -137,7 +147,7 @@ export const bookingService = {
     const [updated] = await prisma.$transaction([
       prisma.booking.update({
         where: { bookingId },
-        data: { status: 2 },
+        data: { approveStatus: 2 }, // 2 = ถูกปฏิเสธ
         include: { customer: true, room: true },
       }),
       prisma.room.update({
@@ -146,40 +156,87 @@ export const bookingService = {
       }),
     ]);
 
-    const msg = `📢 การจองห้อง ${booking.room.number} ถูกปฏิเสธ
-ชื่อ : ${booking.customer.fullName}
-กรุณาส่งหมายเลขบัญชีเพื่อรับเงินคืน`;
-    await notifyUser(booking.customer.userId, msg);
+    const userMsg = `📢 ผลการจองห้อง
+ของคุณ : ${booking.customer.userName} \n
+-----------ข้อมูลลูกค้า----------\n
+ห้อง: ${booking.room.number}
+ชื่อ: ${booking.customer.fullName}
+รหัสการจอง: ${booking.bookingId}
+สถานะ: การจองของคุณไม่ได้รับการอนุมัติ\n
+--------------------\n
+ขอบคุณที่ใช้บริการ 🏫SmartDorm🎉 ครับ`;
+    await notifyUser(booking.customer.userId, userMsg);
+
     return updated;
   },
 
+  /* 🏠 เช็คอิน */
+  async checkinBooking(bookingId: string) {
+    const booking = await bookingRepository.findById(bookingId);
+    if (!booking) throw new Error("ไม่พบการจอง");
+    if (booking.checkinStatus === 1) throw new Error("ลูกค้าเช็คอินแล้ว");
+
+    const actualCheckin = new Date();
+    const updated = await bookingRepository.updateBooking(bookingId, {
+      checkinStatus: 1,
+      actualCheckin,
+    });
+
+    const userMsg = `🏠 เช็คอินสำเร็จ
+-----------ข้อมูลลูกค้า----------
+รหัสการจอง: ${booking.bookingId}
+ห้อง: ${booking.room.number}
+ชื่อ: ${booking.customer.fullName}
+วันที่: ${formatThaiDate(actualCheckin)}
+สถานะ: เช็คอินเรียบร้อยแล้ว
+--------------------
+ขอบคุณที่ใช้บริการ 🏫SmartDorm🎉 ครับ`;
+
+    await notifyUser(booking.customer.userId, userMsg);
+
+    return updated;
+  },
+
+  /* 🚪 เช็คเอาท์ */
+  async checkoutBooking(bookingId: string) {
+    const booking = await bookingRepository.findById(bookingId);
+    if (!booking) throw new Error("ไม่พบการจอง");
+    if (booking.checkoutStatus === 1) throw new Error("ลูกค้าเช็คเอาท์แล้ว");
+
+    const actualCheckout = new Date();
+    const updated = await bookingRepository.updateBooking(bookingId, {
+      checkoutStatus: 1,
+      actualCheckout,
+    });
+
+    await bookingRepository.updateRoomStatus(booking.roomId, 0);
+
+    const userMsg = `🏠 เช็คเอาท์สำเร็จ : \n
+-----------ข้อมูลลูกค้า----------\n
+รหัสการจอง: ${booking.bookingId}
+ห้อง ${booking.room.number} \n
+ชื่อ: ${booking.customer.fullName}\n
+วันที่: ${formatThaiDate(actualCheckout)}\n
+สถานะ: เช็คเอาท์สำเร็จครับ\n
+--------------------\n
+กรุณาติดต่อผู้ดูแลระบบเพื่อดำเนินการต่อ\n
+ขอบคุณที่ใช้บริการ 🏫SmartDorm🎉 ครับ`;
+
+    await notifyUser(booking.customer.userId, userMsg);
+
+    return updated;
+  },
+
+  /* ✏️ แก้ไขข้อมูลการจอง (Admin ใช้) */
   async updateBooking(bookingId: string, data: BookingUpdateInput) {
     const booking = await bookingRepository.findById(bookingId);
     if (!booking) throw new Error("ไม่พบการจอง");
 
-    let roomStatus = booking.room.status;
-    if (data.status === 1) roomStatus = 1;
-    if (data.status === 2) roomStatus = 0;
-
-    const updated = await bookingRepository.updateBooking(bookingId, {
-      checkin: data.checkin ? new Date(data.checkin) : booking.checkin,
-      status: data.status ?? booking.status,
-      customer: {
-        update: {
-          ctitle: data.ctitle,
-          cname: data.cname,
-          csurname: data.csurname,
-          fullName: `${data.ctitle}${data.cname} ${data.csurname}`,
-          cmumId: data.cmumId,
-          cphone: data.cphone,
-        },
-      },
-      room: { update: { status: roomStatus } },
-    });
-
+    const updated = await bookingRepository.updateBooking(bookingId, data);
     return updated;
   },
 
+  /* 🗑️ ลบการจอง */
   async deleteBooking(bookingId: string) {
     const booking = await bookingRepository.findById(bookingId);
     if (!booking) throw new Error("ไม่พบการจอง");

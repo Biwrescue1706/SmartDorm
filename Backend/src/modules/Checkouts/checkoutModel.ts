@@ -1,4 +1,4 @@
-//src/modules/Checkout/checkoutModel.ts
+// src/modules/Checkouts/checkoutModel.ts
 export interface CheckoutRequest {
   accessToken: string;
   checkout: string;
@@ -14,6 +14,7 @@ export interface BookingWithRelations {
     cphone: string;
   };
   checkout?: Date | null;
+  actualCheckout?: Date | null;
   status: number;
   returnStatus?: number | null;
 }

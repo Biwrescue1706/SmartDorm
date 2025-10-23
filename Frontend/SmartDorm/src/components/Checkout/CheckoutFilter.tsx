@@ -1,3 +1,4 @@
+//src/components/Checkout/CheckoutFilter.tsx
 interface CheckoutFilterProps {
   active: "all" | "pending" | "approved" | "rejected";
   onChange: (status: "all" | "pending" | "approved" | "rejected") => void;
@@ -22,13 +23,13 @@ export default function CheckoutFilter({
         onClick={() => onChange("pending")}
       />
       <FilterButton
-        label="อนุมัติ"
+        label="อนุมัติแล้ว"
         color="success"
         active={active === "approved"}
         onClick={() => onChange("approved")}
       />
       <FilterButton
-        label="ปฏิเสธ"
+        label="ถูกปฏิเสธ"
         color="danger"
         active={active === "rejected"}
         onClick={() => onChange("rejected")}
@@ -51,7 +52,7 @@ function FilterButton({ label, color, active, onClick }: FilterButtonProps) {
       className={`btn btn-sm ${
         active ? `btn-${color}` : `btn-outline-${color}`
       } fw-semibold`}
-      style={{ minWidth: "70px", whiteSpace: "nowrap" }}
+      style={{ minWidth: "80px", whiteSpace: "nowrap" }}
     >
       {label}
     </button>

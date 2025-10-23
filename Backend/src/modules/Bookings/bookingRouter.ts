@@ -1,6 +1,7 @@
 // src/modules/Bookings/bookingRouter.ts
 import { Router, Request, Response } from "express";
 import multer from "multer";
+import QRCode from "qrcode";
 import { authMiddleware } from "../../middleware/authMiddleware";
 import { bookingService } from "./bookingService";
 
@@ -21,9 +22,7 @@ router.get("/getall", async (_req: Request, res: Response) => {
 router.get("/:bookingId", async (req: Request, res: Response) => {
   try {
     const booking = await bookingService.getBookingById(req.params.bookingId);
-    if (!booking) {
-      return res.status(404).json({ error: "ไม่พบข้อมูลการจอง" });
-    }
+    if (!booking) return res.status(404).json({ error: "ไม่พบข้อมูลการจอง" });
     res.json(booking);
   } catch (err: any) {
     res.status(500).json({ error: err.message });
@@ -63,6 +62,26 @@ router.put("/:bookingId/reject", authMiddleware, async (req, res) => {
   }
 });
 
+// แอดมินเช็คอิน
+router.put("/:bookingId/checkin", authMiddleware, async (req, res) => {
+  try {
+    const updated = await bookingService.checkinBooking(req.params.bookingId);
+    res.json({ message: "เช็คอินสำเร็จ", booking: updated });
+  } catch (err: any) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+// ✅ แอดมินเช็คเอาท์
+router.put("/:bookingId/checkout", authMiddleware, async (req, res) => {
+  try {
+    const updated = await bookingService.checkoutBooking(req.params.bookingId);
+    res.json({ message: "เช็คเอาท์สำเร็จ", booking: updated });
+  } catch (err: any) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
 //  Admin แก้ไขข้อมูลการจอง
 router.put("/:bookingId", authMiddleware, async (req, res) => {
   try {
@@ -83,6 +102,30 @@ router.delete("/:bookingId", authMiddleware, async (req, res) => {
     res.json({ message: "ลบการจองสำเร็จ" });
   } catch (err: any) {
     res.status(400).json({ error: err.message });
+  }
+});
+
+/* 🎟️ สร้าง QR Code สำหรับแอดมินเข้าหน้าข้อมูลการจอง */
+router.get("/:bookingId/qrcode", async (req, res) => {
+  try {
+    const { bookingId } = req.params;
+    const booking = await bookingService.getBookingById(bookingId);
+    if (!booking) return res.status(404).json({ error: "ไม่พบการจอง" });
+
+    // ✅ URL สำหรับแอดมินดูข้อมูลการจอง
+    const adminUrl = `https://smartdorm-admin.biwbong.shop/booking/${bookingId}`;
+
+    // ✅ สร้าง QR Code เป็น Base64
+    const qrCode = await QRCode.toDataURL(adminUrl);
+
+    res.json({
+      bookingId,
+      room: booking.room.number,
+      adminUrl,
+      qrCode, // base64 image data
+    });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
   }
 });
 

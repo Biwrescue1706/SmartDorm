@@ -10,6 +10,7 @@ interface Props {
   onReject: (id: string) => void;
   onEdit: (booking: Booking) => void;
   onDelete: (id: string, roomNum: string) => void;
+  onConfirmReturn: (id: string) => void; // ✅ เพิ่ม prop นี้
 }
 
 export default function CheckoutTable({
@@ -18,6 +19,7 @@ export default function CheckoutTable({
   onReject,
   onEdit,
   onDelete,
+  onConfirmReturn, // ✅ รับ prop
 }: Props) {
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -42,33 +44,15 @@ export default function CheckoutTable({
         >
           <thead className="table-dark">
             <tr>
-              <th scope="col" style={{ width: "20%" }}>
-                #
-              </th>
-              <th scope="col" style={{ width: "35%" }}>
-                ห้อง
-              </th>
-              <th scope="col" style={{ width: "65%" }}>
-                ชื่อผู้จอง
-              </th>
-              <th scope="col" style={{ width: "55%" }}>
-                เบอร์โทร
-              </th>
-              <th scope="col" style={{ width: "60%" }}>
-                วันเข้าพัก
-              </th>
-              <th scope="col" style={{ width: "55%" }}>
-                วันที่ขอคืน
-              </th>
-              <th scope="col" style={{ width: "56%" }}>
-                สถานะ
-              </th>
-              <th scope="col" style={{ width: "56%" }}>
-                ผลการอนุมัติ
-              </th>
-              <th scope="col" style={{ width: "56%" }}>
-                การจัดการ
-              </th>
+              <th>#</th>
+              <th>ห้อง</th>
+              <th>ชื่อผู้จอง</th>
+              <th>เบอร์โทร</th>
+              <th>วันเข้าพัก</th>
+              <th>วันที่ขอคืน</th>
+              <th>สถานะ</th>
+              <th>วันคืนจริง / จัดการ</th>
+              <th>การจัดการ</th>
             </tr>
           </thead>
           <tbody>
@@ -83,11 +67,12 @@ export default function CheckoutTable({
                 <CheckoutRow
                   key={b.bookingId}
                   booking={b}
-                  index={indexOfFirst + i}
+                  index={indexOfFirst + i + 1}
                   onApprove={onApprove}
                   onReject={onReject}
                   onEdit={onEdit}
                   onDelete={onDelete}
+                  onConfirmReturn={onConfirmReturn} // ✅ ส่งต่อไปยัง Row
                 />
               ))
             )}
@@ -95,7 +80,6 @@ export default function CheckoutTable({
         </table>
       </div>
 
-      {/*  Pagination แยกออกมานอก div ตาราง */}
       <div className="mt-2">
         <Pagination
           totalItems={checkouts.length}

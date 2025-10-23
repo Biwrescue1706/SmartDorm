@@ -14,12 +14,16 @@ export const ApproveBooking = (id: string) => `/booking/${id}/approve`;
 export const RejectBooking = (id: string) => `/booking/${id}/reject`;
 export const DeleteBooking = (id: string) => `/booking/${id}`;
 export const UpdateBooking = (id: string) => `/booking/${id}`; 
+export const checkinBooking = (id: string) => `/booking/${id}/checkin`;
+
 /* ==================== 🚪 CHECKOUT ==================== */
 export const GetAllCheckout = "/checkout/getall";
 export const GetMyBookings = (userId: string) => `/checkout/myBookings/${userId}`;
 export const ApproveCheckout = (id: string) => `/checkout/${id}/approveCheckout`;
 export const RejectCheckout = (id: string) => `/checkout/${id}/rejectCheckout`;
 export const DeleteCheckout = (id: string) => `/checkout/${id}`;
+export const EditCheckout = (id: string) => `/checkout/${id}`;
+export const ConfirmReturn = (id: string) => `/checkout/${id}/confirm-return`;
 
 /* ==================== 🏢 ROOM ==================== */
 export const GetAllRoom = "/room/getall";

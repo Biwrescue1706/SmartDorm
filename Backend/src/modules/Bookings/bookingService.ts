@@ -101,7 +101,8 @@ export const bookingService = {
 ชื่อ : ${booking.customer.fullName}
 วันที่เช็คอิน : ${formatThaiDate(booking.checkin)}
 สถานะ : กรุณารอการอนุมัติจากผู้ดูแลระบบ\n
-ดูข้อมูลการจองของคุณ : \nhttps://smartdorm-detail.biwbong.shop/booking/${booking.bookingId} \n
+ดูข้อมูลการจองของคุณ : \
+https://smartdorm-detail.biwbong.shop/booking/${booking.bookingId} \n
 --------------------\n
 ขอบคุณที่ใช้บริการ 🏫SmartDorm🎉 ครับ`;
 

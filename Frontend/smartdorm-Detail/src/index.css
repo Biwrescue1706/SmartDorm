@@ -1,68 +1,185 @@
-:root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
-
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
-}
-
-body {
+/* ==================== Reset & Base ==================== */
+* {
   margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  background-color: #ffffff;
+  color: #000000;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  scroll-behavior: smooth;
+  overflow-x: hidden;
+}
+
+/* ==================== Typography ==================== */
+h1, h2, h3, h4, h5 {
+  font-weight: bold;
+}
+
+.text-gradient {
+  background: linear-gradient(90deg, #0dcaf0, #20c997);
+  -webkit-text-fill-color: transparent;
+  font-weight: 700;
+}
+
+/* ==================== Layout ==================== */
+.main-content {
+  background-color: #ffffff;
   min-height: 100vh;
+  padding: 20px;
+  transition: margin-left 0.3s ease;
+  overflow-x: hidden;
 }
 
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
+.container-max {
+  max-width: 1400px;
+  margin: auto;
+  width: 100%;
 }
 
-button {
+/* ==================== Theme Colors ==================== */
+.bg-teal {
+  background-color: #20c997 !important;
+}
+
+.table-teal {
+  background-color: #20c997 !important;
+  color: white !important;
+}
+
+.bg-teal-gradient {
+  background: linear-gradient(90deg, #20c997, #0dcaf0) !important;
+  color: white !important;
+}
+
+/* ==================== Buttons ==================== */
+.btn-gradient {
+  background: linear-gradient(90deg, #00b09b, #96c93d);
+  color: #fff;
+  font-weight: 600;
+  border: none;
+  transition: 0.3s;
+}
+
+.btn-gradient:hover {
+  background: linear-gradient(90deg, #96c93d, #00b09b);
+}
+
+.btn-cancel {
+  background: linear-gradient(90deg, #ff512f, #dd2476);
+  color: #fff;
+  font-weight: 600;
+  border: none;
+}
+
+.btn-cancel:hover {
+  background: linear-gradient(90deg, #dd2476, #ff512f);
+}
+
+/* ==================== Responsive Table ==================== */
+.responsive-table {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  border-radius: 10px;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+  background: #fff;
+  padding: 8px;
+}
+
+.responsive-table table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  word-wrap: break-word;
+}
+
+.responsive-table th,
+.responsive-table td {
+  border: 1px solid #000;
+  padding: 6px 8px;
+  font-size: 14px;
+  line-height: 1.25;
+  text-align: center;
+}
+
+.responsive-table thead th {
+  background: #20c997;
+  color: #000;
+  font-size: 16px;
+}
+
+.responsive-table tbody tr:nth-child(even) {
+  background-color: #f8f9fa;
+}
+
+.responsive-table tbody tr:hover {
+  background-color: rgba(32, 201, 151, 0.08);
+}
+
+/* ==================== Scrollbar ==================== */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.25);
   border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
 }
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.08);
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
+/* ==================== Responsive ==================== */
+@media (max-width: 480px) {
+  .main-content {
+    padding: 8px;
   }
-  a:hover {
-    color: #747bff;
+
+  .responsive-table table {
+    font-size: 13px;
+    min-width: 600px;
   }
-  button {
-    background-color: #f9f9f9;
+}
+
+@media (min-width: 481px) and (max-width: 768px) {
+  .responsive-table table {
+    font-size: 14px;
+    min-width: 800px;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1279px) {
+  .responsive-table table {
+    font-size: 15px;
+    min-width: 900px;
+  }
+}
+
+@media (min-width: 1280px) and (max-width: 1399px) {
+  .main-content {
+    margin-left: 0;
+    margin-top: 70px;
+  }
+
+  .responsive-table table {
+    font-size: 16px !important;
+  }
+}
+
+@media (min-width: 1400px) {
+  .main-content {
+    margin-left: 180px !important;
+    margin-top: 70px;
+  }
+
+  .responsive-table table {
+    font-size: 16px !important;
   }
 }

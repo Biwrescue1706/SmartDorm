@@ -27,6 +27,7 @@ const allowedOrigins = [
     // Custom domains
   "https://smartdorm-admin.biwbong.shop",
   "https://smartdorm-bookingsroom.biwbong.shop",
+  "https://smartdorm-detail.biwbong.shop",
 
 ];
 

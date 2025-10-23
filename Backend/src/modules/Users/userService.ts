@@ -3,14 +3,19 @@ import { userRepository } from "./userRepository";
 import { RegisterInput } from "./userModel";
 
 export const userService = {
+  async getProfileByUserId(userId: string) {
+    const customer = await userRepository.getCustomerWithRelations(userId);
+    if (!customer) throw new Error("ไม่พบข้อมูลลูกค้า");
+    return customer;
+  },
   async register(input: RegisterInput) {
     const { accessToken, ctitle, cname, csurname, cphone, cmumId } = input;
     if (!accessToken) throw new Error("ไม่มี accessToken จาก LINE LIFF");
 
-    const { userId, displayName } = await userRepository.verifyLineToken(accessToken);
+    const { userId, displayName } =
+      await userRepository.verifyLineToken(accessToken);
 
-    if (!ctitle || !cname || !cphone)
-      throw new Error("กรุณากรอกข้อมูลให้ครบ");
+    if (!ctitle || !cname || !cphone) throw new Error("กรุณากรอกข้อมูลให้ครบ");
 
     const fullName = `${ctitle}${cname}${csurname ? " " + csurname : ""}`;
 
@@ -86,7 +91,9 @@ export const userService = {
     const customer = await userRepository.findCustomerByUserId(userId);
     if (!customer) throw new Error("ไม่พบลูกค้า");
 
-    const bookings = await userRepository.findReturnableBookings(customer.customerId);
+    const bookings = await userRepository.findReturnableBookings(
+      customer.customerId
+    );
     return bookings;
   },
 };

@@ -1,6 +1,7 @@
 // src/modules/Users/userRouter.ts
 import { Router, Request, Response } from "express";
 import { userService } from "./userService";
+import { lineAuth } from "../../middleware/lineAuth";
 
 const router = Router();
 
@@ -15,10 +16,12 @@ router.post("/register", async (req: Request, res: Response) => {
 });
 
 // ดึงข้อมูลลูกค้าพร้อม booking/bill
-router.post("/me", async (req: Request, res: Response) => {
+// ดึงข้อมูล profile ของผู้ใช้
+router.get("/me", lineAuth, async (req, res) => {
   try {
-    const profile = await userService.getProfile(req.body.accessToken);
-    res.json(profile);
+    const profile = (req as any).lineProfile;
+    const result = await userService.getProfileByUserId(profile.userId);
+    res.json(result);
   } catch (err: any) {
     res.status(400).json({ error: err.message });
   }

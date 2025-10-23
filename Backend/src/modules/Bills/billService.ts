@@ -94,19 +94,15 @@ export const billService = {
 
     const msg = `📢 บิลใหม่ ของคุณ ${bill.customer.userName}
 ห้อง: ${bill.room.number}
-เดือน : ${bill.month.toLocaleDateString("th-TH", { year: "numeric", month: "long" })}
-
--------------------
-
+เดือน : ${bill.month.toLocaleDateString("th-TH", { year: "numeric", month: "long" })}\n
+-------------------\n
 ค่าเช่า : ${bill.rent.toLocaleString()} บาท
 ค่าส่วนกลาง : ${bill.service.toLocaleString()} บาท
 ค่าน้ำ : ${bill.wUnits} หน่วย ( ${bill.waterCost.toLocaleString()} บาท )
 ค่าไฟ : ${bill.eUnits} หน่วย ( ${bill.electricCost.toLocaleString()} บาท )
 ยอดรวมทั้งหมด: ${bill.total.toLocaleString()} บาท
-ครบกำหนดชำระ: ${formatThaiDate(bill.dueDate)}
-
--------------------
-
+ครบกำหนดชำระ: ${formatThaiDate(bill.dueDate)}\n
+-------------------\n
 ขอบคุณที่ใช้บริการ 🏫SmartDorm🎉`;
 
     if (bill.customer.userId) {

@@ -72,16 +72,6 @@ router.put("/:bookingId/checkin", authMiddleware, async (req, res) => {
   }
 });
 
-// ✅ แอดมินเช็คเอาท์
-router.put("/:bookingId/checkout", authMiddleware, async (req, res) => {
-  try {
-    const updated = await bookingService.checkoutBooking(req.params.bookingId);
-    res.json({ message: "เช็คเอาท์สำเร็จ", booking: updated });
-  } catch (err: any) {
-    res.status(400).json({ error: err.message });
-  }
-});
-
 //  Admin แก้ไขข้อมูลการจอง
 router.put("/:bookingId", authMiddleware, async (req, res) => {
   try {
@@ -112,10 +102,10 @@ router.get("/:bookingId/qrcode", async (req, res) => {
     const booking = await bookingService.getBookingById(bookingId);
     if (!booking) return res.status(404).json({ error: "ไม่พบการจอง" });
 
-    // ✅ URL สำหรับแอดมินดูข้อมูลการจอง
+    //  URL สำหรับแอดมินดูข้อมูลการจอง
     const adminUrl = `https://smartdorm-admin.biwbong.shop/booking/${bookingId}`;
 
-    // ✅ สร้าง QR Code เป็น Base64
+    //  สร้าง QR Code เป็น Base64
     const qrCode = await QRCode.toDataURL(adminUrl);
 
     res.json({

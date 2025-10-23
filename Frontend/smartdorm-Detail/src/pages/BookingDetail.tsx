@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { API_BASE } from "../config";
-import "bootstrap/dist/css/bootstrap.min.css";
 import { QRCodeCanvas } from "qrcode.react";
 
 interface Room {

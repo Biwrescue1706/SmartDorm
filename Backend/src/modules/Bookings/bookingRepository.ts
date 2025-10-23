@@ -18,10 +18,7 @@ export const bookingRepository = {
   async findAll() {
     return await prisma.booking.findMany({
       orderBy: { createdAt: "desc" },
-      include: {
-        room: true,
-        customer: true,
-      },
+      include: { room: true, customer: true },
     });
   },
 
@@ -29,14 +26,11 @@ export const bookingRepository = {
   async findById(bookingId: string) {
     return await prisma.booking.findUnique({
       where: { bookingId },
-      include: {
-        room: true,
-        customer: true,
-      },
+      include: { room: true, customer: true },
     });
   },
 
-  /* 👤 สร้างลูกค้าใหม่ หรืออัปเดตถ้ามีอยู่แล้ว */
+  /* 👤 สร้างหรืออัปเดตข้อมูลลูกค้า */
   async createCustomer(data: any, tx: Prisma.TransactionClient) {
     const existing = await tx.customer.findFirst({
       where: { userId: data.userId },
@@ -52,14 +46,11 @@ export const bookingRepository = {
     return await tx.customer.create({ data });
   },
 
-  /* 🧾 สร้างรายการจอง */
+  /* 🧾 สร้างการจอง */
   async createBooking(data: any, tx: Prisma.TransactionClient) {
     return await tx.booking.create({
       data,
-      include: {
-        room: true,
-        customer: true,
-      },
+      include: { room: true, customer: true },
     });
   },
 
@@ -68,52 +59,67 @@ export const bookingRepository = {
     return await prisma.booking.update({
       where: { bookingId },
       data,
-      include: {
-        room: true,
-        customer: true,
-      },
+      include: { room: true, customer: true },
     });
   },
 
-  /* 🗑️ ลบการจอง */
-  async deleteBooking(bookingId: string) {
-    await prisma.booking.delete({
-      where: { bookingId },
-    });
-  },
-
-  /* 🏠 เปลี่ยนสถานะห้อง */
+  /* 🏠 อัปเดตสถานะห้อง */
   async updateRoomStatus(roomId: string, status: number, tx?: Prisma.TransactionClient) {
-    const executor = tx ?? prisma;
-    await executor.room.update({
+    const db = tx ?? prisma;
+    return await db.room.update({
       where: { roomId },
       data: { status },
     });
   },
 
-  /* 📸 อัปโหลดสลิปไป Supabase */
-  async uploadSlip(file: Express.Multer.File) {
-    const fileName = `slip_${Date.now()}_${file.originalname}`;
-    const { data, error } = await supabase.storage
-      .from("slips")
-      .upload(fileName, file.buffer, { contentType: file.mimetype });
-
-    if (error) throw new Error("อัปโหลดสลิปไม่สำเร็จ");
-    const { data: publicUrl } = supabase.storage
-      .from("slips")
-      .getPublicUrl(fileName);
-
-    return publicUrl.publicUrl;
+  /* 🗑️ ลบการจอง */
+  async deleteBooking(bookingId: string) {
+    return await prisma.booking.delete({ where: { bookingId } });
   },
 
-  /* 🗑️ ลบสลิปใน Supabase */
-  async deleteSlip(slipUrl: string) {
+  /* 📸 อัปโหลดสลิปไปยัง Supabase */
+  async uploadSlip(file: Express.Multer.File) {
     try {
-      const path = slipUrl.split("/").pop();
-      if (!path) return;
-      await supabase.storage.from("slips").remove([path]);
+      // ✅ ป้องกันชื่อไฟล์ซ้ำด้วย timestamp + random string
+      const random = Math.random().toString(36).substring(2, 8);
+      const fileName = `slips/${Date.now()}_${random}_${file.originalname}`;
+
+      const { error } = await supabase.storage
+        .from("smartdorm-slips")
+        .upload(fileName, file.buffer, {
+          contentType: file.mimetype,
+          upsert: false,
+        });
+
+      if (error) {
+        console.error("❌ Supabase Upload Error:", error);
+        throw new Error("อัปโหลดสลิปไม่สำเร็จ");
+      }
+
+      const {
+        data: { publicUrl },
+      } = supabase.storage.from("smartdorm-slips").getPublicUrl(fileName);
+
+      return publicUrl;
     } catch (err) {
-      console.error("❌ ลบสลิปไม่สำเร็จ:", err);
+      console.error("❌ uploadSlip() Error:", err);
+      throw new Error("เกิดข้อผิดพลาดระหว่างอัปโหลดสลิป");
+    }
+  },
+
+  /* 🧹 ลบสลิปจาก Supabase */
+  async deleteSlip(url: string) {
+    try {
+      const path = url.split("/smartdorm-slips/")[1];
+      if (!path) return;
+
+      const { error } = await supabase.storage
+        .from("smartdorm-slips")
+        .remove([path]);
+
+      if (error) console.warn("⚠️ ลบสลิปจาก Supabase ไม่สำเร็จ:", error);
+    } catch (err) {
+      console.error("⚠️ deleteSlip() Error:", err);
     }
   },
 };

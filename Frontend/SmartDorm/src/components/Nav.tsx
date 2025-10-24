@@ -20,17 +20,17 @@ export default function Nav({
 
   const isSuperAdmin = role === 0;
 
-  //  toggle สำหรับเปิด/ปิด dropdown ย่อย
+  // toggle สำหรับ dropdown
   const toggleDropdown = (key: string) => {
     setDropdownOpen(dropdownOpen === key ? null : key);
   };
 
   return (
     <>
-      {/* ===== Topbar (ทุกขนาดหน้าจอ) ===== */}
+      {/* ===== 🌐 Topbar ===== */}
       <div
         className="position-fixed top-0 start-0 w-100 bg-primary text-white d-flex align-items-center justify-content-between px-3 shadow z-3"
-        style={{ height: "55px" }}
+        style={{ height: "50px" }}
       >
         {/* ☰ ปุ่มเมนู (เฉพาะจอ <1400px) */}
         <button
@@ -42,7 +42,7 @@ export default function Nav({
           {menuOpen ? "✖" : "☰"}
         </button>
 
-        {/*  โลโก้ + ชื่อระบบ (เฉพาะจอ ≥1400px) */}
+        {/* 🏠 โลโก้ + ชื่อระบบ */}
         <div className="d-none d-xxl-flex flex-column ms-2">
           <h4 className="fw-bold text-white mb-0">SmartDorm</h4>
           <small className="text-white" style={{ lineHeight: 1 }}>
@@ -50,7 +50,7 @@ export default function Nav({
           </small>
         </div>
 
-        {/*  ข้อความวิ่ง */}
+        {/* 🧾 ข้อความต้อนรับ */}
         <div
           className="flex-grow-1 d-flex justify-content-end text-end overflow-hidden"
           style={{ marginRight: "10px" }}
@@ -67,12 +67,16 @@ export default function Nav({
         </div>
       </div>
 
-      {/* =====  Sidebar (เฉพาะจอ ≥1400px) ===== */}
+      {/* ===== 🧭 Sidebar (≥1400px) ===== */}
       <div
         className="d-none d-xxl-flex flex-column justify-content-between position-fixed top-0 start-0 bg-primary text-white shadow h-100"
-        style={{ width: "180px", paddingTop: "55px" }}
+        style={{
+          width: "180px",
+          paddingTop: "55px",
+          overflowY: "auto", // ✅ ให้เลื่อนเฉพาะ sidebar
+        }}
       >
-        <div className="flex-grow-1 overflow-auto p-3 d-flex flex-column gap-2">
+        <div className="flex-grow-1 p-3 d-flex flex-column gap-2">
           <button
             onClick={() => navigate("/dashboard")}
             className="btn btn-outline-light text-start"
@@ -80,6 +84,7 @@ export default function Nav({
             🏠 หน้าแรก
           </button>
 
+          {/* ห้องพัก */}
           <div>
             <button
               type="button"
@@ -89,7 +94,6 @@ export default function Nav({
               <span>🛏️ ห้อง</span>
               <span>{dropdownOpen === "room" ? "▴" : "▾"}</span>
             </button>
-
             {dropdownOpen === "room" && (
               <div className="ps-3 mt-2 d-flex flex-column gap-2">
                 {isSuperAdmin && (
@@ -100,10 +104,9 @@ export default function Nav({
                     🏘️ จัดการห้องพัก
                   </button>
                 )}
-
                 <button
                   onClick={() => navigate("/bookings")}
-                  className="btn btn-outline-light text-start"
+                  className="btn btn-outline-light text-start position-relative"
                 >
                   📑 การจอง
                   {(pendingBookings ?? 0) > 0 && (
@@ -112,7 +115,6 @@ export default function Nav({
                     </span>
                   )}
                 </button>
-
                 <button
                   onClick={() => navigate("/checkout")}
                   className="btn btn-outline-light text-start"
@@ -175,15 +177,16 @@ export default function Nav({
             </div>
           )}
 
-          {/* <button
-            onClick={() => navigate("/line")}
+          {/* ลูกค้า */}
+          <button
+            onClick={() => navigate("/users")}
             className="btn btn-outline-light text-start"
           >
-            🤖 ตั้งค่าแจ้งเตือนผ่านไลน์
-          </button> */}
+            👤 ข้อมูลลูกค้า
+          </button>
         </div>
 
-        {/* 🚪 ปุ่มออกจากระบบ */}
+        {/* 🚪 Logout */}
         <div className="border-top border-light p-2 mt-auto">
           <button
             onClick={onLogout}
@@ -207,15 +210,16 @@ export default function Nav({
         </div>
       </div>
 
-      {/* ===== 📱 Slide-in Menu (เฉพาะ <1400px) ===== */}
+      {/* ===== 📱 Slide-in Menu (<1400px) ===== */}
       {menuOpen && (
         <>
+          {/* เมนูด้านข้าง */}
           <div
             className="position-fixed top-0 start-0 h-100 bg-primary text-white shadow-lg p-3 d-flex flex-column justify-content-between"
-            style={{ width: "220px", zIndex: 1500, paddingTop: "60px" }}
+            style={{ width: "220px", zIndex: 1500, paddingTop: "50px" }}
           >
             <div>
-              {/* 🏢 โลโก้ใน Slide Menu */}
+              {/* โลโก้ใน Slide Menu */}
               <div className="d-flex justify-content-between align-items-center border-bottom border-light pb-2 mb-3">
                 <div>
                   <h5 className="fw-bold mb-0">SmartDorm</h5>
@@ -229,7 +233,7 @@ export default function Nav({
                 </button>
               </div>
 
-              {/* เมนูหลัก */}
+              {/* เมนูใน slide */}
               <div className="d-flex flex-column gap-2">
                 <button
                   onClick={() => {
@@ -251,7 +255,6 @@ export default function Nav({
                     <span>🛏️ ห้อง</span>
                     <span>{dropdownOpen === "room" ? "▴" : "▾"}</span>
                   </button>
-
                   {dropdownOpen === "room" && (
                     <div className="ps-3 mt-2 d-flex flex-column gap-2">
                       {isSuperAdmin && (
@@ -297,7 +300,6 @@ export default function Nav({
                     <span>💰 บิล</span>
                     <span>{dropdownOpen === "bill" ? "▴" : "▾"}</span>
                   </button>
-
                   {dropdownOpen === "bill" && (
                     <div className="ps-3 mt-2 d-flex flex-column gap-2">
                       <button
@@ -333,7 +335,6 @@ export default function Nav({
                       <span>👥 สมาชิก</span>
                       <span>{dropdownOpen === "member" ? "▴" : "▾"}</span>
                     </button>
-
                     {dropdownOpen === "member" && (
                       <div className="ps-3 mt-2 d-flex flex-column gap-2">
                         <button
@@ -349,17 +350,20 @@ export default function Nav({
                     )}
                   </div>
                 )}
-                
-                {/* <button
-                  onClick={() => navigate("/line")}
+
+                <button
+                  onClick={() => {
+                    navigate("/users");
+                    setMenuOpen(false);
+                  }}
                   className="btn btn-outline-light text-start"
                 >
-                  🤖 ตั้งค่าแจ้งเตือนผ่านไลน์
-                </button> */}
+                  👤 ข้อมูลลูกค้า
+                </button>
               </div>
             </div>
 
-            {/* 🚪 ออกจากระบบ */}
+            {/* ออกจากระบบ */}
             <button
               onClick={() => {
                 onLogout();

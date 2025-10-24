@@ -44,9 +44,9 @@ export default function Rooms() {
       />
 
       {/* Main Content */}
-      <main className="main-content flex-grow-1 px-3 py-4 mt-5 mt-lg-4">
+      <main className="main-content flex-grow-1 px-3 py-4 mt-4 mt-lg-4">
         <div className="mx-auto container-max">
-          <div className="d-flex justify-content-center align-items-center mb-3 mt-4">
+          <div className="d-flex justify-content-center align-items-center mb-2 mt-3">
             <h2 className="fw-bold text-dark">🏠 จัดการห้องพัก</h2>
           </div>
           <AddRoomDialog onSuccess={handleRefresh} />

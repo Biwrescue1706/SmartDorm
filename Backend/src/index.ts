@@ -34,10 +34,8 @@ const allowedOrigins = [
 //  CORS Config
 const corsOptions: cors.CorsOptions = {
   origin: (origin, callback) => {
-    console.log("📍 Incoming Origin:", origin); // << เพิ่มบรรทัดนี้
     if (!origin) return callback(null, true);
     const isAllowed = allowedOrigins.includes(origin);
-    console.log( isAllowed ? "Allowed" : "Blocked", origin); // << และอันนี้
     isAllowed ? callback(null, true) : callback(new Error("CORS not allowed"));
   },
   credentials: true,
@@ -48,7 +46,6 @@ const corsOptions: cors.CorsOptions = {
 
 // ใช้ CORS (production / dev mode)
 if (process.env.NODE_ENV !== "production") {
-  console.log("⚙️ Dev Mode: Allow all origins temporarily");
   app.use(cors({ origin: true, credentials: true }));
 } else {
   app.use(cors(corsOptions));

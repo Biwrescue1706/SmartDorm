@@ -51,6 +51,7 @@ h5 {
 .main-content {
   background-color: #ffffff;
   min-height: 100vh;
+  margin-left: 180px;
   padding: 20px;
   transition: margin-left 0.3s ease;
   overflow-x: hidden; /*  ป้องกันตารางล้นขอบ */
@@ -108,6 +109,8 @@ h5 {
   overflow-wrap: anywhere !important;
   text-overflow: ellipsis !important;
   vertical-align: middle !important;
+  padding: 5px 5px 5px 5px !important;
+  margin: 5px 5px 5px 5px !important;
   text-align: center;
 }
 
@@ -118,7 +121,8 @@ h5 {
   text-align: center;
   white-space: wrap !important; /*  แก้จาก wrap */
   vertical-align: middle !important;
-  padding: 0px !important;
+  padding: 5px 5px 5px 5px !important;
+  margin: 5px 5px 5px 5px !important;
   font-size: 17px !important;
 }
 
@@ -272,7 +276,8 @@ table td {
 @media (max-width: 480px) {
   .main-content {
     background-color: #f8f9fa;
-    margin: 5px;
+    margin-left: 0;
+    margin-top: 65px;
     padding: 5px;
   }
 
@@ -293,7 +298,8 @@ table td {
 
 @media (min-width: 481px) and (max-width: 768px) {
   .main-content {
-    margin: 20px 5px 0 5px;
+    margin-left: 0;
+    margin-top: 65px;
   }
 
   .responsive-table table {
@@ -313,7 +319,7 @@ table td {
 
 @media (min-width: 769px) and (max-width: 1279px) {
   .main-content {
-    margin: 10px 5px 0 5px;
+    margin: 40px 5px 0 5px;
   }
 
   .responsive-table table {
@@ -325,7 +331,7 @@ table td {
 @media (min-width: 1280px) and (max-width: 1399px) {
   .main-content {
     margin-left: 0;
-    margin-top: 70px;
+    margin-top: 80px;
   }
 
   .responsive-table table {
@@ -335,8 +341,8 @@ table td {
 
 @media (min-width: 1400px) {
   .main-content {
-    margin-left: 180px !important;
-    margin-top: 70px;
+    margin-left: 0;
+    margin-top: 65px;
   }
 
   .responsive-table table {

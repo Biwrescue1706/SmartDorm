@@ -84,9 +84,14 @@ export const userService = {
     return userRepository.findReturnableBookings(customer.customerId);
   },
 
-    // 🔍 ค้นหาลูกค้าตามชื่อ / เบอร์โทร / ห้อง
+  // 🔍 ค้นหาลูกค้าตามชื่อ / เบอร์โทร / ห้อง
   async searchUsers(keyword: string) {
     return userRepository.searchCustomers(keyword);
+  },
+
+  async deleteUser(customerId: string) {
+    const deleted = await userRepository.deleteCustomer(customerId);
+    return deleted;
   },
   
 };

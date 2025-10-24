@@ -11,6 +11,7 @@ import NotFound from "./pages/NotFound"; //  หน้า 404
 import Checkout from "./pages/Checkout";
 import AllBills from "./pages/AllBills";
 import AdminManagement from "./pages/AdminManagement";
+import Users from "./pages/Users";
 // import LineConfigPage from "./pages/linesetting";
 
 function App() {
@@ -89,14 +90,14 @@ function App() {
         }
       />
 
-      {/* <Route
-        path="/line"
+      <Route
+        path="/users"
         element={
           <ProtectedRoute>
-            <LineConfigPage />
+            <Users  />
           </ProtectedRoute>
         }
-      /> */}
+      />
 
       {/*  ไม่เจอ route → ไปหน้า 404 */}
       <Route path="*" element={<NotFound />} />

@@ -96,4 +96,14 @@ router.get("/search", async (req: Request, res: Response) => {
   }
 });
 
+// ❌ ลบลูกค้า
+router.delete("/:customerId", async (req: Request, res: Response) => {
+  try {
+    const deleted = await userService.deleteUser(req.params.customerId);
+    res.json({ message: "ลบลูกค้าสำเร็จ", deleted });
+  } catch (err: any) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
 export default router;

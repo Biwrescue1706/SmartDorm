@@ -1,14 +1,13 @@
 import prisma from "../../prisma";
 
 export const userRepository = {
-
-    // 👤 ดึงข้อมูลลูกค้าทั้งหมด
+  // 👤 ดึงข้อมูลลูกค้าทั้งหมด
   async findAllCustomers() {
     return prisma.customer.findMany({
       orderBy: { createdAt: "desc" },
       include: {
-        bookings: true,
-        bills: true,
+        bookings: { include: { room: true }, orderBy: { createdAt: "desc" } },
+        bills: { include: { room: true }, orderBy: { createdAt: "desc" } },
       },
     });
   },
@@ -74,7 +73,7 @@ export const userRepository = {
     });
   },
 
-    // 🔍 ค้นหาลูกค้าจากชื่อ / เบอร์โทร / ห้อง
+  // 🔍 ค้นหาลูกค้าจากชื่อ / เบอร์โทร / ห้อง
   async searchCustomers(keyword: string) {
     const kw = keyword.trim();
 
@@ -106,4 +105,10 @@ export const userRepository = {
     });
   },
 
+  // ❌ ลบลูกค้า
+  async deleteCustomer(customerId: string) {
+    return prisma.customer.delete({
+      where: { customerId },
+    });
+  },
 };

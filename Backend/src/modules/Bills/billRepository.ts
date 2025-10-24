@@ -2,37 +2,23 @@
 import prisma from "../../prisma";
 
 export const billRepository = {
-  /* ============================================================
-     📋 ดึงบิลทั้งหมด
-  ============================================================ */
+  // 📋 ดึงบิลทั้งหมด (เรียงตามวันที่สร้าง)
   async findAll() {
     return prisma.bill.findMany({
       orderBy: { createdAt: "desc" },
-      include: {
-        room: true,
-        customer: true,
-        payment: true,
-      },
+      include: { room: true, customer: true, payment: true },
     });
   },
 
-  /* ============================================================
-     🔍 ดึงบิลตาม billId
-  ============================================================ */
+  // 🔍 ดึงบิลตาม billId
   async findById(billId: string) {
     return prisma.bill.findUnique({
       where: { billId },
-      include: {
-        room: true,
-        customer: true,
-        payment: true,
-      },
+      include: { room: true, customer: true, payment: true },
     });
   },
 
-  /* ============================================================
-     🕓 ดึงบิลของเดือนก่อนหน้า (ใช้ค่าน้ำ-ไฟก่อนหน้า)
-  ============================================================ */
+  // 🕓 ดึงบิลเดือนก่อนหน้า (ใช้ค่าน้ำ/ไฟก่อนหน้า)
   async findPrevBill(roomId: string, billMonth: Date, prevMonth: Date) {
     return prisma.bill.findFirst({
       where: {
@@ -46,64 +32,39 @@ export const billRepository = {
     });
   },
 
-  /* ============================================================
-     🧾 สร้างบิลใหม่
-  ============================================================ */
+  // 🧾 สร้างบิลใหม่
   async create(data: any) {
     return prisma.bill.create({
       data,
-      include: {
-        room: true,
-        customer: true,
-        adminCreated: true,
-      },
+      include: { room: true, customer: true, adminCreated: true },
     });
   },
 
-  /* ============================================================
-     ✏️ แก้ไขข้อมูลบิล
-  ============================================================ */
+  // ✏️ อัปเดตบิล
   async update(billId: string, data: any) {
     return prisma.bill.update({
       where: { billId },
       data,
-      include: {
-        room: true,
-        customer: true,
-        adminUpdated: true,
-      },
+      include: { room: true, customer: true, adminUpdated: true },
     });
   },
 
-  /* ============================================================
-     🗑️ ลบบิล
-  ============================================================ */
+  // 🗑️ ลบบิล
   async delete(billId: string) {
-    return prisma.bill.delete({
-      where: { billId },
-    });
+    return prisma.bill.delete({ where: { billId } });
   },
 
-  /* ============================================================
-     🧍‍♂️ ดึง Booking ของห้องที่ยังมีสถานะเช่าปัจจุบัน
-  ============================================================ */
+
+  // 🧍‍♂️ ดึง Booking ปัจจุบันของห้อง (เช่าอยู่)
   async findBooking(roomId: string) {
     return prisma.booking.findFirst({
-      where: {
-        roomId,
-        approveStatus: 1, // อนุมัติแล้ว
-        checkoutStatus: 0, // ยังไม่เช็คเอาท์
-      },
+      where: { roomId, approveStatus: 1, checkoutStatus: 0 },
       include: { customer: true },
     });
   },
 
-  /* ============================================================
-     🏠 ดึงข้อมูลห้อง
-  ============================================================ */
+  // 🏠 ดึงข้อมูลห้อง
   async findRoom(roomId: string) {
-    return prisma.room.findUnique({
-      where: { roomId },
-    });
+    return prisma.room.findUnique({ where: { roomId } });
   },
 };

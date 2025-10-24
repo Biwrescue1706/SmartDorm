@@ -1,25 +1,16 @@
-// src/modules/Users/userService.ts
 import { userRepository } from "./userRepository";
 import { RegisterInput } from "./userModel";
+import { verifyLineToken } from "../../utils/verifyLineToken";
 
 export const userService = {
-  async getProfileByUserId(userId: string) {
-    const customer = await userRepository.getCustomerWithRelations(userId);
-    if (!customer) throw new Error("ไม่พบข้อมูลลูกค้า");
-    return customer;
-  },
+  // 🧩 สมัครหรืออัปเดตข้อมูลลูกค้า
   async register(input: RegisterInput) {
     const { accessToken, ctitle, cname, csurname, cphone, cmumId } = input;
-    if (!accessToken) throw new Error("ไม่มี accessToken จาก LINE LIFF");
-
-    const { userId, displayName } =
-      await userRepository.verifyLineToken(accessToken);
-
-    if (!ctitle || !cname || !cphone) throw new Error("กรุณากรอกข้อมูลให้ครบ");
-
-    const fullName = `${ctitle}${cname}${csurname ? " " + csurname : ""}`;
+    const { userId, displayName } = await verifyLineToken(accessToken);
+    const fullName = `${ctitle}${cname} ${csurname ?? ""}`.trim();
 
     let customer = await userRepository.findCustomerByUserId(userId);
+
     if (customer) {
       customer = await userRepository.updateCustomer(customer.customerId, {
         userName: displayName,
@@ -46,20 +37,24 @@ export const userService = {
     return customer;
   },
 
-  async getProfile(accessToken: string) {
-    if (!accessToken) throw new Error("ไม่มี accessToken");
-    const { userId } = await userRepository.verifyLineToken(accessToken);
+  // 📋 ดึงลูกค้าทั้งหมด (Admin)
+  async getAllUsers() {
+    const users = await userRepository.findAllCustomers();
+    if (!users.length) throw new Error("ไม่พบข้อมูลลูกค้าในระบบ");
+    return users;
+  },
 
+  // 👤 ดึงโปรไฟล์ลูกค้า
+  async getProfile(accessToken: string) {
+    const { userId } = await verifyLineToken(accessToken);
     const customer = await userRepository.getCustomerWithRelations(userId);
     if (!customer) throw new Error("ไม่พบข้อมูลลูกค้า");
-
     return customer;
   },
 
+  // 💰 ดึงบิลที่ชำระแล้ว
   async getPaidBills(accessToken: string) {
-    if (!accessToken) throw new Error("ไม่มี accessToken จาก LINE LIFF");
-
-    const { userId } = await userRepository.verifyLineToken(accessToken);
+    const { userId } = await verifyLineToken(accessToken);
     const customer = await userRepository.findCustomerByUserId(userId);
     if (!customer) throw new Error("ไม่พบลูกค้า");
 
@@ -73,27 +68,25 @@ export const userService = {
     }));
   },
 
+  // 💸 ดึงบิลที่ยังไม่ชำระ
   async getUnpaidBills(accessToken: string) {
-    if (!accessToken) throw new Error("ไม่มี accessToken จาก LINE LIFF");
-
-    const { userId } = await userRepository.verifyLineToken(accessToken);
+    const { userId } = await verifyLineToken(accessToken);
     const customer = await userRepository.findCustomerByUserId(userId);
     if (!customer) throw new Error("ไม่พบลูกค้า");
-
-    const bills = await userRepository.findUnpaidBills(customer.customerId);
-    return bills;
+    return userRepository.findUnpaidBills(customer.customerId);
   },
 
+  // 🚪 ดึงการจองที่สามารถคืนห้องได้
   async getReturnableBookings(accessToken: string) {
-    if (!accessToken) throw new Error("ไม่มี accessToken จาก LINE LIFF");
-
-    const { userId } = await userRepository.verifyLineToken(accessToken);
+    const { userId } = await verifyLineToken(accessToken);
     const customer = await userRepository.findCustomerByUserId(userId);
     if (!customer) throw new Error("ไม่พบลูกค้า");
-
-    const bookings = await userRepository.findReturnableBookings(
-      customer.customerId
-    );
-    return bookings;
+    return userRepository.findReturnableBookings(customer.customerId);
   },
+
+    // 🔍 ค้นหาลูกค้าตามชื่อ / เบอร์โทร / ห้อง
+  async searchUsers(keyword: string) {
+    return userRepository.searchCustomers(keyword);
+  },
+  
 };

@@ -1,12 +1,8 @@
 // src/modules/Payments/paymentModel.ts
-export interface PaymentInput {
-  billId: string;
-  accessToken: string;
-  slip?: Express.Multer.File;
-}
 
-export interface LineProfile {
-  userId: string;
-  displayName: string;
-  pictureUrl?: string;
+// 💰 โครงสร้างข้อมูลการส่งสลิปชำระเงิน
+export interface PaymentInput {
+  billId: string;              // ไอดีของบิล
+  accessToken: string;         // token จาก LINE LIFF
+  slip?: Express.Multer.File;  // ไฟล์สลิป (อัปโหลดผ่าน multipart)
 }

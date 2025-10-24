@@ -1,12 +1,11 @@
-import { Router, Request, Response } from "express";
+import { Router } from "express";
 import { checkoutService } from "./checkoutService";
+import { authMiddleware } from "../../middleware/authMiddleware";
 
 const router = Router();
 
-/* ============================================================
-   📋 ดึงข้อมูลการคืนทั้งหมด (Admin)
-============================================================ */
-router.get("/getall", async (_req: Request, res: Response) => {
+// 📋 ดึงข้อมูลทั้งหมด (Admin)
+router.get("/getall", async (_req, res) => {
   try {
     const checkouts = await checkoutService.getAllCheckouts();
     res.json(checkouts);
@@ -15,10 +14,8 @@ router.get("/getall", async (_req: Request, res: Response) => {
   }
 });
 
-/* ============================================================
-   👤 ผู้เช่าดึง Booking ของตัวเอง (ยังไม่คืนห้อง)
-============================================================ */
-router.post("/myBookings", async (req: Request, res: Response) => {
+/* 👤 ผู้เช่าดึง Booking ของตัวเอง (ยังไม่คืนห้อง) */
+router.post("/myBookings", async (req, res) => {
   try {
     const { accessToken } = req.body;
     const bookings = await checkoutService.getMyBookings(accessToken);
@@ -31,76 +28,54 @@ router.post("/myBookings", async (req: Request, res: Response) => {
   }
 });
 
-/* ============================================================
-   🚪 ผู้เช่าขอคืนห้อง
-============================================================ */
-router.put("/:bookingId/checkout", async (req: Request, res: Response) => {
+/* 🚪 ผู้เช่าขอคืนห้อง */
+router.put("/:bookingId/checkout", async (req, res) => {
   try {
     const updated = await checkoutService.requestCheckout(
       req.params.bookingId,
       req.body
     );
-    res.json({
-      message: "ส่งคำขอคืนห้องสำเร็จ รอผู้ดูแลอนุมัติ",
-      booking: updated,
-    });
+    res.json({ message: "ส่งคำขอคืนห้องสำเร็จ", booking: updated });
   } catch (err: any) {
     res.status(400).json({ error: err.message });
   }
 });
 
-/* ============================================================
-   ✅ แอดมินอนุมัติการคืนห้อง
-============================================================ */
-router.put("/:bookingId/approveCheckout", async (req: Request, res: Response) => {
+/* ✅ อนุมัติคืน */
+router.put("/:bookingId/approveCheckout", authMiddleware, async (req, res) => {
   try {
     const updated = await checkoutService.approveCheckout(req.params.bookingId);
-    res.json({
-      message: "อนุมัติการคืนห้องสำเร็จ",
-      booking: updated,
-    });
+    res.json({ message: "อนุมัติการคืนสำเร็จ", booking: updated });
   } catch (err: any) {
     res.status(400).json({ error: err.message });
   }
 });
 
-/* ============================================================
-   ❌ แอดมินปฏิเสธการคืนห้อง
-============================================================ */
-router.put("/:bookingId/rejectCheckout", async (req: Request, res: Response) => {
+/* ❌ ปฏิเสธคืน */
+router.put("/:bookingId/rejectCheckout", authMiddleware, async (req, res) => {
   try {
     const updated = await checkoutService.rejectCheckout(req.params.bookingId);
-    res.json({
-      message: "ปฏิเสธการคืนห้องสำเร็จ",
-      booking: updated,
-    });
+    res.json({ message: "ปฏิเสธการคืนสำเร็จ", booking: updated });
   } catch (err: any) {
     res.status(400).json({ error: err.message });
   }
 });
 
-/* ============================================================
-   ✏️ แก้ไขข้อมูลการคืน (Admin)
-============================================================ */
-router.put("/:bookingId", async (req: Request, res: Response) => {
+// ✏️ แก้ไข
+router.put("/:bookingId", authMiddleware, async (req, res) => {
   try {
     const updated = await checkoutService.updateCheckout(
       req.params.bookingId,
       req.body
     );
-    res.json({
-      message: "แก้ไขข้อมูลการคืนสำเร็จ",
-      booking: updated,
-    });
+    res.json({ message: "แก้ไขสำเร็จ", booking: updated });
   } catch (err: any) {
     res.status(400).json({ error: err.message });
   }
 });
 
-/* ============================================================
-   🗑️ ลบข้อมูลการคืน
-============================================================ */
-router.delete("/:bookingId", async (req: Request, res: Response) => {
+/* 🗑️ ลบข้อมูลการคืน*/
+router.delete("/:bookingId", async (req, res) => {
   try {
     const updated = await checkoutService.deleteCheckout(req.params.bookingId);
     res.json({
@@ -112,16 +87,11 @@ router.delete("/:bookingId", async (req: Request, res: Response) => {
   }
 });
 
-/* ============================================================
-   🚪 แอดมินบันทึกการคืนห้องจริง (เหมือนปุ่มมาเช็คอิน)
-============================================================ */
-router.put("/:bookingId/confirm-return", async (req: Request, res: Response) => {
+/* 🏠 บันทึกคืนจริง */
+router.put("/:bookingId/confirm-return", async (req, res) => {
   try {
     const updated = await checkoutService.confirmReturn(req.params.bookingId);
-    res.json({
-      message: "บันทึกการคืนห้องจริงสำเร็จ",
-      booking: updated,
-    });
+    res.json({ message: "บันทึกการคืนห้องสำเร็จ", booking: updated });
   } catch (err: any) {
     res.status(400).json({ error: err.message });
   }

@@ -1,12 +1,12 @@
 // src/modules/Bills/billRouter.ts
-import { Router, Request, Response } from "express";
+import { Router } from "express";
 import { authMiddleware } from "../../middleware/authMiddleware";
 import { billService } from "./billService";
 
 const router = Router();
 
 //  สร้างบิลใหม่
-router.post("/create", authMiddleware, async (req: Request, res: Response) => {
+router.post("/create", authMiddleware, async (req, res) => {
   try {
     const bill = await billService.createBill(req.body, req.admin!.adminId);
     res.json({ message: "สร้างบิลสำเร็จและแจ้งลูกค้าแล้ว", bill });
@@ -15,25 +15,21 @@ router.post("/create", authMiddleware, async (req: Request, res: Response) => {
   }
 });
 
-//  สร้างบิลจาก roomId
-router.post(
-  "/createFromRoom/:roomId",
-  authMiddleware,
-  async (req: Request, res: Response) => {
-    try {
-      const bill = await billService.createBillFromRoom(
-        req.params.roomId,
-        req.body,
-        req.admin!.adminId
-      );
-      res.json({ message: "สร้างบิลสำเร็จและแจ้งลูกค้าแล้ว", bill });
-    } catch (err: any) {
-      res.status(500).json({ error: err.message });
-    }
+// 🏠 สร้างบิลจาก roomId (แอดมิน)
+router.post("/createFromRoom/:roomId", authMiddleware, async (req, res) => {
+  try {
+    const bill = await billService.createBillFromRoom(
+      req.params.roomId,
+      req.body,
+      req.admin!.adminId
+    );
+    res.json({ message: "สร้างบิลสำเร็จและแจ้งลูกค้าแล้ว", bill });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
   }
-);
+});
 
-//  ดึงบิลทั้งหมด
+// 📋 ดึงบิลทั้งหมด
 router.get("/getall", authMiddleware, async (_req, res) => {
   try {
     const bills = await billService.getAllBills();
@@ -43,7 +39,7 @@ router.get("/getall", authMiddleware, async (_req, res) => {
   }
 });
 
-//  ดึงบิลรายตัว
+// 🔍 ดึงบิลรายตัว
 router.get("/:billId", authMiddleware, async (req, res) => {
   try {
     const bill = await billService.getBillById(req.params.billId);
@@ -53,7 +49,7 @@ router.get("/:billId", authMiddleware, async (req, res) => {
   }
 });
 
-//  อัปเดตบิล
+// ✏️ อัปเดตบิล
 router.put("/:billId", authMiddleware, async (req, res) => {
   try {
     const updated = await billService.updateBill(
@@ -67,7 +63,7 @@ router.put("/:billId", authMiddleware, async (req, res) => {
   }
 });
 
-//  ลบบิล
+// 🗑️ ลบบิล
 router.delete("/:billId", authMiddleware, async (req, res) => {
   try {
     await billService.deleteBill(req.params.billId);

@@ -2,28 +2,7 @@ import prisma from "../../prisma";
 import fetch from "node-fetch";
 
 export const checkoutRepository = {
-  /* ============================================================
-     🔑 ตรวจสอบ Token LINE
-  ============================================================ */
-  async verifyLineToken(accessToken: string): Promise<{
-    userId: string;
-    displayName: string;
-    pictureUrl?: string;
-  }> {
-    const res = await fetch("https://api.line.me/v2/profile", {
-      headers: { Authorization: `Bearer ${accessToken}` },
-    });
-    if (!res.ok) throw new Error("LINE token ไม่ถูกต้องหรือหมดอายุ");
-    return (await res.json()) as {
-      userId: string;
-      displayName: string;
-      pictureUrl?: string;
-    };
-  },
-
-  /* ============================================================
-     📋 ดึงข้อมูลการขอคืนทั้งหมด (Admin)
-  ============================================================ */
+  //📋 ดึงข้อมูลการขอคืนทั้งหมด (Admin)
   async findAllCheckouts() {
     return prisma.booking.findMany({
       where: { checkout: { not: null } },
@@ -32,18 +11,14 @@ export const checkoutRepository = {
     });
   },
 
-  /* ============================================================
-     👤 ค้นหาลูกค้าจาก userId (LINE)
-  ============================================================ */
+  //👤 ค้นหาลูกค้าจาก userId (LINE)
   async findCustomerByUserId(userId: string) {
     return prisma.customer.findFirst({
       where: { userId },
     });
   },
 
-  /* ============================================================
-     🏠 ดึง Booking ทั้งหมดของลูกค้า (ที่ยังไม่คืน)
-  ============================================================ */
+  //🏠 ดึง Booking ทั้งหมดของลูกค้า (ที่ยังไม่คืน)
   async findBookingsByCustomer(customerId: string) {
     return prisma.booking.findMany({
       where: {
@@ -56,9 +31,7 @@ export const checkoutRepository = {
     });
   },
 
-  /* ============================================================
-     🔍 ดึงข้อมูล Booking ตาม bookingId
-  ============================================================ */
+  //🔍 ดึงข้อมูล Booking ตาม bookingId
   async findBookingById(bookingId: string) {
     return prisma.booking.findUnique({
       where: { bookingId },
@@ -66,9 +39,7 @@ export const checkoutRepository = {
     });
   },
 
-  /* ============================================================
-     ✏️ อัปเดตข้อมูล Booking
-  ============================================================ */
+  //✏️ อัปเดตข้อมูล Booking
   async updateBooking(bookingId: string, data: any) {
     return prisma.booking.update({
       where: { bookingId },
@@ -77,9 +48,7 @@ export const checkoutRepository = {
     });
   },
 
-  /* ============================================================
-     🚪 เปลี่ยนสถานะห้อง (0=ว่าง, 1=ไม่ว่าง)
-  ============================================================ */
+  //🚪 เปลี่ยนสถานะห้อง (0=ว่าง, 1=ไม่ว่าง)
   async updateRoomStatus(roomId: string, status: number) {
     return prisma.room.update({
       where: { roomId },
@@ -87,9 +56,7 @@ export const checkoutRepository = {
     });
   },
 
-  /* ============================================================
-     🔄 ใช้ Transaction Prisma
-  ============================================================ */
+  //🔄 ใช้ Transaction Prisma
   async transaction(fn: any) {
     return prisma.$transaction(async (tx) => await fn(tx));
   },

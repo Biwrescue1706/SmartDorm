@@ -2,6 +2,7 @@ import { checkoutRepository } from "./checkoutRepository";
 import { notifyUser } from "../../utils/lineNotify";
 import { CheckoutRequest } from "./checkoutModel";
 import prisma from "../../prisma";
+import { verifyLineToken } from "../../utils/verifyLineToken";
 
 /* 🗓️ ฟังก์ชันแปลงวันที่แบบไทย */
 const formatThaiDate = (dateInput: string | Date) => {
@@ -21,7 +22,7 @@ export const checkoutService = {
 
   /* 👤 ผู้เช่าดึง booking ของตัวเอง (ที่ยังไม่คืนห้อง) */
   async getMyBookings(accessToken: string) {
-    const { userId } = await checkoutRepository.verifyLineToken(accessToken);
+    const { userId } = await verifyLineToken(accessToken);
     const customer = await checkoutRepository.findCustomerByUserId(userId);
     if (!customer) throw new Error("ไม่พบข้อมูลผู้ใช้ในระบบ");
 
@@ -34,7 +35,7 @@ export const checkoutService = {
     if (!accessToken) throw new Error("ไม่มี accessToken จาก LINE");
     if (!checkout) throw new Error("ต้องระบุวันที่ขอคืนห้อง");
 
-    const { userId } = await checkoutRepository.verifyLineToken(accessToken);
+    const { userId, displayName } = await verifyLineToken(accessToken);
     const customer = await checkoutRepository.findCustomerByUserId(userId);
     if (!customer) throw new Error("ไม่พบข้อมูลผู้ใช้ในระบบ");
 
@@ -169,6 +170,7 @@ https://smartdorm-detail.biwbong.shop/checkout/${booking.bookingId}\n
       ...(returnStatus !== undefined && { returnStatus }),
     });
   },
+
   /* 🚪 แอดมินบันทึกการคืนห้องจริง (เหมือนเช็คอินจริง) */
   async confirmReturn(bookingId: string) {
     const booking = await checkoutRepository.findBookingById(bookingId);
@@ -187,7 +189,6 @@ https://smartdorm-detail.biwbong.shop/checkout/${booking.bookingId}\n
         include: { customer: true, room: true },
       });
 
-      //  เปลี่ยนสถานะห้องกลับเป็น “ว่าง”
       await tx.room.update({
         where: { roomId: booking.roomId },
         data: { status: 0 },

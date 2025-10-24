@@ -1,8 +1,6 @@
-// src/modules/Users/userRouter.ts
 export interface LineProfile {
   userId: string;
   displayName: string;
-  pictureUrl?: string;
 }
 
 export interface RegisterInput {

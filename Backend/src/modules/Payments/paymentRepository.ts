@@ -1,34 +1,20 @@
 // src/modules/Payments/paymentRepository.ts
 import prisma from "../../prisma";
-import fetch from "node-fetch";
 import { createClient } from "@supabase/supabase-js";
 
+// ⚙️ ตั้งค่า Supabase client สำหรับอัปโหลดสลิป
 const supabase = createClient(
   process.env.SUPABASE_URL!,
   process.env.SUPABASE_KEY!
 );
 
 export const paymentRepository = {
-  async verifyLineToken(accessToken: string): Promise<{
-    userId: string;
-    displayName: string;
-    pictureUrl?: string;
-  }> {
-    const res = await fetch("https://api.line.me/v2/profile", {
-      headers: { Authorization: `Bearer ${accessToken}` },
-    });
-    if (!res.ok) throw new Error("LINE token ไม่ถูกต้องหรือหมดอายุ");
-    return (await res.json()) as {
-      userId: string;
-      displayName: string;
-      pictureUrl?: string;
-    };
-  },
-
+  // 👤 ค้นหาลูกค้าจาก userId (ที่ได้จาก verifyLineToken)
   async findCustomerByUserId(userId: string) {
     return prisma.customer.findFirst({ where: { userId } });
   },
 
+  // 🧾 ดึงข้อมูลบิลตาม billId
   async findBillById(billId: string) {
     return prisma.bill.findUnique({
       where: { billId },
@@ -36,8 +22,9 @@ export const paymentRepository = {
     });
   },
 
+  // 📸 อัปโหลดสลิปไปยัง Supabase Storage
   async uploadSlipToSupabase(file: Express.Multer.File) {
-    const filename = `${Date.now()}_${file.originalname}`;
+    const filename = `slip_${Date.now()}_${file.originalname}`;
     const { error } = await supabase.storage
       .from(process.env.SUPABASE_BUCKET!)
       .upload(filename, file.buffer, {
@@ -53,15 +40,19 @@ export const paymentRepository = {
 
     return data.publicUrl;
   },
-
-  async createPaymentAndUpdateBill(billId: string, slipUrl: string, customerId: string) {
+  // 💾 บันทึกข้อมูลการชำระเงินและอัปเดตสถานะบิล
+  async createPaymentAndUpdateBill(
+    billId: string,
+    slipUrl: string,
+    customerId: string
+  ) {
     return prisma.$transaction([
       prisma.payment.create({
         data: { slipUrl, billId, customerId },
       }),
       prisma.bill.update({
         where: { billId },
-        data: { status: 2, slipUrl },
+        data: { status: 1, slipUrl }, // 2 = รอตรวจสอบ
       }),
     ]);
   },

@@ -1,4 +1,5 @@
 // src/modules/Bills/billModel.ts
+// 🧾 ประเภทข้อมูลอินพุตเมื่อสร้างบิลใหม่
 export interface CreateBillInput {
   roomId: string;
   customerId: string;
@@ -9,10 +10,12 @@ export interface CreateBillInput {
   eAfter: number;
 }
 
+// ✏️ ประเภทข้อมูลเมื่ออัปเดตบิล
 export interface BillUpdateInput {
   [key: string]: any;
 }
 
+// 💰 โครงสร้างข้อมูลบิลหลัก
 export interface Bill {
   billId: string;
   month: Date;

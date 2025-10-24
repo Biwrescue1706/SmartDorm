@@ -1,15 +1,15 @@
 // src/modules/Bookings/bookingRouter.ts
-import { Router, Request, Response } from "express";
+import { Router } from "express";
 import multer from "multer";
 import QRCode from "qrcode";
-import { authMiddleware } from "../../middleware/authMiddleware";
 import { bookingService } from "./bookingService";
+import { authMiddleware } from "../../middleware/authMiddleware";
 
 const router = Router();
 const upload = multer({ storage: multer.memoryStorage() });
 
 //  ดึงข้อมูลทั้งหมด
-router.get("/getall", async (_req: Request, res: Response) => {
+router.get("/getall", async (_req, res) => {
   try {
     const bookings = await bookingService.getAllBookings();
     res.json(bookings);
@@ -19,49 +19,35 @@ router.get("/getall", async (_req: Request, res: Response) => {
 });
 
 //  ดึงข้อมูลการจองตาม bookingId
-router.get("/:bookingId", async (req: Request, res: Response) => {
+router.get("/:bookingId", async (req, res) => {
   try {
     const booking = await bookingService.getBookingById(req.params.bookingId);
-    if (!booking) return res.status(404).json({ error: "ไม่พบข้อมูลการจอง" });
     res.json(booking);
   } catch (err: any) {
-    res.status(500).json({ error: err.message });
+    res.status(400).json({ error: err.message });
   }
 });
 
 //  ผู้ใช้ส่งคำขอจองห้อง
-router.post(
-  "/create",
-  authMiddleware,
-  upload.single("slip"),
-  async (req: Request, res: Response) => {
-    try {
-      const { userId, displayName } = req.user as any; // จาก token ที่ decode แล้ว
-
-      const booking = await bookingService.createBooking({
-        ...req.body,
-        slip: req.file,
-        userId,
-        userName: displayName,
-      });
-
-      res.json({ message: "จองสำเร็จ", booking });
-    } catch (err: any) {
-      console.error("❌ Booking create error:", err);
-      res.status(500).json({ error: err.message });
-    }
+router.post("/create", upload.single("slip"), async (req, res) => {
+  try {
+    const booking = await bookingService.createBooking({
+      ...req.body,
+      slip: req.file,
+    });
+    res.json({ message: "จองสำเร็จ", booking });
+  } catch (err: any) {
+    res.status(400).json({ error: err.message });
   }
-);
+});
 
-/* ============================================================
-   ✅ อนุมัติ / ❌ ปฏิเสธ / 🏠 เช็คอิน / 🚪 เช็คเอาท์ / ✏️ แก้ไข / 🗑️ ลบ
-============================================================ */
+//อนุมัติ /  ปฏิเสธ /  เช็คอิน /  เช็คเอาท์ /  แก้ไข /  ลบ
 
 //  Admin อนุมัติการจอง
 router.put("/:bookingId/approve", authMiddleware, async (req, res) => {
   try {
-    const updated = await bookingService.approveBooking(req.params.bookingId);
-    res.json({ message: "อนุมัติการจองสำเร็จ", booking: updated });
+    const result = await bookingService.approveBooking(req.params.bookingId);
+    res.json({ message: "อนุมัติการจองสำเร็จ", booking: result });
   } catch (err: any) {
     res.status(400).json({ error: err.message });
   }
@@ -70,8 +56,8 @@ router.put("/:bookingId/approve", authMiddleware, async (req, res) => {
 //  Admin ปฏิเสธการจอง
 router.put("/:bookingId/reject", authMiddleware, async (req, res) => {
   try {
-    const updated = await bookingService.rejectBooking(req.params.bookingId);
-    res.json({ message: "ปฏิเสธการจองสำเร็จ", booking: updated });
+    const result = await bookingService.rejectBooking(req.params.bookingId);
+    res.json({ message: "ปฏิเสธสำเร็จ", booking: result });
   } catch (err: any) {
     res.status(400).json({ error: err.message });
   }
@@ -80,8 +66,18 @@ router.put("/:bookingId/reject", authMiddleware, async (req, res) => {
 // แอดมินเช็คอิน
 router.put("/:bookingId/checkin", authMiddleware, async (req, res) => {
   try {
-    const updated = await bookingService.checkinBooking(req.params.bookingId);
-    res.json({ message: "เช็คอินสำเร็จ", booking: updated });
+    const result = await bookingService.checkinBooking(req.params.bookingId);
+    res.json({ message: "เช็คอินสำเร็จ", booking: result });
+  } catch (err: any) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+// แอดมินเช็คเอาท์
+router.put("/:bookingId/checkout", authMiddleware, async (req, res) => {
+  try {
+    const result = await bookingService.checkoutBooking(req.params.bookingId);
+    res.json({ message: "เช็คเอาท์สำเร็จ", booking: result });
   } catch (err: any) {
     res.status(400).json({ error: err.message });
   }
@@ -90,11 +86,11 @@ router.put("/:bookingId/checkin", authMiddleware, async (req, res) => {
 //  Admin แก้ไขข้อมูลการจอง
 router.put("/:bookingId", authMiddleware, async (req, res) => {
   try {
-    const updated = await bookingService.updateBooking(
+    const result = await bookingService.updateBooking(
       req.params.bookingId,
       req.body
     );
-    res.json({ message: "แก้ไขการจองสำเร็จ", booking: updated });
+    res.json({ message: "แก้ไขสำเร็จ", booking: result });
   } catch (err: any) {
     res.status(400).json({ error: err.message });
   }
@@ -104,7 +100,7 @@ router.put("/:bookingId", authMiddleware, async (req, res) => {
 router.delete("/:bookingId", authMiddleware, async (req, res) => {
   try {
     await bookingService.deleteBooking(req.params.bookingId);
-    res.json({ message: "ลบการจองสำเร็จ" });
+    res.json({ message: "ลบสำเร็จ" });
   } catch (err: any) {
     res.status(400).json({ error: err.message });
   }
@@ -113,21 +109,12 @@ router.delete("/:bookingId", authMiddleware, async (req, res) => {
 /* 🎟️ สร้าง QR Code สำหรับแอดมินเข้าหน้าข้อมูลการจอง */
 router.get("/:bookingId/qrcode", async (req, res) => {
   try {
-    const { bookingId } = req.params;
-    const booking = await bookingService.getBookingById(bookingId);
-    if (!booking) return res.status(404).json({ error: "ไม่พบการจอง" });
-
-    const adminUrl = `https://smartdorm-admin.biwbong.shop/booking/${bookingId}`;
-    const qrCode = await QRCode.toDataURL(adminUrl);
-
-    res.json({
-      bookingId,
-      room: booking.room.number,
-      adminUrl,
-      qrCode,
-    });
+    const booking = await bookingService.getBookingById(req.params.bookingId);
+    const adminUrl = `https://smartdorm-admin.biwbong.shop/booking/${booking.bookingId}`;
+    const qr = await QRCode.toDataURL(adminUrl);
+    res.json({ bookingId: booking.bookingId, adminUrl, qr });
   } catch (err: any) {
-    res.status(500).json({ error: err.message });
+    res.status(400).json({ error: err.message });
   }
 });
 

@@ -1,8 +1,10 @@
 // src/modules/Payments/paymentService.ts
 import { paymentRepository } from "./paymentRepository";
 import { notifyUser } from "../../utils/lineNotify";
+import { verifyLineToken } from "../../utils/verifyLineToken";
 import { PaymentInput } from "./paymentModel";
 
+// 🗓️ ฟังก์ชันแปลงวันที่ให้เป็นรูปแบบไทย
 const formatThaiDate = (dateInput: string | Date) => {
   const date = typeof dateInput === "string" ? new Date(dateInput) : dateInput;
   return date.toLocaleDateString("th-TH", {
@@ -13,34 +15,37 @@ const formatThaiDate = (dateInput: string | Date) => {
 };
 
 export const paymentService = {
+  // 💸 ฟังก์ชันสร้างข้อมูลการชำระเงิน
   async createPayment(input: PaymentInput) {
     const { billId, accessToken, slip } = input;
 
     if (!accessToken) throw new Error("ไม่มี accessToken จาก LINE LIFF");
-    if (!slip) throw new Error("ต้องแนบสลิปการจ่าย");
+    if (!slip) throw new Error("ต้องแนบสลิปการชำระ");
 
-    const { userId } = await paymentRepository.verifyLineToken(accessToken);
+    // ✅ ตรวจสอบ token จาก LINE และดึง userId + displayName
+    const { userId } = await verifyLineToken(accessToken);
+
+    // 👤 ตรวจสอบลูกค้า
     const customer = await paymentRepository.findCustomerByUserId(userId);
     if (!customer) throw new Error("ไม่พบข้อมูลลูกค้า");
 
+    // 🧾 ตรวจสอบบิล
     const bill = await paymentRepository.findBillById(billId);
     if (!bill) throw new Error("ไม่พบบิล");
-
     if (bill.customerId !== customer.customerId)
       throw new Error("ไม่มีสิทธิ์ส่งสลิปสำหรับบิลนี้");
-    if (bill.status === 1)
-      throw new Error("บิลนี้ชำระแล้ว");
-    if (bill.status === 2)
-      throw new Error("บิลนี้กำลังรอตรวจสอบ");
+    if (bill.status === 1) throw new Error("บิลนี้ชำระแล้ว");
 
+    // 📤 อัปโหลดสลิปไป Supabase
     const slipUrl = await paymentRepository.uploadSlipToSupabase(slip);
 
+    // 💾 บันทึกข้อมูลลงฐานข้อมูล
     const [payment, updatedBill] = await paymentRepository.createPaymentAndUpdateBill(
       billId,
       slipUrl,
       bill.customerId
     );
-
+    
     const adminMsg = `📢 มีการชำระบิลใหม่เข้ามา
 ของคุณ : ${bill.customer.userName} \n
 -----------ข้อมูลลูกค้า----------\n

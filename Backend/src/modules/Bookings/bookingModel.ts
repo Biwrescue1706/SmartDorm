@@ -1,6 +1,5 @@
 export interface BookingInput {
-  userId: string;
-  userName: string;
+  accessToken: string; // token จาก LINE LIFF
   ctitle: string;
   cname: string;
   csurname: string;

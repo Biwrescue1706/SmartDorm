@@ -28,15 +28,6 @@ export const bookingRepository = {
 
   /* 👤 สร้างหรืออัปเดตข้อมูลลูกค้า */
   async createCustomer(data: any, tx: Prisma.TransactionClient) {
-    const existing = await tx.customer.findFirst({
-      where: { userId: data.userId },
-    });
-    if (existing) {
-      return tx.customer.update({
-        where: { customerId: existing.customerId },
-        data,
-      });
-    }
     return tx.customer.create({ data });
   },
 
@@ -95,7 +86,7 @@ export const bookingRepository = {
   },
 
   /* 🧹 ลบสลิปจาก Supabase */
-    async deleteSlip(url: string) {
+  async deleteSlip(url: string) {
     const path = url.split("/smartdorm-slips/")[1];
     if (!path) return;
     await supabase.storage.from("smartdorm-slips").remove([path]);

@@ -97,10 +97,13 @@ router.get("/search", async (req: Request, res: Response) => {
 });
 
 // ❌ ลบลูกค้า
-router.delete("/:customerId", async (req: Request, res: Response) => {
+router.delete("/:customerId", async (req, res) => {
   try {
-    const deleted = await userService.deleteUser(req.params.customerId);
-    res.json({ message: "ลบลูกค้าสำเร็จ", deleted });
+    const { customerId } = req.params;
+    if (!customerId) throw new Error("customerId is required");
+
+    await userService.deleteUser(customerId);
+    res.json({ message: "ลบลูกค้าสำเร็จ" });
   } catch (err: any) {
     res.status(400).json({ error: err.message });
   }

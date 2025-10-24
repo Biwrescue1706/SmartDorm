@@ -1,3 +1,5 @@
+// src/modules/User/userService.ts
+import prisma from "../../prisma";
 import { userRepository } from "./userRepository";
 import { RegisterInput } from "./userModel";
 import { verifyLineToken } from "../../utils/verifyLineToken";
@@ -89,9 +91,22 @@ export const userService = {
     return userRepository.searchCustomers(keyword);
   },
 
+  // ❌ ลบลูกค้า
   async deleteUser(customerId: string) {
-    const deleted = await userRepository.deleteCustomer(customerId);
-    return deleted;
+    // ✅ ตรวจสอบว่ามี booking ที่เกี่ยวข้องไหม
+    const existingBooking = await prisma.booking.findFirst({
+      where: { customerId },
+    });
+
+    if (existingBooking) {
+      throw new Error("ไม่สามารถลบลูกค้าได้ เนื่องจากมีประวัติการจองอยู่");
+    }
+
+    // ✅ ลบลูกค้า
+    await prisma.customer.delete({
+      where: { customerId },
+    });
+
+    return { success: true };
   },
-  
 };

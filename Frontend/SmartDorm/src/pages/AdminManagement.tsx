@@ -156,23 +156,29 @@ export default function AdminManagement() {
         pendingBookings={pendingBookings}
         role={role}
       />
-      <main className="main-content flex-grow-1 px-1 py-5 mt-2 mt-lg-3">
+      <main className="main-content flex-grow-1 px-3 py-4 mt-5 mt-lg-5">
         <div className="mx-auto container-max">
           <h2
-            className="mb-3 mt-2 py-2 text-center fw-bold text-white rounded shadow-sm"
+            className="mb-3 mt-1 py-2 text-center fw-bold text-white rounded shadow-sm"
             style={{
               background: "linear-gradient(100deg, #007bff, #00d4ff)",
               boxShadow: "0 2px 6px rgba(0, 0, 0, 0.1)",
               fontSize: "1.4rem",
             }}
-          >จัดการผู้ดูแลระบบ</h2>
+          >
+            จัดการผู้ดูแลระบบ
+          </h2>
 
           {/* ➕ เพิ่มสมาชิก */}
           <Dialog.Root open={openAdd} onOpenChange={setOpenAdd}>
             <Dialog.Trigger asChild>
               <button
-                className="btn fw-bold rounded-pill text-center shadow-sm text-white px-4 py-2"
-                style={styles.add}
+                className="btn fw-bold text-white px-5 py-2 "
+                style={{
+                  background: "linear-gradient(135deg, #6a11cb, #2575fc)",
+                  border: "none",
+                  borderRadius: "10px",
+                }}
               >
                 เพิ่มสมาชิก
               </button>
@@ -254,9 +260,20 @@ export default function AdminManagement() {
         {loading ? (
           <p className="text-center mt-4">กำลังโหลดข้อมูล...</p>
         ) : (
-          <div className="table-responsive mt-4">
-            <table className="table table-striped text-center align-middle shadow-sm">
-              <thead className="table-primary">
+          <div
+            className="table-scroll border rounded responsive-table"
+            style={{
+              maxHeight: "70vh",
+              overflowY: "auto",
+              overflowX: "auto",
+              borderRadius: "8px",
+            }}
+          >
+            <table
+              className="table table-sm table-striped align-middle text-center"
+              style={{ tableLayout: "fixed", width: "100%" }}
+            >
+              <thead className="table-dark sticky-top">
                 <tr>
                   <th>#</th>
                   <th>ชื่อผู้ใช้</th>

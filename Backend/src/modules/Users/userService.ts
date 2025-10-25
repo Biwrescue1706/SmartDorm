@@ -1,4 +1,3 @@
-// src/modules/User/userService.ts
 import prisma from "../../prisma";
 import { userRepository } from "./userRepository";
 import { RegisterInput } from "./userModel";
@@ -46,11 +45,26 @@ export const userService = {
     return users;
   },
 
-  // 👤 ดึงโปรไฟล์ลูกค้า
+  // 👤 ดึงโปรไฟล์ลูกค้า (ถ้าไม่พบ → สร้างอัตโนมัติ)
   async getProfile(accessToken: string) {
-    const { userId } = await verifyLineToken(accessToken);
-    const customer = await userRepository.getCustomerWithRelations(userId);
-    if (!customer) throw new Error("ไม่พบข้อมูลลูกค้า");
+    const { userId, displayName } = await verifyLineToken(accessToken);
+
+    let customer = await userRepository.getCustomerWithRelations(userId);
+
+    // ✅ ถ้ายังไม่มี → สร้างใหม่อัตโนมัติ (เก็บเฉพาะ userId, userName)
+    if (!customer) {
+      console.log(
+        `🆕 สร้างข้อมูลลูกค้าใหม่จาก LINE: ${displayName} (${userId})`
+      );
+      await userRepository.createCustomer({
+        userId,
+        userName: displayName,
+      });
+
+      // ✅ โหลดข้อมูลใหม่พร้อม relations เพื่อให้ type ตรง
+      customer = await userRepository.getCustomerWithRelations(userId);
+    }
+
     return customer;
   },
 
@@ -93,7 +107,6 @@ export const userService = {
 
   // ❌ ลบลูกค้า
   async deleteUser(customerId: string) {
-    // ✅ ตรวจสอบว่ามี booking ที่เกี่ยวข้องไหม
     const existingBooking = await prisma.booking.findFirst({
       where: { customerId },
     });
@@ -102,7 +115,6 @@ export const userService = {
       throw new Error("ไม่สามารถลบลูกค้าได้ เนื่องจากมีประวัติการจองอยู่");
     }
 
-    // ✅ ลบลูกค้า
     await prisma.customer.delete({
       where: { customerId },
     });

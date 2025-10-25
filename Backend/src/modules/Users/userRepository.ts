@@ -1,4 +1,5 @@
 import prisma from "../../prisma";
+import { verifyLineToken } from "../../utils/verifyLineToken";
 
 export const userRepository = {
   // 👤 ดึงข้อมูลลูกค้าทั้งหมด
@@ -110,5 +111,11 @@ export const userRepository = {
     return prisma.customer.delete({
       where: { customerId },
     });
+  },
+  async getProfile(accessToken: string) {
+    const { userId } = await verifyLineToken(accessToken);
+    const customer = await userRepository.getCustomerWithRelations(userId);
+    if (!customer) throw new Error("ไม่พบข้อมูลลูกค้า");
+    return customer;
   },
 };

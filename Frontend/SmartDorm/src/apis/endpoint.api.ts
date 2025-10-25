@@ -12,8 +12,8 @@ export const GetBookingById = (id: string) => `/booking/${id}`;
 export const CreateBooking = "/booking/create";
 export const ApproveBooking = (id: string) => `/booking/${id}/approve`;
 export const RejectBooking = (id: string) => `/booking/${id}/reject`;
-export const DeleteBooking = (id: string) => `/booking/${id}`;
 export const UpdateBooking = (id: string) => `/booking/${id}`; 
+export const DeleteBooking = (id: string) => `/booking/${id}`;
 export const checkinBooking = (id: string) => `/booking/${id}/checkin`;
 
 /* ==================== 🚪 CHECKOUT ==================== */

@@ -51,8 +51,7 @@ h5 {
 .main-content {
   background-color: #ffffff;
   min-height: 100vh;
-  margin-left: 100px;
-  padding: 20px 20px 20px 20px;
+  margin-left: 180px;
   transition: margin-left 0.3s ease;
   overflow-x: hidden; /*  ป้องกันตารางล้นขอบ */
 }
@@ -342,7 +341,7 @@ table td {
 
 @media (min-width: 1400px) {
   .main-content {
-    margin-left: 80px;
+    margin-left: 180px;
     margin-top: 65px;
   }
 

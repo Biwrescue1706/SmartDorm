@@ -26,7 +26,7 @@ export default function Dashboard() {
       />
 
       {/* Main Content */}
-      <main className="main-content flex-grow-1 px-1 py-5 mt-3 mt-lg-5">
+      <main className="main-content flex-grow-1 px-1 py-2 mt-6 mt-lg-5">
         <div className="mx-auto container-max">
           <h2 className="mb-1 py-1 text-center text-while">
             📋 รายการห้องพักทั้งหมด

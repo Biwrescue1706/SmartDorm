@@ -31,6 +31,8 @@ export function useRooms(roomId?: string) {
       return data;
     } catch {
       Swal.fire({
+        toast: true,
+        position: "top-end",
         icon: "error",
         title: "ล้มเหลว",
         text: "โหลดข้อมูลห้องไม่สำเร็จ",
@@ -70,6 +72,8 @@ export function useRooms(roomId?: string) {
       const data = await res.json();
 
       Swal.fire({
+        toast: true,
+        position: "top-end",
         icon: "success",
         title: "เพิ่มห้องสำเร็จ",
         text: "ระบบได้บันทึกการเพิ่มห้องของคุณเรียบร้อยแล้ว",
@@ -81,6 +85,8 @@ export function useRooms(roomId?: string) {
       return data.room;
     } catch (err: any) {
       Swal.fire({
+        toast: true,
+        position: "top-end",
         icon: "error",
         title: "ผิดพลาด",
         text: err.message || "ไม่สามารถเพิ่มห้องได้",
@@ -107,6 +113,8 @@ export function useRooms(roomId?: string) {
       setRoom(data);
     } catch (err: any) {
       Swal.fire({
+        toast: true,
+        position: "top-end",
         icon: "error",
         title: "ล้มเหลว",
         text: err.message || "โหลดข้อมูลห้องล้มเหลว",
@@ -144,6 +152,8 @@ export function useRooms(roomId?: string) {
       const data = await res.json();
 
       Swal.fire({
+        toast: true,
+        position: "top-end",
         icon: "success",
         title: "แก้ไขห้องเรียบร้อยแล้ว",
         timer: 1500,
@@ -153,6 +163,8 @@ export function useRooms(roomId?: string) {
       return data.updated;
     } catch (err: any) {
       Swal.fire({
+        toast: true,
+        position: "top-end",
         icon: "error",
         title: "ล้มเหลว",
         text: err.message || "ไม่สามารถแก้ไขห้องได้",
@@ -191,6 +203,8 @@ export function useRooms(roomId?: string) {
       await res.json();
 
       Swal.fire({
+        toast: true,
+        position: "top-end",
         icon: "success",
         title: "ลบห้องเรียบร้อยแล้ว",
         timer: 1500,

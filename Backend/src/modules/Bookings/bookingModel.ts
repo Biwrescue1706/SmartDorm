@@ -12,14 +12,6 @@ export interface BookingInput {
 }
 
 export interface BookingUpdateInput {
-  ctitle: string;
-  cname: string;
-  csurname: string;
-  cphone: string;
-  cmumId: string;
-  roomId: string;
-  checkin: string;
-  checkout?: string;
   approveStatus?: number;
   checkinStatus?: number;
   checkoutStatus?: number;

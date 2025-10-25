@@ -13,6 +13,9 @@ export function useBookings() {
   const [bookings, setBookings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // ✅ ดึง token จาก localStorage (หลัง login สำเร็จ)
+  const token = localStorage.getItem("token");
+
   // ดึงข้อมูลทั้งหมด
   const fetchBookings = async () => {
     try {
@@ -26,6 +29,8 @@ export function useBookings() {
       setBookings(data);
     } catch {
       Swal.fire({
+        toast: true,
+        position: "top-end",
         icon: "error",
         title: "ข้อผิดพลาด",
         text: "ไม่สามารถโหลดข้อมูลการจองได้",
@@ -37,15 +42,21 @@ export function useBookings() {
     }
   };
 
-  // อนุมัติการจอง
+  // ✅ อนุมัติการจอง
   const approveBooking = async (id: string) => {
     try {
       const res = await fetch(`${API_BASE}${ApproveBooking(id)}`, {
         method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
         credentials: "include",
       });
+
       if (!res.ok) throw new Error();
       Swal.fire({
+        toast: true,
+        position: "top-end",
         icon: "success",
         title: "อนุมัติเรียบร้อยแล้ว",
         text: "ระบบได้บันทึกข้อมูลการอนุมัติแล้ว",
@@ -55,6 +66,8 @@ export function useBookings() {
       await fetchBookings();
     } catch {
       Swal.fire({
+        toast: true,
+        position: "top-end",
         icon: "error",
         title: "ล้มเหลว",
         text: "ไม่สามารถอนุมัติได้",
@@ -64,15 +77,21 @@ export function useBookings() {
     }
   };
 
-  // ปฏิเสธการจอง
+  // ✅ ปฏิเสธการจอง
   const rejectBooking = async (id: string) => {
     try {
       const res = await fetch(`${API_BASE}${RejectBooking(id)}`, {
         method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
         credentials: "include",
       });
+
       if (!res.ok) throw new Error();
       Swal.fire({
+        toast: true,
+        position: "top-end",
         icon: "warning",
         title: "ปฏิเสธการจองแล้ว",
         text: "ระบบได้บันทึกข้อมูลเรียบร้อยแล้ว",
@@ -82,6 +101,8 @@ export function useBookings() {
       await fetchBookings();
     } catch {
       Swal.fire({
+        toast: true,
+        position: "top-end",
         icon: "error",
         title: "ผิดพลาด",
         text: "ไม่สามารถปฏิเสธได้",
@@ -91,7 +112,7 @@ export function useBookings() {
     }
   };
 
-  // ลบการจอง
+  // ✅ ลบการจอง
   const deleteBooking = async (id: string, roomNum: string) => {
     const confirm = await Swal.fire({
       icon: "warning",
@@ -109,10 +130,16 @@ export function useBookings() {
     try {
       const res = await fetch(`${API_BASE}${DeleteBooking(id)}`, {
         method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
         credentials: "include",
       });
+
       if (!res.ok) throw new Error();
       Swal.fire({
+        toast: true,
+        position: "top-end",
         icon: "success",
         title: "ลบการจองสำเร็จ",
         timer: 1500,
@@ -121,6 +148,8 @@ export function useBookings() {
       await fetchBookings();
     } catch {
       Swal.fire({
+        toast: true,
+        position: "top-end",
         icon: "error",
         title: "ผิดพลาด",
         text: "ไม่สามารถลบข้อมูลได้",
@@ -130,29 +159,37 @@ export function useBookings() {
     }
   };
 
+  // ✅ เช็คอิน
   const checkinBooking = async (id: string) => {
     try {
       await axios.put(
         `${API_BASE}/booking/${id}/checkin`,
         {},
-        { withCredentials: true }
+        {
+          withCredentials: true,
+          headers: { Authorization: `Bearer ${token}` },
+        }
       );
+
       Swal.fire({
+        toast: true,
+        position: "top-end",
         icon: "success",
         title: "เช็คอินสำเร็จแล้ว",
         timer: 1500,
         showConfirmButton: false,
       });
-      fetchBookings(); //  ต้องรีโหลดข้อมูลใหม่ด้วย
+      fetchBookings();
     } catch (err: any) {
       Swal.fire({
-        icon : "warning",
-        title : "ไม่สามารถเช็คอินได้",
-        text : err.response?.data?.error || "ไม่สามารถเช็คอินได้",
+        toast: true,
+        position: "top-end",
+        icon: "warning",
+        title: "ไม่สามารถเช็คอินได้",
+        text: err.response?.data?.error || "ไม่สามารถเช็คอินได้",
         timer: 1500,
         showConfirmButton: false,
-      }
-      );
+      });
     }
   };
 

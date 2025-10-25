@@ -43,11 +43,27 @@ export default function EditBookingDialog({ booking, onSuccess }: Props) {
 
       if (!res.ok) throw new Error("Update failed");
 
-      Swal.fire("สำเร็จ", "แก้ไขข้อมูลผู้จองเรียบร้อยแล้ว", "success");
+      Swal.fire({
+        toast: true,
+        position: "top-end",
+        icon: "success",
+        title: "สำเร็จ",
+        text: "แก้ไขข้อมูลผู้จองเรียบร้อยแล้ว",
+        timer: 1500,
+        showConfirmButton: false,
+      });
       setOpen(false);
       onSuccess();
     } catch {
-      Swal.fire("ผิดพลาด", "ไม่สามารถบันทึกข้อมูลได้", "error");
+      Swal.fire({
+        toast: true,
+        position: "top-end",
+        icon: "error",
+        title: "ผิดพลาด",
+        text: "ไม่สามารถบันทึกข้อมูลได้",
+        timer: 1500,
+        showConfirmButton: false,
+      });
     }
   };
 

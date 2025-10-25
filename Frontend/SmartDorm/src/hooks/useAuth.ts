@@ -121,6 +121,8 @@ export function useAuth() {
 
     if (res?.ok) {
       Swal.fire({
+        toast: true,
+        position: "top-end",
         icon: "success",
         title: "ออกจากระบบสำเร็จ",
         timer: 1500,
@@ -128,9 +130,13 @@ export function useAuth() {
       });
     } else {
       Swal.fire({
+        toast: true,
+        position: "top-end",
         icon: "error",
         title: "ออกจากระบบไม่สำเร็จ",
         text: "โปรดลองใหม่อีกครั้ง",
+        timer: 1500,
+        showConfirmButton: false,
       });
     }
 
@@ -153,6 +159,8 @@ export function useAuth() {
         setIsAuth(false);
         setRole(null);
         Swal.fire({
+          toast: true,
+          position: "top-end",
           icon: "warning",
           title: "หมดเวลาการใช้งาน",
           text: "กรุณาเข้าสู่ระบบใหม่อีกครั้ง",

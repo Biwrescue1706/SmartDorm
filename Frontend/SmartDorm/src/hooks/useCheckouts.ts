@@ -27,6 +27,8 @@ export function useCheckouts() {
       setCheckouts(data);
     } catch {
       Swal.fire({
+        toast: true,
+        position: "top-end",
         icon: "error",
         title: "ข้อผิดพลาด",
         text: "โหลดข้อมูลการคืนไม่สำเร็จ",
@@ -60,6 +62,8 @@ export function useCheckouts() {
       });
       if (!res.ok) throw new Error();
       Swal.fire({
+        toast: true,
+        position: "top-end",
         icon: "success",
         title: "อนุมัติการคืนสำเร็จ",
         timer: 1500,
@@ -68,6 +72,8 @@ export function useCheckouts() {
       fetchCheckouts();
     } catch {
       Swal.fire({
+        toast: true,
+        position: "top-end",
         icon: "error",
         title: "ล้มเหลว",
         text: "ไม่สามารถอนุมัติได้",
@@ -95,6 +101,8 @@ export function useCheckouts() {
       });
       if (!res.ok) throw new Error();
       Swal.fire({
+        toast: true,
+        position: "top-end",
         icon: "success",
         title: "ปฏิเสธการคืนสำเร็จ",
         timer: 1500,
@@ -103,6 +111,8 @@ export function useCheckouts() {
       fetchCheckouts();
     } catch {
       Swal.fire({
+        toast: true,
+        position: "top-end",
         icon: "error",
         title: "ล้มเหลว",
         text: "ไม่สามารถปฏิเสธการคืนได้",
@@ -130,6 +140,8 @@ export function useCheckouts() {
       });
       if (!res.ok) throw new Error();
       Swal.fire({
+        toast: true,
+        position: "top-end",
         icon: "success",
         title: "ลบข้อมูลสำเร็จ",
         timer: 1500,
@@ -138,6 +150,8 @@ export function useCheckouts() {
       fetchCheckouts();
     } catch {
       Swal.fire({
+        toast: true,
+        position: "top-end",
         icon: "error",
         title: "ล้มเหลว",
         text: "ไม่สามารถลบข้อมูลได้",
@@ -161,6 +175,8 @@ export function useCheckouts() {
       });
       if (!res.ok) throw new Error();
       Swal.fire({
+        toast: true,
+        position: "top-end",
         icon: "success",
         title: "แก้ไขสำเร็จ",
         text: "อัปเดตข้อมูลการคืนแล้ว",
@@ -170,6 +186,8 @@ export function useCheckouts() {
       fetchCheckouts();
     } catch {
       Swal.fire({
+        toast: true,
+        position: "top-end",
         icon: "error",
         title: "ล้มเหลว",
         text: "ไม่สามารถแก้ไขข้อมูลได้",

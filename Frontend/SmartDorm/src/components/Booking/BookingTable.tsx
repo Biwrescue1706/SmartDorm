@@ -36,7 +36,7 @@ export default function BookingTable({
   }, [currentPage, totalPages]);
 
   return (
-    <div className="booking-table-container">
+    <div className="booking-table-container mx-3">
       <div className="responsive-table" style={{ overflowX: "auto" }}>
         <table
           className="table table-sm table-striped align-middle text-center"
@@ -44,37 +44,37 @@ export default function BookingTable({
         >
           <thead className="table-dark">
             <tr>
-              <th scope="col" style={{ width: "15%" }}>
+              <th scope="col" style={{ width: "30%" }}>
                 #
               </th>
-              <th scope="col" style={{ width: "15%" }}>
+              <th scope="col" style={{ width: "65%" }}>
                 ห้อง
               </th>
-              <th scope="col" style={{ width: "25%" }}>
+              <th scope="col" style={{ width: "70%" }}>
                 Line ผู้จอง
               </th>
-              <th scope="col" style={{ width: "35%" }}>
+              <th scope="col" style={{ width: "65%" }}>
                 ชื่อผู้จอง
               </th>
-              <th scope="col" style={{ width: "30%" }}>
+              <th scope="col" style={{ width: "65%" }}>
                 เบอร์โทร
               </th>
-              <th scope="col" style={{ width: "35%" }}>
+              <th scope="col" style={{ width: "65%" }}>
                 วันจอง
               </th>
-              <th scope="col" style={{ width: "35%" }}>
+              <th scope="col" style={{ width: "65%" }}>
                 วันที่แจ้งเข้าพัก
               </th>
-              <th scope="col" style={{ width: "35%" }}>
+              <th scope="col" style={{ width: "70%" }}>
                 วันเข้าพักจริง
               </th>
-              <th scope="col" style={{ width: "25%" }}>
+              <th scope="col" style={{ width: "60%" }}>
                 สลิป
               </th>
-              <th scope="col" style={{ width: "35%" }}>
+              <th scope="col" style={{ width: "60%" }}>
                 สถานะ
               </th>
-              <th scope="col" style={{ width: "35%" }}>
+              <th scope="col" style={{ width: "50%" }}>
                 การจัดการ
               </th>
             </tr>
@@ -104,7 +104,7 @@ export default function BookingTable({
         </table>
       </div>
 
-      <div className="mt-3">
+      <div className="mt-5 mx-5">
         <Pagination
           totalItems={filteredRooms.length}
           rowsPerPage={rowsPerPage}

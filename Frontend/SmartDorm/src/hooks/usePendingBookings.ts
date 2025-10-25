@@ -23,6 +23,8 @@ export function usePendingBookings(intervalMs = 30000) {
         setPendingBookings(pending);
       } catch {
         Swal.fire({
+          toast: true,
+          position: "top-end",
           icon: "error",
           title: "ข้อผิดพลาด",
           text: "โหลดข้อมูลการจองไม่สำเร็จ",

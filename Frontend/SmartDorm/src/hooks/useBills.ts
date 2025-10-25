@@ -19,6 +19,8 @@ export function useBills() {
       setBills(data);
     } catch {
       Swal.fire({
+        toast: true,
+        position: "top-end",
         icon: "error",
         title: "โหลดข้อมูลบิลล้มเหลว",
         text: "ไม่สามารถโหลดข้อมูลได้",
@@ -41,6 +43,8 @@ export function useBills() {
       });
       if (!res.ok) throw new Error();
       Swal.fire({
+        toast: true,
+        position: "top-end",
         icon: "success",
         title: "อัปเดตสำเร็จ",
         timer: 1500,
@@ -49,6 +53,8 @@ export function useBills() {
       fetchBills();
     } catch {
       Swal.fire({
+        toast: true,
+        position: "top-end",
         icon: "error",
         title: "อัปเดตบิลล้มเหลว",
         text: "ไม่สามารถอัปเดตข้อมูลได้",
@@ -75,6 +81,8 @@ export function useBills() {
       });
       if (!res.ok) throw new Error();
       Swal.fire({
+        toast: true,
+        position: "top-end",
         icon: "success",
         title: "ลบสำเร็จ",
         timer: 1500,
@@ -83,6 +91,8 @@ export function useBills() {
       fetchBills();
     } catch {
       Swal.fire({
+        toast: true,
+        position: "top-end",
         icon: "error",
         title: "ลบไม่สำเร็จ",
         text: "เกิดข้อผิดพลาด",

@@ -53,7 +53,7 @@ export default function Booking() {
       <main className="main-content flex-grow-1 px-1 py-5 mt-2 mt-lg-3">
         <div className="mx-auto container-max">
           <h2
-            className="mb-3 mt-2 py-2 text-center fw-bold text-white rounded shadow-sm"
+            className="mb-3 mt-3 mx-5 w-100 py-2 text-center fw-bold text-white rounded shadow-sm"
             style={{
               background: "linear-gradient(100deg, #007bff, #00d4ff)",
               boxShadow: "0 2px 6px rgba(0, 0, 0, 0.1)",

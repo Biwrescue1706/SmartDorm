@@ -30,7 +30,7 @@ export default function DashboardTable({ rooms }: Props) {
   }, [currentPage, totalPages, filter]);
 
   return (
-    <div className="bg-white p-3 shadow-sm rounded">
+    <div className="bg-white p-3 shadow-sm rounded ">
       <DashboardFilter active={filter} onChange={(s) => setFilter(s)} />
 
       {/*  ใช้ responsive-table แทน table-responsive */}

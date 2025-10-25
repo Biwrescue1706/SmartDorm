@@ -124,13 +124,6 @@ https://smartdorm-detail.biwbong.shop/booking/${booking.bookingId}\n
 
     const updated = await bookingRepository.updateBooking(bookingId, {
       approveStatus: 1,
-      ctitle: "",
-      cname: "",
-      csurname: "",
-      cphone: "",
-      cmumId: "",
-      roomId: "",
-      checkin: ""
     });
 
     const userMsg = `📢 การจองห้องของคุณ ${booking.customer.userName}
@@ -186,13 +179,6 @@ https://smartdorm-detail.biwbong.shop/booking/${booking.bookingId}`;
     const updated = await bookingRepository.updateBooking(bookingId, {
       checkinStatus: 1,
       actualCheckin,
-      ctitle: "",
-      cname: "",
-      csurname: "",
-      cphone: "",
-      cmumId: "",
-      roomId: "",
-      checkin: ""
     });
 
     const userMsg = `🏠 เช็คอินสำเร็จ
@@ -216,13 +202,6 @@ https://smartdorm-detail.biwbong.shop/booking/${booking.bookingId}`;
     const updated = await bookingRepository.updateBooking(bookingId, {
       checkoutStatus: 1,
       actualCheckout,
-      ctitle: "",
-      cname: "",
-      csurname: "",
-      cphone: "",
-      cmumId: "",
-      roomId: "",
-      checkin: ""
     });
 
     await bookingRepository.updateRoomStatus(booking.roomId, 0);

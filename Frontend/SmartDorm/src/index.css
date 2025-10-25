@@ -51,8 +51,8 @@ h5 {
 .main-content {
   background-color: #ffffff;
   min-height: 100vh;
-  margin-left: 180px;
-  padding: 20px;
+  margin-left: 100px;
+  padding: 20px 20px 20px 20px;
   transition: margin-left 0.3s ease;
   overflow-x: hidden; /*  ป้องกันตารางล้นขอบ */
 }
@@ -70,6 +70,7 @@ h5 {
   max-width: 100%;
   overflow-x: auto; /*  ให้ scroll เฉพาะในกรอบ */
   overflow-y: hidden;
+  margin: 10px 20px 10px 10px;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: thin;
   background: #fff;
@@ -341,7 +342,7 @@ table td {
 
 @media (min-width: 1400px) {
   .main-content {
-    margin-left: 0;
+    margin-left: 80px;
     margin-top: 65px;
   }
 

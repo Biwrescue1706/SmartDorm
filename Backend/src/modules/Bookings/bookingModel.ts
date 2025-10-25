@@ -12,12 +12,23 @@ export interface BookingInput {
 }
 
 export interface BookingUpdateInput {
+  ctitle: string;
+  cname: string;
+  csurname: string;
+  cphone: string;
+  cmumId: string;
+  roomId: string;
+  checkin: string;
+  checkout?: string;
   approveStatus?: number;
   checkinStatus?: number;
   checkoutStatus?: number;
   actualCheckin?: Date;
   actualCheckout?: Date;
   returnStatus?: number;
+
+  // ✅ เพิ่มบรรทัดนี้
+  [key: string]: any;
 }
 
 export interface Booking {

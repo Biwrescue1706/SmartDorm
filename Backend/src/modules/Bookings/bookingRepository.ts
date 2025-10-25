@@ -1,8 +1,10 @@
+// src/modules/Bookings/bookingRepository.ts
 import prisma from "../../prisma";
 import { createClient } from "@supabase/supabase-js";
 import type { Prisma } from "@prisma/client";
+import { BookingUpdateInput } from "./bookingModel";
 
-//🧩 CONFIG: Supabase
+// 🧩 CONFIG: Supabase
 const supabase = createClient(
   process.env.SUPABASE_URL!,
   process.env.SUPABASE_KEY!
@@ -26,7 +28,7 @@ export const bookingRepository = {
     });
   },
 
-  /* 👤 สร้างหรืออัปเดตข้อมูลลูกค้า */
+  /* 👤 สร้างลูกค้า */
   async createCustomer(data: any, tx: Prisma.TransactionClient) {
     return tx.customer.create({ data });
   },
@@ -39,8 +41,14 @@ export const bookingRepository = {
     });
   },
 
-  /* ✏️ อัปเดตการจอง */
-  async updateBooking(bookingId: string, data: any) {
+  /* ✏️ อัปเดตการจอง (แก้ไขแล้ว ✅ ไม่มี recursive call) */
+  async updateBooking(bookingId: string, data: BookingUpdateInput) {
+    const booking = await prisma.booking.findUnique({ where: { bookingId } });
+    if (!booking) throw new Error("ไม่พบข้อมูลการจอง");
+
+    // 🧠 Debug log
+    console.log("🧩 [DEBUG] updateBooking():", bookingId, data);
+
     return prisma.booking.update({
       where: { bookingId },
       data,
@@ -82,6 +90,7 @@ export const bookingRepository = {
     const { data } = supabase.storage
       .from(process.env.SUPABASE_BUCKET!)
       .getPublicUrl(fileName);
+
     return data.publicUrl;
   },
 

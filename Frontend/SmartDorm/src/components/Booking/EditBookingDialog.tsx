@@ -19,6 +19,8 @@ export default function EditBookingDialog({ booking, onSuccess }: Props) {
     cphone: booking.customer.cphone || "",
     cmumId: booking.customer.cmumId || "",
     approveStatus: booking.approveStatus ?? 0,
+    checkinStatus: booking.checkinStatus ?? 0, // ✅ เพิ่ม
+    checkoutStatus: booking.checkoutStatus ?? 0, // ✅ เพิ่ม
   });
 
   const handleSave = async () => {

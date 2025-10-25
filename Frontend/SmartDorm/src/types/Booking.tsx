@@ -19,9 +19,9 @@ export interface Booking {
   createdAt: string;
   checkin: string;
   checkout?: string;
-  approveStatus: number;   // 0=รออนุมัติ, 1=อนุมัติแล้ว
-  checkinStatus: number;   // 0=ยังไม่เช็คอิน, 1=เช็คอินแล้ว
-  checkoutStatus: number;  // 0=ยังไม่เช็คเอาท์, 1=เช็คเอาท์แล้ว
+  approveStatus: number;
+  checkinStatus: number;
+  checkoutStatus: number;
   slipUrl?: string;
   room: Room;
   customer: Customer;

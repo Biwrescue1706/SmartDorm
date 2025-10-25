@@ -46,6 +46,7 @@ export const userService = {
   },
 
   // 👤 ดึงโปรไฟล์ลูกค้า (ถ้าไม่พบ → สร้างอัตโนมัติ)
+  // 👤 ดึงโปรไฟล์ลูกค้า (ถ้าไม่พบ → สร้างอัตโนมัติ)
   async getProfile(accessToken: string) {
     const { userId, displayName } = await verifyLineToken(accessToken);
 
@@ -106,15 +107,14 @@ export const userService = {
   },
 
   // ❌ ลบลูกค้า
+  // ❌ ลบลูกค้า (ลบ booking ก่อน แล้วค่อยลบลูกค้า)
   async deleteUser(customerId: string) {
-    const existingBooking = await prisma.booking.findFirst({
+    // ✅ ลบ booking ทั้งหมดของลูกค้าก่อน
+    await prisma.booking.deleteMany({
       where: { customerId },
     });
 
-    if (existingBooking) {
-      throw new Error("ไม่สามารถลบลูกค้าได้ เนื่องจากมีประวัติการจองอยู่");
-    }
-
+    // ✅ ลบลูกค้า
     await prisma.customer.delete({
       where: { customerId },
     });

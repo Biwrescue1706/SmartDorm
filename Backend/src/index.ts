@@ -105,7 +105,7 @@ app.listen(PORT, async () => {
   if (env !== "production") {
     console.log(`🚀 Server running locally at http://localhost:${PORT}`);
   } else {
-    console.log(`🚀 Server running on port ${PORT}`);
+    console.log(`🚀 Server running `);
   }
 });
 

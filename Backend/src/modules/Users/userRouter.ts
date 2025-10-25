@@ -1,5 +1,6 @@
 import { Router, Request, Response } from "express";
 import { userService } from "./userService";
+import { verifyLineToken } from "../../utils/verifyLineToken";
 
 const router = Router();
 
@@ -28,12 +29,21 @@ router.post("/register", async (req: Request, res: Response) => {
 });
 
 // 👤 ดึงข้อมูลโปรไฟล์ลูกค้า (พร้อม bookings / bills)
-router.post("/me", async (req: Request, res: Response) => {
+router.post("/me", async (req, res) => {
   try {
-    const profile = await userService.getProfile(req.body.accessToken);
-    res.json(profile);
+    const { accessToken } = req.body;
+    const profile = await verifyLineToken(accessToken);
+
+    return res.json({
+      success: true,
+      userId: profile.userId,
+      displayName: profile.displayName,
+    });
   } catch (err: any) {
-    res.status(400).json({ error: err.message });
+    return res.status(401).json({
+      success: false,
+      error: err.message,
+    });
   }
 });
 

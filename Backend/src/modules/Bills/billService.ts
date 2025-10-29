@@ -108,7 +108,7 @@ export const billService = {
       createdBy: adminId,
       createdAt,
     });
-    const msg = `📢 บิลใหม่ ของคุณ ${bill.customer.userName}
+    const msg = `📢 บิลใหม่ ของคุณ ${bill.customer?.userName}
 ห้อง: ${bill.room.number}
 เดือน : ${bill.month.toLocaleDateString("th-TH", { year: "numeric", month: "long" })}\n
 -------------------\n
@@ -121,7 +121,9 @@ export const billService = {
 -------------------\n
 ขอบคุณที่ใช้บริการ 🏫SmartDorm🎉`;
 
-    await notifyUser(bill.customer.userId, msg);
+    if (bill.customer && bill.customer.userId) {
+      await notifyUser(bill.customer.userId, msg);
+    }
     return bill;
   },
 

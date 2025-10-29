@@ -118,8 +118,8 @@ model Bill {
   room   Room   @relation(fields: [roomId], references: [roomId])
 
   // FK -> Customer
-  customerId String   @db.ObjectId
-  customer   Customer @relation(fields: [customerId], references: [customerId])
+  customerId String?  @db.ObjectId
+  customer   Customer? @relation(fields: [customerId], references: [customerId])
 
   // FK -> Admin
   createdBy    String  @db.ObjectId

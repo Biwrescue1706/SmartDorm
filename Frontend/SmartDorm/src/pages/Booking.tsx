@@ -20,23 +20,26 @@ export default function Booking() {
 
   const [filtered, setFiltered] = useState<typeof bookings>([]);
   const [active, setActive] = useState<
-    "all" | "pending" | "approved" | "rejected"
-  >("all");
+    "pending" | "approved" | "rejected" | "checkinPending"
+  >("pending");
 
   // กรองข้อมูลเมื่อ bookings หรือ active เปลี่ยน
   useEffect(() => {
-    if (active === "all") setFiltered(bookings);
-    else if (active === "pending")
+    if (active === "pending")
       setFiltered(bookings.filter((b) => b.approveStatus === 0));
     else if (active === "approved")
       setFiltered(bookings.filter((b) => b.approveStatus === 1));
     else if (active === "rejected")
       setFiltered(bookings.filter((b) => b.approveStatus === 2));
+    else if (active === "checkinPending")
+      setFiltered(
+        bookings.filter((b) => b.approveStatus === 1 && !b.actualCheckin)
+      );
   }, [bookings, active]);
 
   // เปลี่ยนสถานะการกรอง
   const handleFilter = (
-    status: "all" | "pending" | "approved" | "rejected"
+    status: "pending" | "approved" | "rejected" | "checkinPending"
   ) => {
     setActive(status);
   };
@@ -53,7 +56,7 @@ export default function Booking() {
       <main className="main-content flex-grow-1 px-1 py-5 mt-2 mt-lg-3">
         <div className="mx-auto container-max">
           <h2
-            className="mb-3 mt-3 mx-5 w-100 py-2 text-center fw-bold text-white rounded shadow-sm"
+            className="mb-3 mt-3 mx-5 w-100 py-2 text-center fw-bold text-white rounded"
             style={{
               background: "linear-gradient(100deg, #007bff, #00d4ff)",
               boxShadow: "0 2px 6px rgba(0, 0, 0, 0.1)",

@@ -1,18 +1,17 @@
 // src/components/Booking/BookingFilter.tsx
 interface BookingFilterProps {
-  active: "all" | "pending" | "approved" | "rejected";
-  onChange: (status: "all" | "pending" | "approved" | "rejected") => void;
+  active: "pending" | "approved" | "rejected" | "checkinPending";
+  onChange: (
+    status: "pending" | "approved" | "rejected" | "checkinPending"
+  ) => void;
 }
 
-export default function BookingFilter({ active, onChange }: BookingFilterProps) {
+export default function BookingFilter({
+  active,
+  onChange,
+}: BookingFilterProps) {
   return (
     <div className="d-flex flex-wrap justify-content-center gap-2 mb-3">
-      <FilterButton
-        label="ทั้งหมด"
-        color="secondary"
-        active={active === "all"}
-        onClick={() => onChange("all")}
-      />
       <FilterButton
         label="รออนุมัติ"
         color="warning"
@@ -31,13 +30,19 @@ export default function BookingFilter({ active, onChange }: BookingFilterProps) 
         active={active === "rejected"}
         onClick={() => onChange("rejected")}
       />
+      <FilterButton
+        label="รอวันเข้าพัก"
+        color="info"
+        active={active === "checkinPending"}
+        onClick={() => onChange("checkinPending")}
+      />
     </div>
   );
 }
 
 interface FilterButtonProps {
   label: string;
-  color: "primary" | "secondary" | "success" | "warning" | "danger";
+  color: "primary" | "secondary" | "success" | "warning" | "danger" | "info";
   active: boolean;
   onClick: () => void;
 }

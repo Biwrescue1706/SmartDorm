@@ -52,13 +52,15 @@ export default function BookingRow({
             <span className="text-success fw-semibold">
               {formatThaiDate(booking.actualCheckin)}
             </span>
-          ) : (
+          ) : booking.approveStatus === 1 ? (
             <button
               className="btn btn-sm btn-warning fw-semibold"
               onClick={() => setShowCheckinModal(true)}
             >
               จัดการ
             </button>
+          ) : (
+            <span className="text-muted">-</span>
           )}
         </td>
 
@@ -129,9 +131,7 @@ export default function BookingRow({
             >
               <div className="modal-content border-0 shadow-lg rounded-4">
                 <div className="modal-header bg-primary text-white">
-                  <h5 className="modal-title fw-bold">
-                    จัดการวันเข้าพักจริง
-                  </h5>
+                  <h5 className="modal-title fw-bold">จัดการวันเข้าพักจริง</h5>
                 </div>
                 <div className="modal-body text-center">
                   <p className="fw-semibold fs-5 mb-3">

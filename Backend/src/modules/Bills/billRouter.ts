@@ -30,7 +30,7 @@ router.post("/createFromRoom/:roomId", authMiddleware, async (req, res) => {
 });
 
 // 📋 ดึงบิลทั้งหมด
-router.get("/getall", authMiddleware, async (_req, res) => {
+router.get("/getall", async (_req, res) => {
   try {
     const bills = await billService.getAllBills();
     res.json(bills);

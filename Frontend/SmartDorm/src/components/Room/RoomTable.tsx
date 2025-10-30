@@ -16,14 +16,15 @@ export default function RoomTable({ rooms, startIndex, onUpdated }: Props) {
       >
         <thead className="table-dark">
           <tr>
-            <th style={{ width: "10%" }}>#</th>
+            <th style={{ width: "8%" }}>#</th>
             <th style={{ width: "15%" }}>ห้อง</th>
-            <th style={{ width: "35%" }}>ขนาด</th>
-            <th style={{ width: "20%" }}>ค่าเช่า</th>
+            <th style={{ width: "25%" }}>ขนาด</th>
+            <th style={{ width: "15%" }}>ค่าเช่า</th>
             <th style={{ width: "20%" }}>ผู้สร้าง</th>
             <th style={{ width: "20%" }}>ผู้แก้ไข</th>
-            <th style={{ width: "20%" }}>สถานะ</th>
-            <th style={{ width: "20%" }}>การจัดการ</th>
+            <th style={{ width: "15%" }}>สถานะ</th>
+            <th style={{ width: "10%" }}>แก้ไข</th>
+            <th style={{ width: "10%" }}>ลบ</th>
           </tr>
         </thead>
         <tbody>

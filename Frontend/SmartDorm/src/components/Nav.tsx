@@ -1,5 +1,5 @@
-import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import { useState, useEffect } from "react";
 
 export interface NavProps {
   message: string;
@@ -14,13 +14,39 @@ export default function Nav({
   pendingBookings,
   role,
 }: NavProps) {
+  const navigate = useNavigate();
+  const location = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState<string | null>(null);
-  const navigate = useNavigate();
+  const [, setIsWideScreen] = useState(window.innerWidth >= 1400);
 
   const isSuperAdmin = role === 0;
 
-  // toggle สำหรับ dropdown
+  // ✅ ตรวจจับขนาดจอแบบเรียลไทม์
+  useEffect(() => {
+    const handleResize = () => setIsWideScreen(window.innerWidth >= 1400);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  // ✅ เปิด dropdown อัตโนมัติตาม path ปัจจุบัน
+  useEffect(() => {
+    if (
+      location.pathname.startsWith("/rooms") ||
+      location.pathname.startsWith("/bookings") ||
+      location.pathname.startsWith("/checkout")
+    ) {
+      setDropdownOpen("room");
+    } else if (
+      location.pathname.startsWith("/bills") ||
+      location.pathname.startsWith("/allbills")
+    ) {
+      setDropdownOpen("bill");
+    } else {
+      setDropdownOpen(null);
+    }
+  }, [location.pathname]);
+
   const toggleDropdown = (key: string) => {
     setDropdownOpen(dropdownOpen === key ? null : key);
   };
@@ -29,20 +55,20 @@ export default function Nav({
     <>
       {/* ===== 🌐 Topbar ===== */}
       <div
-        className="position-fixed top-0 start-0 w-100 bg-primary text-white d-flex align-items-center justify-content-between px-3 shadow z-3"
+        className="position-fixed top-0 start-0 w-100 bg-primary text-white d-flex align-items-center px-3 shadow z-3"
         style={{ height: "50px" }}
       >
-        {/* ☰ ปุ่มเมนู (เฉพาะจอ <1400px) */}
+        {/* ☰ ปุ่มเมนูสำหรับจอเล็ก */}
         <button
           type="button"
           onClick={() => setMenuOpen(!menuOpen)}
-          className="btn btn-light btn-sm d-xxl-none"
+          className="btn btn-light btn-sm d-xxl-none me-2"
           aria-label="Toggle menu"
         >
           {menuOpen ? "✖" : "☰"}
         </button>
 
-        {/* 🏠 โลโก้ + ชื่อระบบ */}
+        {/* 🏠 โลโก้ SmartDorm (เฉพาะจอใหญ่) */}
         <div className="d-none d-xxl-flex flex-column ms-2">
           <h4 className="fw-bold text-white mb-0">SmartDorm</h4>
           <small className="text-white" style={{ lineHeight: 1 }}>
@@ -50,19 +76,28 @@ export default function Nav({
           </small>
         </div>
 
-        {/* 🧾 ข้อความต้อนรับ */}
-        <div
-          className="flex-grow-1 d-flex justify-content-end text-end overflow-hidden"
-          style={{ marginRight: "10px" }}
-        >
-          <div className="marquee-container w-100 text-end">
-            <div className="marquee-text fw-semibold">
-              {role === 0
-                ? `ยินดีต้อนรับ ผู้ดูแลระบบ ${message} เข้าสู่ระบบจัดการหอพัก (SmartDorm)`
-                : role === 1
-                ? `ยินดีต้อนรับ พนักงาน ${message} เข้าสู่ระบบจัดการหอพัก (SmartDorm)`
-                : `⏳ กำลังโหลด...`}
-            </div>
+        {/* ===== 🧭 ส่วนกลาง + ขวา ===== */}
+        <div className="flex-grow-1 d-flex justify-content-between align-items-center text-center w-100">
+          {/* 🌐 กลางจอ */}
+          <div className="flex-grow-1 text-center fw-semibold">
+            ระบบจัดการหอพัก (<span className="fw-bold">SmartDorm</span>)
+          </div>
+
+          {/* 🙋‍♂️ ขวา */}
+          <div className="text-end lh-sm me-2">
+            {role === 0 ? (
+              <>
+                <div>ยินดีต้อนรับ ผู้ดูแลระบบ</div>
+                <div className="fw-bold fs-6 text-warning">{message}</div>
+              </>
+            ) : role === 1 ? (
+              <>
+                <div>ยินดีต้อนรับ พนักงาน</div>
+                <div className="fw-bold fs-6 text-info">{message}</div>
+              </>
+            ) : (
+              <div>⏳ กำลังโหลด...</div>
+            )}
           </div>
         </div>
       </div>
@@ -73,18 +108,22 @@ export default function Nav({
         style={{
           width: "180px",
           paddingTop: "55px",
-          overflowY: "auto", // ✅ ให้เลื่อนเฉพาะ sidebar
+          overflowY: "auto",
         }}
       >
         <div className="flex-grow-1 p-3 d-flex flex-column gap-2">
           <button
             onClick={() => navigate("/dashboard")}
-            className="btn btn-outline-light text-start"
+            className={`btn text-start ${
+              location.pathname === "/dashboard"
+                ? "btn-light text-primary fw-bold"
+                : "btn-outline-light"
+            }`}
           >
             🏠 หน้าแรก
           </button>
 
-          {/* ห้องพัก */}
+          {/* ห้อง */}
           <div>
             <button
               type="button"
@@ -99,14 +138,22 @@ export default function Nav({
                 {isSuperAdmin && (
                   <button
                     onClick={() => navigate("/rooms")}
-                    className="btn btn-outline-light text-start"
+                    className={`btn text-start ${
+                      location.pathname.startsWith("/rooms")
+                        ? "btn-light text-primary fw-bold"
+                        : "btn-outline-light"
+                    }`}
                   >
                     🏘️ จัดการห้องพัก
                   </button>
                 )}
                 <button
                   onClick={() => navigate("/bookings")}
-                  className="btn btn-outline-light text-start position-relative"
+                  className={`btn text-start position-relative ${
+                    location.pathname.startsWith("/bookings")
+                      ? "btn-light text-primary fw-bold"
+                      : "btn-outline-light"
+                  }`}
                 >
                   📑 การจอง
                   {(pendingBookings ?? 0) > 0 && (
@@ -117,7 +164,11 @@ export default function Nav({
                 </button>
                 <button
                   onClick={() => navigate("/checkout")}
-                  className="btn btn-outline-light text-start"
+                  className={`btn text-start ${
+                    location.pathname.startsWith("/checkout")
+                      ? "btn-light text-primary fw-bold"
+                      : "btn-outline-light"
+                  }`}
                 >
                   🔄 หน้าคืน
                 </button>
@@ -139,13 +190,21 @@ export default function Nav({
               <div className="ps-3 mt-2 d-flex flex-column gap-2">
                 <button
                   onClick={() => navigate("/bills")}
-                  className="btn btn-outline-light text-start"
+                  className={`btn text-start ${
+                    location.pathname.startsWith("/bills")
+                      ? "btn-light text-primary fw-bold"
+                      : "btn-outline-light"
+                  }`}
                 >
                   💵 สร้างบิล
                 </button>
                 <button
                   onClick={() => navigate("/allbills")}
-                  className="btn btn-outline-light text-start"
+                  className={`btn text-start ${
+                    location.pathname.startsWith("/allbills")
+                      ? "btn-light text-primary fw-bold"
+                      : "btn-outline-light"
+                  }`}
                 >
                   📋 บิลทั้งหมด
                 </button>
@@ -153,40 +212,32 @@ export default function Nav({
             )}
           </div>
 
-          {/* สมาชิก */}
           {isSuperAdmin && (
-            <div>
-              <button
-                type="button"
-                onClick={() => toggleDropdown("member")}
-                className="btn btn-outline-light w-100 text-start d-flex justify-content-between align-items-center"
-              >
-                <span>👥 สมาชิก</span>
-                <span>{dropdownOpen === "member" ? "▴" : "▾"}</span>
-              </button>
-              {dropdownOpen === "member" && (
-                <div className="ps-3 mt-2 d-flex flex-column gap-2">
-                  <button
-                    onClick={() => navigate("/admin/manage")}
-                    className="btn btn-outline-light text-start"
-                  >
-                    👤 จัดการสมาชิก
-                  </button>
-                </div>
-              )}
-            </div>
+            <button
+              onClick={() => navigate("/admin/manage")}
+              className={`btn text-start ${
+                location.pathname.startsWith("/admin/manage")
+                  ? "btn-light text-primary fw-bold"
+                  : "btn-outline-light"
+              }`}
+            >
+              👤 จัดการสมาชิก
+            </button>
           )}
 
-          {/* ลูกค้า */}
           <button
             onClick={() => navigate("/users")}
-            className="btn btn-outline-light text-start"
+            className={`btn text-start ${
+              location.pathname.startsWith("/users")
+                ? "btn-light text-primary fw-bold"
+                : "btn-outline-light"
+            }`}
           >
             👤 ข้อมูลลูกค้า
           </button>
         </div>
 
-        {/* 🚪 Logout */}
+        {/* ออกจากระบบ */}
         <div className="border-top border-light p-2 mt-auto">
           <button
             onClick={onLogout}
@@ -194,16 +245,7 @@ export default function Nav({
             style={{
               background: "linear-gradient(135deg, #ff512f, #dd2476)",
               border: "none",
-              transition: "all 0.3s ease",
             }}
-            onMouseEnter={(e) =>
-              (e.currentTarget.style.background =
-                "linear-gradient(135deg, #dd2476, #ff512f)")
-            }
-            onMouseLeave={(e) =>
-              (e.currentTarget.style.background =
-                "linear-gradient(135deg, #ff512f, #dd2476)")
-            }
           >
             🚪 ออกจากระบบ
           </button>
@@ -213,13 +255,11 @@ export default function Nav({
       {/* ===== 📱 Slide-in Menu (<1400px) ===== */}
       {menuOpen && (
         <>
-          {/* เมนูด้านข้าง */}
           <div
             className="position-fixed top-0 start-0 h-100 bg-primary text-white shadow-lg p-3 d-flex flex-column justify-content-between"
             style={{ width: "220px", zIndex: 1500, paddingTop: "50px" }}
           >
             <div>
-              {/* โลโก้ใน Slide Menu */}
               <div className="d-flex justify-content-between align-items-center border-bottom border-light pb-2 mb-3">
                 <div>
                   <h5 className="fw-bold mb-0">SmartDorm</h5>
@@ -233,7 +273,6 @@ export default function Nav({
                 </button>
               </div>
 
-              {/* เมนูใน slide */}
               <div className="d-flex flex-column gap-2">
                 <button
                   onClick={() => {
@@ -324,31 +363,16 @@ export default function Nav({
                   )}
                 </div>
 
-                {/* สมาชิก */}
                 {isSuperAdmin && (
-                  <div>
-                    <button
-                      type="button"
-                      onClick={() => toggleDropdown("member")}
-                      className="btn btn-outline-light w-100 text-start d-flex justify-content-between align-items-center"
-                    >
-                      <span>👥 สมาชิก</span>
-                      <span>{dropdownOpen === "member" ? "▴" : "▾"}</span>
-                    </button>
-                    {dropdownOpen === "member" && (
-                      <div className="ps-3 mt-2 d-flex flex-column gap-2">
-                        <button
-                          onClick={() => {
-                            navigate("/admin/manage");
-                            setMenuOpen(false);
-                          }}
-                          className="btn btn-outline-light text-start"
-                        >
-                          👤 จัดการสมาชิก
-                        </button>
-                      </div>
-                    )}
-                  </div>
+                  <button
+                    onClick={() => {
+                      navigate("/admin/manage");
+                      setMenuOpen(false);
+                    }}
+                    className="btn btn-outline-light text-start"
+                  >
+                    👤 จัดการสมาชิก
+                  </button>
                 )}
 
                 <button
@@ -363,7 +387,7 @@ export default function Nav({
               </div>
             </div>
 
-            {/* ออกจากระบบ */}
+            {/* Logout */}
             <button
               onClick={() => {
                 onLogout();
@@ -379,7 +403,7 @@ export default function Nav({
             </button>
           </div>
 
-          {/* Overlay */}
+          {/* Overlay ปิดเมนู */}
           <div
             className="position-fixed top-0 start-0 w-100 h-100 bg-dark bg-opacity-50"
             style={{ zIndex: 1000 }}

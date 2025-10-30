@@ -99,6 +99,10 @@ export default function BookingRow({
         <td>
           <div className="d-flex flex-wrap gap-1 justify-content-center">
             <EditBookingDialog booking={booking} onSuccess={onEditSuccess} />
+          </div>
+        </td>
+        <td>
+          {booking.approveStatus == 0 && (
             <button
               className="btn btn-sm fw-semibold text-white"
               style={{
@@ -109,7 +113,7 @@ export default function BookingRow({
             >
               🗑️
             </button>
-          </div>
+          )}
         </td>
       </tr>
 

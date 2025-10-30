@@ -1,61 +1,67 @@
-// src/components/Booking/BookingFilter.tsx
+
+import type { Booking } from "../../types/Booking";
+
 interface BookingFilterProps {
   active: "pending" | "approved" | "rejected" | "checkinPending";
   onChange: (
     status: "pending" | "approved" | "rejected" | "checkinPending"
   ) => void;
+  bookings: Booking[]; // ✅ รับ bookings เพื่อคำนวณจำนวนแต่ละสถานะ
 }
 
-export default function BookingFilter({
-  active,
-  onChange,
-}: BookingFilterProps) {
+export default function BookingFilter({ active, onChange, bookings }: BookingFilterProps) {
+  // ✅ คำนวณจำนวนแต่ละสถานะ
+  const counts = {
+    pending: bookings.filter((b) => b.approveStatus === 0).length,
+    approved: bookings.filter((b) => b.approveStatus === 1).length,
+    rejected: bookings.filter((b) => b.approveStatus === 2).length,
+    checkinPending: bookings.filter(
+      (b) => b.approveStatus === 1 && !b.actualCheckin
+    ).length,
+  };
+
+  // ✅ รายการการ์ดแต่ละประเภท
+  const cards = [
+    { key: "pending", label: "รออนุมัติ", color: "#ffc107" },
+    { key: "approved", label: "อนุมัติแล้ว", color: "#28a745" },
+    { key: "rejected", label: "ไม่อนุมัติ", color: "#dc3545" },
+    { key: "checkinPending", label: "รอวันเข้าพัก", color: "#0dcaf0" },
+  ] as const;
+
   return (
-    <div className="d-flex flex-wrap justify-content-center gap-2 mb-3">
-      <FilterButton
-        label="รออนุมัติ"
-        color="warning"
-        active={active === "pending"}
-        onClick={() => onChange("pending")}
-      />
-      <FilterButton
-        label="อนุมัติแล้ว"
-        color="success"
-        active={active === "approved"}
-        onClick={() => onChange("approved")}
-      />
-      <FilterButton
-        label="ไม่อนุมัติ"
-        color="danger"
-        active={active === "rejected"}
-        onClick={() => onChange("rejected")}
-      />
-      <FilterButton
-        label="รอวันเข้าพัก"
-        color="info"
-        active={active === "checkinPending"}
-        onClick={() => onChange("checkinPending")}
-      />
+    <div className="d-flex flex-wrap justify-content-center gap-3 mb-4">
+      {cards.map((card) => (
+        <div
+          key={card.key}
+          role="button"
+          onClick={() => onChange(card.key)}
+          className={`card shadow-sm text-center border-0 p-3 ${
+            active === card.key ? "shadow-lg border-2 border-primary" : ""
+          }`}
+          style={{
+            cursor: "pointer",
+            width: "180px",
+            borderRadius: "1rem",
+            background: active === card.key
+              ? `linear-gradient(135deg, ${card.color}, #ffffff)`
+              : "#f8f9fa",
+            transition: "all 0.25s ease-in-out",
+          }}
+        >
+          <h5
+            className="fw-bold mb-2"
+            style={{
+              color: active === card.key ? "#000" : card.color,
+              fontSize: "1.05rem",
+            }}
+          >
+            {card.label}
+          </h5>
+          <h3 className="fw-bold" style={{ color: card.color }}>
+            {counts[card.key]}
+          </h3>
+        </div>
+      ))}
     </div>
-  );
-}
-
-interface FilterButtonProps {
-  label: string;
-  color: "primary" | "secondary" | "success" | "warning" | "danger" | "info";
-  active: boolean;
-  onClick: () => void;
-}
-
-function FilterButton({ label, color, active, onClick }: FilterButtonProps) {
-  return (
-    <button
-      onClick={onClick}
-      className={`btn btn-sm ${
-        active ? `btn-${color}` : `btn-outline-${color}`
-      } fw-semibold`}
-    >
-      {label}
-    </button>
   );
 }

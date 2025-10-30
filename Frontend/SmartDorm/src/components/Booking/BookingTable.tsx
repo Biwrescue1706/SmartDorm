@@ -50,32 +50,35 @@ export default function BookingTable({
               <th scope="col" style={{ width: "65%" }}>
                 ห้อง
               </th>
-              <th scope="col" style={{ width: "70%" }}>
+              <th scope="col" style={{ width: "90%" }}>
                 Line ผู้จอง
               </th>
-              <th scope="col" style={{ width: "65%" }}>
+              <th scope="col" style={{ width: "100%" }}>
                 ชื่อผู้จอง
               </th>
-              <th scope="col" style={{ width: "65%" }}>
+              <th scope="col" style={{ width: "90%" }}>
                 เบอร์โทร
               </th>
-              <th scope="col" style={{ width: "65%" }}>
+              <th scope="col" style={{ width: "90%" }}>
                 วันจอง
               </th>
-              <th scope="col" style={{ width: "65%" }}>
+              <th scope="col" style={{ width: "90%" }}>
                 วันที่แจ้งเข้าพัก
               </th>
-              <th scope="col" style={{ width: "70%" }}>
+              <th scope="col" style={{ width: "90%" }}>
                 วันเข้าพักจริง
               </th>
-              <th scope="col" style={{ width: "60%" }}>
+              <th scope="col" style={{ width: "90%" }}>
                 สลิป
               </th>
-              <th scope="col" style={{ width: "60%" }}>
+              <th scope="col" style={{ width: "90%" }}>
                 สถานะ
               </th>
               <th scope="col" style={{ width: "50%" }}>
-                การจัดการ
+                แก้ไข
+              </th>
+              <th scope="col" style={{ width: "50%" }}>
+                ลบ
               </th>
             </tr>
           </thead>
@@ -95,7 +98,7 @@ export default function BookingTable({
               ))
             ) : (
               <tr>
-                <td colSpan={11} className="text-center py-4 text-muted">
+                <td colSpan={12} className="text-center py-4 text-muted">
                   ไม่พบข้อมูลการจอง
                 </td>
               </tr>

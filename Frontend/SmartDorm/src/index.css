@@ -263,14 +263,6 @@ table td {
   white-space: nowrap;
   animation: marquee-scroll 10.5s linear infinite;
 }
-@keyframes marquee-scroll {
-  0% {
-    transform: translateX(150%);
-  }
-  100% {
-    transform: translateX(-60%);
-  }
-}
 
 /* ==================== Responsive ==================== */
 @media (max-width: 480px) {

@@ -22,7 +22,7 @@ export default function RoomRow({ room, index, onUpdated }: Props) {
           : "bg-secondary"
       }`}
     >
-      {status === 0 ? "ว่าง" : status === 1 ? "ไม่ว่าง" : "ไม่ทราบ"}
+      {status === 0 ? "ว่าง" : status === 1 ? "เต็ม" : "-"}
     </span>
   );
 
@@ -50,17 +50,20 @@ export default function RoomRow({ room, index, onUpdated }: Props) {
       <td>{getStatus(room.status)}</td>
       <td>
         <EditRoomDialog roomId={room.roomId} onSuccess={onUpdated} />
-
-        <button
-          className="btn btn-sm text-white fw-semibold mx-2 my-2 mb-2"
-          style={{
-            background: "linear-gradient(100deg, #ff0505ff, #f645c4ff)",
-            border: "none",
-          }}
-          onClick={handleDelete}
-        >
-          🗑️
-        </button>
+      </td>
+      <td>
+        {room.status === 0 && (
+          <button
+            className="btn btn-sm text-white fw-semibold mx-2 my-2 mb-2"
+            style={{
+              background: "linear-gradient(100deg, #ff0505ff, #f645c4ff)",
+              border: "none",
+            }}
+            onClick={handleDelete}
+          >
+            🗑️
+          </button>
+        )}
       </td>
     </tr>
   );

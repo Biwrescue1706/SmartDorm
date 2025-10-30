@@ -7,16 +7,34 @@ import { useAuth } from "../hooks/useAuth";
 import Pagination from "../components/Pagination";
 import * as Dialog from "@radix-ui/react-dialog";
 
+interface BookingDetail {
+  bookingId: string;
+  room?: { number: string };
+  createdAt?: string;
+  checkin?: string;
+  actualCheckin?: string;
+}
+
 interface Customer {
   customerId: string;
   userName: string;
   fullName: string;
   cphone: string;
   cmumId?: string;
-  bookings?: { bookingId: string; room?: { number: string }; createdAt?: string }[];
-  bills?: { billId: string; total: number; status: number }[];
+  bookings?: BookingDetail[];
   createdAt: string;
 }
+
+// 🗓️ ฟังก์ชันแปลงวันที่ไทย
+const formatThaiDate = (d?: string) => {
+  if (!d) return "-";
+  const date = new Date(d);
+  return date.toLocaleDateString("th-TH", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+};
 
 export default function Users() {
   const { message, handleLogout, role } = useAuth();
@@ -110,6 +128,7 @@ export default function Users() {
         <div className="mx-auto container-max">
           <h2 className="fw-bold mb-4 text-center">📋 รายชื่อลูกค้าทั้งหมด</h2>
 
+          {/* 🔍 กล่องค้นหา */}
           <div className="d-flex justify-content-center mb-3">
             <input
               type="text"
@@ -127,6 +146,7 @@ export default function Users() {
             </button>
           </div>
 
+          {/* 📊 ตารางข้อมูล */}
           <div
             className="table-scroll border rounded responsive-table"
             style={{
@@ -140,14 +160,14 @@ export default function Users() {
               className="table table-sm table-striped align-middle text-center"
               style={{ tableLayout: "fixed", width: "100%" }}
             >
-              <thead className="table-dark">
+              <thead className="table-dark sticky-top">
                 <tr>
                   <th>#</th>
                   <th>LINE</th>
                   <th>ชื่อเต็มผู้จอง</th>
                   <th>เบอร์โทร</th>
-                  <th>ห้องที่เช่าอยู่</th>
-                  <th>จัดการ</th>
+                  <th>รายละเอียด</th>
+                  <th>ลบ</th>
                 </tr>
               </thead>
               <tbody>
@@ -164,17 +184,11 @@ export default function Users() {
                       <td>{u.userName || "-"}</td>
                       <td>{u.fullName || "-"}</td>
                       <td>{u.cphone || "-"}</td>
-                      <td>
-                        {u.bookings && u.bookings.length > 0
-                          ? u.bookings
-                              .filter((b) => b.room && b.room.number)
-                              .map((b) => b.room?.number)
-                              .join(", ")
-                          : "-"}
-                      </td>
+
+                      {/* ปุ่มรายละเอียด */}
                       <td>
                         <button
-                          className="btn btn-sm btn-info text-white me-2"
+                          className="btn btn-sm btn-info text-white"
                           onClick={() => {
                             setSelectedUser(u);
                             setShowDialog(true);
@@ -182,6 +196,10 @@ export default function Users() {
                         >
                           รายละเอียด
                         </button>
+                      </td>
+
+                      {/* ปุ่มลบ */}
+                      <td>
                         <button
                           className="btn btn-sm text-white"
                           style={{
@@ -230,18 +248,18 @@ export default function Users() {
             className="position-fixed top-50 start-50 translate-middle bg-white rounded-4 shadow-lg p-4"
             style={{
               width: "90%",
-              maxWidth: "600px",
+              maxWidth: "650px",
               maxHeight: "85vh",
               overflowY: "auto",
               zIndex: 1050,
             }}
           >
             <Dialog.Title className="fw-bold fs-5 mb-3 text-center">
-              ประวัติการจองของ {selectedUser?.fullName}
+              รายละเอียดของ {selectedUser?.userName}
             </Dialog.Title>
 
             {selectedUser?.bookings && selectedUser.bookings.length > 0 ? (
-              <ul className="list-group">
+              <div className="d-flex flex-column gap-3">
                 {selectedUser.bookings
                   .sort(
                     (a, b) =>
@@ -249,19 +267,41 @@ export default function Users() {
                       new Date(a.createdAt || "").getTime()
                   )
                   .map((b) => (
-                    <li key={b.bookingId} className="list-group-item">
-                      ห้อง {b.room?.number || "-"} — วันที่{" "}
-                      {b.createdAt
-                        ? new Date(b.createdAt).toLocaleDateString("th-TH")
-                        : "-"}
-                    </li>
+                    <div
+                      key={b.bookingId}
+                      className="border rounded-3 p-3 shadow-sm bg-light"
+                    >
+                      <p className="mb-1">
+                        <strong>ห้องที่เช่าอยู่:</strong>{" "}
+                        {b.room?.number || "-"}
+                      </p>
+                      <p className="mb-1">
+                        <strong>ชื่อเต็มผู้จอง:</strong>{" "}
+                        {selectedUser.fullName || "-"}
+                      </p>
+                      <p className="mb-1">
+                        <strong>เบอร์โทร:</strong> {selectedUser.cphone || "-"}
+                      </p>
+                      <p className="mb-1">
+                        <strong>วันที่จอง:</strong>{" "}
+                        {formatThaiDate(b.createdAt)}
+                      </p>
+                      <p className="mb-1">
+                        <strong>วันที่ขอเข้าพัก:</strong>{" "}
+                        {formatThaiDate(b.checkin)}
+                      </p>
+                      <p className="mb-1">
+                        <strong>วันที่เข้าพักจริง:</strong>{" "}
+                        {formatThaiDate(b.actualCheckin)}
+                      </p>
+                    </div>
                   ))}
-              </ul>
+              </div>
             ) : (
               <p className="text-muted text-center">ไม่มีประวัติการจอง</p>
             )}
 
-            <div className="text-center mt-3">
+            <div className="text-center mt-4">
               <Dialog.Close asChild>
                 <button className="btn btn-secondary px-4">ปิด</button>
               </Dialog.Close>

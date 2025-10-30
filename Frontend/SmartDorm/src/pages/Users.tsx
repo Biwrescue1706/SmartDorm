@@ -140,7 +140,7 @@ export default function Users() {
               className="table table-sm table-striped align-middle text-center"
               style={{ tableLayout: "fixed", width: "100%" }}
             >
-              <thead className="table-dark sticky-top">
+              <thead className="table-dark">
                 <tr>
                   <th>#</th>
                   <th>LINE</th>

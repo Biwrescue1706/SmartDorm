@@ -87,12 +87,12 @@ export default function Nav({
           <div className="text-end lh-sm me-2">
             {role === 0 ? (
               <>
-                <div>ยินดีต้อนรับ ผู้ดูแลระบบ</div>
+                <div>ยินดีต้อนรับ</div>
                 <div className="fw-bold fs-6 text-warning">{message}</div>
               </>
             ) : role === 1 ? (
               <>
-                <div>ยินดีต้อนรับ พนักงาน</div>
+                <div>ยินดีต้อนรับ</div>
                 <div className="fw-bold fs-6 text-info">{message}</div>
               </>
             ) : (

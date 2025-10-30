@@ -5,7 +5,7 @@ import { API_BASE } from "../config";
 import Nav from "../components/Nav";
 import { useAuth } from "../hooks/useAuth";
 import Pagination from "../components/Pagination";
-import { Modal, Button } from "react-bootstrap";
+import * as Dialog from "@radix-ui/react-dialog";
 
 interface Customer {
   customerId: string;
@@ -47,7 +47,7 @@ export default function Users() {
         }
       });
 
-      // 🔹 แปลงกลับเป็น array และเรียงชื่อจาก ก → ฮ
+      // 🔹 เรียงชื่อจาก ก → ฮ
       const sorted = Object.values(merged).sort((a, b) =>
         a.fullName.localeCompare(b.fullName, "th")
       );
@@ -219,41 +219,56 @@ export default function Users() {
         </div>
       </main>
 
-      {/* 🔍 Dialog แสดงรายละเอียด */}
-      <Modal show={showDialog} onHide={() => setShowDialog(false)} centered size="lg">
-        <Modal.Header closeButton>
-          <Modal.Title>
-            ประวัติการจองของ {selectedUser?.fullName}
-          </Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          {selectedUser?.bookings && selectedUser.bookings.length > 0 ? (
-            <ul className="list-group">
-              {selectedUser.bookings
-                .sort(
-                  (a, b) =>
-                    new Date(b.createdAt || "").getTime() -
-                    new Date(a.createdAt || "").getTime()
-                )
-                .map((b) => (
-                  <li key={b.bookingId} className="list-group-item">
-                    ห้อง {b.room?.number || "-"} — วันที่{" "}
-                    {b.createdAt
-                      ? new Date(b.createdAt).toLocaleDateString("th-TH")
-                      : "-"}
-                  </li>
-                ))}
-            </ul>
-          ) : (
-            <p className="text-muted">ไม่มีประวัติการจอง</p>
-          )}
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowDialog(false)}>
-            ปิด
-          </Button>
-        </Modal.Footer>
-      </Modal>
+      {/* ✅ Radix Dialog */}
+      <Dialog.Root open={showDialog} onOpenChange={setShowDialog}>
+        <Dialog.Portal>
+          <Dialog.Overlay
+            className="position-fixed top-0 start-0 w-100 h-100"
+            style={{ backgroundColor: "rgba(0,0,0,0.4)", zIndex: 1040 }}
+          />
+          <Dialog.Content
+            className="position-fixed top-50 start-50 translate-middle bg-white rounded-4 shadow-lg p-4"
+            style={{
+              width: "90%",
+              maxWidth: "600px",
+              maxHeight: "85vh",
+              overflowY: "auto",
+              zIndex: 1050,
+            }}
+          >
+            <Dialog.Title className="fw-bold fs-5 mb-3 text-center">
+              ประวัติการจองของ {selectedUser?.fullName}
+            </Dialog.Title>
+
+            {selectedUser?.bookings && selectedUser.bookings.length > 0 ? (
+              <ul className="list-group">
+                {selectedUser.bookings
+                  .sort(
+                    (a, b) =>
+                      new Date(b.createdAt || "").getTime() -
+                      new Date(a.createdAt || "").getTime()
+                  )
+                  .map((b) => (
+                    <li key={b.bookingId} className="list-group-item">
+                      ห้อง {b.room?.number || "-"} — วันที่{" "}
+                      {b.createdAt
+                        ? new Date(b.createdAt).toLocaleDateString("th-TH")
+                        : "-"}
+                    </li>
+                  ))}
+              </ul>
+            ) : (
+              <p className="text-muted text-center">ไม่มีประวัติการจอง</p>
+            )}
+
+            <div className="text-center mt-3">
+              <Dialog.Close asChild>
+                <button className="btn btn-secondary px-4">ปิด</button>
+              </Dialog.Close>
+            </div>
+          </Dialog.Content>
+        </Dialog.Portal>
+      </Dialog.Root>
     </>
   );
 }

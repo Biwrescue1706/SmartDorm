@@ -16,12 +16,12 @@ export default function Nav({
 }: NavProps) {
   const navigate = useNavigate();
   const location = useLocation();
-  const [menuOpen, setMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState<string | null>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const isSuperAdmin = role === 0;
 
-  // ✅ เปิด dropdown ตาม path ปัจจุบัน
+  // เปิด dropdown ตาม path ปัจจุบัน
   useEffect(() => {
     if (
       location.pathname.startsWith("/rooms") ||
@@ -45,10 +45,14 @@ export default function Nav({
 
   return (
     <>
-      {/* ===== 🌐 Topbar (Bootstrap Navbar) ===== */}
+      {/* ===== 🌐 Topbar ===== */}
       <nav className="navbar navbar-expand-lg navbar-dark bg-primary fixed-top shadow-sm">
         <div className="container-fluid">
-          {/* ☰ Toggle Button */}
+          <a className="navbar-brand fw-bold" href="#">
+            SmartDorm
+          </a>
+
+          {/* Toggle button */}
           <button
             className="navbar-toggler"
             type="button"
@@ -60,12 +64,7 @@ export default function Nav({
             <span className="navbar-toggler-icon"></span>
           </button>
 
-          {/* 🏠 Brand */}
-          <a className="navbar-brand fw-semibold" href="#">
-            ระบบจัดการหอพัก (<span className="fw-bold">SmartDorm</span>)
-          </a>
-
-          {/* 🙋‍♂️ ข้อความขวา */}
+          {/* ข้อความขวา */}
           <div className="d-none d-lg-flex flex-column align-items-end text-white small">
             {role === 0 ? (
               <>
@@ -84,7 +83,7 @@ export default function Nav({
         </div>
       </nav>
 
-      {/* ===== 📱 Collapse Menu (Bootstrap collapse) ===== */}
+      {/* ===== เมนูหลัก (Collapse) ===== */}
       <div
         className={`collapse navbar-collapse bg-primary text-white ${
           menuOpen ? "show" : ""
@@ -94,7 +93,7 @@ export default function Nav({
         <ul className="navbar-nav flex-column p-3">
           <li className="nav-item">
             <button
-              className={`btn w-100 text-start ${
+              className={`btn w-100 text-start mb-2 ${
                 location.pathname === "/dashboard"
                   ? "btn-light text-primary fw-bold"
                   : "btn-outline-light"
@@ -109,16 +108,17 @@ export default function Nav({
           </li>
 
           {/* ห้อง */}
-          <li className="nav-item mt-2">
+          <li className="nav-item">
             <button
-              className="btn btn-outline-light w-100 text-start d-flex justify-content-between align-items-center"
+              className="btn btn-outline-light w-100 text-start d-flex justify-content-between align-items-center mb-2"
               onClick={() => toggleDropdown("room")}
             >
               <span>🛏️ ห้อง</span>
               <span>{dropdownOpen === "room" ? "▴" : "▾"}</span>
             </button>
+
             {dropdownOpen === "room" && (
-              <ul className="list-unstyled ps-3 mt-2">
+              <ul className="list-unstyled ps-3">
                 {isSuperAdmin && (
                   <li>
                     <button
@@ -176,16 +176,17 @@ export default function Nav({
           </li>
 
           {/* บิล */}
-          <li className="nav-item mt-2">
+          <li className="nav-item">
             <button
-              className="btn btn-outline-light w-100 text-start d-flex justify-content-between align-items-center"
+              className="btn btn-outline-light w-100 text-start d-flex justify-content-between align-items-center mb-2"
               onClick={() => toggleDropdown("bill")}
             >
               <span>💰 บิล</span>
               <span>{dropdownOpen === "bill" ? "▴" : "▾"}</span>
             </button>
+
             {dropdownOpen === "bill" && (
-              <ul className="list-unstyled ps-3 mt-2">
+              <ul className="list-unstyled ps-3">
                 <li>
                   <button
                     className={`btn w-100 text-start mb-1 ${
@@ -221,9 +222,9 @@ export default function Nav({
           </li>
 
           {isSuperAdmin && (
-            <li className="nav-item mt-2">
+            <li className="nav-item">
               <button
-                className={`btn w-100 text-start ${
+                className={`btn w-100 text-start mb-2 ${
                   location.pathname.startsWith("/admin/manage")
                     ? "btn-light text-primary fw-bold"
                     : "btn-outline-light"
@@ -238,9 +239,9 @@ export default function Nav({
             </li>
           )}
 
-          <li className="nav-item mt-2">
+          <li className="nav-item">
             <button
-              className={`btn w-100 text-start ${
+              className={`btn w-100 text-start mb-3 ${
                 location.pathname.startsWith("/users")
                   ? "btn-light text-primary fw-bold"
                   : "btn-outline-light"
@@ -254,7 +255,7 @@ export default function Nav({
             </button>
           </li>
 
-          <li className="nav-item mt-3 border-top pt-3">
+          <li className="nav-item border-top pt-3">
             <button
               onClick={() => {
                 onLogout();

@@ -282,27 +282,27 @@ export default function Users() {
                           className="border rounded-3 p-3 shadow-sm bg-light mb-2"
                         >
                           <p className="mb-1">
-                            <strong>ห้องที่เช่าอยู่:</strong>{" "}
+                            <strong>ห้องที่เช่าอยู่ : </strong>{" "}
                             {b.room?.number || "-"}
                           </p>
                           <p className="mb-1">
-                            <strong>ชื่อเต็มผู้จอง:</strong>{" "}
+                            <strong>ชื่อเต็มผู้จอง : </strong>{" "}
                             {selectedUser.fullName || "-"}
                           </p>
                           <p className="mb-1">
-                            <strong>เบอร์โทร:</strong>{" "}
+                            <strong>เบอร์โทร : </strong>{" "}
                             {selectedUser.cphone || "-"}
                           </p>
                           <p className="mb-1">
-                            <strong>วันที่จอง:</strong>{" "}
+                            <strong>วันที่จอง : </strong>{" "}
                             {formatThaiDate(b.createdAt)}
                           </p>
                           <p className="mb-1">
-                            <strong>วันที่ขอเข้าพัก:</strong>{" "}
+                            <strong>วันที่ขอเข้าพัก : </strong>{" "}
                             {formatThaiDate(b.checkin)}
                           </p>
                           <p className="mb-1">
-                            <strong>วันที่เข้าพักจริง:</strong>{" "}
+                            <strong>วันที่เข้าพักจริง : </strong>{" "}
                             {formatThaiDate(b.actualCheckin)}
                           </p>
                         </div>

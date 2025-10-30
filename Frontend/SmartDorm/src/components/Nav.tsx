@@ -56,7 +56,7 @@ export default function Nav({
       {/* ===== 🌐 Topbar ===== */}
       <div
         className="position-fixed top-0 start-0 w-100 bg-primary text-white d-flex align-items-center px-3 shadow z-3"
-        style={{ height: "50px" }}
+        style={{ height: "70px" }}
       >
         {/* ☰ ปุ่มเมนูสำหรับจอเล็ก */}
         <button

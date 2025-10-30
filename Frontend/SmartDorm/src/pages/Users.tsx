@@ -164,9 +164,7 @@ export default function Users() {
                 <tr>
                   <th>#</th>
                   <th>LINE</th>
-                  <th>ชื่อเต็มผู้จอง</th>
-                  <th>เบอร์โทร</th>
-                  <th>รายละเอียด</th>
+                  <th>ดูประวัติ</th>
                   <th>ลบ</th>
                 </tr>
               </thead>
@@ -182,10 +180,6 @@ export default function Users() {
                     <tr key={u.customerId}>
                       <td>{startIndex + idx + 1}</td>
                       <td>{u.userName || "-"}</td>
-                      <td>{u.fullName || "-"}</td>
-                      <td>{u.cphone || "-"}</td>
-
-                      {/* ปุ่มรายละเอียด */}
                       <td>
                         <button
                           className="btn btn-sm btn-info text-white"
@@ -194,11 +188,9 @@ export default function Users() {
                             setShowDialog(true);
                           }}
                         >
-                          รายละเอียด
+                          ดูประวัติ
                         </button>
                       </td>
-
-                      {/* ปุ่มลบ */}
                       <td>
                         <button
                           className="btn btn-sm text-white"
@@ -237,7 +229,7 @@ export default function Users() {
         </div>
       </main>
 
-      {/* ✅ Radix Dialog */}
+      {/* ✅ Dialog แสดงประวัติ */}
       <Dialog.Root open={showDialog} onOpenChange={setShowDialog}>
         <Dialog.Portal>
           <Dialog.Overlay
@@ -260,42 +252,64 @@ export default function Users() {
 
             {selectedUser?.bookings && selectedUser.bookings.length > 0 ? (
               <div className="d-flex flex-column gap-3">
-                {selectedUser.bookings
-                  .sort(
-                    (a, b) =>
-                      new Date(b.createdAt || "").getTime() -
-                      new Date(a.createdAt || "").getTime()
-                  )
-                  .map((b) => (
-                    <div
-                      key={b.bookingId}
-                      className="border rounded-3 p-3 shadow-sm bg-light"
-                    >
-                      <p className="mb-1">
-                        <strong>ห้องที่เช่าอยู่:</strong>{" "}
-                        {b.room?.number || "-"}
-                      </p>
-                      <p className="mb-1">
-                        <strong>ชื่อเต็มผู้จอง:</strong>{" "}
-                        {selectedUser.fullName || "-"}
-                      </p>
-                      <p className="mb-1">
-                        <strong>เบอร์โทร:</strong> {selectedUser.cphone || "-"}
-                      </p>
-                      <p className="mb-1">
-                        <strong>วันที่จอง:</strong>{" "}
-                        {formatThaiDate(b.createdAt)}
-                      </p>
-                      <p className="mb-1">
-                        <strong>วันที่ขอเข้าพัก:</strong>{" "}
-                        {formatThaiDate(b.checkin)}
-                      </p>
-                      <p className="mb-1">
-                        <strong>วันที่เข้าพักจริง:</strong>{" "}
-                        {formatThaiDate(b.actualCheckin)}
-                      </p>
+                {(() => {
+                  // ✅ เรียงจากเก่ามาหาใหม่
+                  const sorted = [...selectedUser.bookings].sort((a, b) => {
+                    const dateA = new Date(a.createdAt || "").getTime();
+                    const dateB = new Date(b.createdAt || "").getTime();
+                    if (dateA !== dateB) return dateA - dateB;
+                    const roomA = parseInt(a.room?.number || "0", 10);
+                    const roomB = parseInt(b.room?.number || "0", 10);
+                    return roomA - roomB;
+                  });
+
+                  // ✅ จัดกลุ่มตามวันที่
+                  const grouped: Record<string, BookingDetail[]> = {};
+                  sorted.forEach((b) => {
+                    const day = formatThaiDate(b.createdAt);
+                    if (!grouped[day]) grouped[day] = [];
+                    grouped[day].push(b);
+                  });
+
+                  return Object.entries(grouped).map(([day, bookings]) => (
+                    <div key={day}>
+                      <h6 className="fw-bold text-primary border-bottom pb-1 mb-2">
+                        📅 วันที่ {day}
+                      </h6>
+                      {bookings.map((b) => (
+                        <div
+                          key={b.bookingId}
+                          className="border rounded-3 p-3 shadow-sm bg-light mb-2"
+                        >
+                          <p className="mb-1">
+                            <strong>ห้องที่เช่าอยู่:</strong>{" "}
+                            {b.room?.number || "-"}
+                          </p>
+                          <p className="mb-1">
+                            <strong>ชื่อเต็มผู้จอง:</strong>{" "}
+                            {selectedUser.fullName || "-"}
+                          </p>
+                          <p className="mb-1">
+                            <strong>เบอร์โทร:</strong>{" "}
+                            {selectedUser.cphone || "-"}
+                          </p>
+                          <p className="mb-1">
+                            <strong>วันที่จอง:</strong>{" "}
+                            {formatThaiDate(b.createdAt)}
+                          </p>
+                          <p className="mb-1">
+                            <strong>วันที่ขอเข้าพัก:</strong>{" "}
+                            {formatThaiDate(b.checkin)}
+                          </p>
+                          <p className="mb-1">
+                            <strong>วันที่เข้าพักจริง:</strong>{" "}
+                            {formatThaiDate(b.actualCheckin)}
+                          </p>
+                        </div>
+                      ))}
                     </div>
-                  ))}
+                  ));
+                })()}
               </div>
             ) : (
               <p className="text-muted text-center">ไม่มีประวัติการจอง</p>

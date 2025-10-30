@@ -1,6 +1,12 @@
 import { useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 
+/* ======================================================
+   🧭 Component: Nav.tsx (Full Bootstrap Version)
+   ใช้สำหรับแสดงเมนูด้านบน (Topbar) + ด้านข้าง (Sidebar)
+   ไม่มี CSS แยก ใช้ class ของ Bootstrap ทั้งหมด
+   ====================================================== */
+
 export interface NavProps {
   message: string;
   onLogout: () => void;
@@ -8,6 +14,9 @@ export interface NavProps {
   role?: number | null;
 }
 
+/* ======================================================
+   🧱 Component หลัก
+====================================================== */
 export default function Nav({
   message,
   onLogout,
@@ -16,12 +25,14 @@ export default function Nav({
 }: NavProps) {
   const navigate = useNavigate();
   const location = useLocation();
-  const [dropdownOpen, setDropdownOpen] = useState<string | null>(null);
+
+  // state ควบคุม dropdown และ collapse menu
   const [menuOpen, setMenuOpen] = useState(false);
+  const [dropdownOpen, setDropdownOpen] = useState<string | null>(null);
 
   const isSuperAdmin = role === 0;
 
-  // เปิด dropdown ตาม path ปัจจุบัน
+  // เปิด dropdown อัตโนมัติตาม path
   useEffect(() => {
     if (
       location.pathname.startsWith("/rooms") ||
@@ -39,20 +50,28 @@ export default function Nav({
     }
   }, [location.pathname]);
 
+  // toggle dropdown
   const toggleDropdown = (key: string) => {
     setDropdownOpen(dropdownOpen === key ? null : key);
   };
 
+  // ปิดเมนู (ใช้บนมือถือ)
+  const closeMenu = () => setMenuOpen(false);
+
+  /* ======================================================
+     🧭 ส่วน Top Navbar (Bootstrap Navbar)
+  ====================================================== */
   return (
     <>
-      {/* ===== 🌐 Topbar ===== */}
+      {/* ======= TOPBAR ======= */}
       <nav className="navbar navbar-expand-lg navbar-dark bg-primary fixed-top shadow-sm">
         <div className="container-fluid">
+          {/* โลโก้ */}
           <a className="navbar-brand fw-bold" href="#">
             SmartDorm
           </a>
 
-          {/* Toggle button */}
+          {/* ปุ่ม toggle บนมือถือ */}
           <button
             className="navbar-toggler"
             type="button"
@@ -64,7 +83,7 @@ export default function Nav({
             <span className="navbar-toggler-icon"></span>
           </button>
 
-          {/* ข้อความขวา */}
+          {/* ข้อความต้อนรับ */}
           <div className="d-none d-lg-flex flex-column align-items-end text-white small">
             {role === 0 ? (
               <>
@@ -83,7 +102,9 @@ export default function Nav({
         </div>
       </nav>
 
-      {/* ===== เมนูหลัก (Collapse) ===== */}
+      {/* ======================================================
+         📱 ส่วน Collapse (แสดงเมื่อกด ☰ บนมือถือ)
+      ====================================================== */}
       <div
         className={`collapse navbar-collapse bg-primary text-white ${
           menuOpen ? "show" : ""
@@ -91,61 +112,65 @@ export default function Nav({
         id="navbarNav"
       >
         <ul className="navbar-nav flex-column p-3">
-          <li className="nav-item">
+          {/* หน้าแรก */}
+          <li className="nav-item mb-2">
             <button
-              className={`btn w-100 text-start mb-2 ${
+              className={`btn w-100 text-start ${
                 location.pathname === "/dashboard"
                   ? "btn-light text-primary fw-bold"
                   : "btn-outline-light"
               }`}
               onClick={() => {
                 navigate("/dashboard");
-                setMenuOpen(false);
+                closeMenu();
               }}
             >
               🏠 หน้าแรก
             </button>
           </li>
 
-          {/* ห้อง */}
-          <li className="nav-item">
+          {/* ======================================================
+             🏠 หมวด ห้องพัก
+          ====================================================== */}
+          <li className="nav-item mb-2">
             <button
-              className="btn btn-outline-light w-100 text-start d-flex justify-content-between align-items-center mb-2"
+              className="btn btn-outline-light w-100 text-start d-flex justify-content-between align-items-center"
               onClick={() => toggleDropdown("room")}
             >
               <span>🛏️ ห้อง</span>
               <span>{dropdownOpen === "room" ? "▴" : "▾"}</span>
             </button>
 
+            {/* Submenu ห้อง */}
             {dropdownOpen === "room" && (
-              <ul className="list-unstyled ps-3">
+              <ul className="list-unstyled ps-3 mt-2">
                 {isSuperAdmin && (
-                  <li>
+                  <li className="mb-1">
                     <button
-                      className={`btn w-100 text-start mb-1 ${
+                      className={`btn w-100 text-start ${
                         location.pathname.startsWith("/rooms")
                           ? "btn-light text-primary fw-bold"
                           : "btn-outline-light"
                       }`}
                       onClick={() => {
                         navigate("/rooms");
-                        setMenuOpen(false);
+                        closeMenu();
                       }}
                     >
                       🏘️ จัดการห้องพัก
                     </button>
                   </li>
                 )}
-                <li>
+                <li className="mb-1">
                   <button
-                    className={`btn w-100 text-start position-relative mb-1 ${
+                    className={`btn w-100 text-start position-relative ${
                       location.pathname.startsWith("/bookings")
                         ? "btn-light text-primary fw-bold"
                         : "btn-outline-light"
                     }`}
                     onClick={() => {
                       navigate("/bookings");
-                      setMenuOpen(false);
+                      closeMenu();
                     }}
                   >
                     📑 การจอง
@@ -165,7 +190,7 @@ export default function Nav({
                     }`}
                     onClick={() => {
                       navigate("/checkout");
-                      setMenuOpen(false);
+                      closeMenu();
                     }}
                   >
                     🔄 หน้าคืน
@@ -175,10 +200,12 @@ export default function Nav({
             )}
           </li>
 
-          {/* บิล */}
-          <li className="nav-item">
+          {/* ======================================================
+             💰 หมวด บิล
+          ====================================================== */}
+          <li className="nav-item mb-2">
             <button
-              className="btn btn-outline-light w-100 text-start d-flex justify-content-between align-items-center mb-2"
+              className="btn btn-outline-light w-100 text-start d-flex justify-content-between align-items-center"
               onClick={() => toggleDropdown("bill")}
             >
               <span>💰 บิล</span>
@@ -186,17 +213,17 @@ export default function Nav({
             </button>
 
             {dropdownOpen === "bill" && (
-              <ul className="list-unstyled ps-3">
-                <li>
+              <ul className="list-unstyled ps-3 mt-2">
+                <li className="mb-1">
                   <button
-                    className={`btn w-100 text-start mb-1 ${
+                    className={`btn w-100 text-start ${
                       location.pathname.startsWith("/bills")
                         ? "btn-light text-primary fw-bold"
                         : "btn-outline-light"
                     }`}
                     onClick={() => {
                       navigate("/bills");
-                      setMenuOpen(false);
+                      closeMenu();
                     }}
                   >
                     💵 สร้างบิล
@@ -211,7 +238,7 @@ export default function Nav({
                     }`}
                     onClick={() => {
                       navigate("/allbills");
-                      setMenuOpen(false);
+                      closeMenu();
                     }}
                   >
                     📋 บิลทั้งหมด
@@ -221,17 +248,20 @@ export default function Nav({
             )}
           </li>
 
+          {/* ======================================================
+             👤 จัดการสมาชิก (เฉพาะ Super Admin)
+          ====================================================== */}
           {isSuperAdmin && (
-            <li className="nav-item">
+            <li className="nav-item mb-2">
               <button
-                className={`btn w-100 text-start mb-2 ${
+                className={`btn w-100 text-start ${
                   location.pathname.startsWith("/admin/manage")
                     ? "btn-light text-primary fw-bold"
                     : "btn-outline-light"
                 }`}
                 onClick={() => {
                   navigate("/admin/manage");
-                  setMenuOpen(false);
+                  closeMenu();
                 }}
               >
                 👤 จัดการสมาชิก
@@ -239,34 +269,187 @@ export default function Nav({
             </li>
           )}
 
-          <li className="nav-item">
+          {/* ======================================================
+             👥 ข้อมูลลูกค้า
+          ====================================================== */}
+          <li className="nav-item mb-3">
             <button
-              className={`btn w-100 text-start mb-3 ${
+              className={`btn w-100 text-start ${
                 location.pathname.startsWith("/users")
                   ? "btn-light text-primary fw-bold"
                   : "btn-outline-light"
               }`}
               onClick={() => {
                 navigate("/users");
-                setMenuOpen(false);
+                closeMenu();
               }}
             >
-              👤 ข้อมูลลูกค้า
+              👥 ข้อมูลลูกค้า
             </button>
           </li>
 
+          {/* ======================================================
+             🚪 ออกจากระบบ
+          ====================================================== */}
           <li className="nav-item border-top pt-3">
             <button
+              className="btn btn-danger w-100 fw-bold"
               onClick={() => {
                 onLogout();
-                setMenuOpen(false);
+                closeMenu();
               }}
-              className="btn btn-danger w-100 fw-bold"
             >
               🚪 ออกจากระบบ
             </button>
           </li>
         </ul>
+      </div>
+
+      {/* ======================================================
+         🖥️ Sidebar สำหรับจอใหญ่ (≥1400px)
+      ====================================================== */}
+      <div className="d-none d-xxl-flex flex-column bg-primary text-white position-fixed top-0 start-0 h-100 shadow">
+        <div className="p-3 flex-grow-1 mt-5">
+          <div className="fw-bold fs-5 text-center mb-3 border-bottom border-light pb-2">
+            🏫 SmartDorm
+          </div>
+
+          <div className="d-flex flex-column gap-2">
+            <button
+              className={`btn text-start ${
+                location.pathname === "/dashboard"
+                  ? "btn-light text-primary fw-bold"
+                  : "btn-outline-light"
+              }`}
+              onClick={() => navigate("/dashboard")}
+            >
+              🏠 หน้าแรก
+            </button>
+
+            {/* ห้อง */}
+            <div>
+              <button
+                className="btn btn-outline-light w-100 text-start d-flex justify-content-between align-items-center"
+                onClick={() => toggleDropdown("room")}
+              >
+                <span>🛏️ ห้อง</span>
+                <span>{dropdownOpen === "room" ? "▴" : "▾"}</span>
+              </button>
+
+              {dropdownOpen === "room" && (
+                <div className="ps-3 mt-2 d-flex flex-column gap-2">
+                  {isSuperAdmin && (
+                    <button
+                      className={`btn text-start ${
+                        location.pathname.startsWith("/rooms")
+                          ? "btn-light text-primary fw-bold"
+                          : "btn-outline-light"
+                      }`}
+                      onClick={() => navigate("/rooms")}
+                    >
+                      🏘️ จัดการห้องพัก
+                    </button>
+                  )}
+                  <button
+                    className={`btn text-start position-relative ${
+                      location.pathname.startsWith("/bookings")
+                        ? "btn-light text-primary fw-bold"
+                        : "btn-outline-light"
+                    }`}
+                    onClick={() => navigate("/bookings")}
+                  >
+                    📑 การจอง
+                    {(pendingBookings ?? 0) > 0 && (
+                      <span className="position-absolute top-0 end-0 translate-middle badge rounded-pill bg-danger">
+                        {pendingBookings}
+                      </span>
+                    )}
+                  </button>
+                  <button
+                    className={`btn text-start ${
+                      location.pathname.startsWith("/checkout")
+                        ? "btn-light text-primary fw-bold"
+                        : "btn-outline-light"
+                    }`}
+                    onClick={() => navigate("/checkout")}
+                  >
+                    🔄 หน้าคืน
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* บิล */}
+            <div>
+              <button
+                className="btn btn-outline-light w-100 text-start d-flex justify-content-between align-items-center"
+                onClick={() => toggleDropdown("bill")}
+              >
+                <span>💰 บิล</span>
+                <span>{dropdownOpen === "bill" ? "▴" : "▾"}</span>
+              </button>
+
+              {dropdownOpen === "bill" && (
+                <div className="ps-3 mt-2 d-flex flex-column gap-2">
+                  <button
+                    className={`btn text-start ${
+                      location.pathname.startsWith("/bills")
+                        ? "btn-light text-primary fw-bold"
+                        : "btn-outline-light"
+                    }`}
+                    onClick={() => navigate("/bills")}
+                  >
+                    💵 สร้างบิล
+                  </button>
+                  <button
+                    className={`btn text-start ${
+                      location.pathname.startsWith("/allbills")
+                        ? "btn-light text-primary fw-bold"
+                        : "btn-outline-light"
+                    }`}
+                    onClick={() => navigate("/allbills")}
+                  >
+                    📋 บิลทั้งหมด
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {isSuperAdmin && (
+              <button
+                className={`btn text-start ${
+                  location.pathname.startsWith("/admin/manage")
+                    ? "btn-light text-primary fw-bold"
+                    : "btn-outline-light"
+                }`}
+                onClick={() => navigate("/admin/manage")}
+              >
+                👤 จัดการสมาชิก
+              </button>
+            )}
+
+            <button
+              className={`btn text-start ${
+                location.pathname.startsWith("/users")
+                  ? "btn-light text-primary fw-bold"
+                  : "btn-outline-light"
+              }`}
+              onClick={() => navigate("/users")}
+            >
+              👥 ข้อมูลลูกค้า
+            </button>
+          </div>
+        </div>
+
+        {/* ปุ่มออกจากระบบ */}
+        <div className="p-3 border-top border-light text-center">
+          <button
+            className="btn btn-danger w-100 fw-bold"
+            onClick={onLogout}
+          >
+            🚪 ออกจากระบบ
+          </button>
+        </div>
       </div>
     </>
   );

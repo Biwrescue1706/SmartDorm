@@ -5,6 +5,7 @@ import { API_BASE } from "../config";
 import Nav from "../components/Nav";
 import { useAuth } from "../hooks/useAuth";
 import Pagination from "../components/Pagination";
+import { Modal, Button } from "react-bootstrap";
 
 interface Customer {
   customerId: string;
@@ -12,7 +13,7 @@ interface Customer {
   fullName: string;
   cphone: string;
   cmumId?: string;
-  bookings?: { bookingId: string; room?: { number: string } }[];
+  bookings?: { bookingId: string; room?: { number: string }; createdAt?: string }[];
   bills?: { billId: string; total: number; status: number }[];
   createdAt: string;
 }
@@ -24,17 +25,34 @@ export default function Users() {
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [selectedUser, setSelectedUser] = useState<Customer | null>(null);
+  const [showDialog, setShowDialog] = useState(false);
 
-  // ✅ คำนวณข้อมูลตามหน้า
   const startIndex = (currentPage - 1) * rowsPerPage;
-  const paginatedUsers = users.slice(startIndex, startIndex + rowsPerPage);
 
   // 📋 ดึงข้อมูลลูกค้าทั้งหมด
   const fetchUsers = async () => {
     try {
       setLoading(true);
       const res = await axios.get(`${API_BASE}/user/getall`);
-      setUsers(res.data.users);
+      let allUsers: Customer[] = res.data.users || [];
+
+      // 🔹 รวม LINE ซ้ำ
+      const merged: Record<string, Customer> = {};
+      allUsers.forEach((u) => {
+        if (!merged[u.userName]) {
+          merged[u.userName] = { ...u, bookings: [...(u.bookings || [])] };
+        } else {
+          merged[u.userName].bookings?.push(...(u.bookings || []));
+        }
+      });
+
+      // 🔹 แปลงกลับเป็น array และเรียงชื่อจาก ก → ฮ
+      const sorted = Object.values(merged).sort((a, b) =>
+        a.fullName.localeCompare(b.fullName, "th")
+      );
+
+      setUsers(sorted);
     } catch (err) {
       console.error("❌ โหลดข้อมูลลูกค้าไม่สำเร็จ:", err);
     } finally {
@@ -42,7 +60,6 @@ export default function Users() {
     }
   };
 
-  // 🔍 ค้นหาลูกค้า
   const handleSearch = async () => {
     try {
       setLoading(true);
@@ -57,7 +74,6 @@ export default function Users() {
     }
   };
 
-  // ❌ ลบลูกค้า
   const handleDelete = async (customerId: string, fullName: string) => {
     const confirm = await Swal.fire({
       title: "ยืนยันการลบ?",
@@ -84,6 +100,8 @@ export default function Users() {
     fetchUsers();
   }, []);
 
+  const paginatedUsers = users.slice(startIndex, startIndex + rowsPerPage);
+
   return (
     <>
       <Nav message={message} onLogout={handleLogout} role={role} />
@@ -92,7 +110,6 @@ export default function Users() {
         <div className="mx-auto container-max">
           <h2 className="fw-bold mb-4 text-center">📋 รายชื่อลูกค้าทั้งหมด</h2>
 
-          {/* 🔍 กล่องค้นหา */}
           <div className="d-flex justify-content-center mb-3">
             <input
               type="text"
@@ -110,7 +127,6 @@ export default function Users() {
             </button>
           </div>
 
-          {/* 📊 ตารางข้อมูล (เลื่อนเฉพาะตาราง) */}
           <div
             className="table-scroll border rounded responsive-table"
             style={{
@@ -126,22 +142,19 @@ export default function Users() {
             >
               <thead className="table-dark sticky-top">
                 <tr>
-                  <th style={{ width: "5%" }}>#</th>
-                  <th style={{ width: "20%" }}>LINE</th>
-                  <th style={{ width: "25%" }}>ชื่อเต็มผู้จอง</th>
-                  <th style={{ width: "15%" }}>เบอร์โทร</th>
-                  <th style={{ width: "20%" }}>ห้องที่เช่าอยู่</th>
-                  <th style={{ width: "15%" }}>จัดการ</th>
+                  <th>#</th>
+                  <th>LINE</th>
+                  <th>ชื่อเต็มผู้จอง</th>
+                  <th>เบอร์โทร</th>
+                  <th>ห้องที่เช่าอยู่</th>
+                  <th>จัดการ</th>
                 </tr>
               </thead>
               <tbody>
                 {loading ? (
                   <tr>
                     <td colSpan={6} className="text-center py-4">
-                      <div
-                        className="spinner-border text-primary"
-                        role="status"
-                      ></div>
+                      <div className="spinner-border text-primary"></div>
                     </td>
                   </tr>
                 ) : paginatedUsers.length > 0 ? (
@@ -161,11 +174,19 @@ export default function Users() {
                       </td>
                       <td>
                         <button
-                          className="btn btn-sm fw-semibold text-white"
+                          className="btn btn-sm btn-info text-white me-2"
+                          onClick={() => {
+                            setSelectedUser(u);
+                            setShowDialog(true);
+                          }}
+                        >
+                          รายละเอียด
+                        </button>
+                        <button
+                          className="btn btn-sm text-white"
                           style={{
                             background:
                               "linear-gradient(100deg, #ff0505, #f645c4)",
-                            border: "none",
                           }}
                           onClick={() => handleDelete(u.customerId, u.fullName)}
                         >
@@ -176,7 +197,7 @@ export default function Users() {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={6} className="text-center py-4 text-muted">
+                    <td colSpan={6} className="text-center text-muted py-4">
                       ไม่พบข้อมูลลูกค้า
                     </td>
                   </tr>
@@ -185,7 +206,6 @@ export default function Users() {
             </table>
           </div>
 
-          {/* ✅ Pagination ด้านล่าง */}
           <Pagination
             currentPage={currentPage}
             totalItems={users.length}
@@ -198,6 +218,42 @@ export default function Users() {
           />
         </div>
       </main>
+
+      {/* 🔍 Dialog แสดงรายละเอียด */}
+      <Modal show={showDialog} onHide={() => setShowDialog(false)} centered size="lg">
+        <Modal.Header closeButton>
+          <Modal.Title>
+            ประวัติการจองของ {selectedUser?.fullName}
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {selectedUser?.bookings && selectedUser.bookings.length > 0 ? (
+            <ul className="list-group">
+              {selectedUser.bookings
+                .sort(
+                  (a, b) =>
+                    new Date(b.createdAt || "").getTime() -
+                    new Date(a.createdAt || "").getTime()
+                )
+                .map((b) => (
+                  <li key={b.bookingId} className="list-group-item">
+                    ห้อง {b.room?.number || "-"} — วันที่{" "}
+                    {b.createdAt
+                      ? new Date(b.createdAt).toLocaleDateString("th-TH")
+                      : "-"}
+                  </li>
+                ))}
+            </ul>
+          ) : (
+            <p className="text-muted">ไม่มีประวัติการจอง</p>
+          )}
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowDialog(false)}>
+            ปิด
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </>
   );
 }

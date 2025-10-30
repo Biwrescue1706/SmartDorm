@@ -16,11 +16,14 @@ export const paymentRepository = {
 
   // 🧾 ดึงข้อมูลบิลตาม billId
   async findBillById(billId: string) {
-    return prisma.bill.findUnique({
-      where: { billId },
-      include: { customer: true, room: true },
-    });
-  },
+  return prisma.bill.findUnique({
+    where: { billId },
+    include: {
+      customer: true,
+      room: true,
+    },
+  });
+},
 
   // 📸 อัปโหลดสลิปไปยัง Supabase Storage
   async uploadSlipToSupabase(file: Express.Multer.File) {

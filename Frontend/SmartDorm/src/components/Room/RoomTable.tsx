@@ -22,9 +22,9 @@ export default function RoomTable({ rooms, startIndex, onUpdated }: Props) {
             <th style={{ width: "15%" }}>ค่าเช่า</th>
             <th style={{ width: "20%" }}>ผู้สร้าง</th>
             <th style={{ width: "20%" }}>ผู้แก้ไข</th>
-            <th style={{ width: "15%" }}>สถานะ</th>
-            <th style={{ width: "10%" }}>แก้ไข</th>
-            <th style={{ width: "10%" }}>ลบ</th>
+            <th style={{ width: "20%" }}>สถานะ</th>
+            <th style={{ width: "20%" }}>แก้ไข</th>
+            <th style={{ width: "20%" }}>ลบ</th>
           </tr>
         </thead>
         <tbody>

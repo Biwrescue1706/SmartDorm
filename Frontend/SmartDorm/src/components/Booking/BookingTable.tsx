@@ -74,10 +74,10 @@ export default function BookingTable({
               <th scope="col" style={{ width: "90%" }}>
                 สถานะ
               </th>
-              <th scope="col" style={{ width: "50%" }}>
+              <th scope="col" style={{ width: "70%" }}>
                 แก้ไข
               </th>
-              <th scope="col" style={{ width: "50%" }}>
+              <th scope="col" style={{ width: "70%" }}>
                 ลบ
               </th>
             </tr>

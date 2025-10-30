@@ -1,112 +1,259 @@
-import * as Dialog from "@radix-ui/react-dialog";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
+import axios from "axios";
 import Swal from "sweetalert2";
-import { API_BASE } from "../../config";
-import { type Admin } from "../../types/admin";
+import { API_BASE } from "../config";
+import Nav from "../components/Nav";
+import { useAuth } from "../hooks/useAuth";
+import Pagination from "../components/Pagination";
+import { Modal, Button } from "react-bootstrap";
 
-interface Props {
-  open: boolean;
-  onClose: () => void;
-  admin: Admin | null;
-  refresh: () => void;
+interface Customer {
+  customerId: string;
+  userName: string;
+  fullName: string;
+  cphone: string;
+  cmumId?: string;
+  bookings?: { bookingId: string; room?: { number: string }; createdAt?: string }[];
+  bills?: { billId: string; total: number; status: number }[];
+  createdAt: string;
 }
 
-export default function AdminEditDialog({
-  open,
-  onClose,
-  admin,
-  refresh,
-}: Props) {
-  const [name, setName] = useState("");
-  const [password, setPassword] = useState("");
-  const [roleValue, setRoleValue] = useState("1");
+export default function Users() {
+  const { message, handleLogout, role } = useAuth();
+  const [users, setUsers] = useState<Customer[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [selectedUser, setSelectedUser] = useState<Customer | null>(null);
+  const [showDialog, setShowDialog] = useState(false);
 
-  //  เมื่อ admin เปลี่ยน ให้รีเซ็ตค่าฟอร์มใหม่
-  useEffect(() => {
-    if (admin) {
-      setName(admin.name);
-      setPassword("");
-      setRoleValue(String(admin.role));
-    }
-  }, [admin]);
+  const startIndex = (currentPage - 1) * rowsPerPage;
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!admin) return;
-
+  // 📋 ดึงข้อมูลลูกค้าทั้งหมด
+  const fetchUsers = async () => {
     try {
-      const res = await fetch(`${API_BASE}/admin/${admin.adminId}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({
-          name,
-          password,
-          role: parseInt(roleValue, 10),
-        }),
+      setLoading(true);
+      const res = await axios.get(`${API_BASE}/user/getall`);
+      let allUsers: Customer[] = res.data.users || [];
+
+      // 🔹 รวม LINE ซ้ำ
+      const merged: Record<string, Customer> = {};
+      allUsers.forEach((u) => {
+        if (!merged[u.userName]) {
+          merged[u.userName] = { ...u, bookings: [...(u.bookings || [])] };
+        } else {
+          merged[u.userName].bookings?.push(...(u.bookings || []));
+        }
       });
 
-      if (!res.ok) throw new Error("บันทึกไม่สำเร็จ");
+      // 🔹 แปลงกลับเป็น array และเรียงชื่อจาก ก → ฮ
+      const sorted = Object.values(merged).sort((a, b) =>
+        a.fullName.localeCompare(b.fullName, "th")
+      );
 
-      Swal.fire("สำเร็จ!", "แก้ไขข้อมูลเรียบร้อยแล้ว", "success");
-      onClose();
-      refresh();
-    } catch (err: any) {
-      Swal.fire("เกิดข้อผิดพลาด", err.message, "error");
+      setUsers(sorted);
+    } catch (err) {
+      console.error("❌ โหลดข้อมูลลูกค้าไม่สำเร็จ:", err);
+    } finally {
+      setLoading(false);
     }
   };
 
+  const handleSearch = async () => {
+    try {
+      setLoading(true);
+      const res = await axios.get(`${API_BASE}/user/search`, {
+        params: { keyword: search },
+      });
+      setUsers(res.data.users);
+    } catch (err) {
+      console.error("❌ ค้นหาลูกค้าไม่สำเร็จ:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDelete = async (customerId: string, fullName: string) => {
+    const confirm = await Swal.fire({
+      title: "ยืนยันการลบ?",
+      text: `คุณต้องการลบลูกค้า "${fullName}" หรือไม่?`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "ลบ",
+      cancelButtonText: "ยกเลิก",
+      confirmButtonColor: "#dc3545",
+    });
+
+    if (!confirm.isConfirmed) return;
+
+    try {
+      await axios.delete(`${API_BASE}/user/${customerId}`);
+      Swal.fire("สำเร็จ!", "ลบลูกค้าสำเร็จ", "success");
+      fetchUsers();
+    } catch {
+      Swal.fire("เกิดข้อผิดพลาด", "ไม่สามารถลบลูกค้าได้", "error");
+    }
+  };
+
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  const paginatedUsers = users.slice(startIndex, startIndex + rowsPerPage);
+
   return (
-    <Dialog.Root open={open} onOpenChange={onClose}>
-      <Dialog.Portal>
-        <Dialog.Overlay className="position-fixed top-0 start-0 w-100 h-100 bg-dark bg-opacity-50" />
-        <Dialog.Content
-          className="position-fixed top-50 start-50 translate-middle card p-4 rounded-4 shadow-lg"
-          style={{ width: "400px" }}
-        >
-          <Dialog.Title className="fw-bold text-center mb-2">
-            แก้ไขข้อมูลผู้ดูแล
-          </Dialog.Title>
+    <>
+      <Nav message={message} onLogout={handleLogout} role={role} />
 
-          <Dialog.Description className="text-muted text-center mb-3">
-            โปรดตรวจสอบและแก้ไขข้อมูลผู้ดูแลระบบให้ถูกต้องก่อนบันทึก
-          </Dialog.Description>
+      <main className="main-content flex-grow-1 px-3 py-4 mt-6 mt-lg-5">
+        <div className="mx-auto container-max">
+          <h2 className="fw-bold mb-4 text-center">📋 รายชื่อลูกค้าทั้งหมด</h2>
 
-          <form onSubmit={handleSubmit}>
+          <div className="d-flex justify-content-center mb-3">
             <input
-              className="form-control form-control-sm mb-2"
-              placeholder="ชื่อจริง"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
+              type="text"
+              className="form-control w-50 me-2"
+              placeholder="🔍 ค้นหาชื่อ เบอร์โทร หรือหมายเลขห้อง..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleSearch()}
             />
-            <input
-              type="password"
-              className="form-control form-control-sm mb-2"
-              placeholder="รหัสผ่านใหม่ (ไม่บังคับ)"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-            <select
-              className="form-select form-select-sm mb-3"
-              value={roleValue}
-              onChange={(e) => setRoleValue(e.target.value)}
+            <button className="btn btn-primary me-2" onClick={handleSearch}>
+              ค้นหา
+            </button>
+            <button className="btn btn-secondary" onClick={fetchUsers}>
+              โหลดใหม่
+            </button>
+          </div>
+
+          <div
+            className="table-scroll border rounded responsive-table"
+            style={{
+              maxHeight: "70vh",
+              overflowY: "auto",
+              overflowX: "auto",
+              borderRadius: "8px",
+            }}
+          >
+            <table
+              className="table table-sm table-striped align-middle text-center"
+              style={{ tableLayout: "fixed", width: "100%" }}
             >
-              <option value="0">แอดมินหลัก</option>
-              <option value="1">พนักงาน</option>
-            </select>
-            <div className="d-flex justify-content-between">
-              <Dialog.Close asChild>
-                <button className="btn btn-sm btn-secondary px-3">
-                  ยกเลิก
-                </button>
-              </Dialog.Close>
-              <button type="submit" className="btn btn-sm btn-success px-3">
-                บันทึก
-              </button>
-            </div>
-          </form>
-        </Dialog.Content>
-      </Dialog.Portal>
-    </Dialog.Root>
+              <thead className="table-dark sticky-top">
+                <tr>
+                  <th>#</th>
+                  <th>LINE</th>
+                  <th>ชื่อเต็มผู้จอง</th>
+                  <th>เบอร์โทร</th>
+                  <th>ห้องที่เช่าอยู่</th>
+                  <th>จัดการ</th>
+                </tr>
+              </thead>
+              <tbody>
+                {loading ? (
+                  <tr>
+                    <td colSpan={6} className="text-center py-4">
+                      <div className="spinner-border text-primary"></div>
+                    </td>
+                  </tr>
+                ) : paginatedUsers.length > 0 ? (
+                  paginatedUsers.map((u, idx) => (
+                    <tr key={u.customerId}>
+                      <td>{startIndex + idx + 1}</td>
+                      <td>{u.userName || "-"}</td>
+                      <td>{u.fullName || "-"}</td>
+                      <td>{u.cphone || "-"}</td>
+                      <td>
+                        {u.bookings && u.bookings.length > 0
+                          ? u.bookings
+                              .filter((b) => b.room && b.room.number)
+                              .map((b) => b.room?.number)
+                              .join(", ")
+                          : "-"}
+                      </td>
+                      <td>
+                        <button
+                          className="btn btn-sm btn-info text-white me-2"
+                          onClick={() => {
+                            setSelectedUser(u);
+                            setShowDialog(true);
+                          }}
+                        >
+                          รายละเอียด
+                        </button>
+                        <button
+                          className="btn btn-sm text-white"
+                          style={{
+                            background:
+                              "linear-gradient(100deg, #ff0505, #f645c4)",
+                          }}
+                          onClick={() => handleDelete(u.customerId, u.fullName)}
+                        >
+                          🗑️
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={6} className="text-center text-muted py-4">
+                      ไม่พบข้อมูลลูกค้า
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          <Pagination
+            currentPage={currentPage}
+            totalItems={users.length}
+            rowsPerPage={rowsPerPage}
+            onPageChange={setCurrentPage}
+            onRowsPerPageChange={(rows) => {
+              setRowsPerPage(rows);
+              setCurrentPage(1);
+            }}
+          />
+        </div>
+      </main>
+
+      {/* 🔍 Dialog แสดงรายละเอียด */}
+      <Modal show={showDialog} onHide={() => setShowDialog(false)} centered size="lg">
+        <Modal.Header closeButton>
+          <Modal.Title>
+            ประวัติการจองของ {selectedUser?.fullName}
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {selectedUser?.bookings && selectedUser.bookings.length > 0 ? (
+            <ul className="list-group">
+              {selectedUser.bookings
+                .sort(
+                  (a, b) =>
+                    new Date(b.createdAt || "").getTime() -
+                    new Date(a.createdAt || "").getTime()
+                )
+                .map((b) => (
+                  <li key={b.bookingId} className="list-group-item">
+                    ห้อง {b.room?.number || "-"} — วันที่{" "}
+                    {b.createdAt
+                      ? new Date(b.createdAt).toLocaleDateString("th-TH")
+                      : "-"}
+                  </li>
+                ))}
+            </ul>
+          ) : (
+            <p className="text-muted">ไม่มีประวัติการจอง</p>
+          )}
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowDialog(false)}>
+            ปิด
+          </Button>
+        </Modal.Footer>
+      </Modal>
+    </>
   );
 }

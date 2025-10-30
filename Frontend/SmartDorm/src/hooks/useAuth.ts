@@ -88,6 +88,8 @@ export function useAuth() {
 
       if (!res.ok) {
         Swal.fire({
+toast: true,
+        position: "top-end",
           icon: "error",
           title: "ล้มเหลว",
           text: data.error || "เข้าสู่ระบบไม่สำเร็จ",
@@ -98,6 +100,8 @@ export function useAuth() {
       }
 
       Swal.fire({
+toast: true,
+        position: "top-end",
         icon: "success",
         title: "เข้าสู่ระบบสำเร็จ",
         text: `ยินดีต้อนรับ ${data.admin?.name || credentials.username}`,
@@ -175,7 +179,7 @@ export function useAuth() {
       if (data?.valid) {
         setIsAuth(true);
         setRole(data.admin?.role ?? 1);
-        setMessage(`คุณ ${data.admin?.name}`);
+        setMessage(`${data.admin?.name}`);
       } else {
         setIsAuth(false);
         setRole(null);

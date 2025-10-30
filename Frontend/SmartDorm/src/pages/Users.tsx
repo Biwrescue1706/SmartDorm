@@ -52,6 +52,7 @@ export default function Users() {
   const fetchUsers = async () => {
     try {
       setLoading(true);
+      setSearch(""); // ✅ เคลียร์ช่องค้นหาเมื่อกดโหลดใหม่
       const res = await axios.get(`${API_BASE}/user/getall`);
       let allUsers: Customer[] = res.data.users || [];
 
@@ -78,7 +79,9 @@ export default function Users() {
     }
   };
 
+  // 🔍 ค้นหาลูกค้า
   const handleSearch = async () => {
+    if (!search.trim()) return; // ✅ ถ้าไม่มีข้อความในช่องค้นหา จะไม่ค้นหา
     try {
       setLoading(true);
       const res = await axios.get(`${API_BASE}/user/search`, {
@@ -92,6 +95,7 @@ export default function Users() {
     }
   };
 
+  // ❌ ลบลูกค้า
   const handleDelete = async (customerId: string, fullName: string) => {
     const confirm = await Swal.fire({
       title: "ยืนยันการลบ?",

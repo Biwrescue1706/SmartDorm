@@ -44,7 +44,7 @@ export default function Checkout() {
       />
 
       {/* 🔹 Main Content */}
-      <main className="main-content flex-grow-1 px-1 py-5 mt-3 mt-lg-5">
+      <main className="main-content flex-grow-1 px-1 py-2 mt-6 mt-lg-7">
         <div className="mx-auto container-max">
           <h2
             className="mb-3 mt-2 py-2 text-center fw-bold text-white rounded shadow-sm"

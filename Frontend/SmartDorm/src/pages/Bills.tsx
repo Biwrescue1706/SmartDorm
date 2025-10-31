@@ -34,10 +34,22 @@ export default function Bills() {
   const formatThaiDate = (dateString: string) => {
     const date = new Date(dateString);
     const monthsThai = [
-      "ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.",
-      "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค.",
+      "ม.ค.",
+      "ก.พ.",
+      "มี.ค.",
+      "เม.ย.",
+      "พ.ค.",
+      "มิ.ย.",
+      "ก.ค.",
+      "ส.ค.",
+      "ก.ย.",
+      "ต.ค.",
+      "พ.ย.",
+      "ธ.ค.",
     ];
-    return `${date.getDate()} ${monthsThai[date.getMonth()]} ${date.getFullYear() + 543}`;
+    return `${date.getDate()} ${monthsThai[date.getMonth()]} ${
+      date.getFullYear() + 543
+    }`;
   };
 
   // ตรวจว่าวันนี้ออกบิลได้ไหม (15–31 เท่านั้น)
@@ -49,21 +61,27 @@ export default function Bills() {
 
   // โหลดข้อมูล
   const loadRooms = async () => {
-    const res = await fetch(`${API_BASE}/room/getall`, { credentials: "include" });
+    const res = await fetch(`${API_BASE}/room/getall`, {
+      credentials: "include",
+    });
     const data: Room[] = await res.json();
     setRooms(data.filter((r) => r.status === 1));
     setLoading(false);
   };
 
   const loadBookings = async () => {
-    const res = await fetch(`${API_BASE}/booking/getall`, { credentials: "include" });
+    const res = await fetch(`${API_BASE}/booking/getall`, {
+      credentials: "include",
+    });
     const data: Booking[] = await res.json();
     setBookings(data.filter((b) => b.approveStatus === 1));
     setPendingBookings(data.filter((b) => b.actualCheckin === 0).length);
   };
 
   const loadExistingBills = async () => {
-    const res = await fetch(`${API_BASE}/bill/getall`, { credentials: "include" });
+    const res = await fetch(`${API_BASE}/bill/getall`, {
+      credentials: "include",
+    });
     const data = await res.json();
     const now = new Date();
     const thisMonth = now.getMonth();
@@ -71,7 +89,10 @@ export default function Bills() {
     const roomIds = data
       .filter((b: any) => {
         const billDate = new Date(b.month);
-        return billDate.getMonth() === thisMonth && billDate.getFullYear() === thisYear;
+        return (
+          billDate.getMonth() === thisMonth &&
+          billDate.getFullYear() === thisYear
+        );
       })
       .map((b: any) => b.roomId);
     setExistingBills(roomIds);
@@ -98,7 +119,10 @@ export default function Bills() {
       alert("กรุณากรอกข้อมูลให้ครบ");
       return;
     }
-    if (formData.wAfter < formData.wBefore || formData.eAfter < formData.eBefore) {
+    if (
+      formData.wAfter < formData.wBefore ||
+      formData.eAfter < formData.eBefore
+    ) {
       alert("ค่าปัจจุบันต้องมากกว่าค่าก่อนหน้า");
       return;
     }
@@ -106,12 +130,15 @@ export default function Bills() {
 
     setIsSubmitting(true);
     try {
-      const res = await fetch(`${API_BASE}/bill/createFromRoom/${selectedRoom.roomId}`, {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      });
+      const res = await fetch(
+        `${API_BASE}/bill/createFromRoom/${selectedRoom.roomId}`,
+        {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(formData),
+        }
+      );
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "สร้างบิลไม่สำเร็จ");
 
@@ -126,8 +153,16 @@ export default function Bills() {
   };
 
   return (
-    <div className="d-flex flex-column" style={{ backgroundColor: "#f4f7fb", minHeight: "100vh" }}>
-      <Nav message={message} onLogout={handleLogout} pendingBookings={pendingBookings} role={role} />
+    <div
+      className="d-flex flex-column"
+      style={{ backgroundColor: "#f4f7fb", minHeight: "100vh" }}
+    >
+      <Nav
+        message={message}
+        onLogout={handleLogout}
+        pendingBookings={pendingBookings}
+        role={role}
+      />
 
       <main className="main-content flex-grow-1 px-1 py-5 mt-3 mt-lg-3">
         <div className="mx-auto container-max">
@@ -149,25 +184,52 @@ export default function Bills() {
               <table className="table table-hover table-striped mb-0 align-middle text-center">
                 <thead className="table-dark">
                   <tr>
-                    <th>#</th>
-                    <th>หมายเลขห้อง</th>
-                    <th>ค่าเช่า</th>
-                    <th>วันเข้าพัก</th>
-                    <th>สถานะรอบบิล</th>
+                    <th scope="col" style={{ width: "5%" }}>
+                      #
+                    </th>
+                    <th scope="col" style={{ width: "5%" }}>
+                      ห้อง
+                    </th>
+                    <th scope="col" style={{ width: "10%" }}>
+                      Line
+                    </th>
+                    <th scope="col" style={{ width: "9%" }}>
+                      ค่าเช่า
+                    </th>
+                    <th scope="col" style={{ width: "11%" }}>
+                      วันขอเข้าพัก
+                    </th>
+                    <th scope="col" style={{ width: "11%" }}>
+                      วันเข้าพัก
+                    </th>
+                    <th scope="col" style={{ width: "11%" }}>
+                      ออกบิล
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
                   {rooms.map((room, index) => {
-                    const booking = bookings.find((b) => b.room.number === room.number);
-                    const checkinText = booking ? formatThaiDate(booking.actualCheckin) : "-";
-                    const hasBillThisMonth = existingBills.includes(room.roomId);
+                    const booking = bookings.find(
+                      (b) => b.room.number === room.number
+                    );
+                    const checkinText = booking
+                      ? formatThaiDate(booking.checkin)
+                      : "-";
+                    const actualCheckinText = booking
+                      ? formatThaiDate(booking.actualCheckin)
+                      : "-";
+                    const hasBillThisMonth = existingBills.includes(
+                      room.roomId
+                    );
 
                     return (
                       <tr key={room.roomId}>
                         <td>{index + 1}</td>
                         <td>{room.number}</td>
+                        <td>{booking?.customer.userName}</td>
                         <td>{room.rent.toLocaleString()}</td>
                         <td>{checkinText}</td>
+                        <td>{actualCheckinText}</td>
                         <td>
                           {canCreateBill && !hasBillThisMonth ? (
                             <button
@@ -187,8 +249,11 @@ export default function Bills() {
                               ออกบิล
                             </button>
                           ) : (
-                            <button className="btn btn-secondary btn-sm fw-semibold" disabled>
-                              ปิดรอบออกบิล
+                            <button
+                              className="btn btn-secondary btn-sm fw-semibold"
+                              disabled
+                            >
+                              ออกบิล
                             </button>
                           )}
                         </td>
@@ -278,7 +343,9 @@ export default function Bills() {
 
                 <div className="mt-4 d-flex justify-content-between">
                   <Dialog.Close asChild>
-                    <button className="btn btn-secondary btn-sm px-3">ยกเลิก</button>
+                    <button className="btn btn-secondary btn-sm px-3">
+                      ยกเลิก
+                    </button>
                   </Dialog.Close>
                   <button
                     className="btn btn-success btn-sm px-3"

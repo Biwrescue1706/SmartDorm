@@ -70,30 +70,30 @@ export default function Nav({
 
         {/* 🏠 โลโก้ SmartDorm */}
         <div className="d-none d-xxl-flex flex-column ms-2">
-          <h4 className="fw-bold text-white mb-0">SmartDorm</h4>
+          <h4 className="fw-bold text-warning mb-0">SmartDorm</h4>
           <small className="text-white" style={{ lineHeight: 1 }}>
             ระบบจัดการหอพัก
           </small>
         </div>
 
         {/* ===== 🧭 ส่วนกลาง + ขวา ===== */}
-        <div className="flex-grow-1 d-flex justify-content-between align-items-center text-center w-100">
+        <div className="flex-grow-1 d-flex justify-content-between align-items-center text-center w-50">
           {/* 🌐 กลางจอ */}
-          <div className="flex-grow-1 text-center fw-semibold">
-            ระบบจัดการหอพัก (<span className="fw-bold">SmartDorm</span>)
+          <div className="flex-grow-1 text-center fw-semibold fw-bold fs-6">
+            ระบบจัดการหอพัก (<span className="fw-bold text-warning">SmartDorm</span>)
           </div>
 
           {/* 🙋‍♂️ ขวา */}
           <div className="text-end lh-sm me-2">
             {role === 0 ? (
               <>
-                <div>ยินดีต้อนรับ</div>
-                <div className="fw-bold fs-6 text-warning">{message}</div>
+                <div className="fw-bold text-danger">ยินดีต้อนรับ</div>
+                <div className="fw-bold text-warning">{message}</div>
               </>
             ) : role === 1 ? (
               <>
-                <div>ยินดีต้อนรับ</div>
-                <div className="fw-bold fs-6 text-info">{message}</div>
+                <div className="fw-bold text-danger">ยินดีต้อนรับ</div>
+                <div className="fw-bold text-warning">{message}</div>
               </>
             ) : (
               <div>⏳ กำลังโหลด...</div>
@@ -265,8 +265,8 @@ export default function Nav({
             <div>
               <div className="d-flex justify-content-between align-items-center border-bottom border-light pb-2 mb-3">
                 <div>
-                  <h5 className="fw-bold mb-0">SmartDorm</h5>
-                  <div className="small">ระบบจัดการหอพัก</div>
+                  <h5 className="fw-bold mb-0 text-warning">SmartDorm</h5>
+                  <div className="small text-warning">ระบบจัดการหอพัก</div>
                 </div>
                 <button
                   onClick={() => setMenuOpen(false)}

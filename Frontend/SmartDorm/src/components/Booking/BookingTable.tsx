@@ -44,40 +44,40 @@ export default function BookingTable({
         >
           <thead className="table-dark">
             <tr>
-              <th scope="col" style={{ width: "30%" }}>
+              <th scope="col" style={{ width: "50%" }}>
                 #
               </th>
-              <th scope="col" style={{ width: "65%" }}>
+              <th scope="col" style={{ width: "80%" }}>
                 ห้อง
               </th>
-              <th scope="col" style={{ width: "90%" }}>
-                Line ผู้จอง
+              <th scope="col" style={{ width: "120%" }}>
+                Line
               </th>
-              <th scope="col" style={{ width: "100%" }}>
+              <th scope="col" style={{ width: "120%" }}>
                 ชื่อผู้จอง
               </th>
-              <th scope="col" style={{ width: "90%" }}>
+              <th scope="col" style={{ width: "120%" }}>
                 เบอร์โทร
               </th>
-              <th scope="col" style={{ width: "90%" }}>
+              <th scope="col" style={{ width: "120%" }}>
                 วันจอง
               </th>
-              <th scope="col" style={{ width: "90%" }}>
+              <th scope="col" style={{ width: "120%" }}>
                 วันที่แจ้งเข้าพัก
               </th>
-              <th scope="col" style={{ width: "90%" }}>
+              <th scope="col" style={{ width: "120%" }}>
                 วันเข้าพักจริง
               </th>
-              <th scope="col" style={{ width: "90%" }}>
+              <th scope="col" style={{ width: "120%" }}>
                 สลิป
               </th>
-              <th scope="col" style={{ width: "90%" }}>
+              <th scope="col" style={{ width: "120%" }}>
                 สถานะ
               </th>
-              <th scope="col" style={{ width: "70%" }}>
+              <th scope="col" style={{ width: "90%" }}>
                 แก้ไข
               </th>
-              <th scope="col" style={{ width: "70%" }}>
+              <th scope="col" style={{ width: "90%" }}>
                 ลบ
               </th>
             </tr>
@@ -98,7 +98,7 @@ export default function BookingTable({
               ))
             ) : (
               <tr>
-                <td colSpan={12} className="text-center py-4 text-muted">
+                <td colSpan={13} className="text-center py-4 text-muted">
                   ไม่พบข้อมูลการจอง
                 </td>
               </tr>

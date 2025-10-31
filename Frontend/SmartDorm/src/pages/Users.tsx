@@ -164,18 +164,18 @@ export default function Users() {
               className="table table-sm table-striped align-middle text-center"
               style={{ tableLayout: "fixed", width: "100%" }}
             >
-              <thead className="table-dark sticky-top">
+              <thead className="table-dark">
                 <tr>
-                  <th>#</th>
-                  <th>LINE</th>
-                  <th>ดูประวัติ</th>
-                  <th>ลบ</th>
+                  <th style={{ width: "5%" }}>#</th>
+                  <th style={{ width: "5%" }}>LINE</th>
+                  <th style={{ width: "5%" }}>ดูประวัติ</th>
+                  <th style={{ width: "5%" }}>ลบ</th>
                 </tr>
               </thead>
               <tbody>
                 {loading ? (
                   <tr>
-                    <td colSpan={6} className="text-center py-4">
+                    <td colSpan={4} className="text-center py-4">
                       <div className="spinner-border text-primary"></div>
                     </td>
                   </tr>
@@ -211,7 +211,7 @@ export default function Users() {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={6} className="text-center text-muted py-4">
+                    <td colSpan={4} className="text-center text-muted py-4">
                       ไม่พบข้อมูลลูกค้า
                     </td>
                   </tr>

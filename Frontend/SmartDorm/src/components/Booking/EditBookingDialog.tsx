@@ -108,7 +108,7 @@ export default function EditBookingDialog({ booking, onSuccess }: Props) {
               className="text-center text-white fw-bold py-2 mb-3 rounded-top-4"
               style={{
                 background: "linear-gradient(135deg, #6a11cb, #2575fc)",
-                fontSize: "1.1rem",
+                fontSize: "1rem",
                 position: "sticky",
                 top: 0,
                 zIndex: 5,

@@ -53,12 +53,12 @@ export default function Booking() {
         role={role}
       />
 
-      <main className="main-content flex-grow-1 px-1 py-5 mt-3 mt-lg-4">
+      <main className="main-content flex-grow-1 px-1 py-2 mt-6 mt-lg-7">
         <div className="mx-auto container-max">
-          <h2 className="mb-1 py-1 text-center text-while mb-3">
+          <h2 className="py-1 text-center text-while mb-3">
             จัดการการจอง
           </h2>
-          <div className="mb-1 py-1 text-center text-while mb-3">
+          <div className="py-1 text-center text-while mb-3">
             <BookingFilter
               active={active}
               onChange={handleFilter}

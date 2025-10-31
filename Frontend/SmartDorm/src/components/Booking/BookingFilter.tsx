@@ -29,18 +29,18 @@ export default function BookingFilter({ active, onChange, bookings }: BookingFil
   ] as const;
 
   return (
-    <div className="d-flex flex-wrap justify-content-center gap-3 mb-4">
+    <div className="d-flex flex-wrap justify-content-center gap-3">
       {cards.map((card) => (
         <div
           key={card.key}
           role="button"
           onClick={() => onChange(card.key)}
           className={`card shadow-sm text-center border-0 p-3 ${
-            active === card.key ? "shadow-lg border-2 border-primary" : ""
+            active === card.key ? "shadow-md border-2 border-primary" : ""
           }`}
           style={{
             cursor: "pointer",
-            width: "180px",
+            width: "120px",
             borderRadius: "1rem",
             background: active === card.key
               ? `linear-gradient(135deg, ${card.color}, #ffffff)`
@@ -52,7 +52,7 @@ export default function BookingFilter({ active, onChange, bookings }: BookingFil
             className="fw-bold mb-2"
             style={{
               color: active === card.key ? "#000" : card.color,
-              fontSize: "1.05rem",
+              fontSize: "1rem",
             }}
           >
             {card.label}

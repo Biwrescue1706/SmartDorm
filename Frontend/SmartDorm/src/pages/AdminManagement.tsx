@@ -34,10 +34,10 @@ export default function AdminManagement() {
     <div className="d-flex flex-column" style={{ backgroundColor: "#f4f7fb", minHeight: "100vh" }}>
       <Nav message={message} onLogout={handleLogout} pendingBookings={0} role={role} />
 
-      <main className="main-content flex-grow-1 px-3 py-4 mt-5 mt-lg-5">
-        <div className="mx-auto container-max text-center">
+      <main className="main-content flex-grow-1 px-1 py-2 mt-6 mt-lg-7">
+        <div className="mx-auto container-max">
           <h2
-            className="mb-3 mt-1 py-2 fw-bold text-white rounded shadow-sm"
+            className="py-1 text-center text-while mb-3"
             style={{
               background: "linear-gradient(100deg,#007bff,#00d4ff)",
               fontSize: "1.4rem",
@@ -47,7 +47,7 @@ export default function AdminManagement() {
           </h2>
 
           <button
-            className="btn fw-bold text-white px-5 py-2 mb-4"
+            className="btn fw-bold text-white text-center px-5 py-2 mb-4"
             style={{ background: "linear-gradient(135deg,#6a11cb,#2575fc)" }}
             onClick={() => setOpenAdd(true)}
           >

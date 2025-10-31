@@ -25,9 +25,14 @@ export default function AllBills() {
   // ✅ กรองข้อมูลบิล
   useEffect(() => {
     let result = bills;
-    if (filterStatus !== "all") result = result.filter(b => b.status === Number(filterStatus));
-    if (filterMonth) result = result.filter(b => new Date(b.month).toISOString().slice(0, 7) === filterMonth);
-    if (filterRoom) result = result.filter(b => b.room.number.includes(filterRoom));
+    if (filterStatus !== "all")
+      result = result.filter((b) => b.status === Number(filterStatus));
+    if (filterMonth)
+      result = result.filter(
+        (b) => new Date(b.month).toISOString().slice(0, 7) === filterMonth
+      );
+    if (filterRoom)
+      result = result.filter((b) => b.room.number.includes(filterRoom));
     setFiltered(result);
     setPage(1);
   }, [bills, filterStatus, filterMonth, filterRoom]);
@@ -51,12 +56,15 @@ export default function AllBills() {
   };
 
   return (
-    <div className="d-flex flex-column" style={{ backgroundColor: "#fcfcfc", minHeight: "100vh" }}>
+    <div
+      className="d-flex flex-column"
+      style={{ backgroundColor: "#fcfcfc", minHeight: "100vh" }}
+    >
       {/* 🧭 Navbar */}
       <Nav message={message} onLogout={handleLogout} role={role} />
 
       {/* 📋 Main Content */}
-      <main className="main-content flex-grow-1 px-1 py-5 mt-3 mt-lg-5">
+      <main className="main-content flex-grow-1 px-1 py-2 mt-6 mt-lg-7">
         <div className="mx-auto container-max">
           <h2 className="text-center mb-3 fw-bold">📋 รายการบิลทั้งหมด</h2>
 

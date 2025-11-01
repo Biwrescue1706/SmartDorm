@@ -41,7 +41,7 @@ export default function Dashboard() {
 
          <main className="main-content flex-grow-1 px-1 py-2 mt-6 mt-lg-7">
         <div className="mx-auto container-max">
-          <h2 className="text-center fw-bold mb-4">📊 สรุปข้อมูลหอพัก</h2>
+          <h2 className="text-center mt-3 fw-bold mb-4">📊 สรุปข้อมูลหอพัก</h2>
 
           <DashboardSummary
             totalRooms={totalRooms}

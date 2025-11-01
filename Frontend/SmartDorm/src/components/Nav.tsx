@@ -93,14 +93,14 @@ export default function Nav({
             {role === 0 ? (
               <>
                 <div>
-                  <h6 className="fw-bold text-danger">ยินดีต้อนรับ แอดมิน</h6>
+                  <h6 className="fw-bold text-danger"><span>ยินดีต้อนรับ แอดมิน</span></h6>
                   <h6 className="fw-bold text-warning">{message}</h6>
                 </div>
               </>
             ) : role === 1 ? (
               <>
                 <div>
-                  <h6 className="fw-bold text-danger">ยินดีต้อนรับ พนักงาน</h6>
+                  <h6 className="fw-bold text-danger"><span>ยินดีต้อนรับ พนักงาน</span></h6>
                   <h6 className="fw-bold text-warning">{message}</h6>
                 </div>
               </>

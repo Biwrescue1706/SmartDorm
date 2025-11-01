@@ -5,7 +5,6 @@ interface DashboardCardProps {
   count: number;
   color: string;
   link: string;
-  icon: string;
 }
 
 export default function DashboardCard({
@@ -13,7 +12,6 @@ export default function DashboardCard({
   count,
   color,
   link,
-  icon,
 }: DashboardCardProps) {
   const navigate = useNavigate();
 
@@ -24,7 +22,7 @@ export default function DashboardCard({
         background: color,
         color: "white",
         borderRadius: "10px",
-        height: "100px", // 🟢 การ์ดเตี้ยลง
+        height: "90px", // การ์ดเตี้ยลง
         cursor: "pointer",
         transition: "transform 0.15s, box-shadow 0.15s",
       }}
@@ -34,13 +32,12 @@ export default function DashboardCard({
     >
       <div
         className="d-flex flex-column justify-content-center align-items-center h-100"
-        style={{ lineHeight: 1.1 }}
+        style={{ lineHeight: 1 }}
       >
-        <div className="fs-5">{icon}</div>
-        <div className="fw-semibold" style={{ fontSize: "0.85rem" }}>
+        <div className="fw-semibold" style={{ fontSize: "1rem" }}>
           {title}
         </div>
-        <div className="fw-bold" style={{ fontSize: "1.2rem" }}>
+        <div className="fw-bold" style={{ fontSize: "1rem" }}>
           {count}
         </div>
       </div>

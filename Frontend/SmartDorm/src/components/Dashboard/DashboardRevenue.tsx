@@ -1,13 +1,13 @@
-import { useMemo, useEffect } from "react";
+import { useMemo } from "react";
 import type { Bill } from "../../types/Bill";
-import type { Room } from "../../types/Room";
+import type { Booking } from "../../types/Booking";
 
 interface Props {
   bills: Bill[];
-  rooms: Room[];
+  bookings: Booking[];
 }
 
-export default function DashboardRevenue({ bills, rooms }: Props) {
+export default function DashboardRevenue({ bills, bookings }: Props) {
   // ✅ รวมยอดจาก Bill
   const totalRent = useMemo(
     () => bills.reduce((sum, b) => sum + (b.rent || 0), 0),
@@ -19,40 +19,19 @@ export default function DashboardRevenue({ bills, rooms }: Props) {
     [bills]
   );
 
-  // ✅ รวมเฉพาะห้องที่ "มีบิล" (แสดงว่ามีผู้เช่าจริง)
+  // ✅ รวมค่าประกันจาก Booking ที่อนุมัติแล้ว (approveStatus = 1)
   const totalDeposit = useMemo(() => {
-    const roomIdsWithBills = new Set(
-      bills
-        .filter((b) => b.room && b.room.roomId)
-        .map((b) => b.room.roomId)
-    );
+    return bookings
+      .filter((b) => b.approveStatus === 1 && b.room)
+      .reduce((sum, b) => sum + (b.room.deposit || 0), 0);
+  }, [bookings]);
 
-    return rooms
-      .filter(
-        (r) =>
-          roomIdsWithBills.has(r.roomId) &&
-          r.deposit > 0 &&
-          r.deposit < 50000 // กันหน่วยผิด
-      )
-      .reduce((sum, r) => sum + r.deposit, 0);
-  }, [rooms, bills]);
-
+  // ✅ รวมค่าจองจาก Booking ที่อนุมัติแล้ว (approveStatus = 1)
   const totalBooking = useMemo(() => {
-    const roomIdsWithBills = new Set(
-      bills
-        .filter((b) => b.room && b.room.roomId)
-        .map((b) => b.room.roomId)
-    );
-
-    return rooms
-      .filter(
-        (r) =>
-          roomIdsWithBills.has(r.roomId) &&
-          r.bookingFee > 0 &&
-          r.bookingFee < 10000 // กันหน่วยผิด
-      )
-      .reduce((sum, r) => sum + r.bookingFee, 0);
-  }, [rooms, bills]);
+    return bookings
+      .filter((b) => b.approveStatus === 1 && b.room)
+      .reduce((sum, b) => sum + (b.room.bookingFee || 0), 0);
+  }, [bookings]);
 
   // ✅ รวมรายเดือนจาก Bill
   const monthlyData = useMemo(() => {
@@ -70,14 +49,6 @@ export default function DashboardRevenue({ bills, rooms }: Props) {
       total,
     }));
   }, [bills]);
-
-  // ✅ debug ห้องที่ค่าประกันผิดหน่วย
-  useEffect(() => {
-    const wrongDepositRooms = rooms.filter((r) => r.deposit > 50000);
-    if (wrongDepositRooms.length > 0) {
-      console.warn("⚠️ ห้องที่มีค่าประกันเกิน 50,000:", wrongDepositRooms);
-    }
-  }, [rooms]);
 
   return (
     <div className="mt-4">

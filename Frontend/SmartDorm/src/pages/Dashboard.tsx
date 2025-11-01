@@ -51,8 +51,8 @@ export default function Dashboard() {
             pendingCheckouts={pendingCheckouts}
           />
 
-          {/* ✅ ส่ง rooms เข้าไปด้วย */}
-          <DashboardRevenue bills={bills} rooms={rooms} />
+          <DashboardRevenue bills={bills} bookings={bookings} />
+
         </div>
       </main>
     </div>

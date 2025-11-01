@@ -70,30 +70,39 @@ export default function Nav({
 
         {/* 🏠 โลโก้ SmartDorm */}
         <div className="d-none d-xxl-flex flex-column ms-2">
-          <h4 className="fw-bold text-warning mb-0">SmartDorm</h4>
-          <small className="text-white" style={{ lineHeight: 1 }}>
+          <h5 className="text-white" style={{ lineHeight: 1 }}>
             ระบบจัดการหอพัก
-          </small>
+          </h5>
+          <h5 className="fw-bold text-whlie mb-1">
+            (<span className="fw-bold text-warning"> SmartDorm </span>)
+          </h5>
         </div>
 
         {/* ===== 🧭 ส่วนกลาง + ขวา ===== */}
         <div className="flex-grow-1 d-flex justify-content-between align-items-center text-center w-50">
           {/* 🌐 กลางจอ */}
-          <div className="flex-grow-1 text-center fw-semibold fw-bold fs-6">
-            ระบบจัดการหอพัก (<span className="fw-bold text-warning">SmartDorm</span>)
+          <div className="flex-grow-1 justify-content-between text-center fw-semibold fw-bold fs-6">
+            <h6 className="fw-bold text-whlie mb-1">ระบบจัดการหอพัก</h6>
+            <h5 className="fw-bold text-whlie" style={{ lineHeight: 1 }}>
+              (<span className="fw-bold text-warning"> SmartDorm </span>)
+            </h5>
           </div>
 
           {/* 🙋‍♂️ ขวา */}
-          <div className="text-end lh-sm me-2">
+          <div className="flex-grow-2 text-end justify-content-center me-2">
             {role === 0 ? (
               <>
-                <div className="fw-bold text-danger">ยินดีต้อนรับ</div>
-                <div className="fw-bold text-warning">{message}</div>
+                <div>
+                  <h6 className="fw-bold text-danger">ยินดีต้อนรับ แอดมิน</h6>
+                  <h6 className="fw-bold text-warning">{message}</h6>
+                </div>
               </>
             ) : role === 1 ? (
               <>
-                <div className="fw-bold text-danger">ยินดีต้อนรับ</div>
-                <div className="fw-bold text-warning">{message}</div>
+                <div>
+                  <h6 className="fw-bold text-danger">ยินดีต้อนรับ พนักงาน</h6>
+                  <h6 className="fw-bold text-warning">{message}</h6>
+                </div>
               </>
             ) : (
               <div>⏳ กำลังโหลด...</div>
@@ -107,7 +116,7 @@ export default function Nav({
         className="d-none d-xxl-flex flex-column justify-content-between position-fixed top-0 start-0 bg-primary text-white shadow h-100"
         style={{
           width: "180px",
-          paddingTop: "55px",
+          paddingTop: "75px",
           overflowY: "auto",
         }}
       >
@@ -238,8 +247,30 @@ export default function Nav({
           >
             👤 ข้อมูลลูกค้า
           </button>
-        </div>
+          {/* โปรไฟล์ */}
+          <button
+            onClick={() => navigate("/profile")}
+            className={`btn text-start ${
+              location.pathname.startsWith("/profile")
+                ? "btn-light text-primary fw-bold"
+                : "btn-outline-light"
+            }`}
+          >
+            ⚙️ โปรไฟล์ของฉัน
+          </button>
 
+          {/* เปลี่ยนรหัสผ่าน */}
+          <button
+            onClick={() => navigate("/change-password")}
+            className={`btn text-start ${
+              location.pathname.startsWith("/change-password")
+                ? "btn-light text-primary fw-bold"
+                : "btn-outline-light"
+            }`}
+          >
+            🔑 เปลี่ยนรหัสผ่าน
+          </button>
+        </div>
         {/* Logout */}
         <div className="border-top border-light p-2 mt-auto">
           <button
@@ -265,8 +296,10 @@ export default function Nav({
             <div>
               <div className="d-flex justify-content-between align-items-center border-bottom border-light pb-2 mb-3">
                 <div>
-                  <h5 className="fw-bold mb-0 text-warning">SmartDorm</h5>
-                  <div className="small text-warning">ระบบจัดการหอพัก</div>
+                  <h6 className="fw-bold mb-1 text-whlie">ระบบจัดการหอพัก</h6>
+                  <h6 className="fw-bold mb-0 text-whlie">
+                    (<span className="fw-bold text-warning"> SmartDorm </span>)
+                  </h6>
                 </div>
                 <button
                   onClick={() => setMenuOpen(false)}
@@ -386,6 +419,29 @@ export default function Nav({
                   className="btn btn-outline-light text-start"
                 >
                   👤 ข้อมูลลูกค้า
+                </button>
+                {/* โปรไฟล์ */}
+                <button
+                  onClick={() => navigate("/profile")}
+                  className={`btn btn-outline-light text-start ${
+                    location.pathname.startsWith("/profile")
+                      ? "btn-light text-primary fw-bold"
+                      : "btn-outline-light"
+                  }`}
+                >
+                  ⚙️ โปรไฟล์ของฉัน
+                </button>
+
+                {/* เปลี่ยนรหัสผ่าน */}
+                <button
+                  onClick={() => navigate("/change-password")}
+                  className={`btn text-start ${
+                    location.pathname.startsWith("/change-password")
+                      ? "btn-light text-primary fw-bold"
+                      : "btn-outline-light"
+                  }`}
+                >
+                  🔑 เปลี่ยนรหัสผ่าน
                 </button>
               </div>
             </div>

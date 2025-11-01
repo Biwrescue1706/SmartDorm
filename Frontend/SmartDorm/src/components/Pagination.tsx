@@ -1,4 +1,4 @@
-// ✅ ใช้ Bootstrap ล้วน ๆ ไม่มี CSS เพิ่ม
+//src/components/Pagination.tsx
 export interface PaginationProps {
   currentPage: number;
   totalItems: number;

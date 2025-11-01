@@ -12,7 +12,10 @@ import Checkout from "./pages/Checkout";
 import AllBills from "./pages/AllBills";
 import AdminManagement from "./pages/AdminManagement";
 import Users from "./pages/Users";
-// import LineConfigPage from "./pages/linesetting";
+import Profile from "./pages/Profile";
+import ChangePassword from "./pages/ChangePassword";
+import ForgotUsername from "./pages/ForgotUsername";
+import ResetPassword from "./pages/ResetPassword";
 
 function App() {
   return (
@@ -94,8 +97,43 @@ function App() {
         path="/users"
         element={
           <ProtectedRoute>
-            <Users  />
+            <Users />
           </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/profile"
+        element={
+          <ProtectedRoute>
+            <Profile />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/change-password"
+        element={
+          <ProtectedRoute>
+            <ChangePassword />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/forgot-username"
+        element={
+          <GuestRoute>
+            <ForgotUsername />
+          </GuestRoute>
+        }
+      />
+      <Route
+        path="/reset-password"
+        element={
+          <GuestRoute>
+            <ResetPassword />
+          </GuestRoute>
         }
       />
 

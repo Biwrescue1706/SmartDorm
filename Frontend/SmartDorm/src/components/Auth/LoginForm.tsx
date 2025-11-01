@@ -142,7 +142,7 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
       {/*  สมัครสมาชิก */}
       <div className="d-flex justify-content-center align-items-center gap-2 flex-column">
         <Link
-          to="/forgot-password"
+          to="/forgot-username"
           className="fw-semibold text-decoration-none text-black"
         >
           ลืมรหัสผ่าน

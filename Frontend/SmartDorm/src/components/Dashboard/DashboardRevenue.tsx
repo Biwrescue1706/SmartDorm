@@ -8,16 +8,16 @@ interface Props {
 }
 
 export default function DashboardRevenue({ bills, bookings }: Props) {
+  // ✅ รวมค่าเช่าจาก Booking.room.rent (เฉพาะที่อนุมัติแล้ว)
   const totalRent = useMemo(
-    () => bills.reduce((sum, b) => sum + (b.rent || 0), 0),
-    [bills]
+    () =>
+      bookings
+        .filter((b) => b.approveStatus === 1 && b.room)
+        .reduce((sum, b) => sum + (b.room.rent || 0), 0),
+    [bookings]
   );
 
-  const totalAll = useMemo(
-    () => bills.reduce((sum, b) => sum + (b.total || 0), 0),
-    [bills]
-  );
-
+  // ✅ รวมค่าประกัน
   const totalDeposit = useMemo(
     () =>
       bookings
@@ -26,12 +26,19 @@ export default function DashboardRevenue({ bills, bookings }: Props) {
     [bookings]
   );
 
+  // ✅ รวมค่าจอง
   const totalBooking = useMemo(
     () =>
       bookings
         .filter((b) => b.approveStatus === 1 && b.room)
         .reduce((sum, b) => sum + (b.room.bookingFee || 0), 0),
     [bookings]
+  );
+
+  // ✅ รวมรายรับจากบิล (ตามเดือน)
+  const totalAll = useMemo(
+    () => bills.reduce((sum, b) => sum + (b.total || 0), 0),
+    [bills]
   );
 
   const monthlyData = useMemo(() => {

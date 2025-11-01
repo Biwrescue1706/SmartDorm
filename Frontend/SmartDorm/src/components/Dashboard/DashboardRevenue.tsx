@@ -8,7 +8,6 @@ interface Props {
 }
 
 export default function DashboardRevenue({ bills, bookings }: Props) {
-  // ✅ รวมยอดจาก Bill
   const totalRent = useMemo(
     () => bills.reduce((sum, b) => sum + (b.rent || 0), 0),
     [bills]
@@ -19,35 +18,30 @@ export default function DashboardRevenue({ bills, bookings }: Props) {
     [bills]
   );
 
-  // ✅ รวมค่าประกันจาก Booking ที่อนุมัติแล้ว (approveStatus = 1)
-  const totalDeposit = useMemo(() => {
-    return bookings
-      .filter((b) => b.approveStatus === 1 && b.room)
-      .reduce((sum, b) => sum + (b.room.deposit || 0), 0);
-  }, [bookings]);
+  const totalDeposit = useMemo(
+    () =>
+      bookings
+        .filter((b) => b.approveStatus === 1 && b.room)
+        .reduce((sum, b) => sum + (b.room.deposit || 0), 0),
+    [bookings]
+  );
 
-  // ✅ รวมค่าจองจาก Booking ที่อนุมัติแล้ว (approveStatus = 1)
-  const totalBooking = useMemo(() => {
-    return bookings
-      .filter((b) => b.approveStatus === 1 && b.room)
-      .reduce((sum, b) => sum + (b.room.bookingFee || 0), 0);
-  }, [bookings]);
+  const totalBooking = useMemo(
+    () =>
+      bookings
+        .filter((b) => b.approveStatus === 1 && b.room)
+        .reduce((sum, b) => sum + (b.room.bookingFee || 0), 0),
+    [bookings]
+  );
 
-  // ✅ รวมรายเดือนจาก Bill
   const monthlyData = useMemo(() => {
     const map = new Map<string, number>();
     bills.forEach((b) => {
       const d = new Date(b.month);
-      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(
-        2,
-        "0"
-      )}`;
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
       map.set(key, (map.get(key) || 0) + (b.total || 0));
     });
-    return Array.from(map.entries()).map(([month, total]) => ({
-      month,
-      total,
-    }));
+    return Array.from(map.entries()).map(([month, total]) => ({ month, total }));
   }, [bills]);
 
   return (

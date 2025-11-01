@@ -39,8 +39,8 @@ export default function Dashboard() {
     <div className="d-flex flex-column min-vh-100 bg-light">
       <Nav message={message} onLogout={handleLogout} pendingBookings={pendingBookings} role={role} />
 
-      <main className="main-content flex-grow-1 px-3 py-4 mt-5">
-        <div className="container">
+         <main className="main-content flex-grow-1 px-1 py-2 mt-6 mt-lg-7">
+        <div className="mx-auto container-max">
           <h2 className="text-center fw-bold mb-4">📊 สรุปข้อมูลหอพัก</h2>
 
           <DashboardSummary

@@ -9,8 +9,12 @@ export interface Customer {
 }
 
 export interface Room {
+  roomId: string;
   number: string;
   size: string;
+  rent: number;
+  deposit: number;
+  bookingFee: number;
 }
 
 export interface Booking {

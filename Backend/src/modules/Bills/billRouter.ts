@@ -40,7 +40,7 @@ router.get("/getall", async (_req, res) => {
 });
 
 // 🔍 ดึงบิลรายตัว
-router.get("/:billId", authMiddleware, async (req, res) => {
+router.get("/:billId", async (req, res) => {
   try {
     const bill = await billService.getBillById(req.params.billId);
     res.json(bill);

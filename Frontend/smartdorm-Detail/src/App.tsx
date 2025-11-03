@@ -1,12 +1,14 @@
 import { Routes, Route } from "react-router-dom";
 import BookingDetail from "./pages/BookingDetail";
 import CheckoutDetail from "./pages/CheckoutDetail";
+import BillDetail from "./pages/BillDetail";
 
 export default function App() {
   return (
     <Routes>
       <Route path="/booking/:bookingId" element={<BookingDetail />} />
-     <Route path="/checkout/:bookingId" element={<CheckoutDetail />} />
-     </Routes>
+      <Route path="/checkout/:bookingId" element={<CheckoutDetail />} />
+      <Route path="/bill/:billId" element={<BillDetail />} />
+    </Routes>
   );
 }

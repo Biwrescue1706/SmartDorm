@@ -1,8 +1,8 @@
 // src/modules/Payments/paymentService.ts
 import { paymentRepository } from "./paymentRepository";
-import { notifyUser } from "../../utils/lineNotify";
 import { verifyLineToken } from "../../utils/verifyLineToken";
 import { PaymentInput } from "./paymentModel";
+import { sendFlexMessage } from "../../utils/lineFlex";
 
 // 🗓️ ฟังก์ชันแปลงวันที่ให้เป็นรูปแบบไทย
 const formatThaiDate = (dateInput: string | Date) => {
@@ -45,39 +45,55 @@ export const paymentService = {
     const slipUrl = await paymentRepository.uploadSlipToSupabase(slip);
 
     // 💾 บันทึกข้อมูลลงฐานข้อมูล
-    const [payment, updatedBill] = await paymentRepository.createPaymentAndUpdateBill(
-      billId,
-      slipUrl,
-      bill.customerId
+    const [payment, updatedBill] =
+      await paymentRepository.createPaymentAndUpdateBill(
+        billId,
+        slipUrl,
+        bill.customerId
+      );
+
+    const customerDetailUrl = `https://smartdorm-paymentbill.biwbong.shop`;
+    const adminUrl = `https://smartdorm-admin.biwbong.shop`;
+    
+    // ✅ แจ้งเตือนลูกค้าด้วย Flex Message
+    await sendFlexMessage(
+      bill.customer.userId,
+      "💰 ส่งสลิปการชำระเงินสำเร็จแล้ว",
+      [
+        { label: "รหัสบิล", value: bill.billId },
+        { label: "รหัสการชำระ", value: payment.paymentId },
+        { label: "🏠 ห้อง", value: bill.room?.number ?? "-" },
+        { label: "ยอดชำระ", value: `${bill.total.toLocaleString()} บาท` },
+        { label: "วันที่ชำระ", value: formatThaiDate(payment.createdAt) },
+        {
+          label: "สถานะ",
+          value: "ชำระเงินแล้ว",
+          color: "#f39c12",
+        },
+      ],
+      "🔗 ดูรายละเอียดบิลของคุณ",
+      customerDetailUrl
     );
 
-    // ✅ สร้างข้อความแจ้งเตือนผู้ดูแล
-    const adminMsg = `📢 มีการชำระบิลใหม่เข้ามา
-ของคุณ : ${bill.customer.userName}
------------ข้อมูลลูกค้า----------
-ชื่อ : ${bill.customer.fullName}
-ห้อง : ${bill.room?.number ?? "-"}
-เบอร์โทร : ${bill.customer.cphone}
-รหัสบิล : ${bill.billId}
-วันที่ชำระ : ${formatThaiDate(bill.createdAt)}
-สลิป: ${bill.slipUrl || "ไม่มี"}
--------------------
-สามารถตรวจสอบได้ที่ : https://smartdorm-admin.biwbong.shop`;
-
-    // ✅ สร้างข้อความแจ้งเตือนลูกค้า
-    const userMsg = `📢 คุณได้ส่งสลิปการชำระบิลเรียบร้อยแล้ว
------------ข้อมูลลูกค้า----------
-รหัสบิล : ${bill.billId}
-รหัสการชำระบิล : ${payment.paymentId}
-ยอดชำระ : ${bill.total} บาท
-วันที่ชำระ : ${formatThaiDate(payment.createdAt)}
---------------------
-ขอบคุณที่ใช้บริการ 🏫SmartDorm🎉 ครับ`;
-
-    // 📲 ส่งแจ้งเตือนผ่าน LINE
-    await notifyUser(bill.customer.userId, userMsg);
+    /* ✅ แจ้งแอดมินด้วย Flex Message */
     if (process.env.ADMIN_LINE_ID) {
-      await notifyUser(process.env.ADMIN_LINE_ID, adminMsg);
+      await sendFlexMessage(
+        process.env.ADMIN_LINE_ID,
+        "📢 มีการชำระบิลใหม่เข้ามา",
+        [
+          { label: "รหัสบิล", value: bill.billId },
+          { label: "ชื่อผู้เช่า", value: bill.customer.fullName },
+          { label: "🏠 ห้อง", value: bill.room?.number ?? "-" },
+          { label: "เบอร์โทร", value: bill.customer.cphone },
+          { label: "ยอดชำระ", value: `${bill.total.toLocaleString()} บาท` },
+          { label: "วันที่ชำระ", value: formatThaiDate(payment.createdAt) },
+          {
+            label :"สลิป" ,value : bill.slipUrl || "ไม่มี"
+          },
+        ],
+        "🔗 เปิดในระบบ Admin",
+        adminUrl
+      );
     }
 
     return { payment, bill: updatedBill };

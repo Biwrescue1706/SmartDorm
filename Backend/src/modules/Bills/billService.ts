@@ -1,7 +1,7 @@
 // src/modules/Bills/billService.ts
 import { billRepository } from "./billRepository";
 import { CreateBillInput, BillUpdateInput } from "./billModel";
-import { notifyUser } from "../../utils/lineNotify";
+import { sendFlexMessage } from "../../utils/lineFlex";
 
 // 🗓️ ฟังก์ชันแปลงวันที่ให้อยู่ในรูปแบบไทย
 const formatThaiDate = (dateInput: string | Date) => {
@@ -108,22 +108,37 @@ export const billService = {
       createdBy: adminId,
       createdAt,
     });
-    const msg = `📢 บิลใหม่ ของคุณ ${bill.customer?.userName}
-ห้อง: ${bill.room.number}
-เดือน : ${bill.month.toLocaleDateString("th-TH", { year: "numeric", month: "long" })}\n
--------------------\n
-ค่าเช่า : ${bill.rent.toLocaleString()} บาท
-ค่าส่วนกลาง : ${bill.service.toLocaleString()} บาท
-ค่าน้ำ : ${bill.wUnits} หน่วย ( ${bill.waterCost.toLocaleString()} บาท )
-ค่าไฟ : ${bill.eUnits} หน่วย ( ${bill.electricCost.toLocaleString()} บาท )
-ยอดรวมทั้งหมด: ${bill.total.toLocaleString()} บาท
-ครบกำหนดชำระ: ${formatThaiDate(bill.dueDate)}\n
--------------------\n
-ขอบคุณที่ใช้บริการ 🏫SmartDorm🎉`;
 
+      // 📎 ลิงก์ดูบิล
+    const billUrl = `https://smartdorm-detail.biwbong.shop/bill/${bill.billId}`;
+
+    // 🧾 ส่ง Flex Message
     if (bill.customer && bill.customer.userId) {
-      await notifyUser(bill.customer.userId, msg);
+      await sendFlexMessage(
+        bill.customer.userId,
+        "🧾 บิลค่าเช่าห้อง SmartDorm ของคุณ",
+        [
+          { label: "🏠 ห้อง", value: bill.room.number },
+          {
+            label: "เดือน",
+            value: bill.month.toLocaleDateString("th-TH", {
+              year: "numeric",
+              month: "long",
+            }),
+          },
+          { label: "💧 ค่าน้ำ", value: `${bill.wUnits} หน่วย (${bill.waterCost.toLocaleString()} บาท)` },
+          { label: "⚡ ค่าไฟ", value: `${bill.eUnits} หน่วย (${bill.electricCost.toLocaleString()} บาท)` },
+          { label: "🏢 ค่าส่วนกลาง", value: `${bill.service.toLocaleString()} บาท` },
+          { label: "💰 ค่าเช่าห้อง", value: `${bill.rent.toLocaleString()} บาท` },
+          { label: "💵 ยอดรวมทั้งหมด", value: `${bill.total.toLocaleString()} บาท`, color: "#27ae60" },
+          { label: "📅 ครบกำหนดชำระ", value: formatThaiDate(bill.dueDate), color: "#e67e22" },
+        ],
+        "🔗 ดูรายละเอียดบิล",
+        billUrl
+      );
     }
+
+
     return bill;
   },
 

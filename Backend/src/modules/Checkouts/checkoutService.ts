@@ -1,8 +1,8 @@
 import { checkoutRepository } from "./checkoutRepository";
-import { notifyUser } from "../../utils/lineNotify";
 import { CheckoutRequest } from "./checkoutModel";
 import prisma from "../../prisma";
 import { verifyLineToken } from "../../utils/verifyLineToken";
+import { sendFlexMessage } from "../../utils/lineFlex";
 
 /* 🗓️ ฟังก์ชันแปลงวันที่แบบไทย */
 const formatThaiDate = (dateInput: string | Date) => {
@@ -56,32 +56,46 @@ export const checkoutService = {
       });
     });
 
-    const adminMsg = `📢 มีคำขอคืนห้องใหม่
-ของคุณ : ${booking.customer.userName} \n
------------ข้อมูลลูกค้า-----------\n
-ชื่อ: ${booking.customer.fullName}
-ห้อง: ${booking.room.number}
-เบอร์โทร : ${booking.customer.cphone}
-วันที่ขอคืน: ${formatThaiDate(checkout)}\n
--------------------\n
-ตรวจสอบได้ที่: https://smartdorm-admin.biwbong.shop`;
+    const admindetail = `https://smartdorm-admin.biwbong.shop`;
 
-    const userMsg = `📢 ได้ส่งคำขอคืนห้อง ${booking.room.number}
-ของคุณ ${booking.customer.userName} เรียบร้อยแล้ว\n
------------ข้อมูลลูกค้า----------\n
-รหัสการจอง: ${booking.bookingId}
-ชื่อ : ${booking.customer.fullName}
-วันที่เช็คเอาท์ที่ต้องการ: ${formatThaiDate(checkout)}
-สถานะ: รอผู้ดูแลอนุมัติ \n
-ดูข้อมูลการจองของคุณ : 
-https://smartdorm-detail.biwbong.shop/checkout/${booking.bookingId} \n
---------------------\n
-ขอบคุณที่ใช้บริการ 🏫SmartDorm🎉 ครับ
-`;
+    // ✅ แจ้งแอดมิน
+    if (process.env.ADMIN_LINE_ID) {
+      await sendFlexMessage(
+        process.env.ADMIN_LINE_ID,
+        "📢 มีคำขอคืนห้องใหม่",
+        [
+          { label: "รหัสการจอง", value: booking.bookingId },
+          { label: "🏠 ห้อง", value: booking.room.number },
+          { label: "👤 ผู้ขอคืน", value: booking.customer.fullName },
+          { label: "📞 เบอร์", value: booking.customer.cphone },
+          { label: "📅 วันที่ขอคืน", value: formatThaiDate(checkout) },
+        ],
+        "🔗 เปิดในระบบ Admin",
+        admindetail
+      );
+    }
 
-    await notifyUser(booking.customer.userId, userMsg);
-    if (process.env.ADMIN_LINE_ID)
-      await notifyUser(process.env.ADMIN_LINE_ID, adminMsg);
+    const detailUrl = `https://smartdorm-detail.biwbong.shop/checkout/${booking.bookingId}`;
+
+    // ✅ ส่ง Flex Message ให้ลูกค้า
+    await sendFlexMessage(
+      booking.customer.userId,
+      "คำขอคืนห้องของคุณถูกส่งเรียบร้อยแล้ว",
+      [
+        { label: "รหัสการจอง", value: booking.bookingId },
+        { label: "🏠 ห้อง", value: booking.room.number },
+        { label: "👤 ชื่อ", value: booking.customer.fullName },
+        { label: "📞 เบอร์", value: booking.customer.cphone },
+        { label: "📅 วันที่ต้องการคืน", value: formatThaiDate(checkout) },
+        {
+          label: "สถานะ",
+          value: "⏳ รอผู้ดูแลอนุมัติ",
+          color: "#f39c12",
+        },
+      ],
+      "🔗 ดูรายละเอียดการคืนห้อง",
+      detailUrl
+    );
 
     return updated;
   },
@@ -113,25 +127,34 @@ https://smartdorm-detail.biwbong.shop/checkout/${booking.bookingId} \n
       return updatedBooking;
     });
 
-    const userMsg = ` ผลการการคืนห้อง
-ของคุณ : ${booking.customer.userName}\n
------------ข้อมูลลูกค้า----------\n
-ห้อง: ${booking.room.number}
-ชื่อ : ${booking.customer.fullName}
-รหัสการจอง : ${booking.bookingId}
-สถานะ : การคืนห้องของคุณได้รับการอนุมัติแล้ว
-กรุณาเตรียมตัวเช็คเอาท์วันที่ระบุ: ${formatThaiDate(actualCheckout)}\n
-เปิดลิงค์ให้เจ้าหน้าที่ดูแลหอพัก เช็คด้วย ด้วยนะครับ : 
-https://smartdorm-detail.biwbong.shop/checkout/${booking.bookingId}\n
---------------------\n
-กรุณา กรอก หมายเลขบัญชี เพื่อรับเงินประกันคืน
-ธนาคาร : ___________
-หมายเลขบัญชื่อ : ___________
-ชื่อ : ___________
---------------------\n
-ขอบคุณที่ใช้บริการ 🏫SmartDorm🎉`;
+    const detailUrl = `https://smartdorm-detail.biwbong.shop/checkout/${booking.bookingId}`;
 
-    await notifyUser(booking.customer.userId, userMsg);
+    await sendFlexMessage(
+      booking.customer.userId,
+      "การคืนห้องของคุณได้รับการอนุมัติแล้ว",
+      [
+        { label: "รหัสการจอง", value: booking.bookingId },
+        { label: "🏠 ห้อง", value: booking.room.number },
+        { label: "👤 ชื่อ", value: booking.customer.fullName },
+        {
+          label: "📅 กรุณาเตรียมตัวเช็คเอาท์วันที่ระบุ",
+          value: formatThaiDate(booking.checkout),
+        },
+        {
+          label: "สถานะ",
+          value: "✅ อนุมัติคืนห้องเรียบร้อย",
+          color: "#27ae60",
+        },
+        {
+          label: "📋 กรุณากรอกหมายเลขบัญชีเพื่อรับเงินประกันคืน",
+          value: `ธนาคาร : ___________\nหมายเลขบัญชี : ___________\nชื่อ : ___________`,
+          color: "#000000ff",
+        },
+      ],
+      "🔗 เปิดลิงค์ให้เจ้าหน้าที่ดูแลหอพัก เช็คด้วย ด้วยนะครับ ",
+      detailUrl
+    );
+
     return updated;
   },
 
@@ -144,18 +167,29 @@ https://smartdorm-detail.biwbong.shop/checkout/${booking.bookingId}\n
       returnStatus: 2,
     });
 
-    const userMsg = `📢 ผลการคืนห้อง 
-ของคุณ : ${booking.customer.userName} \n
------------ข้อมูลลูกค้า----------\n
-ห้อง : ${booking.room.number}
-ชื่อ : ${booking.customer.fullName}
-รหัสการจอง : ${booking.bookingId}
-สถานะ : การคืนห้องของคุณไม่ได้รับการอนุมัติ\n
---------------------\n
-กรุณาติดต่อ ผู้ดูแล ผ่านช่องทางนี้ นะครับ
-ขอบคุณที่ใช้บริการ 🏫SmartDorm🎉 ครับ`;
+    const detailUrl = `https://smartdorm-detail.biwbong.shop/checkout/${booking.bookingId}`;
 
-    await notifyUser(booking.customer.userId, userMsg);
+    await sendFlexMessage(
+      booking.customer.userId,
+      "❌ การคืนห้องของคุณไม่ได้รับการอนุมัติ",
+      [
+        { label: "รหัสการจอง", value: booking.bookingId },
+        { label: "🏠 ห้อง", value: booking.room.number },
+        { label: "👤 ชื่อ", value: booking.customer.fullName },
+        {
+          label: "สถานะ",
+          value: "❌ ปฏิเสธการคืนห้อง",
+          color: "#e74c3c",
+        },
+        {
+          label: "ติดต่อผู้ดูแลระบบ",
+          value: "ติดต่อผู้ดูแลระบบครับ พิมพ์ส่งมาได้เลยครับ",
+        },
+      ],
+      "ติดต่อผู้ดูแล",
+      detailUrl
+    );
+
     return updated;
   },
 
@@ -197,18 +231,29 @@ https://smartdorm-detail.biwbong.shop/checkout/${booking.bookingId}\n
       return updatedBooking;
     });
 
-    //  แจ้งเตือนไปยังผู้เช่า
-    const userMsg = `🏠 เช็คเอาท์สำเร็จ : \n
------------ข้อมูลลูกค้า----------\n
-รหัสการจอง: ${booking.bookingId}
-ห้อง ${booking.room.number} \n
-ชื่อ: ${booking.customer.fullName}\n
-วันที่: ${formatThaiDate(actualCheckout)}\n
-สถานะ: เช็คเอาท์สำเร็จครับ\n
---------------------\n
-ขอบคุณที่ใช้บริการ 🏫SmartDorm🎉 ครับ`;
+    const detailUrl = `https://smartdorm-detail.biwbong.shop/checkout/${booking.bookingId}`;
 
-    await notifyUser(booking.customer.userId, userMsg);
+    await sendFlexMessage(
+      booking.customer.userId,
+      "🏠 เช็คเอาท์สำเร็จเรียบร้อยแล้ว",
+      [
+        { label: "รหัสการจอง", value: booking.bookingId },
+        { label: "🏠 ห้อง", value: booking.room.number },
+        { label: "👤 ชื่อ", value: booking.customer.fullName },
+        {
+          label: "📅 วันที่เช็คเอาท์สำเร็จ",
+          value: formatThaiDate(actualCheckout),
+        },
+        {
+          label: "สถานะ",
+          value: "✅ เช็คเอาท์สำเร็จแล้ว",
+          color: "#27ae60",
+        },
+      ],
+      "🔗 ดูรายละเอียดการคืนห้อง",
+      detailUrl
+    );
+
     return updated;
   },
 

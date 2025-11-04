@@ -15,14 +15,24 @@ export function useChangePassword() {
         data,
         { withCredentials: true }
       );
-      Swal.fire("สำเร็จ", res.data.message, "success");
+      Swal.fire({
+toast: true,
+        position: "top-end",
+icon: "success",
+title: "เปลี่ยนรหัสสำเร็จ",
+timer: 1500,
+showConfirmButton : false,
+});
       return true;
     } catch (err: any) {
-      Swal.fire(
-        "ผิดพลาด",
-        err.response?.data?.error || "ไม่สามารถเปลี่ยนรหัสผ่านได้",
-        "error"
-      );
+Swal.fire({
+toast: true,
+        position: "top-end",
+icon: "error",
+title: "ไม่สามารถเปลี่ยนรหัสสำเร็จ",
+timer: 1500,
+showConfirmButton : false,
+});
       return false;
     } finally {
       setLoading(false);

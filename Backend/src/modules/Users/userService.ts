@@ -1,3 +1,4 @@
+// src/modules/Users/userService.ts
 import prisma from "../../prisma";
 import { userRepository } from "./userRepository";
 import { RegisterInput } from "./userModel";
@@ -6,32 +7,21 @@ import { verifyLineToken } from "../../utils/verifyLineToken";
 export const userService = {
   // 🧩 สมัครหรืออัปเดตข้อมูลลูกค้า
   async register(input: RegisterInput) {
-    const { accessToken, ctitle, cname, csurname, cphone, cmumId } = input;
+    const { accessToken } = input;
     const { userId, displayName } = await verifyLineToken(accessToken);
-    const fullName = `${ctitle}${cname} ${csurname ?? ""}`.trim();
 
     let customer = await userRepository.findCustomerByUserId(userId);
 
     if (customer) {
+      // อัปเดตเฉพาะชื่อ LINE
       customer = await userRepository.updateCustomer(customer.customerId, {
         userName: displayName,
-        ctitle,
-        cname,
-        csurname,
-        cphone,
-        cmumId,
-        fullName,
       });
     } else {
+      // ถ้ายังไม่มี → สร้างใหม่
       customer = await userRepository.createCustomer({
         userId,
         userName: displayName,
-        ctitle,
-        cname,
-        csurname,
-        cphone,
-        cmumId,
-        fullName,
       });
     }
 
@@ -45,27 +35,17 @@ export const userService = {
     return users;
   },
 
-  // 👤 ดึงโปรไฟล์ลูกค้า (ถ้าไม่พบ → สร้างอัตโนมัติ)
-  // 👤 ดึงโปรไฟล์ลูกค้า (ถ้าไม่พบ → สร้างอัตโนมัติ)
+  // 👤 ดึงโปรไฟล์ลูกค้า
   async getProfile(accessToken: string) {
     const { userId, displayName } = await verifyLineToken(accessToken);
 
-    let customer = await userRepository.getCustomerWithRelations(userId);
-
-    // ✅ ถ้ายังไม่มี → สร้างใหม่อัตโนมัติ (เก็บเฉพาะ userId, userName)
+    let customer = await userRepository.findCustomerByUserId(userId);
     if (!customer) {
-      console.log(
-        `🆕 สร้างข้อมูลลูกค้าใหม่จาก LINE: ${displayName} (${userId})`
-      );
-      await userRepository.createCustomer({
+      customer = await userRepository.createCustomer({
         userId,
         userName: displayName,
       });
-
-      // ✅ โหลดข้อมูลใหม่พร้อม relations เพื่อให้ type ตรง
-      customer = await userRepository.getCustomerWithRelations(userId);
     }
-
     return customer;
   },
 
@@ -101,24 +81,13 @@ export const userService = {
     return userRepository.findReturnableBookings(customer.customerId);
   },
 
-  // 🔍 ค้นหาลูกค้าตามชื่อ / เบอร์โทร / ห้อง
+  // 🔍 ค้นหาลูกค้า
   async searchUsers(keyword: string) {
     return userRepository.searchCustomers(keyword);
   },
 
   // ❌ ลบลูกค้า
-  // ❌ ลบลูกค้า (ลบ booking ก่อน แล้วค่อยลบลูกค้า)
   async deleteUser(customerId: string) {
-    // ✅ ลบ booking ทั้งหมดของลูกค้าก่อน
-    await prisma.booking.deleteMany({
-      where: { customerId },
-    });
-
-    // ✅ ลบลูกค้า
-    await prisma.customer.delete({
-      where: { customerId },
-    });
-
-    return { success: true };
+    return userRepository.deleteCustomer(customerId);
   },
 };

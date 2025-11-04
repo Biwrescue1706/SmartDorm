@@ -10,11 +10,12 @@ export interface BookingWithRelations {
   customer: {
     userId: string;
     userName: string;
-    fullName: string;
-    cphone: string;
   };
+  fullName: string;
+  cphone: string;
   checkout?: Date | null;
   actualCheckout?: Date | null;
-  status: number;
+  approveStatus: number;
+  checkoutStatus: number;
   returnStatus?: number | null;
 }

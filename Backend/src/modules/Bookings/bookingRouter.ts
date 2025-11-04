@@ -1,4 +1,3 @@
-// src/modules/Bookings/bookingRouter.ts
 import { Router } from "express";
 import multer from "multer";
 import QRCode from "qrcode";
@@ -8,7 +7,7 @@ import { authMiddleware } from "../../middleware/authMiddleware";
 const router = Router();
 const upload = multer({ storage: multer.memoryStorage() });
 
-//  ดึงข้อมูลทั้งหมด
+/* 📋 ดึงข้อมูลทั้งหมด */
 router.get("/getall", async (_req, res) => {
   try {
     const bookings = await bookingService.getAllBookings();
@@ -18,7 +17,18 @@ router.get("/getall", async (_req, res) => {
   }
 });
 
-//  ดึงข้อมูลการจองตาม bookingId
+/* 🔍 ค้นหาการจอง */
+router.get("/search", async (req, res) => {
+  try {
+    const keyword = req.query.keyword as string;
+    const results = await bookingService.searchBookings(keyword || "");
+    res.json(results);
+  } catch (err: any) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+/* 🔎 ดึงข้อมูลการจองตาม bookingId */
 router.get("/:bookingId", async (req, res) => {
   try {
     const booking = await bookingService.getBookingById(req.params.bookingId);
@@ -28,7 +38,7 @@ router.get("/:bookingId", async (req, res) => {
   }
 });
 
-//  ผู้ใช้ส่งคำขอจองห้อง
+/* 🧾 ผู้ใช้ส่งคำขอจองห้อง */
 router.post("/create", upload.single("slip"), async (req, res) => {
   try {
     const booking = await bookingService.createBooking({
@@ -41,9 +51,7 @@ router.post("/create", upload.single("slip"), async (req, res) => {
   }
 });
 
-//อนุมัติ /  ปฏิเสธ /  เช็คอิน /  เช็คเอาท์ /  แก้ไข /  ลบ
-
-//  Admin อนุมัติการจอง
+/* ✅ Admin อนุมัติการจอง */
 router.put("/:bookingId/approve", authMiddleware, async (req, res) => {
   try {
     const result = await bookingService.approveBooking(req.params.bookingId);
@@ -53,17 +61,17 @@ router.put("/:bookingId/approve", authMiddleware, async (req, res) => {
   }
 });
 
-//  Admin ปฏิเสธการจอง
+/* 🚫 Admin ปฏิเสธการจอง */
 router.put("/:bookingId/reject", authMiddleware, async (req, res) => {
   try {
     const result = await bookingService.rejectBooking(req.params.bookingId);
-    res.json({ message: "ปฏิเสธสำเร็จ", booking: result });
+    res.json({ message: "ปฏิเสธการจองสำเร็จ", booking: result });
   } catch (err: any) {
     res.status(400).json({ error: err.message });
   }
 });
 
-// แอดมินเช็คอิน
+/* 🏠 Admin เช็คอิน */
 router.put("/:bookingId/checkin", authMiddleware, async (req, res) => {
   try {
     const result = await bookingService.checkinBooking(req.params.bookingId);
@@ -73,7 +81,7 @@ router.put("/:bookingId/checkin", authMiddleware, async (req, res) => {
   }
 });
 
-// แอดมินเช็คเอาท์
+/* 🚪 Admin เช็คเอาท์ */
 router.put("/:bookingId/checkout", authMiddleware, async (req, res) => {
   try {
     const result = await bookingService.checkoutBooking(req.params.bookingId);
@@ -83,30 +91,30 @@ router.put("/:bookingId/checkout", authMiddleware, async (req, res) => {
   }
 });
 
-//  Admin แก้ไขข้อมูลการจอง
+/* ✏️ Admin แก้ไขข้อมูลการจอง */
 router.put("/:bookingId", authMiddleware, async (req, res) => {
   try {
     const result = await bookingService.updateBooking(
       req.params.bookingId,
       req.body
     );
-    res.json({ message: "แก้ไขสำเร็จ", booking: result });
+    res.json({ message: "แก้ไขข้อมูลสำเร็จ", booking: result });
   } catch (err: any) {
     res.status(400).json({ error: err.message });
   }
 });
 
-//  Admin ลบการจอง
+/* 🗑️ Admin ลบการจอง */
 router.delete("/:bookingId", authMiddleware, async (req, res) => {
   try {
     await bookingService.deleteBooking(req.params.bookingId);
-    res.json({ message: "ลบสำเร็จ" });
+    res.json({ message: "ลบข้อมูลการจองสำเร็จ" });
   } catch (err: any) {
     res.status(400).json({ error: err.message });
   }
 });
 
-/* 🎟️ สร้าง QR Code สำหรับแอดมินเข้าหน้าข้อมูลการจอง */
+/* 🎟️ สร้าง QR Code สำหรับเปิดหน้าข้อมูลการจองในแอดมิน */
 router.get("/:bookingId/qrcode", async (req, res) => {
   try {
     const booking = await bookingService.getBookingById(req.params.bookingId);

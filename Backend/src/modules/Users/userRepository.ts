@@ -1,24 +1,28 @@
+// src/modules/Users/userRepository.ts
 import prisma from "../../prisma";
 import { verifyLineToken } from "../../utils/verifyLineToken";
 
 export const userRepository = {
-  // 👤 ดึงข้อมูลลูกค้าทั้งหมด
+  // 👤 ดึงลูกค้าทั้งหมด
   async findAllCustomers() {
     return prisma.customer.findMany({
       orderBy: { createdAt: "desc" },
       include: {
         bookings: { include: { room: true }, orderBy: { createdAt: "desc" } },
-        bills: { include: { room: true }, orderBy: { createdAt: "desc" } },
+        bills: {
+          include: { room: true, payment: true },
+          orderBy: { createdAt: "desc" },
+        },
       },
     });
   },
 
-  // 👤 ดึงข้อมูลลูกค้าจาก userId (LINE)
+  // 🔍 ดึงลูกค้าจาก userId (LINE)
   async findCustomerByUserId(userId: string) {
     return prisma.customer.findFirst({ where: { userId } });
   },
 
-  // 🧾 สร้างข้อมูลลูกค้าใหม่
+  // ➕ สร้างลูกค้าใหม่
   async createCustomer(data: any) {
     return prisma.customer.create({ data });
   },
@@ -28,7 +32,7 @@ export const userRepository = {
     return prisma.customer.update({ where: { customerId }, data });
   },
 
-  // 📦 ดึงข้อมูลลูกค้าพร้อม bookings และ bills
+  // 📦 ดึงลูกค้าพร้อม bookings และ bills
   async getCustomerWithRelations(userId: string) {
     return prisma.customer.findFirst({
       where: { userId },
@@ -74,47 +78,44 @@ export const userRepository = {
     });
   },
 
-  // 🔍 ค้นหาลูกค้าจากชื่อ / เบอร์โทร / ห้อง
+  // 🔍 ค้นหาลูกค้าจากชื่อ LINE หรือเลขห้อง
   async searchCustomers(keyword: string) {
     const kw = keyword.trim();
-
-    // ถ้าไม่มี keyword ให้ return ลูกค้าทั้งหมดแทน
     if (!kw) return this.findAllCustomers();
 
     return prisma.customer.findMany({
       where: {
         OR: [
-          { fullName: { contains: kw, mode: "insensitive" } },
           { userName: { contains: kw, mode: "insensitive" } },
-          { cphone: { contains: kw, mode: "insensitive" } },
           {
             bookings: {
-              some: {
-                room: {
-                  number: { contains: kw, mode: "insensitive" },
-                },
-              },
+              some: { room: { number: { contains: kw, mode: "insensitive" } } },
             },
           },
         ],
       },
       include: {
         bookings: { include: { room: true }, orderBy: { createdAt: "desc" } },
-        bills: { include: { room: true }, orderBy: { createdAt: "desc" } },
+        bills: {
+          include: { room: true, payment: true },
+          orderBy: { createdAt: "desc" },
+        },
       },
       orderBy: { createdAt: "desc" },
     });
   },
 
-  // ❌ ลบลูกค้า
+  // ❌ ลบลูกค้า (และ bookings/bills)
   async deleteCustomer(customerId: string) {
-    return prisma.customer.delete({
-      where: { customerId },
-    });
+    await prisma.booking.deleteMany({ where: { customerId } });
+    await prisma.bill.deleteMany({ where: { customerId } });
+    return prisma.customer.delete({ where: { customerId } });
   },
+
+  // 👤 ดึงโปรไฟล์ลูกค้าจาก accessToken
   async getProfile(accessToken: string) {
     const { userId } = await verifyLineToken(accessToken);
-    const customer = await userRepository.getCustomerWithRelations(userId);
+    const customer = await this.getCustomerWithRelations(userId);
     if (!customer) throw new Error("ไม่พบข้อมูลลูกค้า");
     return customer;
   },

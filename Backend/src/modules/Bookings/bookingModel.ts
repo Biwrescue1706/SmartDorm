@@ -1,3 +1,4 @@
+// src/modules/Bookings/bookingModel.ts
 export interface BookingInput {
   accessToken: string; // token จาก LINE LIFF
   ctitle: string;
@@ -18,8 +19,6 @@ export interface BookingUpdateInput {
   actualCheckin?: Date;
   actualCheckout?: Date;
   returnStatus?: number;
-
-  // ✅ เพิ่มบรรทัดนี้
   [key: string]: any;
 }
 
@@ -38,4 +37,12 @@ export interface Booking {
   returnStatus?: number;
   createdAt: Date;
   updatedAt: Date;
+
+  // ✅ snapshot ข้อมูลลูกค้า
+  ctitle: string;
+  cname: string;
+  csurname: string;
+  fullName: string;
+  cphone: string;
+  cmumId: string;
 }

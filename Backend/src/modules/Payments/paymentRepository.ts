@@ -9,21 +9,22 @@ const supabase = createClient(
 );
 
 export const paymentRepository = {
-  // 👤 ค้นหาลูกค้าจาก userId (ที่ได้จาก verifyLineToken)
+  // 👤 ค้นหาลูกค้าจาก userId (LINE)
   async findCustomerByUserId(userId: string) {
     return prisma.customer.findFirst({ where: { userId } });
   },
 
-  // 🧾 ดึงข้อมูลบิลตาม billId
+  // 🧾 ดึงข้อมูลบิลพร้อม booking
   async findBillById(billId: string) {
-  return prisma.bill.findUnique({
-    where: { billId },
-    include: {
-      customer: true,
-      room: true,
-    },
-  });
-},
+    return prisma.bill.findUnique({
+      where: { billId },
+      include: {
+        room: true,
+        booking: true, // ✅ ดึง booking มาใช้แทน bill.Booking
+        customer: true,// ✅ เพิ่มตรงนี้ เพื่อให้ bill.customer ใช้งานได้
+      },
+    });
+  },
 
   // 📸 อัปโหลดสลิปไปยัง Supabase Storage
   async uploadSlipToSupabase(file: Express.Multer.File) {
@@ -43,6 +44,7 @@ export const paymentRepository = {
 
     return data.publicUrl;
   },
+
   // 💾 บันทึกข้อมูลการชำระเงินและอัปเดตสถานะบิล
   async createPaymentAndUpdateBill(
     billId: string,
@@ -55,7 +57,7 @@ export const paymentRepository = {
       }),
       prisma.bill.update({
         where: { billId },
-        data: { status: 1, slipUrl }, // 2 = รอตรวจสอบ
+        data: { status: 1 }, // ✅ ไม่ต้องอัป slipUrl ใน Bill แล้ว
       }),
     ]);
   },

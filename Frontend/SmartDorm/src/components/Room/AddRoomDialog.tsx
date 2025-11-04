@@ -2,7 +2,6 @@
 import { useState, useEffect } from "react";
 import Swal from "sweetalert2";
 import { useRooms } from "../../hooks/useRooms";
-import { useAuth } from "../../hooks/useAuth";
 import type { Room } from "../../types/Room";
 
 interface AddRoomDialogProps {
@@ -18,8 +17,6 @@ export default function AddRoomDialog({ onSuccess }: AddRoomDialogProps) {
   const [deposit, setDeposit] = useState<number | "">("");
   const [bookingFee, setBookingFee] = useState<number | "">(500);
   const [availableRooms, setAvailableRooms] = useState<string[]>([]);
-
-  const { role } = useAuth();
   const { fetchRooms, createRoom } = useRooms();
 
   // ปรับขนาด modal ตามหน้าจอ
@@ -127,18 +124,6 @@ export default function AddRoomDialog({ onSuccess }: AddRoomDialogProps) {
   //  เพิ่มห้องใหม่
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (role !== 0) {
-      Swal.fire({
-        icon: "warning",
-        title: "สิทธิ์ไม่เพียงพอ",
-        text: "เฉพาะแอดมินหลักเท่านั้นที่สามารถเพิ่มห้องได้",
-        timer: 2000,
-        showConfirmButton: false,
-      });
-      return;
-    }
-
     try {
       Swal.fire({
         title: "กำลังบันทึก...",
@@ -190,7 +175,7 @@ export default function AddRoomDialog({ onSuccess }: AddRoomDialogProps) {
     <>
       <div className="text-center mb-3">
         <button
-          className="btn fw-bold text-white px-4 py-2"
+          className="btn fw-bold text-white px-5 py-2"
           style={{
             background: "linear-gradient(135deg, #6a11cb, #2575fc)",
             border: "none",

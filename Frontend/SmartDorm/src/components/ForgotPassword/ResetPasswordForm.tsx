@@ -98,15 +98,15 @@ export default function ResetPasswordForm() {
       </div>
 
       <button type="submit" className="btn btn-success w-100">
-        ✅ บันทึกรหัสผ่านใหม่
+        บันทึกรหัสผ่านใหม่
       </button>
 
       <button
         type="button"
         className="btn btn-outline-secondary w-100 mt-2"
-        onClick={() => navigate("/forgot-username")}
+        onClick={() => navigate("/")}
       >
-        🔙 กลับ
+        กลับ
       </button>
     </form>
   );

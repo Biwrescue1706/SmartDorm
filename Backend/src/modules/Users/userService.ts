@@ -3,6 +3,7 @@ import prisma from "../../prisma";
 import { userRepository } from "./userRepository";
 import { RegisterInput } from "./userModel";
 import { verifyLineToken } from "../../utils/verifyLineToken";
+import { supabase } from "../../utils/supabaseClient";
 
 export const userService = {
   // 🧩 สมัครหรืออัปเดตข้อมูลลูกค้า
@@ -31,8 +32,7 @@ export const userService = {
   // 📋 ดึงลูกค้าทั้งหมด (Admin)
   async getAllUsers() {
     const users = await userRepository.findAllCustomers();
-    if (!users.length) throw new Error("ไม่พบข้อมูลลูกค้าในระบบ");
-    return users;
+    return users || [];
   },
 
   // 👤 ดึงโปรไฟล์ลูกค้า
@@ -67,10 +67,14 @@ export const userService = {
 
   // 💸 ดึงบิลที่ยังไม่ชำระ
   async getUnpaidBills(accessToken: string) {
-    const { userId } = await verifyLineToken(accessToken);
-    const customer = await userRepository.findCustomerByUserId(userId);
-    if (!customer) throw new Error("ไม่พบลูกค้า");
-    return userRepository.findUnpaidBills(customer.customerId);
+    try {
+      const { userId } = await verifyLineToken(accessToken);
+      const customer = await userRepository.findCustomerByUserId(userId);
+      if (!customer) throw new Error("ไม่พบลูกค้า");
+      return userRepository.findUnpaidBills(customer.customerId);
+    } catch (err: any) {
+      throw new Error("Token ไม่ถูกต้องหรือหมดอายุ");
+    }
   },
 
   // 🚪 ดึงการจองที่สามารถคืนห้องได้
@@ -86,8 +90,46 @@ export const userService = {
     return userRepository.searchCustomers(keyword);
   },
 
-  // ❌ ลบลูกค้า
+ // ❌ ลบลูกค้า (และอัปเดตห้องให้ว่าง)
   async deleteUser(customerId: string) {
-    return userRepository.deleteCustomer(customerId);
+    return prisma.$transaction(async (tx) => {
+      // ✅ ดึงรายการ booking ที่มี slipUrl
+      const bookingsWithSlip = await tx.booking.findMany({
+        where: { customerId },
+        select: { slipUrl: true, roomId: true },
+      });
+
+      // ✅ อัปเดตสถานะห้องทั้งหมดของลูกค้าให้ว่าง (status = 0)
+      const roomIds = bookingsWithSlip.map((b) => b.roomId).filter(Boolean);
+      if (roomIds.length > 0) {
+        await tx.room.updateMany({
+          where: { roomId: { in: roomIds } },
+          data: { status: 0 },
+        });
+        console.log("🏠 ตั้งค่าห้องเป็นว่างแล้ว:", roomIds.length, "ห้อง");
+      }
+
+      // ✅ ลบรูป slip ทั้งหมดใน Supabase (ถ้ามี)
+      for (const booking of bookingsWithSlip) {
+        if (!booking.slipUrl) continue;
+        try {
+          const path = booking.slipUrl.split("/storage/v1/object/public/")[1];
+          if (path) {
+            const bucket = path.split("/")[0];
+            const filePath = path.substring(bucket.length + 1);
+            await supabase.storage.from(bucket).remove([filePath]);
+            console.log("🧹 ลบรูปออกจาก Supabase:", filePath);
+          }
+        } catch (err) {
+          console.error("⚠️ ลบรูปจาก Supabase ไม่สำเร็จ:", err);
+        }
+      }
+
+      // ✅ ลบ bookings ก่อน
+      await tx.booking.deleteMany({ where: { customerId } });
+
+      // ✅ ลบข้อมูลลูกค้า
+      return tx.customer.delete({ where: { customerId } });
+    });
   },
 };

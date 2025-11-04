@@ -7,14 +7,13 @@ export interface Room {
 }
 
 export interface Customer {
-  fullName: string;
-  cphone: string;
+  userName: string;
 }
 
 export interface Booking {
   bookingId: string;
-  room: Room;
-  customer: Customer;
+  fullName: string;
+  cphone: string;
   slipUrl?: string;
   checkin: string;
   actualCheckin?: string;
@@ -22,4 +21,6 @@ export interface Booking {
   approveStatus: number;
   createdAt: string;
   checkinStatus: number;
+  room: Room;
+  customer: Customer;
 }

@@ -56,7 +56,7 @@ export default function Bills() {
   useEffect(() => {
     const now = new Date();
     setTodayStr(formatThaiDate(now.toISOString()));
-    setCanCreateBill(now.getDate() >= 1 && now.getDate() <= 31);
+    setCanCreateBill(now.getDate() >= 15 && now.getDate() <= 31);
   }, []);
 
   // ✅ ฟังก์ชันเปิด Dialog
@@ -92,16 +92,16 @@ export default function Bills() {
       />
 
       {/* 🔹 เนื้อหา */}
-      <main className="main-content flex-grow-1 px-2 py-4 mt-4">
-        <div className="container">
+      <main className="main-content flex-grow-1 px-1 py-2 mt-6 mt-lg-7">
+        <div className="mx-auto container-max">
           <h2 className="fw-bold text-center mb-3">สร้างบิลห้องพัก</h2>
           <p className="text-center text-muted">
             วันนี้: <b>{todayStr}</b>
           </p>
 
           {!canCreateBill && (
-            <div className="alert alert-warning text-center fw-semibold">
-              ออกบิลได้เฉพาะวันที่ <b>15–31 ของเดือน</b> เท่านั้น
+            <div className="alert alert-warning text-center fw-semibold mx-3">
+              ออกบิลได้เฉพาะวันที่ <b>15 – 31 ของเดือน</b> เท่านั้น
             </div>
           )}
 

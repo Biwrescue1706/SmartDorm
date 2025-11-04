@@ -21,8 +21,14 @@ export const billService = {
   // 🔍 ดึงบิลรายตัว
   async getBillById(billId: string) {
     const bill = await billRepository.findById(billId);
-    if (!bill) throw new Error("ไม่พบบิล");
-    return bill;
+    if (!bill) throw new Error("ไม่พบบิลในระบบ");
+
+    return {
+      ...bill,
+      fullName: bill.booking?.fullName || "-",
+      cphone: bill.booking?.cphone || "-",
+      lineName: bill.customer?.userName || "-",
+    };
   },
 
   // 🧾 ✅ สร้างบิลใหม่ (เหลืออันเดียวเท่านั้น)

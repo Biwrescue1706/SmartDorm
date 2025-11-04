@@ -22,7 +22,7 @@ export default function Pagination({
   const endItem = Math.min(currentPage * rowsPerPage, totalItems);
 
   // ✅ แสดงหน้าทีละ 5 หน้า
-  const pageRange = 5;
+  const pageRange = 4;
   let startPage = Math.max(1, currentPage - Math.floor(pageRange / 2));
   let endPage = startPage + pageRange - 1;
   if (endPage > totalPages) {
@@ -37,7 +37,7 @@ export default function Pagination({
     <div className="d-flex flex-column flex-md-row align-items-center justify-content-between mt-3 gap-3">
       {/* ✅ จำนวนต่อหน้า */}
       <div className="d-flex align-items-center">
-        <label className="fw-semibold me-2 mb-0">แสดงต่อหน้า:</label>
+        <label className="fw-semibold me-2 mb-0 mx-3">แสดงต่อหน้า:</label>
         <select
           className="form-select w-auto"
           value={rowsPerPage}
@@ -52,13 +52,13 @@ export default function Pagination({
       </div>
 
       {/* ✅ แสดงช่วงข้อมูล */}
-      <div className="small text-center text-md-start flex-grow-1">
+      <div className="small text-center text-md-start flex-grow-2 me-2 mb-0 mx-3">
         แสดง {startItem}–{endItem} จากทั้งหมด {totalItems} รายการ
       </div>
 
       {/* ✅ ปุ่ม Pagination */}
       <nav aria-label="Pagination Navigation">
-        <ul className="pagination mb-0 justify-content-center flex-wrap">
+        <ul className="pagination mb-0 justify-content-center flex-wrap flex-grow-2 me-2 mb-0 mx-3">
           {/* หน้าแรก */}
           <li className={`page-item ${currentPage === 1 ? "disabled" : ""}`}>
             <button className="page-link" onClick={() => onPageChange(1)}>

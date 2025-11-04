@@ -41,8 +41,8 @@ export default function BookingRow({
         <td>{index}</td>
         <td>{booking.room?.number}</td>
         <td>{booking.customer?.userName || "-"}</td>
-        <td>{booking.customer?.fullName}</td>
-        <td>{booking.customer?.cphone}</td>
+        <td>{booking.fullName}</td>
+        <td>{booking.cphone}</td>
         <td>{formatThaiDate(booking.createdAt)}</td>
         <td>{formatThaiDate(booking.checkin)}</td>
 

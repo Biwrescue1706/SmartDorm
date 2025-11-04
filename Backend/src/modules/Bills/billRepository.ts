@@ -14,7 +14,21 @@ export const billRepository = {
   async findById(billId: string) {
     return prisma.bill.findUnique({
       where: { billId },
-      include: { room: true, customer: true, payment: true },
+      include: {
+        room: true,
+        payment: true,
+        booking: {
+          select: {
+            fullName: true,
+            cphone: true,
+          },
+        },
+        customer: {
+          select: {
+            userName: true,
+          },
+        },
+      },
     });
   },
 

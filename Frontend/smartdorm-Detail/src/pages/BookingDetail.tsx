@@ -63,7 +63,7 @@ export default function BookingDetail() {
         </div>
 
         <div className="card-body p-4 text-start">
-          <CustomerInfoTable booking={booking} />
+          <CustomerInfoTable booking={booking} customer={booking.customer} />
           <BookingInfoTable booking={booking} />
 
           {booking.checkinStatus === 0 && (

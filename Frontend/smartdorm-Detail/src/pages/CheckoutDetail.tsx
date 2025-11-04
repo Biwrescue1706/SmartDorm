@@ -62,7 +62,7 @@ export default function CheckoutDetail() {
         </div>
 
         <div className="card-body p-4 text-start">
-          <CustomerInfoTable booking={booking} />
+          <CustomerInfoTable booking={booking} customer={booking.customer} />
           <CheckoutInfoTable booking={booking} />
 
           {/* 🎟️ QR Code */}

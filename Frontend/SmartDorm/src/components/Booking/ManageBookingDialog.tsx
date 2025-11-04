@@ -92,8 +92,8 @@ export default function ManageBookingDialog({
               >
                 {[
                   ["ผู้ใช้ (LIFF)", booking.customer.userName],
-                  ["ชื่อ-สกุล", booking.customer.fullName],
-                  ["เบอร์โทร", booking.customer.cphone || "-"],
+                  ["ชื่อ-สกุล", booking.fullName],
+                  ["เบอร์โทร", booking.cphone || "-"],
                   ["จองเมื่อ", formatThaiDate(booking.createdAt)],
                   ["เช็คอิน", formatThaiDate(booking.checkin)],
                 ].map(([label, value], i) => (
@@ -160,13 +160,13 @@ export default function ManageBookingDialog({
               </div>
               <div className="d-flex gap-2">
                 <button
-                  className="btn btn-dark px-3"
+                  className="btn btn-dark px-2"
                   onClick={() => setOpen(false)}
                 >
                   ปิด
                 </button>
                 <button
-                  className="btn btn-danger px-3"
+                  className="btn btn-danger px-2"
                   disabled={!isPending}
                   onClick={() => {
                     onReject(booking.bookingId);
@@ -176,7 +176,7 @@ export default function ManageBookingDialog({
                   ปฏิเสธ
                 </button>
                 <button
-                  className="btn btn-success px-3"
+                  className="btn btn-success px-2"
                   disabled={!isPending}
                   onClick={() => {
                     onApprove(booking.bookingId);

@@ -20,8 +20,23 @@ export default function BillRow({
   formatThaiDate,
   onCreateBill,
 }: BillRowProps) {
-  const checkin = booking ? formatThaiDate(booking.checkin) : "-";
-  const actual = booking ? formatThaiDate(booking.actualCheckin) : "-";
+  // 🗓️ แปลงวันที่ ถ้าไม่มีให้แสดง "-"
+  const checkin =
+    booking?.checkin && booking.checkin !== "0"
+      ? formatThaiDate(booking.checkin)
+      : "-";
+
+  const actual =
+    booking?.actualCheckin && booking.actualCheckin !== 0
+      ? formatThaiDate(booking.actualCheckin)
+      : "-";
+
+  // ✅ แสดงปุ่มเฉพาะเมื่อ actualCheckin มีค่า และยังไม่ออกบิล
+  const canShowButton =
+    canCreateBill &&
+    !hasBill &&
+    booking?.actualCheckin &&
+    booking.actualCheckin !== 0;
 
   return (
     <tr key={room.roomId}>
@@ -32,21 +47,19 @@ export default function BillRow({
       <td>{checkin}</td>
       <td>{actual}</td>
       <td>
-        {canCreateBill && !hasBill ? (
+        {hasBill ? (
+          <button className="btn btn-success btn-sm fw-semibold" disabled>
+            ✅ ออกแล้ว
+          </button>
+        ) : canShowButton ? (
           <button
             className="btn btn-primary btn-sm fw-semibold"
             onClick={() => onCreateBill(room)}
           >
             ออกบิล
           </button>
-        ) : hasBill ? (
-          <button className="btn btn-success btn-sm fw-semibold" disabled>
-            ✅ ออกแล้ว
-          </button>
         ) : (
-          <button className="btn btn-secondary btn-sm fw-semibold" disabled>
-            ออกบิล
-          </button>
+          "" // ❌ ถ้ายังไม่เข้าพัก (actualCheckin == 0 หรือ null) → ไม่แสดงปุ่ม
         )}
       </td>
     </tr>

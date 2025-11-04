@@ -47,7 +47,7 @@ export default function AllBillsRow({
           month: "long",
         })}
       </td>
-      <td>{bill.total.toLocaleString()}</td>
+      <td>{bill.total.toLocaleString()} บาท</td>
       <td>{renderStatus(bill.status)}</td>
       <td>
         {new Date(bill.dueDate).toLocaleDateString("th-TH", {

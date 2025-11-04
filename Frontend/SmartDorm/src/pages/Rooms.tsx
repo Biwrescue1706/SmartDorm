@@ -4,6 +4,7 @@ import RoomTable from "../components/Room/RoomTable";
 import AddRoomDialog from "../components/Room/AddRoomDialog";
 import Pagination from "../components/Pagination";
 import Nav from "../components/Nav";
+import RoomFilter from "../components/Room/RoomFilter"; // ✅ ฟิลเตอร์แบบการ์ด
 import { useAuth } from "../hooks/useAuth";
 import { useRooms } from "../hooks/useRooms";
 
@@ -12,24 +13,39 @@ export default function Rooms() {
   const { message, handleLogout, role } = useAuth();
   const [pendingBookings] = useState(0);
 
-  // โหลดห้องเมื่อเปิดหน้า
+  // โหลดข้อมูลเมื่อเปิดหน้า
   useEffect(() => {
     fetchRooms();
   }, []);
 
-  // ✅ state สำหรับกรองชั้น
+  // ✅ ฟิลเตอร์สถานะห้อง (ทั้งหมด / ว่าง / เต็ม)
+  const [filter, setFilter] = useState<"all" | "available" | "booked">("all");
+
+  // ✅ ฟิลเตอร์ชั้น
   const [selectedFloor, setSelectedFloor] = useState("ทั้งหมด");
 
-  // ✅ ฟิลเตอร์ห้องตามชั้น (แบบหาร 100 ลงตัว)
-  const filteredRooms =
-    selectedFloor === "ทั้งหมด"
-      ? rooms
-      : rooms.filter((r) => {
-          const num = parseInt(r.number, 10);
-          const floorNum = parseInt(selectedFloor, 10);
-          // ห้องจะอยู่ในชั้นนั้น ถ้าหมายเลขอยู่ระหว่าง floor*100 ถึง floor*100 + 99
-          return num >= floorNum * 100 && num < (floorNum + 1) * 100;
-        });
+  // ✅ จำนวนห้องแต่ละประเภท
+  const counts = {
+    total: rooms.length,
+    available: rooms.filter((r) => r.status === 0).length,
+    booked: rooms.filter((r) => r.status === 1).length,
+  };
+
+  // ✅ ฟิลเตอร์ห้องตามสถานะและชั้น
+  const filteredRooms = rooms.filter((r) => {
+    // กรองตามสถานะ
+    if (filter === "available" && r.status !== 0) return false;
+    if (filter === "booked" && r.status !== 1) return false;
+
+    // กรองตามชั้น
+    if (selectedFloor !== "ทั้งหมด") {
+      const num = parseInt(r.number, 10);
+      const floorNum = parseInt(selectedFloor, 10);
+      return num >= floorNum * 100 && num < (floorNum + 1) * 100;
+    }
+
+    return true;
+  });
 
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
@@ -57,7 +73,7 @@ export default function Rooms() {
         role={role}
       />
 
-      {/* Main Content */}
+      {/* Main */}
       <main className="main-content flex-grow-1 px-1 py-2 mt-6 mt-lg-7">
         <div className="mx-auto container-max">
           {/* หัวข้อ */}
@@ -66,20 +82,20 @@ export default function Rooms() {
           </div>
 
           {/* ปุ่มเพิ่มห้อง */}
-          <div className="text-center mb-4">
+          <div className="text-center mb-3">
             <AddRoomDialog onSuccess={handleRefresh} />
           </div>
 
-          {/* 🔽 ดรอปดาวน์เลือกชั้น (อยู่ใต้ปุ่ม) */}
+                    {/* 🔽 ดรอปดาวน์เลือกชั้น (อยู่ใต้ปุ่ม) */}
           <div className="text-center mb-4">
-            <label className="fw-semibold me-2 fs-5 text-dark">
-              เลือกชั้น : 
+            <label className="fw-semibold me-2 fs-5 text-dark ">
+              เลือกชั้น :
             </label>
             <select
               className="form-select d-inline-block text-center fw-semibold shadow-sm"
               style={{
-                width: "220px",
-                fontSize: "1.05rem",
+                width: "120px",
+                fontSize: "0.9rem",
                 borderRadius: "10px",
                 border: "2px solid #0d6efd",
               }}
@@ -98,7 +114,17 @@ export default function Rooms() {
             </select>
           </div>
 
-          {/* ตารางข้อมูลห้อง */}
+          {/* 🧭 ฟิลเตอร์ห้องแบบการ์ด */}
+          <RoomFilter
+            activeFilter={filter}
+            counts={counts}
+            onFilterChange={(f) => {
+              setFilter(f);
+              setCurrentPage(1);
+            }}
+          />
+
+          {/* ตารางห้อง */}
           {loading ? (
             <div className="text-center my-5">
               <div className="spinner-border text-success" role="status"></div>

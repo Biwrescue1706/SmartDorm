@@ -1,3 +1,4 @@
+// src/pages/BillDetail.tsx
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
@@ -8,25 +9,30 @@ interface Room {
   size?: string;
 }
 
+interface Booking {
+  fullName?: string;
+  cphone?: string;
+}
+
 interface Customer {
-  fullName: string;
-  cphone: string;
+  userName: string;
 }
 
 interface Bill {
   billId: string;
   month: string;
-  total: number;
   rent: number;
   service: number;
   waterCost: number;
   electricCost: number;
   fine: number;
+  total: number;
   dueDate: string;
+  createdAt: string;
   status: number;
   room: Room;
-  customer: Customer;
-  createdAt: string;
+  booking?: Booking;
+  customer?: Customer;
 }
 
 /* 🗓️ ฟังก์ชันแปลงวันที่ไทย */
@@ -73,6 +79,7 @@ export default function BillDetail() {
       </div>
     );
 
+  // ✅ สถานะบิล
   const statusText =
     bill.status === 1
       ? "✅ ชำระแล้ว"
@@ -82,6 +89,10 @@ export default function BillDetail() {
 
   const statusColor =
     bill.status === 1 ? "success" : bill.status === 0 ? "warning" : "danger";
+
+  // ✅ ดึงชื่อ–เบอร์โทรจาก booking หรือ fallback เป็น LINE name
+  const fullName = bill.booking?.fullName || bill.customer?.userName || "-";
+  const cphone = bill.booking?.cphone || "-";
 
   return (
     <div
@@ -114,10 +125,10 @@ export default function BillDetail() {
           <strong>ห้อง:</strong> {bill.room?.number || "-"}
         </p>
         <p className="mb-1">
-          <strong>ชื่อผู้เช่า:</strong> {bill.customer?.fullName}
+          <strong>ชื่อผู้เช่า:</strong> {fullName}
         </p>
         <p className="mb-1">
-          <strong>เบอร์โทร:</strong> {bill.customer?.cphone}
+          <strong>เบอร์โทร:</strong> {cphone}
         </p>
         <p className="mb-1">
           <strong>เดือน:</strong>{" "}
@@ -159,7 +170,9 @@ export default function BillDetail() {
             {bill.fine > 0 && (
               <tr>
                 <th className="text-danger">ค่าปรับ</th>
-                <td className="text-danger">{bill.fine.toLocaleString()} บาท</td>
+                <td className="text-danger">
+                  {bill.fine.toLocaleString()} บาท
+                </td>
               </tr>
             )}
             <tr className="table-success fw-bold">
@@ -168,19 +181,6 @@ export default function BillDetail() {
             </tr>
           </tbody>
         </table>
-      </div>
-
-      {/* Footer */}
-      <div className="text-center mt-4">
-        <a
-          href="https://smartdorm-paymentbill.biwbong.shop"
-          className="btn btn-success w-100"
-        >
-          💳 ชำระบิลนี้
-        </a>
-        <p className="text-muted mt-3 small">
-          ขอบคุณที่ใช้บริการ 🏫 SmartDorm 🎉
-        </p>
       </div>
     </div>
   );

@@ -12,25 +12,49 @@ export default function RoomTable({ rooms, startIndex, onUpdated }: Props) {
     <div className="responsive-table" style={{ overflowX: "auto" }}>
       <table
         className="table table-sm table-striped align-middle text-center"
-        style={{ tableLayout: "fixed", width: "100%" }}
+        style={{
+          tableLayout: "fixed",
+          width: "100%",
+          backgroundColor: "#ffffff",
+          borderRadius: "10px",
+          overflow: "hidden",
+        }}
       >
         <thead className="table-dark">
           <tr>
-            <th style={{ width: "8%" }}>#</th>
-            <th style={{ width: "15%" }}>ห้อง</th>
-            <th style={{ width: "25%" }}>ขนาด</th>
-            <th style={{ width: "15%" }}>ค่าเช่า</th>
-            <th style={{ width: "20%" }}>ผู้สร้าง</th>
-            <th style={{ width: "20%" }}>ผู้แก้ไข</th>
-            <th style={{ width: "20%" }}>สถานะ</th>
-            <th style={{ width: "20%" }}>แก้ไข</th>
-            <th style={{ width: "20%" }}>ลบ</th>
+            <th scope="col" style={{ width: "20%" }}>
+              #
+            </th>
+            <th scope="col" style={{ width: "35%" }}>
+              ห้อง
+            </th>
+            <th scope="col" style={{ width: "80%" }}>
+              ขนาด
+            </th>
+            <th scope="col" style={{ width: "45%" }}>
+              ค่าเช่า
+            </th>
+            <th scope="col" style={{ width: "45%" }}>
+              ผู้สร้าง
+            </th>
+            <th scope="col" style={{ width: "45%" }}>
+              ผู้แก้ไข
+            </th>
+            <th scope="col" style={{ width: "45%" }}>
+              สถานะ
+            </th>
+            <th scope="col" style={{ width: "45%" }}>
+              แก้ไข
+            </th>
+            <th scope="col" style={{ width: "45%" }}>
+              ลบ
+            </th>
           </tr>
         </thead>
         <tbody>
           {rooms.length === 0 ? (
             <tr>
-              <td colSpan={8} className="py-3 text-muted">
+              <td colSpan={9} className="py-3 text-muted">
                 ไม่มีข้อมูลห้อง
               </td>
             </tr>

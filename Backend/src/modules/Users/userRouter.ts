@@ -32,13 +32,9 @@ router.post("/register", async (req: Request, res: Response) => {
 router.post("/me", async (req, res) => {
   try {
     const { accessToken } = req.body;
-    const profile = await verifyLineToken(accessToken);
+    const profile = await userService.getProfile(accessToken);
 
-    return res.json({
-      success: true,
-      userId: profile.userId,
-      displayName: profile.displayName,
-    });
+    return res.json({ success: true, profile });
   } catch (err: any) {
     return res.status(401).json({
       success: false,
@@ -94,7 +90,18 @@ router.post("/bookings/returnable", async (req: Request, res: Response) => {
 // 🔍 ค้นหาลูกค้าจากชื่อ / เบอร์โทร / ห้อง
 router.get("/search", async (req: Request, res: Response) => {
   try {
-    const keyword = req.query.keyword?.toString() || "";
+    const keyword = req.query.keyword?.toString().trim() || "";
+
+    // ✅ ป้องกันการค้นหาว่าง
+    if (!keyword) {
+      return res.json({
+        message: "ไม่พบคำค้นหา",
+        users: [],
+        bookings: [],
+        rooms: [],
+      });
+    }
+
     const users = await userService.searchUsers(keyword);
     res.json({
       message: `ค้นหาสำเร็จ (${users.length} รายการ)`,
@@ -102,6 +109,7 @@ router.get("/search", async (req: Request, res: Response) => {
       users,
     });
   } catch (err: any) {
+    console.error("❌ Search error:", err);
     res.status(400).json({ error: err.message });
   }
 });

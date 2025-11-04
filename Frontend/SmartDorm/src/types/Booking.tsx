@@ -1,11 +1,5 @@
 export interface Customer {
   userName: string;
-  ctitle: string;
-  cname: string;
-  csurname: string;
-  fullName: string;
-  cphone: string;
-  cmumId: string;
 }
 
 export interface Room {
@@ -18,6 +12,12 @@ export interface Room {
 }
 
 export interface Booking {
+  ctitle: string;
+  cname: string;
+  csurname: string;
+  fullName: string;
+  cphone: string;
+  cmumId: string;
   actualCheckin: any;
   bookingId: string;
   createdAt: string;

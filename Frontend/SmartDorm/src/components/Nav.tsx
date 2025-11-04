@@ -42,6 +42,12 @@ export default function Nav({
       location.pathname.startsWith("/allbills")
     ) {
       setDropdownOpen("bill");
+    } else if (
+      location.pathname.startsWith("/profile") ||
+      location.pathname.startsWith("/admin/manage") ||
+      location.pathname.startsWith("/change-password")
+    ) {
+      setDropdownOpen("profile");
     } else {
       setDropdownOpen(null);
     }
@@ -93,15 +99,19 @@ export default function Nav({
             {role === 0 ? (
               <>
                 <div>
-                  <h6 className="fw-bold text-danger"><span>ยินดีต้อนรับ แอดมิน</span></h6>
-                  <h6 className="fw-bold text-warning">{message}</h6>
+                  <h6 className="fw-bold text-warning"><span>{message}</span></h6>
+                  <h6 className="fw-bold text-whlie">
+                    <span>แอดมิน</span>
+                  </h6>
                 </div>
               </>
             ) : role === 1 ? (
               <>
                 <div>
-                  <h6 className="fw-bold text-danger"><span>ยินดีต้อนรับ พนักงาน</span></h6>
-                  <h6 className="fw-bold text-warning">{message}</h6>
+                  <h6 className="fw-bold text-warning"><span>{message}</span></h6>
+                  <h6 className="fw-bold text-whlie">
+                    <span>พนักงาน</span>
+                  </h6>
                 </div>
               </>
             ) : (
@@ -222,20 +232,6 @@ export default function Nav({
             )}
           </div>
 
-          {/* จัดการสมาชิก */}
-          {isSuperAdmin && (
-            <button
-              onClick={() => navigate("/admin/manage")}
-              className={`btn text-start ${
-                location.pathname.startsWith("/admin/manage")
-                  ? "btn-light text-primary fw-bold"
-                  : "btn-outline-light"
-              }`}
-            >
-              👤 จัดการสมาชิก
-            </button>
-          )}
-
           {/* ลูกค้า */}
           <button
             onClick={() => navigate("/users")}
@@ -247,30 +243,56 @@ export default function Nav({
           >
             👤 ข้อมูลลูกค้า
           </button>
-          {/* โปรไฟล์ */}
-          <button
-            onClick={() => navigate("/profile")}
-            className={`btn text-start ${
-              location.pathname.startsWith("/profile")
-                ? "btn-light text-primary fw-bold"
-                : "btn-outline-light"
-            }`}
-          >
-            ⚙️ โปรไฟล์ของฉัน
-          </button>
 
-          {/* เปลี่ยนรหัสผ่าน */}
-          <button
-            onClick={() => navigate("/change-password")}
-            className={`btn text-start ${
-              location.pathname.startsWith("/change-password")
-                ? "btn-light text-primary fw-bold"
-                : "btn-outline-light"
-            }`}
-          >
-            🔑 เปลี่ยนรหัสผ่าน
-          </button>
+          {/* จัดการโปรไฟล์ */}
+          <div>
+            <button
+              type="button"
+              onClick={() => toggleDropdown("profile")}
+              className="btn btn-outline-light w-100 text-start d-flex justify-content-between align-items-center"
+            >
+              <span>👤 จัดการโปรไฟล์</span>
+              <span>{dropdownOpen === "profile" ? "▴" : "▾"}</span>
+            </button>
+            {dropdownOpen === "profile" && (
+              <div className="ps-3 mt-2 d-flex flex-column gap-2">
+                {isSuperAdmin && (
+                  <button
+                    onClick={() => navigate("/admin/manage")}
+                    className={`btn text-start ${
+                      location.pathname.startsWith("/admin/manage")
+                        ? "btn-light text-primary fw-bold"
+                        : "btn-outline-light"
+                    }`}
+                  >
+                    👥 จัดการสมาชิก
+                  </button>
+                )}
+                <button
+                  onClick={() => navigate("/profile")}
+                  className={`btn text-start ${
+                    location.pathname.startsWith("/profile")
+                      ? "btn-light text-primary fw-bold"
+                      : "btn-outline-light"
+                  }`}
+                >
+                  ⚙️ โปรไฟล์ของฉัน
+                </button>
+                <button
+                  onClick={() => navigate("/change-password")}
+                  className={`btn text-start ${
+                    location.pathname.startsWith("/change-password")
+                      ? "btn-light text-primary fw-bold"
+                      : "btn-outline-light"
+                  }`}
+                >
+                  🔑 เปลี่ยนรหัสผ่าน
+                </button>
+              </div>
+            )}
+          </div>
         </div>
+
         {/* Logout */}
         <div className="border-top border-light p-2 mt-auto">
           <button
@@ -291,7 +313,7 @@ export default function Nav({
         <>
           <div
             className="position-fixed top-0 start-0 h-100 bg-primary text-white shadow-lg p-3 d-flex flex-column justify-content-between"
-            style={{ width: "220px", zIndex: 1500, paddingTop: "50px" }}
+            style={{ width: "220px", zIndex: 800, paddingTop: "50px" }}
           >
             <div>
               <div className="d-flex justify-content-between align-items-center border-bottom border-light pb-2 mb-3">
@@ -399,18 +421,7 @@ export default function Nav({
                   )}
                 </div>
 
-                {/* Admin & Users */}
-                {isSuperAdmin && (
-                  <button
-                    onClick={() => {
-                      navigate("/admin/manage");
-                      setMenuOpen(false);
-                    }}
-                    className="btn btn-outline-light text-start"
-                  >
-                    👤 จัดการสมาชิก
-                  </button>
-                )}
+                {/* ลูกค้า */}
                 <button
                   onClick={() => {
                     navigate("/users");
@@ -420,29 +431,51 @@ export default function Nav({
                 >
                   👤 ข้อมูลลูกค้า
                 </button>
-                {/* โปรไฟล์ */}
-                <button
-                  onClick={() => navigate("/profile")}
-                  className={`btn btn-outline-light text-start ${
-                    location.pathname.startsWith("/profile")
-                      ? "btn-light text-primary fw-bold"
-                      : "btn-outline-light"
-                  }`}
-                >
-                  ⚙️ โปรไฟล์ของฉัน
-                </button>
 
-                {/* เปลี่ยนรหัสผ่าน */}
-                <button
-                  onClick={() => navigate("/change-password")}
-                  className={`btn text-start ${
-                    location.pathname.startsWith("/change-password")
-                      ? "btn-light text-primary fw-bold"
-                      : "btn-outline-light"
-                  }`}
-                >
-                  🔑 เปลี่ยนรหัสผ่าน
-                </button>
+                {/* จัดการโปรไฟล์ */}
+                <div>
+                  <button
+                    type="button"
+                    onClick={() => toggleDropdown("profile")}
+                    className="btn btn-outline-light w-100 text-start d-flex justify-content-between align-items-center"
+                  >
+                    <span>👤 จัดการโปรไฟล์</span>
+                    <span>{dropdownOpen === "profile" ? "▴" : "▾"}</span>
+                  </button>
+                  {dropdownOpen === "profile" && (
+                    <div className="ps-3 mt-2 d-flex flex-column gap-2">
+                      {isSuperAdmin && (
+                        <button
+                          onClick={() => {
+                            navigate("/admin/manage");
+                            setMenuOpen(false);
+                          }}
+                          className="btn btn-outline-light text-start"
+                        >
+                          👥 จัดการสมาชิก
+                        </button>
+                      )}
+                      <button
+                        onClick={() => {
+                          navigate("/profile");
+                          setMenuOpen(false);
+                        }}
+                        className="btn btn-outline-light text-start"
+                      >
+                        ⚙️ โปรไฟล์ของฉัน
+                      </button>
+                      <button
+                        onClick={() => {
+                          navigate("/change-password");
+                          setMenuOpen(false);
+                        }}
+                        className="btn btn-outline-light text-start"
+                      >
+                        🔑 เปลี่ยนรหัสผ่าน
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
 
@@ -465,7 +498,7 @@ export default function Nav({
           {/* Overlay */}
           <div
             className="position-fixed top-0 start-0 w-100 h-100 bg-dark bg-opacity-50"
-            style={{ zIndex: 1000 }}
+            style={{ zIndex: 200 }}
             onClick={() => setMenuOpen(false)}
           />
         </>

@@ -63,19 +63,31 @@ export default function AdminTable({
   };
 
   return (
-    <div
-      className="border rounded mt-3"
-      style={{ maxHeight: "70vh", overflowY: "auto" }}
-    >
-      <table className="table table-sm table-striped text-center align-middle">
+    <div className="responsive-table" style={{ overflowX: "auto" }}>
+      <table
+        className="table table-sm table-striped align-middle text-center"
+        style={{ tableLayout: "fixed", width: "100%" }}
+      >
         <thead className="table-dark">
           <tr>
-            <th>#</th>
-            <th>ชื่อผู้ใช้</th>
-            <th>ชื่อจริง</th>
-            <th>สิทธิ์</th>
-            <th>แก้ไข</th>
-            <th>ลบ</th>
+            <th scope="col" style={{ width: "10%" }}>
+              #
+            </th>
+            <th scope="col" style={{ width: "25%" }}>
+              ชื่อผู้ใช้
+            </th>
+            <th scope="col" style={{ width: "25%" }}>
+              ชื่อจริง
+            </th>
+            <th scope="col" style={{ width: "25%" }}>
+              สิทธิ์
+            </th>
+            <th scope="col" style={{ width: "25%" }}>
+              แก้ไข
+            </th>
+            <th scope="col" style={{ width: "25%" }}>
+              ลบ
+            </th>
           </tr>
         </thead>
         <tbody>

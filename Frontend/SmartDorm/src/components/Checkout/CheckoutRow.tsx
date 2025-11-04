@@ -37,8 +37,8 @@ export default function CheckoutRow({
     <tr>
       <td>{index}</td>
       <td>{booking.room.number}</td>
-      <td>{booking.customer.fullName}</td>
-      <td>{booking.customer.cphone}</td>
+      <td>{booking.fullName}</td>
+      <td>{booking.cphone}</td>
       <td>{new Date(booking.checkin).toLocaleDateString("th-TH")}</td>
       <td>
         {booking.checkout

@@ -1,3 +1,4 @@
+// src/pages/Users.tsx
 import { useEffect, useState } from "react";
 import axios from "axios";
 import Swal from "sweetalert2";
@@ -13,27 +14,28 @@ interface BookingDetail {
   createdAt?: string;
   checkin?: string;
   actualCheckin?: string;
+  fullName?: string;
+  cphone?: string;
 }
 
 interface Customer {
   customerId: string;
   userName: string;
-  fullName: string;
-  cphone: string;
-  cmumId?: string;
+  userId: string;
   bookings?: BookingDetail[];
   createdAt: string;
 }
 
-// 🗓️ ฟังก์ชันแปลงวันที่ไทย
 const formatThaiDate = (d?: string) => {
   if (!d) return "-";
   const date = new Date(d);
-  return date.toLocaleDateString("th-TH", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
+  return isNaN(date.getTime())
+    ? "-"
+    : date.toLocaleDateString("th-TH", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      });
 };
 
 export default function Users() {
@@ -48,16 +50,15 @@ export default function Users() {
 
   const startIndex = (currentPage - 1) * rowsPerPage;
 
-  // 📋 ดึงข้อมูลลูกค้าทั้งหมด
   const fetchUsers = async () => {
     try {
-      setLoading(true);
-      setSearch(""); // ✅ เคลียร์ช่องค้นหาเมื่อกดโหลดใหม่
+      setLoading(false);
+      setSearch("");
       const res = await axios.get(`${API_BASE}/user/getall`);
       let allUsers: Customer[] = res.data.users || [];
 
-      // 🔹 รวม LINE ซ้ำ
-      const merged: Record<string, Customer> = {};
+      const merged: Record<string, Customer & { bookings: BookingDetail[] }> =
+        {};
       allUsers.forEach((u) => {
         if (!merged[u.userName]) {
           merged[u.userName] = { ...u, bookings: [...(u.bookings || [])] };
@@ -66,9 +67,8 @@ export default function Users() {
         }
       });
 
-      // 🔹 เรียงชื่อจาก ก → ฮ
       const sorted = Object.values(merged).sort((a, b) =>
-        a.fullName.localeCompare(b.fullName, "th")
+        a.userName.localeCompare(b.userName, "th")
       );
 
       setUsers(sorted);
@@ -79,107 +79,117 @@ export default function Users() {
     }
   };
 
-  // 🔍 ค้นหาลูกค้า
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
   const handleSearch = async () => {
-    if (!search.trim()) return; // ✅ ถ้าไม่มีข้อความในช่องค้นหา จะไม่ค้นหา
+    if (!search.trim()) return;
     try {
-      setLoading(true);
       const res = await axios.get(`${API_BASE}/user/search`, {
         params: { keyword: search },
       });
-      setUsers(res.data.users);
+      setUsers(res.data.users || []);
+      setCurrentPage(1);
     } catch (err) {
       console.error("❌ ค้นหาลูกค้าไม่สำเร็จ:", err);
-    } finally {
-      setLoading(false);
     }
   };
 
-  // ❌ ลบลูกค้า
-  const handleDelete = async (customerId: string, fullName: string) => {
-    const confirm = await Swal.fire({
-      title: "ยืนยันการลบ?",
-      text: `คุณต้องการลบลูกค้า "${fullName}" หรือไม่?`,
+  const handleDelete = async (customerId: string, userName: string) => {
+    const result = await Swal.fire({
+      title: `ยืนยันการลบ`,
+      text: `คุณต้องการลบลูกค้า ${userName} ใช่หรือไม่?`,
       icon: "warning",
       showCancelButton: true,
-      confirmButtonText: "ลบ",
+      confirmButtonText: "ใช่, ลบเลย",
       cancelButtonText: "ยกเลิก",
-      confirmButtonColor: "#dc3545",
+      confirmButtonColor: "#e74c3c",
     });
 
-    if (!confirm.isConfirmed) return;
+    if (!result.isConfirmed) return;
 
     try {
       await axios.delete(`${API_BASE}/user/${customerId}`);
-      Swal.fire("สำเร็จ!", "ลบลูกค้าสำเร็จ", "success");
+      Swal.fire("สำเร็จ", "ลบลูกค้าเรียบร้อยแล้ว", "success");
+      setShowDialog(false);
       fetchUsers();
-    } catch {
+    } catch (err) {
       Swal.fire("เกิดข้อผิดพลาด", "ไม่สามารถลบลูกค้าได้", "error");
     }
   };
 
-  useEffect(() => {
-    fetchUsers();
-  }, []);
+  if (loading)
+    return (
+      <div className="vh-100 d-flex justify-content-center align-items-center">
+        <div className="spinner-border text-teal" role="status"></div>
+      </div>
+    );
 
   const paginatedUsers = users.slice(startIndex, startIndex + rowsPerPage);
 
   return (
     <>
-      <Nav message={message} onLogout={handleLogout} role={role} />
+      <Nav message={message} role={role} onLogout={handleLogout} />
 
       <main className="main-content flex-grow-1 px-3 py-4 mt-6 mt-lg-5">
         <div className="mx-auto container-max">
-          <h2 className="fw-bold mb-4 text-center">📋 รายชื่อลูกค้าทั้งหมด</h2>
+          <h3 className="fw-bold mb-4 text-center">
+            📋 รายชื่อลูกค้าทั้งหมด ({users.length} คน)
+          </h3>
 
-          {/* 🔍 กล่องค้นหา */}
           <div className="d-flex justify-content-center mb-3">
             <input
               type="text"
-              className="form-control w-50 me-2"
+              className="form-control w-50 me-3"
               placeholder="🔍 ค้นหาชื่อ เบอร์โทร หรือหมายเลขห้อง..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+              onKeyDown={(e) =>
+                e.key === "Enter" && search.trim() && handleSearch()
+              }
             />
+          </div>
+          <div className="d-flex justify-content-center mb-3">
             <button className="btn btn-primary me-2" onClick={handleSearch}>
               ค้นหา
             </button>
-            <button className="btn btn-secondary" onClick={fetchUsers}>
+            <button
+              className="btn btn-secondary"
+              onClick={() => {
+                setSearch("");
+                setCurrentPage(1);
+                fetchUsers();
+              }}
+            >
               โหลดใหม่
             </button>
           </div>
 
-          {/* 📊 ตารางข้อมูล */}
-          <div
-            className="table-scroll border rounded responsive-table"
-            style={{
-              maxHeight: "70vh",
-              overflowY: "auto",
-              overflowX: "auto",
-              borderRadius: "8px",
-            }}
-          >
+          {/* 📊 ตาราง */}
+          <div className="responsive-table" style={{ overflowX: "auto" }}>
             <table
               className="table table-sm table-striped align-middle text-center"
               style={{ tableLayout: "fixed", width: "100%" }}
             >
               <thead className="table-dark">
                 <tr>
-                  <th style={{ width: "5%" }}>#</th>
-                  <th style={{ width: "5%" }}>LINE</th>
-                  <th style={{ width: "5%" }}>ดูประวัติ</th>
-                  <th style={{ width: "5%" }}>ลบ</th>
+                  <th scope="col" style={{ width: "5%" }}>
+                    #
+                  </th>
+                  <th scope="col" style={{ width: "5%" }}>
+                    LINE
+                  </th>
+                  <th scope="col" style={{ width: "5%" }}>
+                    ดูประวัติ
+                  </th>
+                  <th scope="col" style={{ width: "5%" }}>
+                    ลบ
+                  </th>
                 </tr>
               </thead>
               <tbody>
-                {loading ? (
-                  <tr>
-                    <td colSpan={4} className="text-center py-4">
-                      <div className="spinner-border text-primary"></div>
-                    </td>
-                  </tr>
-                ) : paginatedUsers.length > 0 ? (
+                {paginatedUsers.length > 0 ? (
                   paginatedUsers.map((u, idx) => (
                     <tr key={u.customerId}>
                       <td>{startIndex + idx + 1}</td>
@@ -197,14 +207,10 @@ export default function Users() {
                       </td>
                       <td>
                         <button
-                          className="btn btn-sm text-white"
-                          style={{
-                            background:
-                              "linear-gradient(100deg, #ff0505, #f645c4)",
-                          }}
-                          onClick={() => handleDelete(u.customerId, u.fullName)}
+                          className="btn btn-sm btn-danger"
+                          onClick={() => handleDelete(u.customerId, u.userName)}
                         >
-                          🗑️
+                          ลบ
                         </button>
                       </td>
                     </tr>
@@ -233,7 +239,7 @@ export default function Users() {
         </div>
       </main>
 
-      {/* ✅ Dialog แสดงประวัติ */}
+      {/* ✅ Dialog ประวัติ */}
       <Dialog.Root open={showDialog} onOpenChange={setShowDialog}>
         <Dialog.Portal>
           <Dialog.Overlay
@@ -254,66 +260,46 @@ export default function Users() {
               รายละเอียดของ {selectedUser?.userName}
             </Dialog.Title>
 
-            {selectedUser?.bookings && selectedUser.bookings.length > 0 ? (
+            <Dialog.Description className="text-muted text-center mb-3">
+              ดูข้อมูลลูกค้าและประวัติการจองห้องพัก
+            </Dialog.Description>
+
+            {selectedUser?.bookings?.length ? (
               <div className="d-flex flex-column gap-3">
-                {(() => {
-                  // ✅ เรียงจากเก่ามาหาใหม่
-                  const sorted = [...selectedUser.bookings].sort((a, b) => {
-                    const dateA = new Date(a.createdAt || "").getTime();
-                    const dateB = new Date(b.createdAt || "").getTime();
-                    if (dateA !== dateB) return dateA - dateB;
-                    const roomA = parseInt(a.room?.number || "0", 10);
-                    const roomB = parseInt(b.room?.number || "0", 10);
-                    return roomA - roomB;
-                  });
-
-                  // ✅ จัดกลุ่มตามวันที่
-                  const grouped: Record<string, BookingDetail[]> = {};
-                  sorted.forEach((b) => {
-                    const day = formatThaiDate(b.createdAt);
-                    if (!grouped[day]) grouped[day] = [];
-                    grouped[day].push(b);
-                  });
-
-                  return Object.entries(grouped).map(([day, bookings]) => (
-                    <div key={day}>
-                      <h6 className="fw-bold text-primary border-bottom pb-1 mb-2">
-                        📅 วันที่ {day}
-                      </h6>
-                      {bookings.map((b) => (
-                        <div
-                          key={b.bookingId}
-                          className="border rounded-3 p-3 shadow-sm bg-light mb-2"
-                        >
-                          <p className="mb-1">
-                            <strong>ห้องที่เช่าอยู่ : </strong>{" "}
-                            {b.room?.number || "-"}
-                          </p>
-                          <p className="mb-1">
-                            <strong>ชื่อเต็มผู้จอง : </strong>{" "}
-                            {selectedUser.fullName || "-"}
-                          </p>
-                          <p className="mb-1">
-                            <strong>เบอร์โทร : </strong>{" "}
-                            {selectedUser.cphone || "-"}
-                          </p>
-                          <p className="mb-1">
-                            <strong>วันที่จอง : </strong>{" "}
-                            {formatThaiDate(b.createdAt)}
-                          </p>
-                          <p className="mb-1">
-                            <strong>วันที่ขอเข้าพัก : </strong>{" "}
-                            {formatThaiDate(b.checkin)}
-                          </p>
-                          <p className="mb-1">
-                            <strong>วันที่เข้าพักจริง : </strong>{" "}
-                            {formatThaiDate(b.actualCheckin)}
-                          </p>
-                        </div>
-                      ))}
+                {[...selectedUser.bookings]
+                  .sort(
+                    (a, b) =>
+                      new Date(a.createdAt || "").getTime() -
+                      new Date(b.createdAt || "").getTime()
+                  )
+                  .map((b) => (
+                    <div
+                      key={b.bookingId}
+                      className="border rounded-3 p-3 shadow-sm bg-light mb-2"
+                    >
+                      <p>
+                        <strong>ห้อง:</strong> {b.room?.number || "-"}
+                      </p>
+                      <p>
+                        <strong>ชื่อผู้จอง:</strong> {b.fullName || "-"}
+                      </p>
+                      <p>
+                        <strong>เบอร์โทร:</strong> {b.cphone || "-"}
+                      </p>
+                      <p>
+                        <strong>วันที่จอง:</strong>{" "}
+                        {formatThaiDate(b.createdAt)}
+                      </p>
+                      <p>
+                        <strong>วันที่เข้าพัก:</strong>{" "}
+                        {formatThaiDate(b.checkin)}
+                      </p>
+                      <p>
+                        <strong>เข้าพักจริง:</strong>{" "}
+                        {formatThaiDate(b.actualCheckin)}
+                      </p>
                     </div>
-                  ));
-                })()}
+                  ))}
               </div>
             ) : (
               <p className="text-muted text-center">ไม่มีประวัติการจอง</p>

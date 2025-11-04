@@ -20,17 +20,40 @@ export default function BillTable({
   onCreateBill,
 }: BillTableProps) {
   return (
-    <div className="table-responsive bg-white shadow-sm rounded-3 p-2">
-      <table className="table table-hover table-striped mb-0 align-middle text-center">
+    <div className="responsive-table" style={{ overflowX: "auto" }}>
+      <table
+        className="table table-sm table-striped align-middle text-center"
+        style={{
+          tableLayout: "fixed",
+          width: "100%",
+          backgroundColor: "#ffffff",
+          borderRadius: "10px",
+          overflow: "hidden",
+        }}
+      >
         <thead className="table-dark">
           <tr>
-            <th>#</th>
-            <th>ห้อง</th>
-            <th>Line</th>
-            <th>ค่าเช่า</th>
-            <th>วันขอเข้าพัก</th>
-            <th>วันเข้าพัก</th>
-            <th>ออกบิล</th>
+            <th scope="col" style={{ width: "10%" }}>
+              #
+            </th>
+            <th scope="col" style={{ width: "10%" }}>
+              ห้อง
+            </th>
+            <th scope="col" style={{ width: "15%" }}>
+              Line
+            </th>
+            <th scope="col" style={{ width: "20%" }}>
+              ค่าเช่า
+            </th>
+            <th scope="col" style={{ width: "20%" }}>
+              วันขอเข้าพัก
+            </th>
+            <th scope="col" style={{ width: "20%" }}>
+              วันเข้าพัก
+            </th>
+            <th scope="col" style={{ width: "20%" }}>
+              ออกบิล
+            </th>
           </tr>
         </thead>
         <tbody>

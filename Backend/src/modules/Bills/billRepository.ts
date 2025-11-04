@@ -19,7 +19,11 @@ export const billRepository = {
   },
 
   // 🕓 ดึงบิลเดือนก่อนหน้า (ใช้ค่าน้ำ/ไฟก่อนหน้า)
-  async findPrevBill(roomId: string, billMonth: Date, prevMonth: Date) {
+  async findPrevBill(roomId: string, billMonth: Date) {
+    // คำนวณเดือนก่อนหน้า
+    const prevMonth = new Date(billMonth);
+    prevMonth.setMonth(prevMonth.getMonth() - 1);
+
     return prisma.bill.findFirst({
       where: {
         roomId,
@@ -53,7 +57,6 @@ export const billRepository = {
   async delete(billId: string) {
     return prisma.bill.delete({ where: { billId } });
   },
-
 
   // 🧍‍♂️ ดึง Booking ปัจจุบันของห้อง (เช่าอยู่)
   async findBooking(roomId: string) {

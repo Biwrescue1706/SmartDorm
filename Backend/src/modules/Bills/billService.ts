@@ -45,23 +45,18 @@ export const billService = {
     const wPrice = 19;
     const ePrice = 7;
 
-    // 📅 หาค่าของเดือนก่อนหน้า
+    // 📅 แปลงเดือนที่เลือก
     const billMonth = new Date(month);
-    const prevMonth = new Date(billMonth);
-    prevMonth.setMonth(prevMonth.getMonth() - 1);
 
     // 🔙 ดึงบิลก่อนหน้า (เพื่อใช้ค่า wBefore/eBefore)
-    const prevBill = await billRepository.findPrevBill(
-      roomId,
-      billMonth,
-      prevMonth
-    );
+    const prevBill = await billRepository.findPrevBill(roomId, billMonth);
+
     const finalWBefore = prevBill ? prevBill.wAfter : (wBefore ?? 0);
     const finalEBefore = prevBill ? prevBill.eAfter : (eBefore ?? 0);
 
     // ⚙️ คำนวณหน่วยน้ำ/ไฟ
-    const wUnits = wAfter - finalWBefore;
-    const eUnits = eAfter - finalEBefore;
+    const wUnits = Math.max(0, wAfter - finalWBefore);
+    const eUnits = Math.max(0, eAfter - finalEBefore);
     const waterCost = wUnits * wPrice;
     const electricCost = eUnits * ePrice;
 
@@ -109,7 +104,7 @@ export const billService = {
       createdAt,
     });
 
-      // 📎 ลิงก์ดูบิล
+    // 📎 ลิงก์ดูบิล
     const billUrl = `https://smartdorm-detail.biwbong.shop/bill/${bill.billId}`;
 
     // 🧾 ส่ง Flex Message
@@ -126,18 +121,37 @@ export const billService = {
               month: "long",
             }),
           },
-          { label: "💧 ค่าน้ำ", value: `${bill.wUnits} หน่วย (${bill.waterCost.toLocaleString()} บาท)` },
-          { label: "⚡ ค่าไฟ", value: `${bill.eUnits} หน่วย (${bill.electricCost.toLocaleString()} บาท)` },
-          { label: "🏢 ค่าส่วนกลาง", value: `${bill.service.toLocaleString()} บาท` },
-          { label: "💰 ค่าเช่าห้อง", value: `${bill.rent.toLocaleString()} บาท` },
-          { label: "💵 ยอดรวมทั้งหมด", value: `${bill.total.toLocaleString()} บาท`, color: "#27ae60" },
-          { label: "📅 ครบกำหนดชำระ", value: formatThaiDate(bill.dueDate), color: "#e67e22" },
+          {
+            label: "💧 ค่าน้ำ",
+            value: `${bill.wUnits} หน่วย (${bill.waterCost.toLocaleString()} บาท)`,
+          },
+          {
+            label: "⚡ ค่าไฟ",
+            value: `${bill.eUnits} หน่วย (${bill.electricCost.toLocaleString()} บาท)`,
+          },
+          {
+            label: "🏢 ค่าส่วนกลาง",
+            value: `${bill.service.toLocaleString()} บาท`,
+          },
+          {
+            label: "💰 ค่าเช่าห้อง",
+            value: `${bill.rent.toLocaleString()} บาท`,
+          },
+          {
+            label: "💵 ยอดรวมทั้งหมด",
+            value: `${bill.total.toLocaleString()} บาท`,
+            color: "#27ae60",
+          },
+          {
+            label: "📅 ครบกำหนดชำระ",
+            value: formatThaiDate(bill.dueDate),
+            color: "#e67e22",
+          },
         ],
         "🔗 ดูรายละเอียดบิล",
         billUrl
       );
     }
-
 
     return bill;
   },

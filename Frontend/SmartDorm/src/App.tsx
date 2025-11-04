@@ -16,9 +16,6 @@ import Profile from "./pages/Profile";
 import ChangePassword from "./pages/ChangePassword";
 import ForgotUsername from "./pages/ForgotUsername";
 import ResetPassword from "./pages/ResetPassword";
-import BookingDetail from "./pagesDetail/BookingDetail";
-import CheckoutDetail from "./pagesDetail/CheckoutDetail";
-import BillDetail from "./pagesDetail/BillDetail";
 
 function App() {
   return (
@@ -139,10 +136,6 @@ function App() {
           </GuestRoute>
         }
       />
-
-      <Route path="/detail/booking/:bookingId" element={<BookingDetail />} />
-      <Route path="/detail/checkout/:bookingId" element={<CheckoutDetail />} />
-      <Route path="/detail/bill/:billId" element={<BillDetail />} />
 
       {/*  ไม่เจอ route → ไปหน้า 404 */}
       <Route path="*" element={<NotFound />} />

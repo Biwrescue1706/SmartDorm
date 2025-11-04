@@ -30,11 +30,15 @@ router.post(
   "/create",
   authMiddleware,
   roleMiddleware(0),
-  async (req: Request, res: Response) => {
+  async (req, res) => {
+    console.log("Admin =>", req.admin);
+    console.log("Body =>", req.body);
+
     try {
       const room = await roomService.createRoom(req.admin!.adminId, req.body);
       res.json({ message: "เพิ่มห้องสำเร็จ", room });
     } catch (err: any) {
+      console.error("❌ Room create error:", err.message);
       res.status(400).json({ error: err.message });
     }
   }

@@ -69,9 +69,9 @@ export const checkoutService = {
         "📢 มีคำขอคืนห้องใหม่",
         [
           { label: "รหัสการจอง", value: booking.bookingId },
-          { label: "🏠 ห้อง", value: booking.room.number },
-          { label: "👤 ผู้ขอคืน", value: booking.fullName },
-          { label: "📞 เบอร์", value: booking.cphone },
+          { label: "🏠 ห้อง", value: booking.room.number ?? "-" },
+          { label: "👤 ผู้ขอคืน", value: booking.fullName ?? "-" },
+          { label: "📞 เบอร์", value: booking.cphone ?? "-" },
           { label: "📅 วันที่ขอคืน", value: formatThaiDate(checkout) },
         ],
         "🔗 เปิดในระบบ Admin",
@@ -86,7 +86,7 @@ export const checkoutService = {
       "✅ ส่งคำขอคืนห้องเรียบร้อยแล้ว",
       [
         { label: "รหัสการจอง", value: booking.bookingId },
-        { label: "🏠 ห้อง", value: booking.room.number },
+        { label: "🏠 ห้อง", value: booking.room.number ?? "-" },
         { label: "📅 วันที่คืน", value: formatThaiDate(checkout) },
         { label: "สถานะ", value: "⏳ รออนุมัติ", color: "#f39c12" },
       ],
@@ -125,7 +125,7 @@ export const checkoutService = {
       "✅ การคืนห้องของคุณได้รับการอนุมัติแล้ว",
       [
         { label: "รหัสการจอง", value: booking.bookingId },
-        { label: "🏠 ห้อง", value: booking.room.number },
+        { label: "🏠 ห้อง", value: booking.room.number ?? "-" },
         { label: "📅 วันที่อนุมัติ", value: formatThaiDate(new Date()) },
         { label: "สถานะ", value: "✅ คืนห้องสำเร็จ", color: "#27ae60" },
       ],
@@ -151,7 +151,7 @@ export const checkoutService = {
       "❌ การคืนห้องของคุณไม่ได้รับการอนุมัติ",
       [
         { label: "รหัสการจอง", value: booking.bookingId },
-        { label: "🏠 ห้อง", value: booking.room.number },
+        { label: "🏠 ห้อง", value: booking.room.number ?? "-" },
         { label: "สถานะ", value: "❌ ปฏิเสธ", color: "#e74c3c" },
       ],
       "ติดต่อผู้ดูแลระบบ",

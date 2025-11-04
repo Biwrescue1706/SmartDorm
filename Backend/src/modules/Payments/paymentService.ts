@@ -1,3 +1,4 @@
+// src/modules/Payments/paymentService.ts
 import { paymentRepository } from "./paymentRepository";
 import { verifyLineToken } from "../../utils/verifyLineToken";
 import { PaymentInput } from "./paymentModel";
@@ -51,7 +52,7 @@ export const paymentService = {
     // ✅ แจ้งลูกค้า (ใช้ userId จาก customer)
     if (bill.customer?.userId) {
       await sendFlexMessage(
-        bill.customer?.userId,
+        bill.customer.userId,
         "💰 ส่งสลิปการชำระเงินสำเร็จแล้ว",
         [
           { label: "รหัสบิล", value: bill.billId },
@@ -59,11 +60,7 @@ export const paymentService = {
           { label: "🏠 ห้อง", value: bill.room?.number ?? "-" },
           { label: "ยอดชำระ", value: `${bill.total.toLocaleString()} บาท` },
           { label: "วันที่ชำระ", value: formatThaiDate(payment.createdAt) },
-          {
-            label: "สถานะ",
-            value: "ชำระเงินแล้ว",
-            color: "#f39c12",
-          },
+          { label: "สถานะ", value: "ชำระเงินแล้ว", color: "#f39c12" },
         ],
         "🔗 ดูรายละเอียดบิลของคุณ",
         customerDetailUrl
@@ -77,12 +74,12 @@ export const paymentService = {
         "📢 มีการชำระบิลใหม่เข้ามา",
         [
           { label: "รหัสบิล", value: bill.billId },
-          { label: "ชื่อผู้เช่า", value: bill.booking.fullName },
+          { label: "ชื่อผู้เช่า", value: bill.booking.fullName ?? "-" },
           { label: "🏠 ห้อง", value: bill.room?.number ?? "-" },
-          { label: "เบอร์โทร", value: bill.booking.cphone },
+          { label: "เบอร์โทร", value: bill.booking.cphone ?? "-" },
           { label: "ยอดชำระ", value: `${bill.total.toLocaleString()} บาท` },
           { label: "วันที่ชำระ", value: formatThaiDate(payment.createdAt) },
-          { label: "สลิป", value: slipUrl },
+          { label: "สลิป", value: slipUrl ?? "-" },
         ],
         "🔗 เปิดในระบบ Admin",
         adminUrl

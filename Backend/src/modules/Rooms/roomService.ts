@@ -1,6 +1,7 @@
 // src/modules/Rooms/roomService.ts
 import { roomRepository } from "./roomRepository";
 import { RoomInput, UpdateRoomInput } from "./roomModel";
+import prisma from "../../prisma";
 
 export const roomService = {
   async getAllRooms() {
@@ -16,8 +17,18 @@ export const roomService = {
   async createRoom(adminId: string, data: RoomInput) {
     const { number, size, rent, deposit, bookingFee } = data;
 
-    if (!number || !size || !rent || !deposit || !bookingFee)
+    if (
+      !number?.trim() ||
+      !size?.trim() ||
+      rent == null ||
+      deposit == null ||
+      bookingFee == null
+    )
       throw new Error("กรุณากรอกข้อมูลให้ครบ");
+
+    // 🔍 ตรวจว่ามีห้องนี้อยู่แล้วหรือไม่
+    const existing = await prisma.room.findUnique({ where: { number } });
+    if (existing) throw new Error(`มีห้องหมายเลข ${number} อยู่ในระบบแล้ว`);
 
     const room = await roomRepository.create({
       number,
@@ -38,9 +49,9 @@ export const roomService = {
     const updated = await roomRepository.update(roomId, {
       number,
       size,
-      rent: rent ? Number(rent) : undefined,
-      deposit: deposit ? Number(deposit) : undefined,
-      bookingFee: bookingFee ? Number(bookingFee) : undefined,
+      rent: rent !== undefined ? Number(rent) : undefined,
+      deposit: deposit !== undefined ? Number(deposit) : undefined,
+      bookingFee: bookingFee !== undefined ? Number(bookingFee) : undefined,
       status,
       updatedBy: adminId,
     });

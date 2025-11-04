@@ -63,12 +63,12 @@ model Booking {
   customerId String @db.ObjectId
 
   // ✅ snapshot ข้อมูลลูกค้า
-  ctitle   String // คำนำหน้าชื่อ
-  cname    String //ชื่อ
-  csurname String //นามสกุล
-  fullName String // ชื่อเต็ม ctitle + cname + csurname
-  cphone   String //เบอรโทร
-  cmumId   String //บัตรประชาชน
+  ctitle   String? // คำนำหน้าชื่อ
+  cname    String? //ชื่อ
+  csurname String? //นามสกุล
+  fullName String? // ชื่อเต็ม ctitle + cname + csurname
+  cphone   String? //เบอรโทร
+  cmumId   String? //บัตรประชาชน
 
   slipUrl        String?
   checkin        DateTime // วันที่ลูกค้าระบุว่าจะเช็คอิน

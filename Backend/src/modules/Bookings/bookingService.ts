@@ -13,26 +13,22 @@ const formatThaiDate = (d: string | Date) =>
   });
 
 export const bookingService = {
-  /* 📋 ดึงข้อมูลทั้งหมด */
   async getAllBookings() {
     return bookingRepository.findAll();
   },
 
-  /* 🔍 ดึงข้อมูลตาม bookingId */
   async getBookingById(bookingId: string) {
     const booking = await bookingRepository.findById(bookingId);
     if (!booking) throw new Error("ไม่พบข้อมูลการจอง");
     return booking;
   },
 
-  /* 🔍 ค้นหาการจอง */
   async searchBookings(keyword: string) {
     const results = await bookingRepository.searchBookings(keyword);
     if (!results.length) throw new Error("ไม่พบข้อมูลการจองที่ค้นหา");
     return results;
   },
 
-  /* 🧾 ลูกค้าสร้างคำขอจองห้อง */
   async createBooking(input: BookingInput) {
     const {
       accessToken,
@@ -53,9 +49,7 @@ export const bookingService = {
     let slipUrl = "";
     if (slip) slipUrl = await bookingRepository.uploadSlip(slip);
 
-    // 🧱 Transaction
     const booking = await prisma.$transaction(async (tx) => {
-      // ตรวจว่ามี customer แล้วหรือยัง
       let customer = await tx.customer.findFirst({ where: { userId } });
       if (!customer) {
         customer = await tx.customer.create({
@@ -68,7 +62,6 @@ export const bookingService = {
         });
       }
 
-      // ✅ สร้างการจอง พร้อม snapshot ข้อมูลลูกค้า
       const newBooking = await tx.booking.create({
         data: {
           roomId,
@@ -76,9 +69,9 @@ export const bookingService = {
           ctitle,
           cname,
           csurname,
-          fullName: `${ctitle}${cname} ${csurname ?? ""}`.trim(),
-          cphone,
-          cmumId,
+          fullName: `${ctitle ?? ""}${cname ?? ""} ${csurname ?? ""}`.trim(),
+          cphone: cphone ?? "",
+          cmumId: cmumId ?? "",
           slipUrl,
           checkin: new Date(checkin),
           checkout: checkout ? new Date(checkout) : null,
@@ -93,17 +86,16 @@ export const bookingService = {
       return newBooking;
     });
 
-    /* ✅ ส่ง LINE แจ้งผู้จอง */
     const bookingUrl = `https://smartdorm-detail.biwbong.shop/booking/${booking.bookingId}`;
     await sendFlexMessage(
-      booking.customer.userId,
+      booking.customer?.userId,
       "📢 ยืนยันการจองห้อง SmartDorm",
       [
         { label: "รหัสการจอง", value: booking.bookingId },
-        { label: "👤 ชื่อ:", value: booking.fullName },
+        { label: "👤 ชื่อ:", value: booking.fullName ?? "-" },
         { label: "🏠 ห้อง:", value: booking.room.number },
         { label: "📅 วันที่เข้าพัก:", value: formatThaiDate(booking.checkin) },
-        { label: "📞 เบอร์:", value: booking.cphone },
+        { label: "📞 เบอร์:", value: booking.cphone ?? "-" },
         {
           label: "สถานะ:",
           value: "⏳ รอการอนุมัติจากผู้ดูแล",
@@ -114,7 +106,6 @@ export const bookingService = {
       bookingUrl
     );
 
-    /* ✅ ส่ง LINE แจ้งแอดมิน */
     if (process.env.ADMIN_LINE_ID) {
       await sendFlexMessage(
         process.env.ADMIN_LINE_ID,
@@ -122,8 +113,8 @@ export const bookingService = {
         [
           { label: "รหัสการจอง", value: booking.bookingId },
           { label: "🏠 ห้อง", value: booking.room.number },
-          { label: "👤 ผู้จอง", value: booking.fullName },
-          { label: "📞 เบอร์", value: booking.cphone },
+          { label: "👤 ผู้จอง", value: booking.fullName ?? "-" },
+          { label: "📞 เบอร์", value: booking.cphone ?? "-" },
           {
             label: "📅 วันที่เข้าพัก",
             value: formatThaiDate(booking.checkin),
@@ -137,7 +128,6 @@ export const bookingService = {
     return booking;
   },
 
-  /* ✅ อนุมัติการจอง */
   async approveBooking(bookingId: string) {
     const booking = await bookingRepository.findById(bookingId);
     if (!booking) throw new Error("ไม่พบการจอง");
@@ -163,7 +153,6 @@ export const bookingService = {
     return updated;
   },
 
-  /* 🚫 ปฏิเสธการจอง */
   async rejectBooking(bookingId: string) {
     const booking = await bookingRepository.findById(bookingId);
     if (!booking) throw new Error("ไม่พบการจอง");
@@ -187,7 +176,7 @@ export const bookingService = {
       [
         { label: "รหัสการจอง", value: booking.bookingId },
         { label: "🏠 ห้อง", value: booking.room.number },
-        { label: "📞 เบอร์", value: booking.cphone },
+        { label: "📞 เบอร์", value: booking.cphone ?? "-" },
       ],
       "🔗 ดูรายละเอียด",
       bookingUrl
@@ -196,7 +185,6 @@ export const bookingService = {
     return updated;
   },
 
-  /* 🏠 เช็คอิน */
   async checkinBooking(bookingId: string) {
     const booking = await bookingRepository.findById(bookingId);
     if (!booking) throw new Error("ไม่พบการจอง");
@@ -227,7 +215,6 @@ export const bookingService = {
     return updated;
   },
 
-  /* 🚪 เช็คเอาท์ */
   async checkoutBooking(bookingId: string) {
     const booking = await bookingRepository.findById(bookingId);
     if (!booking) throw new Error("ไม่พบการจอง");
@@ -260,7 +247,6 @@ export const bookingService = {
     return updated;
   },
 
-  /* 🗑️ ลบการจอง */
   async deleteBooking(bookingId: string) {
     const booking = await bookingRepository.findById(bookingId);
     if (!booking) throw new Error("ไม่พบข้อมูลการจอง");
@@ -270,7 +256,6 @@ export const bookingService = {
     await bookingRepository.deleteBooking(bookingId);
   },
 
-  /* ✏️ แก้ไขข้อมูลการจอง (update booking + customer snapshot) */
   async updateBooking(bookingId: string, data: BookingUpdateInput) {
     const booking = await bookingRepository.findById(bookingId);
     if (!booking) throw new Error("ไม่พบข้อมูลการจอง");
@@ -298,7 +283,6 @@ export const bookingService = {
       }
     }
 
-    // สร้าง fullName ใหม่หากแก้ไขชื่อ
     if (updates.ctitle || updates.cname || updates.csurname) {
       updates.fullName =
         `${updates.ctitle || booking.ctitle}${updates.cname || booking.cname} ${updates.csurname || booking.csurname}`.trim();

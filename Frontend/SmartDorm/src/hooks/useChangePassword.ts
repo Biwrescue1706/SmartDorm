@@ -10,29 +10,31 @@ export function useChangePassword() {
   const changePassword = async (data: ChangePasswordInput) => {
     try {
       setLoading(true);
-      const res = await axios.put<ChangePasswordResponse>(
+      await axios.put<ChangePasswordResponse>(
         `${API_BASE}/auth/change-password`,
         data,
         { withCredentials: true }
       );
+
       Swal.fire({
-toast: true,
+        toast: true,
         position: "top-end",
-icon: "success",
-title: "เปลี่ยนรหัสสำเร็จ",
-timer: 1500,
-showConfirmButton : false,
-});
+        icon: "success",
+        title: "เปลี่ยนรหัสสำเร็จ",
+        timer: 1500,
+        showConfirmButton: false,
+      });
+
       return true;
     } catch (err: any) {
-Swal.fire({
-toast: true,
+      Swal.fire({
+        toast: true,
         position: "top-end",
-icon: "error",
-title: "ไม่สามารถเปลี่ยนรหัสสำเร็จ",
-timer: 1500,
-showConfirmButton : false,
-});
+        icon: "error",
+        title: "ไม่สามารถเปลี่ยนรหัสสำเร็จ",
+        timer: 1500,
+        showConfirmButton: false,
+      });
       return false;
     } finally {
       setLoading(false);

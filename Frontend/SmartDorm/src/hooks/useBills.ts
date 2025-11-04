@@ -22,8 +22,7 @@ export function useBills() {
         toast: true,
         position: "top-end",
         icon: "error",
-        title: "โหลดข้อมูลบิลล้มเหลว",
-        text: "ไม่สามารถโหลดข้อมูลได้",
+        title: "ไม่สามารถโหลดข้อมูลได้",
         timer: 1500,
         showConfirmButton: false,
       });
@@ -56,8 +55,7 @@ export function useBills() {
         toast: true,
         position: "top-end",
         icon: "error",
-        title: "อัปเดตบิลล้มเหลว",
-        text: "ไม่สามารถอัปเดตข้อมูลได้",
+        title: "ไม่สามารถอัปเดตข้อมูลได้",
         timer: 1500,
         showConfirmButton: false,
       });
@@ -84,7 +82,7 @@ export function useBills() {
         toast: true,
         position: "top-end",
         icon: "success",
-        title: "ลบสำเร็จ",
+        title: "ลบบิลสำเร็จแล้ว",
         timer: 1500,
         showConfirmButton: false,
       });
@@ -94,8 +92,7 @@ export function useBills() {
         toast: true,
         position: "top-end",
         icon: "error",
-        title: "ลบไม่สำเร็จ",
-        text: "เกิดข้อผิดพลาด",
+        title: "ลบบิลไม่สำเร็จ",
         timer: 1500,
         showConfirmButton: false,
       });

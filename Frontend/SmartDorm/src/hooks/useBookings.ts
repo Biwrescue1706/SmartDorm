@@ -32,8 +32,7 @@ export function useBookings() {
         toast: true,
         position: "top-end",
         icon: "error",
-        title: "ข้อผิดพลาด",
-        text: "ไม่สามารถโหลดข้อมูลการจองได้",
+        title: "ไม่สามารถโหลดข้อมูลการจองได้",
         timer: 1500,
         showConfirmButton: false,
       });
@@ -59,7 +58,6 @@ export function useBookings() {
         position: "top-end",
         icon: "success",
         title: "อนุมัติเรียบร้อยแล้ว",
-        text: "ระบบได้บันทึกข้อมูลการอนุมัติแล้ว",
         timer: 1500,
         showConfirmButton: false,
       });
@@ -69,8 +67,7 @@ export function useBookings() {
         toast: true,
         position: "top-end",
         icon: "error",
-        title: "ล้มเหลว",
-        text: "ไม่สามารถอนุมัติได้",
+        title: "ไม่สามารถอนุมัติได้",
         timer: 1500,
         showConfirmButton: false,
       });
@@ -94,7 +91,6 @@ export function useBookings() {
         position: "top-end",
         icon: "warning",
         title: "ปฏิเสธการจองแล้ว",
-        text: "ระบบได้บันทึกข้อมูลเรียบร้อยแล้ว",
         timer: 1500,
         showConfirmButton: false,
       });
@@ -104,8 +100,7 @@ export function useBookings() {
         toast: true,
         position: "top-end",
         icon: "error",
-        title: "ผิดพลาด",
-        text: "ไม่สามารถปฏิเสธได้",
+        title: "ไม่สามารถปฏิเสธได้",
         timer: 1500,
         showConfirmButton: false,
       });
@@ -151,8 +146,7 @@ export function useBookings() {
         toast: true,
         position: "top-end",
         icon: "error",
-        title: "ผิดพลาด",
-        text: "ไม่สามารถลบข้อมูลได้",
+        title: "ไม่สามารถลบข้อมูลได้",
         timer: 1500,
         showConfirmButton: false,
       });
@@ -186,7 +180,6 @@ export function useBookings() {
         position: "top-end",
         icon: "warning",
         title: "ไม่สามารถเช็คอินได้",
-        text: err.response?.data?.error || "ไม่สามารถเช็คอินได้",
         timer: 1500,
         showConfirmButton: false,
       });

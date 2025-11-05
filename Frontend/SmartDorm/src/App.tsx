@@ -16,6 +16,7 @@ import Profile from "./pages/Profile";
 import ChangePassword from "./pages/ChangePassword";
 import ForgotUsername from "./pages/ForgotUsername";
 import ResetPassword from "./pages/ResetPassword";
+import LinksPage from "./pages/LinksPage";
 
 function App() {
   return (
@@ -29,6 +30,26 @@ function App() {
           </GuestRoute>
         }
       />
+
+      <Route
+        path="/forgot-username"
+        element={
+          <GuestRoute>
+            <ForgotUsername />
+          </GuestRoute>
+        }
+      />
+
+      <Route
+        path="/reset-password"
+        element={
+          <GuestRoute>
+            <ResetPassword />
+          </GuestRoute>
+        }
+      />
+
+      {/* ProtectedRoute ป้องกันไปหน้า login  */}
 
       <Route
         path="/dashboard"
@@ -121,19 +142,11 @@ function App() {
       />
 
       <Route
-        path="/forgot-username"
+        path="/links"
         element={
-          <GuestRoute>
-            <ForgotUsername />
-          </GuestRoute>
-        }
-      />
-      <Route
-        path="/reset-password"
-        element={
-          <GuestRoute>
-            <ResetPassword />
-          </GuestRoute>
+          <ProtectedRoute>
+            <LinksPage />
+          </ProtectedRoute>
         }
       />
 

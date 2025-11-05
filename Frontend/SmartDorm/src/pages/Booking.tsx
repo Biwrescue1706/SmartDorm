@@ -74,7 +74,8 @@ export default function Booking() {
               onDelete={deleteBooking}
               onEditSuccess={() => fetchBookings()}
               onCheckin={checkinBooking}
-              role={role} // ✅ เพิ่มบรรทัดนี้
+              role={role}
+              activeFilter={active} // Pass active filter state
             />
           )}
         </div>

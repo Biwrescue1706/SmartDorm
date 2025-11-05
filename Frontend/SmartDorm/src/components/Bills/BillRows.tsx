@@ -59,12 +59,7 @@ export default function BillRow({
             ออกบิล
           </button>
         ) : (
-          <button
-            className="btn btn-primary btn-sm fw-semibold"
-            onClick={() => onCreateBill(room)}
-          >
-            ออกบิล
-          </button>
+          ""
         )}
       </td>
     </tr>

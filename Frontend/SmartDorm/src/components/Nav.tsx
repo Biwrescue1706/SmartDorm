@@ -18,27 +18,38 @@ export default function Nav({
   const location = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState<string | null>(null);
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const [, setIsWideScreen] = useState(window.innerWidth >= 1400);
 
-  // ✂️ ฟังก์ชันช่วยย่อชื่อ เช่น “Phuwanat Phimpha” → “Phuwanat P.”
+  // 🔠 ย่อชื่อ
   const shortenName = (name: string, maxLength = 12) => {
     if (!name) return "-";
     if (name.length <= maxLength) return name;
     const parts = name.split(" ");
-    if (parts.length > 1) {
-      return `${parts[0]} ${parts[1][0]}.`;
-    }
+    if (parts.length > 1) return `${parts[0]} ${parts[1][0]}.`;
     return name.slice(0, maxLength - 3) + "...";
   };
 
-  // ✅ ตรวจจับขนาดจอแบบเรียลไทม์
+  // ตรวจจับขนาดจอ
   useEffect(() => {
     const handleResize = () => setIsWideScreen(window.innerWidth >= 1400);
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // ✅ เปิด dropdown อัตโนมัติตาม path ปัจจุบัน
+  // ปิด dropdown โปรไฟล์เมื่อคลิกข้างนอก
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (!target.closest(".profile-menu-container")) {
+        setProfileMenuOpen(false);
+      }
+    };
+    document.addEventListener("click", handleClickOutside);
+    return () => document.removeEventListener("click", handleClickOutside);
+  }, []);
+
+  // เปิด dropdown อัตโนมัติตาม path
   useEffect(() => {
     if (
       location.pathname.startsWith("/rooms") ||
@@ -51,6 +62,12 @@ export default function Nav({
       location.pathname.startsWith("/allbills")
     ) {
       setDropdownOpen("bill");
+    } else if (
+      location.pathname.startsWith("/admin/manage") ||
+      location.pathname.startsWith("/profile") ||
+      location.pathname.startsWith("/change-password")
+    ) {
+      setDropdownOpen("profile");
     } else {
       setDropdownOpen(null);
     }
@@ -67,12 +84,11 @@ export default function Nav({
         className="position-fixed top-0 start-0 w-100 bg-primary text-white d-flex align-items-center px-3 shadow z-3"
         style={{ height: "70px" }}
       >
-        {/* ☰ ปุ่มเมนูสำหรับจอเล็ก */}
+        {/* ☰ ปุ่มเมนูมือถือ */}
         <button
           type="button"
           onClick={() => setMenuOpen(!menuOpen)}
           className="btn btn-light btn-sm d-xxl-none me-2"
-          aria-label="Toggle menu"
         >
           {menuOpen ? "✖" : "☰"}
         </button>
@@ -90,39 +106,75 @@ export default function Nav({
         {/* ===== 🧭 ส่วนกลาง + ขวา ===== */}
         <div className="flex-grow-1 d-flex justify-content-between align-items-center text-center w-50">
           {/* 🌐 กลางจอ */}
-          <div className="flex-grow-1 justify-content-between text-center fw-semibold fw-bold fs-6">
+          <div className="flex-grow-1 text-center fw-semibold fw-bold fs-6">
             <h6 className="fw-bold text-white mb-1">ระบบจัดการหอพัก</h6>
             <h5 className="fw-bold text-white" style={{ lineHeight: 1 }}>
               (<span className="fw-bold text-warning"> SmartDorm </span>)
             </h5>
           </div>
 
-          {/* 🙋‍♂️ ขวา */}
-          <div className="flex-grow-2 text-end justify-content-center me-2">
-            {role === 0 ? (
-              <>
-                <div>
-                  <h6 className="fw-bold text-warning">
-                    <span>{shortenName(message)}</span>
-                  </h6>
-                  <h6 className="fw-bold text-white">
-                    <span>แอดมิน</span>
-                  </h6>
+          {/* 🙋‍♂️ เมนูโปรไฟล์ */}
+          <div className="profile-menu-container position-relative text-end me-2">
+            <div
+              className="d-inline-block text-start cursor-pointer"
+              onClick={() => setProfileMenuOpen(!profileMenuOpen)}
+              style={{ cursor: "pointer" }}
+            >
+              <h6 className="fw-bold text-warning mb-0">
+                {shortenName(message)}
+              </h6>
+              <h6 className="fw-bold text-white mb-0">
+                {role === 0 ? "แอดมิน" : role === 1 ? "พนักงาน" : "⏳"}
+              </h6>
+            </div>
+
+            {/* 🔽 Dropdown โปรไฟล์ */}
+            {profileMenuOpen && (
+              <div
+                className="position-absolute end-0 mt-2 bg-white shadow rounded p-3"
+                style={{ minWidth: "220px", zIndex: 1000 }}
+              >
+                {/* ส่วนหัวของ dropdown */}
+                <div className="border-bottom pb-2 mb-2">
+                  <div className="fw-bold text-primary small">
+                    {message || "ไม่พบชื่อผู้ใช้"}
+                  </div>
+                  <div className="text-secondary small">
+                    {role === 0 ? "แอดมิน" : role === 1 ? "พนักงาน" : ""}
+                  </div>
                 </div>
-              </>
-            ) : role === 1 ? (
-              <>
-                <div>
-                  <h6 className="fw-bold text-warning">
-                    <span>{shortenName(message)}</span>
-                  </h6>
-                  <h6 className="fw-bold text-white">
-                    <span>พนักงาน</span>
-                  </h6>
-                </div>
-              </>
-            ) : (
-              <div>⏳ กำลังโหลด...</div>
+
+                {/* ปุ่มใน dropdown */}
+                <button
+                  onClick={() => navigate("/profile")}
+                  className="btn btn-light text-start w-100 mb-1 d-flex align-items-center gap-2"
+                >
+                  <span role="img" aria-label="settings">
+                    ⚙️
+                  </span>
+                  <span className="text-dark fw-semibold">โปรไฟล์ของฉัน</span>
+                </button>
+
+                <button
+                  onClick={() => navigate("/change-password")}
+                  className="btn btn-light text-start w-100 mb-1 d-flex align-items-center gap-2"
+                >
+                  <span role="img" aria-label="key">
+                    🔑
+                  </span>
+                  <span className="text-dark fw-semibold">เปลี่ยนรหัสผ่าน</span>
+                </button>
+
+                <button
+                  onClick={onLogout}
+                  className="btn btn-light text-start w-100 d-flex align-items-center gap-2"
+                >
+                  <span role="img" aria-label="logout" className="text-danger">
+                    🚪
+                  </span>
+                  <span className="text-danger fw-semibold">ออกจากระบบ</span>
+                </button>
+              </div>
             )}
           </div>
         </div>
@@ -131,11 +183,7 @@ export default function Nav({
       {/* ===== 🧭 Sidebar (≥1400px) ===== */}
       <div
         className="d-none d-xxl-flex flex-column justify-content-between position-fixed top-0 start-0 bg-primary text-white shadow h-100"
-        style={{
-          width: "180px",
-          paddingTop: "75px",
-          overflowY: "auto",
-        }}
+        style={{ width: "180px", paddingTop: "75px", overflowY: "auto" }}
       >
         <div className="flex-grow-1 p-3 d-flex flex-column gap-2">
           {/* หน้าแรก */}
@@ -237,6 +285,17 @@ export default function Nav({
             )}
           </div>
 
+          <button
+            onClick={() => navigate("/admin/manage")}
+            className={`btn text-start ${
+              location.pathname.startsWith("/admin/manage")
+                ? "btn-light text-primary fw-bold"
+                : "btn-outline-light"
+            }`}
+          >
+            👥 จัดการสมาชิก
+          </button>
+
           {/* ลูกค้า */}
           <button
             onClick={() => navigate("/users")}
@@ -249,36 +308,16 @@ export default function Nav({
             👤 ข้อมูลลูกค้า
           </button>
 
-          {/* จัดการโปรไฟล์ */}
+          {/* รวมลิงก์ LIFF */}
           <button
-            onClick={() => navigate("/admin/manage")}
+            onClick={() => navigate("/links")}
             className={`btn text-start ${
-              location.pathname.startsWith("/admin/manage")
+              location.pathname.startsWith("/links")
                 ? "btn-light text-primary fw-bold"
                 : "btn-outline-light"
             }`}
           >
-            👥 จัดการสมาชิก
-          </button>
-          <button
-            onClick={() => navigate("/profile")}
-            className={`btn text-start ${
-              location.pathname.startsWith("/profile")
-                ? "btn-light text-primary fw-bold"
-                : "btn-outline-light"
-            }`}
-          >
-            ⚙️ โปรไฟล์ของฉัน
-          </button>
-          <button
-            onClick={() => navigate("/change-password")}
-            className={`btn text-start ${
-              location.pathname.startsWith("/change-password")
-                ? "btn-light text-primary fw-bold"
-                : "btn-outline-light"
-            }`}
-          >
-            🔑 เปลี่ยนรหัสผ่าน
+            🔗 รวมลิงก์
           </button>
         </div>
 
@@ -331,7 +370,7 @@ export default function Nav({
                   🏠 หน้าแรก
                 </button>
 
-                {/* ห้อง */}
+                {/* ห้อง Dropdown (มือถือ) */}
                 <div>
                   <button
                     type="button"
@@ -374,7 +413,7 @@ export default function Nav({
                   )}
                 </div>
 
-                {/* บิล */}
+                {/* บิล Dropdown (มือถือ) */}
                 <div>
                   <button
                     type="button"
@@ -419,38 +458,34 @@ export default function Nav({
                   👤 ข้อมูลลูกค้า
                 </button>
 
-                {/* จัดการโปรไฟล์ */}
                 <button
-                  onClick={() => {
-                    navigate("/admin/manage");
-                    setMenuOpen(false);
-                  }}
-                  className="btn btn-outline-light text-start"
+                  onClick={() => navigate("/admin/manage")}
+                  className={`btn text-start ${
+                    location.pathname.startsWith("/admin/manage")
+                      ? "btn-light text-primary fw-bold"
+                      : "btn-outline-light"
+                  }`}
                 >
                   👥 จัดการสมาชิก
                 </button>
+
+                {/* รวมลิงก์ */}
                 <button
                   onClick={() => {
-                    navigate("/profile");
+                    navigate("/links");
                     setMenuOpen(false);
                   }}
-                  className="btn btn-outline-light text-start"
+                  className={`btn text-start ${
+                    location.pathname.startsWith("/links")
+                      ? "btn-light text-primary fw-bold"
+                      : "btn-outline-light"
+                  }`}
                 >
-                  ⚙️ โปรไฟล์ของฉัน
-                </button>
-                <button
-                  onClick={() => {
-                    navigate("/change-password");
-                    setMenuOpen(false);
-                  }}
-                  className="btn btn-outline-light text-start"
-                >
-                  🔑 เปลี่ยนรหัสผ่าน
+                  🔗 รวมลิงก์
                 </button>
               </div>
             </div>
 
-            {/* Logout */}
             <button
               onClick={() => {
                 onLogout();

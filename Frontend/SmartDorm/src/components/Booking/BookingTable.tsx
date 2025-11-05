@@ -10,7 +10,8 @@ interface Props {
   onDelete: (id: string, roomNum: string) => void;
   onEditSuccess: () => void;
   onCheckin?: (id: string) => void;
-  role?: number | null; // ✅ เพิ่ม
+  role?: number | null;
+  activeFilter: "pending" | "approved" | "rejected" | "checkinPending";
 }
 
 export default function BookingTable({
@@ -20,7 +21,8 @@ export default function BookingTable({
   onDelete,
   onEditSuccess,
   onCheckin,
-  role, // ✅ เพิ่ม
+  role,
+  activeFilter,
 }: Props) {
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -67,9 +69,11 @@ export default function BookingTable({
               <th scope="col" style={{ width: "120%" }}>
                 วันที่แจ้งเข้าพัก
               </th>
-              <th scope="col" style={{ width: "120%" }}>
-                วันเข้าพักจริง
-              </th>
+              {activeFilter === 'checkinPending' && (
+                <th scope="col" style={{ width: "120%" }}>
+                  วันเข้าพักจริง
+                </th>
+              )}
               <th scope="col" style={{ width: "120%" }}>
                 สลิป
               </th>
@@ -99,13 +103,14 @@ export default function BookingTable({
                   onReject={onReject}
                   onDelete={onDelete}
                   onEditSuccess={onEditSuccess}
-                  onCheckin={onCheckin} // ✅ ต้องส่งต่อมาที่นี่ด้วย
-                  role={role} // ✅ ส่งต่อ
+                  onCheckin={onCheckin}
+                  role={role}
+                  activeFilter={activeFilter} // Pass down
                 />
               ))
             ) : (
               <tr>
-                <td colSpan={role === 0 ? 12 : 10} className="text-center py-4 text-muted">
+                <td colSpan={9 + (activeFilter === 'checkinPending' ? 1 : 0) + (role === 0 ? 2 : 0)} className="text-center py-4 text-muted">
                   ไม่พบข้อมูลการจอง
                 </td>
               </tr>

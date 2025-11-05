@@ -50,13 +50,14 @@ export default function Users() {
 
   const startIndex = (currentPage - 1) * rowsPerPage;
 
+  // ✅ โหลดข้อมูลลูกค้าทั้งหมด
   const fetchUsers = async () => {
     try {
-      setLoading(false);
-      setSearch("");
+      setLoading(true); // ✅ เริ่มโหลดก่อน
       const res = await axios.get(`${API_BASE}/user/getall`);
       let allUsers: Customer[] = res.data.users || [];
 
+      // รวม bookings ที่ซ้ำชื่อ
       const merged: Record<string, Customer & { bookings: BookingDetail[] }> =
         {};
       allUsers.forEach((u) => {
@@ -67,15 +68,15 @@ export default function Users() {
         }
       });
 
+      // เรียงตามชื่อ
       const sorted = Object.values(merged).sort((a, b) =>
         a.userName.localeCompare(b.userName, "th")
       );
-
       setUsers(sorted);
     } catch (err) {
       console.error("❌ โหลดข้อมูลลูกค้าไม่สำเร็จ:", err);
     } finally {
-      setLoading(false);
+      setLoading(false); // ✅ ปิดโหลดหลังเสร็จจริง
     }
   };
 
@@ -83,9 +84,11 @@ export default function Users() {
     fetchUsers();
   }, []);
 
+  // ✅ ค้นหาลูกค้า
   const handleSearch = async () => {
     if (!search.trim()) return;
     try {
+      setLoading(true);
       const res = await axios.get(`${API_BASE}/user/search`, {
         params: { keyword: search },
       });
@@ -93,14 +96,13 @@ export default function Users() {
       setCurrentPage(1);
     } catch (err) {
       console.error("❌ ค้นหาลูกค้าไม่สำเร็จ:", err);
+    } finally {
+      setLoading(false);
     }
   };
 
-
-  const handleDeleteBooking = async (
-    bookingId: string,
-    roomNumber?: string
-  ) => {
+  // ✅ ลบประวัติการจอง
+  const handleDeleteBooking = async (bookingId: string, roomNumber?: string) => {
     const result = await Swal.fire({
       title: `ยืนยันการลบ`,
       text: `คุณต้องการลบประวัติการจองนี้ (${
@@ -117,8 +119,15 @@ export default function Users() {
 
     try {
       await axios.delete(`${API_BASE}/booking/${bookingId}`);
-      Swal.fire("สำเร็จ", "ลบประวัติการจองเรียบร้อยแล้ว", "success");
-      fetchUsers(); // Refresh user data to reflect the change
+      await Swal.fire({
+        title: "สำเร็จ",
+        text: "ลบประวัติการจองเรียบร้อยแล้ว",
+        icon: "success",
+        timer: 1500,
+        showConfirmButton: false,
+      });
+      await fetchUsers();
+      setShowDialog(false); // ✅ ปิด Dialog หลังลบเสร็จ
     } catch (err) {
       console.error("❌ ลบประวัติการจองไม่สำเร็จ:", err);
       Swal.fire("เกิดข้อผิดพลาด", "ไม่สามารถลบประวัติการจองได้", "error");
@@ -144,6 +153,7 @@ export default function Users() {
             📋 รายชื่อลูกค้าทั้งหมด ({users.length} คน)
           </h3>
 
+          {/* 🔍 กล่องค้นหา */}
           <div className="d-flex justify-content-center mb-3">
             <input
               type="text"
@@ -172,7 +182,7 @@ export default function Users() {
             </button>
           </div>
 
-          {/* 📊 ตาราง */}
+          {/* 📊 ตารางข้อมูล */}
           <div className="responsive-table" style={{ overflowX: "auto" }}>
             <table
               className="table table-sm table-striped align-middle text-center"
@@ -215,6 +225,7 @@ export default function Users() {
             </table>
           </div>
 
+          {/* ✅ Pagination */}
           <Pagination
             currentPage={currentPage}
             totalItems={users.length}
@@ -228,7 +239,7 @@ export default function Users() {
         </div>
       </main>
 
-      {/* ✅ Dialog ประวัติ */}
+      {/* ✅ Dialog ประวัติการจอง */}
       <Dialog.Root open={showDialog} onOpenChange={setShowDialog}>
         <Dialog.Portal>
           <Dialog.Overlay
@@ -262,7 +273,7 @@ export default function Users() {
                 {[...selectedUser.bookings]
                   .sort(
                     (a, b) =>
-                      new Date(b.createdAt || "").getTime() - // Sort descending
+                      new Date(b.createdAt || "").getTime() -
                       new Date(a.createdAt || "").getTime()
                   )
                   .map((b) => (

@@ -10,7 +10,7 @@ interface Props {
   onReject: (id: string) => void;
   onDelete: (id: string, roomNum: string) => void;
   onEditSuccess: () => void;
-  onCheckin?: (id: string) => void; // ✅ เพิ่ม callback สำหรับเช็คอิน
+  onCheckin?: (id: string) => void;
   index: number;
 }
 
@@ -86,8 +86,7 @@ export default function BookingRow({
               onApprove={onApprove}
               onReject={onReject}
               triggerClassName="btn btn-sm btn-warning"
-              triggerLabel="จัดการ"
-            />
+              triggerLabel="จัดการ"            />
           ) : booking.approveStatus === 1 ? (
             <span className="text-success fw-semibold">อนุมัติแล้ว</span>
           ) : (
@@ -114,7 +113,6 @@ export default function BookingRow({
               🗑️
             </button>
           )}
-        </td>
       </tr>
 
       {/* ===== Modal: จัดการเช็คอินจริง ===== */}

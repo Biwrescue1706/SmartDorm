@@ -59,7 +59,12 @@ export default function BillRow({
             ออกบิล
           </button>
         ) : (
-          "" // ❌ ถ้ายังไม่เข้าพัก (actualCheckin == 0 หรือ null) → ไม่แสดงปุ่ม
+          <button
+            className="btn btn-primary btn-sm fw-semibold"
+            onClick={() => onCreateBill(room)}
+          >
+            ออกบิล
+          </button>
         )}
       </td>
     </tr>

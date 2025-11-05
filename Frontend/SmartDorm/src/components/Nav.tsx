@@ -53,13 +53,7 @@ export default function Nav({
       location.pathname.startsWith("/allbills")
     ) {
       setDropdownOpen("bill");
-    } else if (
-      location.pathname.startsWith("/profile") ||
-      location.pathname.startsWith("/admin/manage") ||
-      location.pathname.startsWith("/change-password")
-    ) {
-      setDropdownOpen("profile");
-    } else {
+    }  else {
       setDropdownOpen(null);
     }
   }, [location.pathname]);

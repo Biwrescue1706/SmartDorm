@@ -27,9 +27,9 @@ export default function DashboardRevenue({ bills, bookings }: Props) {
     "ธันวาคม",
   ];
 
-  // 📅 ปี พ.ศ. เริ่ม 2567 ถึง 2666
-  const availableYears = Array.from({ length: 7 }, (_, i) =>
-    (2567 + i).toString()
+  // 📅 ปี พ.ศ. เริ่ม 2568 ถึง 2666
+  const availableYears = Array.from({ length: 8 }, (_, i) =>
+    (2568 + i).toString()
   );
 
   const selectedMonthName =

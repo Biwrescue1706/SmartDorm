@@ -53,7 +53,7 @@ export default function Nav({
       location.pathname.startsWith("/allbills")
     ) {
       setDropdownOpen("bill");
-    }  else {
+    } else {
       setDropdownOpen(null);
     }
   }, [location.pathname]);
@@ -252,22 +252,16 @@ export default function Nav({
           </button>
 
           {/* จัดการโปรไฟล์ */}
-          {dropdownOpen === "profile" && (
-            <div className="ps-3 mt-2 d-flex flex-column gap-2">
-              {isSuperAdmin && (
-                <button
-                  onClick={() => navigate("/admin/manage")}
-                  className={`btn text-start ${
-                    location.pathname.startsWith("/admin/manage")
-                      ? "btn-light text-primary fw-bold"
-                      : "btn-outline-light"
-                  }`}
-                >
-                  👥 จัดการสมาชิก
-                </button>
-              )}
-            </div>
-          )}
+          <button
+            onClick={() => navigate("/admin/manage")}
+            className={`btn text-start ${
+              location.pathname.startsWith("/admin/manage")
+                ? "btn-light text-primary fw-bold"
+                : "btn-outline-light"
+            }`}
+          >
+            👥 จัดการสมาชิก
+          </button>
           <button
             onClick={() => navigate("/profile")}
             className={`btn text-start ${
@@ -428,21 +422,15 @@ export default function Nav({
                 </button>
 
                 {/* จัดการโปรไฟล์ */}
-                {dropdownOpen === "profile" && (
-                  <div className="ps-3 mt-2 d-flex flex-column gap-2">
-                    {isSuperAdmin && (
-                      <button
-                        onClick={() => {
-                          navigate("/admin/manage");
-                          setMenuOpen(false);
-                        }}
-                        className="btn btn-outline-light text-start"
-                      >
-                        👥 จัดการสมาชิก
-                      </button>
-                    )}
-                  </div>
-                )}
+                <button
+                  onClick={() => {
+                    navigate("/admin/manage");
+                    setMenuOpen(false);
+                  }}
+                  className="btn btn-outline-light text-start"
+                >
+                  👥 จัดการสมาชิก
+                </button>
                 <button
                   onClick={() => {
                     navigate("/profile");

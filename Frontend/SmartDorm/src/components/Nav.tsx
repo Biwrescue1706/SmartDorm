@@ -170,18 +170,16 @@ export default function Nav({
             </button>
             {dropdownOpen === "room" && (
               <div className="ps-3 mt-2 d-flex flex-column gap-2">
-                {isSuperAdmin && (
-                  <button
-                    onClick={() => navigate("/rooms")}
-                    className={`btn text-start ${
-                      location.pathname.startsWith("/rooms")
-                        ? "btn-light text-primary fw-bold"
-                        : "btn-outline-light"
-                    }`}
-                  >
-                    🏘️ จัดการห้องพัก
-                  </button>
-                )}
+                <button
+                  onClick={() => navigate("/rooms")}
+                  className={`btn text-start ${
+                    location.pathname.startsWith("/rooms")
+                      ? "btn-light text-primary fw-bold"
+                      : "btn-outline-light"
+                  }`}
+                >
+                  🏘️ จัดการห้องพัก
+                </button>
                 <button
                   onClick={() => navigate("/bookings")}
                   className={`btn text-start position-relative ${
@@ -260,52 +258,42 @@ export default function Nav({
           </button>
 
           {/* จัดการโปรไฟล์ */}
-          <div>
-            <button
-              type="button"
-              onClick={() => toggleDropdown("profile")}
-              className="btn btn-outline-light w-100 text-start d-flex justify-content-between align-items-center"
-            >
-              <span>👤 จัดการโปรไฟล์</span>
-              <span>{dropdownOpen === "profile" ? "▴" : "▾"}</span>
-            </button>
-            {dropdownOpen === "profile" && (
-              <div className="ps-3 mt-2 d-flex flex-column gap-2">
-                {isSuperAdmin && (
-                  <button
-                    onClick={() => navigate("/admin/manage")}
-                    className={`btn text-start ${
-                      location.pathname.startsWith("/admin/manage")
-                        ? "btn-light text-primary fw-bold"
-                        : "btn-outline-light"
-                    }`}
-                  >
-                    👥 จัดการสมาชิก
-                  </button>
-                )}
+          {dropdownOpen === "profile" && (
+            <div className="ps-3 mt-2 d-flex flex-column gap-2">
+              {isSuperAdmin && (
                 <button
-                  onClick={() => navigate("/profile")}
+                  onClick={() => navigate("/admin/manage")}
                   className={`btn text-start ${
-                    location.pathname.startsWith("/profile")
+                    location.pathname.startsWith("/admin/manage")
                       ? "btn-light text-primary fw-bold"
                       : "btn-outline-light"
                   }`}
                 >
-                  ⚙️ โปรไฟล์ของฉัน
+                  👥 จัดการสมาชิก
                 </button>
-                <button
-                  onClick={() => navigate("/change-password")}
-                  className={`btn text-start ${
-                    location.pathname.startsWith("/change-password")
-                      ? "btn-light text-primary fw-bold"
-                      : "btn-outline-light"
-                  }`}
-                >
-                  🔑 เปลี่ยนรหัสผ่าน
-                </button>
-              </div>
-            )}
-          </div>
+              )}
+            </div>
+          )}
+          <button
+            onClick={() => navigate("/profile")}
+            className={`btn text-start ${
+              location.pathname.startsWith("/profile")
+                ? "btn-light text-primary fw-bold"
+                : "btn-outline-light"
+            }`}
+          >
+            ⚙️ โปรไฟล์ของฉัน
+          </button>
+          <button
+            onClick={() => navigate("/change-password")}
+            className={`btn text-start ${
+              location.pathname.startsWith("/change-password")
+                ? "btn-light text-primary fw-bold"
+                : "btn-outline-light"
+            }`}
+          >
+            🔑 เปลี่ยนรหัสผ่าน
+          </button>
         </div>
 
         {/* Logout */}
@@ -369,17 +357,15 @@ export default function Nav({
                   </button>
                   {dropdownOpen === "room" && (
                     <div className="ps-3 mt-2 d-flex flex-column gap-2">
-                      {isSuperAdmin && (
-                        <button
-                          onClick={() => {
-                            navigate("/rooms");
-                            setMenuOpen(false);
-                          }}
-                          className="btn btn-outline-light text-start"
-                        >
-                          🏘️ จัดการห้องพัก
-                        </button>
-                      )}
+                      <button
+                        onClick={() => {
+                          navigate("/rooms");
+                          setMenuOpen(false);
+                        }}
+                        className="btn btn-outline-light text-start"
+                      >
+                        🏘️ จัดการห้องพัก
+                      </button>
                       <button
                         onClick={() => {
                           navigate("/bookings");
@@ -448,49 +434,39 @@ export default function Nav({
                 </button>
 
                 {/* จัดการโปรไฟล์ */}
-                <div>
-                  <button
-                    type="button"
-                    onClick={() => toggleDropdown("profile")}
-                    className="btn btn-outline-light w-100 text-start d-flex justify-content-between align-items-center"
-                  >
-                    <span>👤 จัดการโปรไฟล์</span>
-                    <span>{dropdownOpen === "profile" ? "▴" : "▾"}</span>
-                  </button>
-                  {dropdownOpen === "profile" && (
-                    <div className="ps-3 mt-2 d-flex flex-column gap-2">
-                      {isSuperAdmin && (
-                        <button
-                          onClick={() => {
-                            navigate("/admin/manage");
-                            setMenuOpen(false);
-                          }}
-                          className="btn btn-outline-light text-start"
-                        >
-                          👥 จัดการสมาชิก
-                        </button>
-                      )}
+                {dropdownOpen === "profile" && (
+                  <div className="ps-3 mt-2 d-flex flex-column gap-2">
+                    {isSuperAdmin && (
                       <button
                         onClick={() => {
-                          navigate("/profile");
+                          navigate("/admin/manage");
                           setMenuOpen(false);
                         }}
                         className="btn btn-outline-light text-start"
                       >
-                        ⚙️ โปรไฟล์ของฉัน
+                        👥 จัดการสมาชิก
                       </button>
-                      <button
-                        onClick={() => {
-                          navigate("/change-password");
-                          setMenuOpen(false);
-                        }}
-                        className="btn btn-outline-light text-start"
-                      >
-                        🔑 เปลี่ยนรหัสผ่าน
-                      </button>
-                    </div>
-                  )}
-                </div>
+                    )}
+                  </div>
+                )}
+                <button
+                  onClick={() => {
+                    navigate("/profile");
+                    setMenuOpen(false);
+                  }}
+                  className="btn btn-outline-light text-start"
+                >
+                  ⚙️ โปรไฟล์ของฉัน
+                </button>
+                <button
+                  onClick={() => {
+                    navigate("/change-password");
+                    setMenuOpen(false);
+                  }}
+                  className="btn btn-outline-light text-start"
+                >
+                  🔑 เปลี่ยนรหัสผ่าน
+                </button>
               </div>
             </div>
 

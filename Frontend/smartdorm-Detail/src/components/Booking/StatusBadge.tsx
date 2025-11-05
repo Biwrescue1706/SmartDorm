@@ -20,7 +20,7 @@ export default function StatusBadge({ status, type }: Props) {
   if (type === "checkin") {
     switch (status) {
       case 0:
-        return <span className="badge bg-warning text-dark">ยังไม่เช็คอิน</span>;
+        return <span className="badge bg-warning text-dark">รอผู้จองเข้ามาเช็คอิน</span>;
       case 1:
         return <span className="badge bg-success">เช็คอินแล้ว</span>;
       default:

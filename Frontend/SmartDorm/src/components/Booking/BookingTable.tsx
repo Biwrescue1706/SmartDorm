@@ -9,7 +9,8 @@ interface Props {
   onReject: (id: string) => void;
   onDelete: (id: string, roomNum: string) => void;
   onEditSuccess: () => void;
-  onCheckin?: (id: string) => void; // ✅ เพิ่มตรงนี้
+  onCheckin?: (id: string) => void;
+  role?: number | null; // ✅ เพิ่ม
 }
 
 export default function BookingTable({
@@ -18,7 +19,8 @@ export default function BookingTable({
   onReject,
   onDelete,
   onEditSuccess,
-  onCheckin, // ✅ เพิ่มตรงนี้
+  onCheckin,
+  role, // ✅ เพิ่ม
 }: Props) {
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -74,12 +76,16 @@ export default function BookingTable({
               <th scope="col" style={{ width: "120%" }}>
                 สถานะ
               </th>
-              <th scope="col" style={{ width: "90%" }}>
-                แก้ไข
-              </th>
-              <th scope="col" style={{ width: "90%" }}>
-                ลบ
-              </th>
+              {role === 0 && (
+                <th scope="col" style={{ width: "90%" }}>
+                  แก้ไข
+                </th>
+              )}
+              {role === 0 && (
+                <th scope="col" style={{ width: "90%" }}>
+                  ลบ
+                </th>
+              )}
             </tr>
           </thead>
           <tbody>
@@ -94,11 +100,12 @@ export default function BookingTable({
                   onDelete={onDelete}
                   onEditSuccess={onEditSuccess}
                   onCheckin={onCheckin} // ✅ ต้องส่งต่อมาที่นี่ด้วย
+                  role={role} // ✅ ส่งต่อ
                 />
               ))
             ) : (
               <tr>
-                <td colSpan={13} className="text-center py-4 text-muted">
+                <td colSpan={role === 0 ? 12 : 10} className="text-center py-4 text-muted">
                   ไม่พบข้อมูลการจอง
                 </td>
               </tr>

@@ -6,7 +6,7 @@ interface Props {
 export default function CustomerInfoRow({ label, value }: Props) {
   return (
     <tr>
-      <th>{label}</th>
+      <td>{label}</td>
       <td>{value ?? "-"}</td>
     </tr>
   );

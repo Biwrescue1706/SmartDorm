@@ -13,14 +13,14 @@ export default function StatusBadge({ status, type }: Props) {
       case 2:
         return <span className="badge bg-danger">ไม่อนุมัติ</span>;
       default:
-        return <span className="badge bg-secondary">ยังไม่ขอคืน</span>;
+        return <span className="badge bg-secondary">ยังพักอาศัยอยู่</span>;
     }
   }
 
   if (type === "checkout") {
     switch (status) {
       case 0:
-        return <span className="badge bg-warning text-dark">ยังไม่ขอคืน</span>;
+        return <span className="badge bg-warning text-dark">ยังพักอาศัยอยู่</span>;
       case 1:
         return <span className="badge bg-success">คืนห้องแล้ว</span>;
       default:

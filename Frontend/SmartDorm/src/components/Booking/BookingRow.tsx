@@ -12,6 +12,7 @@ interface Props {
   onEditSuccess: () => void;
   onCheckin?: (id: string) => void;
   index: number;
+  role?: number | null;
 }
 
 export default function BookingRow({
@@ -22,9 +23,14 @@ export default function BookingRow({
   onEditSuccess,
   onCheckin,
   index,
+  role,
 }: Props) {
   const [showSlip, setShowSlip] = useState(false);
   const [showCheckinModal, setShowCheckinModal] = useState(false);
+
+  // ✅ สิทธิ์
+  const canManage = role === 0 || role === 1; // SuperAdmin + Admin
+  const isSuperAdmin = role === 0; // SuperAdmin เท่านั้น
 
   const formatThaiDate = (d?: string | null) => {
     if (!d) return "-";
@@ -46,13 +52,13 @@ export default function BookingRow({
         <td>{formatThaiDate(booking.createdAt)}</td>
         <td>{formatThaiDate(booking.checkin)}</td>
 
-        {/* ✅ วันเข้าพักจริง */}
+        {/* ✅ วันเข้าพักจริง: role === 0 หรือ 1 เห็นปุ่มจัดการ */}
         <td>
           {booking.actualCheckin ? (
             <span className="text-success fw-semibold">
               {formatThaiDate(booking.actualCheckin)}
             </span>
-          ) : booking.approveStatus === 1 ? (
+          ) : booking.approveStatus === 1 && canManage ? (
             <button
               className="btn btn-sm btn-warning fw-semibold"
               onClick={() => setShowCheckinModal(true)}
@@ -78,44 +84,54 @@ export default function BookingRow({
           )}
         </td>
 
-        {/* สถานะการจอง */}
+        {/* ✅ ปุ่มจัดการการจอง: role === 0 หรือ 1 */}
         <td>
-          {booking.approveStatus === 0 ? (
-            <ManageBookingDialog
-              booking={booking}
-              onApprove={onApprove}
-              onReject={onReject}
-              triggerClassName="btn btn-sm btn-warning"
-              triggerLabel="จัดการ"            />
+          {canManage ? (
+            booking.approveStatus === 0 ? (
+              <ManageBookingDialog
+                booking={booking}
+                onApprove={onApprove}
+                onReject={onReject}
+                triggerClassName="btn btn-sm btn-warning"
+                triggerLabel="จัดการ"
+              />
+            ) : booking.approveStatus === 1 ? (
+              <span className="text-success fw-semibold">อนุมัติแล้ว</span>
+            ) : (
+              <span className="text-danger fw-semibold">ไม่อนุมัติ</span>
+            )
           ) : booking.approveStatus === 1 ? (
             <span className="text-success fw-semibold">อนุมัติแล้ว</span>
-          ) : (
+          ) : booking.approveStatus === 2 ? (
             <span className="text-danger fw-semibold">ไม่อนุมัติ</span>
+          ) : (
+            <span className="text-warning fw-semibold">รออนุมัติ</span>
           )}
         </td>
 
-        {/* ✏️ ปุ่มแก้ไขและลบ */}
-        <td>
-          <div className="d-flex flex-wrap gap-1 justify-content-center">
-            <EditBookingDialog booking={booking} onSuccess={onEditSuccess} />
-          </div>
-        </td>
-        <td>
-          {booking.approveStatus == 0 && (
-            <button
-              className="btn btn-sm fw-semibold text-white"
-              style={{
-                background: "linear-gradient(100deg, #ff0505, #f645c4)",
-                border: "none",
-              }}
-              onClick={() => onDelete(booking.bookingId, booking.room.number)}
-            >
-              🗑️
-            </button>
-          )}
+        {/* ✅ แก้ไข / ลบ เฉพาะ SuperAdmin */}
+        {isSuperAdmin && (
+          <>
+            <td>
+              <EditBookingDialog booking={booking} onSuccess={onEditSuccess} />
+            </td>
+            <td>
+              <button
+                className="btn btn-sm fw-semibold text-white"
+                style={{
+                  background: "linear-gradient(100deg, #ff0505, #f645c4)",
+                  border: "none",
+                }}
+                onClick={() => onDelete(booking.bookingId, booking.room.number)}
+              >
+                🗑️
+              </button>
+            </td>
+          </>
+        )}
       </tr>
 
-      {/* ===== Modal: จัดการเช็คอินจริง ===== */}
+      {/* ===== Modal: จัดการวันเข้าพักจริง ===== */}
       {showCheckinModal &&
         createPortal(
           <div

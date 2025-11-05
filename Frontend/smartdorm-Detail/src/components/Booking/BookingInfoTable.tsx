@@ -15,12 +15,20 @@ const formatThaiDate = (dateString?: string) => {
 export default function BookingInfoTable({ booking }: { booking: Booking }) {
   return (
     <div className="mb-3">
-      <h5 className="fw-bold text-primary">รายละเอียดการจอง</h5>
+      <h5 className="fw-bold text-primary text-center mt-3 mb-3">
+        รายละเอียดการจอง
+      </h5>
       <table className="table table-sm table-bordered">
+        <thead>
+          <tr className="table-light text-center">
+            <th style={{ width: "40%" }}>รายการ</th>
+            <th>ข้อมูล</th>
+          </tr>
+        </thead>
         <tbody>
-          <BookingInfoRow label="วันที่จอง" value={formatThaiDate(booking.createdAt)} />
-          <BookingInfoRow label="วันที่ยื่นขอเข้าพัก" value={formatThaiDate(booking.checkin)} />
-          <BookingInfoRow label="วันที่เข้าพักจริง" value={formatThaiDate(booking.actualCheckin)} />
+          <BookingInfoRow label="วันจอง" value={formatThaiDate(booking.createdAt)} />
+          <BookingInfoRow label="วันขอเข้าพัก" value={formatThaiDate(booking.checkin)} />
+          <BookingInfoRow label="วันเข้าเช็คอิน" value={formatThaiDate(booking.actualCheckin)} />
           <BookingInfoRow
             label="สถานะการจอง"
             value={<StatusBadge type="approve" status={booking.approveStatus} />}

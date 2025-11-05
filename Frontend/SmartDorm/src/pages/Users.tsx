@@ -96,10 +96,16 @@ export default function Users() {
     }
   };
 
-  const handleDelete = async (customerId: string, userName: string) => {
+
+  const handleDeleteBooking = async (
+    bookingId: string,
+    roomNumber?: string
+  ) => {
     const result = await Swal.fire({
       title: `ยืนยันการลบ`,
-      text: `คุณต้องการลบลูกค้า ${userName} ใช่หรือไม่?`,
+      text: `คุณต้องการลบประวัติการจองนี้ (${
+        roomNumber ? `ห้อง ${roomNumber}` : "การจองนี้"
+      }) ใช่หรือไม่?`,
       icon: "warning",
       showCancelButton: true,
       confirmButtonText: "ใช่, ลบเลย",
@@ -110,12 +116,12 @@ export default function Users() {
     if (!result.isConfirmed) return;
 
     try {
-      await axios.delete(`${API_BASE}/user/${customerId}`);
-      Swal.fire("สำเร็จ", "ลบลูกค้าเรียบร้อยแล้ว", "success");
-      setShowDialog(false);
-      fetchUsers();
+      await axios.delete(`${API_BASE}/booking/${bookingId}`);
+      Swal.fire("สำเร็จ", "ลบประวัติการจองเรียบร้อยแล้ว", "success");
+      fetchUsers(); // Refresh user data to reflect the change
     } catch (err) {
-      Swal.fire("เกิดข้อผิดพลาด", "ไม่สามารถลบลูกค้าได้", "error");
+      console.error("❌ ลบประวัติการจองไม่สำเร็จ:", err);
+      Swal.fire("เกิดข้อผิดพลาด", "ไม่สามารถลบประวัติการจองได้", "error");
     }
   };
 
@@ -174,18 +180,9 @@ export default function Users() {
             >
               <thead className="table-dark">
                 <tr>
-                  <th scope="col" style={{ width: "5%" }}>
-                    #
-                  </th>
-                  <th scope="col" style={{ width: "5%" }}>
-                    LINE
-                  </th>
-                  <th scope="col" style={{ width: "5%" }}>
-                    ดูประวัติ
-                  </th>
-                  <th scope="col" style={{ width: "5%" }}>
-                    ลบ
-                  </th>
+                  <th>#</th>
+                  <th>LINE</th>
+                  <th>ดูประวัติ</th>
                 </tr>
               </thead>
               <tbody>
@@ -205,19 +202,11 @@ export default function Users() {
                           ดูประวัติ
                         </button>
                       </td>
-                      <td>
-                        <button
-                          className="btn btn-sm btn-danger"
-                          onClick={() => handleDelete(u.customerId, u.userName)}
-                        >
-                          ลบ
-                        </button>
-                      </td>
                     </tr>
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={4} className="text-center text-muted py-4">
+                    <td colSpan={3} className="text-center text-muted py-4">
                       ไม่พบข้อมูลลูกค้า
                     </td>
                   </tr>
@@ -264,40 +253,58 @@ export default function Users() {
               ดูข้อมูลลูกค้าและประวัติการจองห้องพัก
             </Dialog.Description>
 
+            <p className="text-start mx-3 text-primary mb-3">
+              {formatThaiDate(selectedUser?.createdAt)}
+            </p>
+
             {selectedUser?.bookings?.length ? (
               <div className="d-flex flex-column gap-3">
                 {[...selectedUser.bookings]
                   .sort(
                     (a, b) =>
-                      new Date(a.createdAt || "").getTime() -
-                      new Date(b.createdAt || "").getTime()
+                      new Date(b.createdAt || "").getTime() - // Sort descending
+                      new Date(a.createdAt || "").getTime()
                   )
                   .map((b) => (
                     <div
                       key={b.bookingId}
                       className="border rounded-3 p-3 shadow-sm bg-light mb-2"
                     >
-                      <p>
-                        <strong>ห้อง:</strong> {b.room?.number || "-"}
-                      </p>
-                      <p>
-                        <strong>ชื่อผู้จอง:</strong> {b.fullName || "-"}
-                      </p>
-                      <p>
-                        <strong>เบอร์โทร:</strong> {b.cphone || "-"}
-                      </p>
-                      <p>
-                        <strong>วันที่จอง:</strong>{" "}
-                        {formatThaiDate(b.createdAt)}
-                      </p>
-                      <p>
-                        <strong>วันที่เข้าพัก:</strong>{" "}
-                        {formatThaiDate(b.checkin)}
-                      </p>
-                      <p>
-                        <strong>เข้าพักจริง:</strong>{" "}
-                        {formatThaiDate(b.actualCheckin)}
-                      </p>
+                      <div>
+                        <p className="mb-1">
+                          <strong>ห้อง : </strong> {b.room?.number || "-"}
+                        </p>
+                        <p className="mb-1">
+                          <strong>ชื่อผู้จอง : </strong> {b.fullName || "-"}
+                        </p>
+                        <p className="mb-1">
+                          <strong>เบอร์โทร : </strong> {b.cphone || "-"}
+                        </p>
+                        <p className="mb-1">
+                          <strong>วันที่จอง : </strong>{" "}
+                          {formatThaiDate(b.createdAt)}
+                        </p>
+                        <p className="mb-1">
+                          <strong>วันที่เข้าพัก : </strong>{" "}
+                          {formatThaiDate(b.checkin)}
+                        </p>
+                        <p className="mb-0">
+                          <strong>เข้าพักจริง : </strong>{" "}
+                          {formatThaiDate(b.actualCheckin)}
+                        </p>
+                      </div>
+                      <div className="text-center mt-3">
+                        {role === 0 && (
+                          <button
+                            className="btn btn-sm btn-danger"
+                            onClick={() =>
+                              handleDeleteBooking(b.bookingId, b.room?.number)
+                            }
+                          >
+                            🗑️
+                          </button>
+                        )}
+                      </div>
                     </div>
                   ))}
               </div>

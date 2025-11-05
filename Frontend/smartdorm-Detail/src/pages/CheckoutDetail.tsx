@@ -1,5 +1,4 @@
 import { useParams } from "react-router-dom";
-import { QRCodeCanvas } from "qrcode.react";
 import { useCheckoutDetail } from "../hooks/useCheckoutDetail";
 import CustomerInfoTable from "../components/Checkout/CustomerInfoTable";
 import CheckoutInfoTable from "../components/Checkout/CheckoutInfoTable";
@@ -24,8 +23,6 @@ export default function CheckoutDetail() {
       </div>
     );
   }
-
-  const checkoutUrl = `https://smartdorm-admin.biwbong.shop`;
 
   return (
     <div className="container my-4 text-center position-relative">
@@ -61,24 +58,9 @@ export default function CheckoutDetail() {
           รายละเอียดการคืนห้องพัก
         </div>
 
-        <div className="card-body p-4 text-start">
+        <div className="card-body p-3 text-center">
           <CustomerInfoTable booking={booking} customer={booking.customer} />
           <CheckoutInfoTable booking={booking} />
-
-          {/* 🎟️ QR Code */}
-          {booking.returnStatus !== null && booking.returnStatus !== 1 && (
-            <div className="text-center mt-4">
-              <h6 className="text-muted mb-2">📎 สแกนเพื่อตรวจสอบสถานะการคืนห้อง</h6>
-              <QRCodeCanvas
-                value={checkoutUrl}
-                size={180}
-                bgColor="#ffffff"
-                fgColor="#000000"
-                includeMargin={true}
-                className="shadow-sm mt-2"
-              />
-            </div>
-          )}
         </div>
       </div>
     </div>

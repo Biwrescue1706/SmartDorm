@@ -82,11 +82,13 @@ export default function Rooms() {
           </div>
 
           {/* ปุ่มเพิ่มห้อง */}
-          <div className="text-center mb-3">
-            <AddRoomDialog onSuccess={handleRefresh} />
-          </div>
+          {role === 0 && (
+            <div className="text-center mb-3">
+              <AddRoomDialog onSuccess={handleRefresh} />
+            </div>
+          )}
 
-                    {/* 🔽 ดรอปดาวน์เลือกชั้น (อยู่ใต้ปุ่ม) */}
+          {/* 🔽 ดรอปดาวน์เลือกชั้น (อยู่ใต้ปุ่ม) */}
           <div className="text-center mb-4">
             <label className="fw-semibold me-2 fs-5 text-dark ">
               เลือกชั้น :
@@ -136,6 +138,7 @@ export default function Rooms() {
                 rooms={currentRooms}
                 startIndex={indexOfFirst}
                 onUpdated={handleRefresh}
+                role={role}
               />
 
               <Pagination

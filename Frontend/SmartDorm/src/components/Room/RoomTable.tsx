@@ -5,9 +5,16 @@ interface Props {
   rooms: Room[];
   startIndex: number;
   onUpdated: () => void;
+  role?: number | null;
 }
 
-export default function RoomTable({ rooms, startIndex, onUpdated }: Props) {
+export default function RoomTable({
+  rooms,
+  startIndex,
+  onUpdated,
+  role,
+}: Props) {
+  const isSuperAdmin = role === 0;
   return (
     <div className="responsive-table" style={{ overflowX: "auto" }}>
       <table
@@ -43,18 +50,22 @@ export default function RoomTable({ rooms, startIndex, onUpdated }: Props) {
             <th scope="col" style={{ width: "45%" }}>
               สถานะ
             </th>
-            <th scope="col" style={{ width: "45%" }}>
-              แก้ไข
-            </th>
-            <th scope="col" style={{ width: "45%" }}>
-              ลบ
-            </th>
+            {isSuperAdmin && (
+              <th scope="col" style={{ width: "45%" }}>
+                แก้ไข
+              </th>
+            )}
+            {isSuperAdmin && (
+              <th scope="col" style={{ width: "45%" }}>
+                ลบ
+              </th>
+            )}
           </tr>
         </thead>
         <tbody>
           {rooms.length === 0 ? (
             <tr>
-              <td colSpan={9} className="py-3 text-muted">
+              <td colSpan={isSuperAdmin ? 9 : 7} className="py-3 text-muted">
                 ไม่มีข้อมูลห้อง
               </td>
             </tr>
@@ -65,6 +76,7 @@ export default function RoomTable({ rooms, startIndex, onUpdated }: Props) {
                 room={room}
                 index={startIndex + index}
                 onUpdated={onUpdated}
+                role={role}
               />
             ))
           )}

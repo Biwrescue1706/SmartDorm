@@ -20,8 +20,6 @@ export default function Nav({
   const [dropdownOpen, setDropdownOpen] = useState<string | null>(null);
   const [, setIsWideScreen] = useState(window.innerWidth >= 1400);
 
-  const isSuperAdmin = role === 0;
-
   // ✂️ ฟังก์ชันช่วยย่อชื่อ เช่น “Phuwanat Phimpha” → “Phuwanat P.”
   const shortenName = (name: string, maxLength = 12) => {
     if (!name) return "-";

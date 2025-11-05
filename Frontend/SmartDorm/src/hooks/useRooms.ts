@@ -116,8 +116,7 @@ export function useRooms(roomId?: string) {
         toast: true,
         position: "top-end",
         icon: "error",
-        title: "ล้มเหลว",
-        text: err.message || "โหลดข้อมูลห้องล้มเหลว",
+        title: "โหลดข้อมูลห้องล้มเหลว",
         timer: 1500,
         showConfirmButton: false,
       });
@@ -166,8 +165,7 @@ export function useRooms(roomId?: string) {
         toast: true,
         position: "top-end",
         icon: "error",
-        title: "ล้มเหลว",
-        text: err.message || "ไม่สามารถแก้ไขห้องได้",
+        title: "ไม่สามารถแก้ไขห้องได้",
         timer: 1500,
         showConfirmButton: false,
       });
@@ -216,8 +214,7 @@ export function useRooms(roomId?: string) {
     } catch (err: any) {
       Swal.fire({
         icon: "error",
-        title: "ผิดพลาด",
-        text: err.message || "ไม่สามารถลบห้องได้",
+        title: "ไม่สามารถลบห้องได้",
         timer: 1500,
         showConfirmButton: false,
       });

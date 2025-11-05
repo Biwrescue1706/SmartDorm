@@ -22,6 +22,17 @@ export default function Nav({
 
   const isSuperAdmin = role === 0;
 
+  // ✂️ ฟังก์ชันช่วยย่อชื่อ เช่น “Phuwanat Phimpha” → “Phuwanat P.”
+  const shortenName = (name: string, maxLength = 12) => {
+    if (!name) return "-";
+    if (name.length <= maxLength) return name;
+    const parts = name.split(" ");
+    if (parts.length > 1) {
+      return `${parts[0]} ${parts[1][0]}.`;
+    }
+    return name.slice(0, maxLength - 3) + "...";
+  };
+
   // ✅ ตรวจจับขนาดจอแบบเรียลไทม์
   useEffect(() => {
     const handleResize = () => setIsWideScreen(window.innerWidth >= 1400);
@@ -79,7 +90,7 @@ export default function Nav({
           <h5 className="text-white" style={{ lineHeight: 1 }}>
             ระบบจัดการหอพัก
           </h5>
-          <h5 className="fw-bold text-whlie mb-1">
+          <h5 className="fw-bold text-white mb-1">
             (<span className="fw-bold text-warning"> SmartDorm </span>)
           </h5>
         </div>
@@ -88,8 +99,8 @@ export default function Nav({
         <div className="flex-grow-1 d-flex justify-content-between align-items-center text-center w-50">
           {/* 🌐 กลางจอ */}
           <div className="flex-grow-1 justify-content-between text-center fw-semibold fw-bold fs-6">
-            <h6 className="fw-bold text-whlie mb-1">ระบบจัดการหอพัก</h6>
-            <h5 className="fw-bold text-whlie" style={{ lineHeight: 1 }}>
+            <h6 className="fw-bold text-white mb-1">ระบบจัดการหอพัก</h6>
+            <h5 className="fw-bold text-white" style={{ lineHeight: 1 }}>
               (<span className="fw-bold text-warning"> SmartDorm </span>)
             </h5>
           </div>
@@ -99,8 +110,10 @@ export default function Nav({
             {role === 0 ? (
               <>
                 <div>
-                  <h6 className="fw-bold text-warning"><span>{message}</span></h6>
-                  <h6 className="fw-bold text-whlie">
+                  <h6 className="fw-bold text-warning">
+                    <span>{shortenName(message)}</span>
+                  </h6>
+                  <h6 className="fw-bold text-white">
                     <span>แอดมิน</span>
                   </h6>
                 </div>
@@ -108,8 +121,10 @@ export default function Nav({
             ) : role === 1 ? (
               <>
                 <div>
-                  <h6 className="fw-bold text-warning"><span>{message}</span></h6>
-                  <h6 className="fw-bold text-whlie">
+                  <h6 className="fw-bold text-warning">
+                    <span>{shortenName(message)}</span>
+                  </h6>
+                  <h6 className="fw-bold text-white">
                     <span>พนักงาน</span>
                   </h6>
                 </div>
@@ -318,8 +333,8 @@ export default function Nav({
             <div>
               <div className="d-flex justify-content-between align-items-center border-bottom border-light pb-2 mb-3">
                 <div>
-                  <h6 className="fw-bold mb-1 text-whlie">ระบบจัดการหอพัก</h6>
-                  <h6 className="fw-bold mb-0 text-whlie">
+                  <h6 className="fw-bold mb-1 text-white">ระบบจัดการหอพัก</h6>
+                  <h6 className="fw-bold mb-0 text-white">
                     (<span className="fw-bold text-warning"> SmartDorm </span>)
                   </h6>
                 </div>

@@ -26,27 +26,22 @@ export const paymentRepository = {
     });
   },
 
-  // 📸 อัปโหลดสลิปไปยัง Supabase Storage (เก็บในโฟลเดอร์ payment-slips/)
+  // 📸 อัปโหลดสลิปไปยัง Supabase Storage
   async uploadSlipToSupabase(file: Express.Multer.File) {
-    if (!file) throw new Error("ไม่พบไฟล์สำหรับอัปโหลด");
-
-    // ❗ ไม่มี timestamp — ใช้ชื่อไฟล์ตรง ๆ แต่เก็บในโฟลเดอร์ payment-slips/
-    const filename = `payment-slips/${file.originalname}`;
-    const bucket = process.env.SUPABASE_BUCKET!;
-
+    const filename = `slip_${Date.now()}_${file.originalname}`;
     const { error } = await supabase.storage
-      .from(bucket)
+      .from(process.env.SUPABASE_BUCKET!)
       .upload(filename, file.buffer, {
         contentType: file.mimetype,
-        upsert: true, // ✅ อนุญาตให้อัปทับได้ในกรณีชื่อซ้ำ
+        upsert: true,
       });
 
-    if (error) {
-      console.error("❌ Upload slip error:", error.message);
-      throw new Error("อัปโหลดสลิปไม่สำเร็จ");
-    }
+    if (error) throw new Error("อัปโหลดสลิปไม่สำเร็จ");
 
-    const { data } = supabase.storage.from(bucket).getPublicUrl(filename);
+    const { data } = supabase.storage
+      .from(process.env.SUPABASE_BUCKET!)
+      .getPublicUrl(filename);
+
     return data.publicUrl;
   },
 
@@ -62,7 +57,7 @@ export const paymentRepository = {
       }),
       prisma.bill.update({
         where: { billId },
-        data: { status: 1 },
+        data: { status: 1 }, // ✅ ไม่ต้องอัป slipUrl ใน Bill แล้ว
       }),
     ]);
   },

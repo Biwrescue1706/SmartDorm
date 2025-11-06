@@ -73,41 +73,29 @@ export const bookingRepository = {
     return prisma.booking.delete({ where: { bookingId } });
   },
 
-  /* 📸 อัปโหลดสลิป (บันทึกใน booking-slips/ โดยไม่มีวันที่ในชื่อ) */
+  /* 📸 อัปโหลดสลิป */
   async uploadSlip(file: Express.Multer.File) {
-    if (!file) throw new Error("ไม่พบไฟล์สลิป");
+    const fileName = `slips/${file.originalname}_${Date.now()}`;
 
-    const bucket = process.env.SUPABASE_BUCKET!;
-    const fileName = `booking-slips/${file.originalname}`;
+    const { error } = await supabase
+      .storage
+      .from(process.env.SUPABASE_BUCKET!)
+      .upload(fileName, file.buffer, { contentType: file.mimetype });
 
-    const { error } = await supabase.storage
-      .from(bucket)
-      .upload(fileName, file.buffer, {
-        contentType: file.mimetype,
-        upsert: true, // ✅ ถ้ามีชื่อซ้ำให้อัปทับได้
-      });
+    if (error) throw new Error("อัปโหลดสลิปไม่สำเร็จ");
 
-    if (error) {
-      console.error("❌ Upload Error:", error.message);
-      throw new Error("อัปโหลดสลิปไม่สำเร็จ");
-    }
+    const { data } = supabase
+      .storage
+      .from(process.env.SUPABASE_BUCKET!)
+      .getPublicUrl(fileName);
 
-    const { data } = supabase.storage.from(bucket).getPublicUrl(fileName);
     return data.publicUrl;
   },
 
-  /* 🧹 ลบสลิปออกจาก Supabase */
+  /* 🧹 ลบสลิป */
   async deleteSlip(url: string) {
-    if (!url) return;
-
     const bucket = process.env.SUPABASE_BUCKET!;
-    const basePath = `/storage/v1/object/public/${bucket}/`;
-
-    // ดึง path จริงจาก public URL เช่น booking-slips/slip.jpg
-    const path = url.split(basePath)[1];
-    if (!path) return;
-
-    const { error } = await supabase.storage.from(bucket).remove([path]);
-    if (error) console.warn("⚠️ ลบสลิปไม่สำเร็จ:", error.message);
+    const path = url.split(`/${bucket}/`)[1];
+    if (path) await supabase.storage.from(bucket).remove([path]);
   },
 };

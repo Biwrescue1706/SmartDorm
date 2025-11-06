@@ -2,7 +2,6 @@ import { Router } from "express";
 import multer from "multer";
 import QRCode from "qrcode";
 import { bookingService } from "./bookingService";
-import { authMiddleware } from "../../middleware/authMiddleware";
 
 const router = Router();
 const upload = multer({ storage: multer.memoryStorage() });
@@ -67,7 +66,7 @@ router.post("/create", upload.single("slip"), async (req, res) => {
 });
 
 /* ✅ Admin อนุมัติการจอง */
-router.put("/:bookingId/approve", authMiddleware, async (req, res) => {
+router.put("/:bookingId/approve", async (req, res) => {
   try {
     const result = await bookingService.approveBooking(req.params.bookingId);
     res.json({ message: "อนุมัติการจองสำเร็จ", booking: result });
@@ -77,7 +76,7 @@ router.put("/:bookingId/approve", authMiddleware, async (req, res) => {
 });
 
 /* 🚫 Admin ปฏิเสธการจอง */
-router.put("/:bookingId/reject", authMiddleware, async (req, res) => {
+router.put("/:bookingId/reject", async (req, res) => {
   try {
     const result = await bookingService.rejectBooking(req.params.bookingId);
     res.json({ message: "ปฏิเสธการจองสำเร็จ", booking: result });
@@ -87,7 +86,7 @@ router.put("/:bookingId/reject", authMiddleware, async (req, res) => {
 });
 
 /* 🏠 Admin เช็คอิน */
-router.put("/:bookingId/checkin", authMiddleware, async (req, res) => {
+router.put("/:bookingId/checkin", async (req, res) => {
   try {
     const result = await bookingService.checkinBooking(req.params.bookingId);
     res.json({ message: "เช็คอินสำเร็จ", booking: result });
@@ -97,7 +96,7 @@ router.put("/:bookingId/checkin", authMiddleware, async (req, res) => {
 });
 
 /* 🚪 Admin เช็คเอาท์ */
-router.put("/:bookingId/checkout", authMiddleware, async (req, res) => {
+router.put("/:bookingId/checkout", async (req, res) => {
   try {
     const result = await bookingService.checkoutBooking(req.params.bookingId);
     res.json({ message: "เช็คเอาท์สำเร็จ", booking: result });
@@ -107,7 +106,7 @@ router.put("/:bookingId/checkout", authMiddleware, async (req, res) => {
 });
 
 /* ✏️ Admin แก้ไขข้อมูลการจอง */
-router.put("/:bookingId", authMiddleware, async (req, res) => {
+router.put("/:bookingId", async (req, res) => {
   try {
     const result = await bookingService.updateBooking(
       req.params.bookingId,
@@ -120,7 +119,7 @@ router.put("/:bookingId", authMiddleware, async (req, res) => {
 });
 
 /* 🗑️ Admin ลบการจอง */
-router.delete("/:bookingId", authMiddleware, async (req, res) => {
+router.delete("/:bookingId", async (req, res) => {
   try {
     await bookingService.deleteBooking(req.params.bookingId);
     res.json({ message: "ลบข้อมูลการจองสำเร็จ" });

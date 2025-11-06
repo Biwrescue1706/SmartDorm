@@ -26,8 +26,7 @@ const allowedOrigins = [
   "https://smartdorm-detail.biwbong.shop",
   "https://smartdorm-paymentbill.biwbong.shop",
 ];
-
-// ---------------- CORS Config ----------------
+//  CORS Config
 const corsOptions: cors.CorsOptions = {
   origin: (origin, callback) => {
     if (!origin) return callback(null, true);
@@ -40,21 +39,13 @@ const corsOptions: cors.CorsOptions = {
   exposedHeaders: ["Set-Cookie"],
 };
 
-// ✅ FIX: ระบุ origin แบบ explicit สำหรับ dev mode
+// ใช้ CORS (production / dev mode)
 if (process.env.NODE_ENV !== "production") {
-  app.use(
-    cors({
-      origin: allowedOrigins,
-      credentials: true,
-      methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-      allowedHeaders: ["Content-Type", "Authorization"],
-    })
-  );
+  app.use(cors({ origin: true, credentials: true }));
 } else {
   app.use(cors(corsOptions));
 }
 
-// ---------------- Middleware ----------------
 app.use(express.json());
 app.use(cookieParser());
 
@@ -81,6 +72,7 @@ app.use("/qr", qrRouter);
 
 // ---------------- Health Check ----------------
 app.get("/", (_req, res) => res.send("🚀 SmartDorm Backend is running"));
+
 app.get("/health", (_req, res) => {
   res.status(200).json({ status: "ok", uptime: process.uptime() });
 });
@@ -92,7 +84,7 @@ app.use((err: any, _req: any, res: any, _next: any) => {
 });
 
 // ---------------- Start Server ----------------
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3000; // ✅ Default local dev 3000
 
 app.listen(PORT, async () => {
   try {
@@ -107,11 +99,10 @@ app.listen(PORT, async () => {
   if (env !== "production") {
     console.log(`🚀 Server running locally at http://localhost:${PORT}`);
   } else {
-    console.log(`🚀 Server running`);
+    console.log(`🚀 Server running `);
   }
 });
 
-// ---------------- Prisma Disconnect ----------------
 process.on("SIGINT", async () => {
   await prisma.$disconnect();
   console.log("Prisma disconnected (SIGINT)");

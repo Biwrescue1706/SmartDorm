@@ -1,14 +1,20 @@
 // src/types/Bill.ts
+
 export interface Room {
   roomId: string;
   number: string;
 }
 
+export interface Booking {
+  bookingId: string;
+  fullName?: string | null; // ✅ snapshot จาก Booking
+  cphone?: string | null;   // ✅ snapshot จาก Booking
+}
+
 export interface Customer {
   customerId: string;
-  fullName: string;
-  userName?: string;
-  cphone: string;
+  userId: string;
+  userName: string;
 }
 
 export interface Payment {
@@ -16,27 +22,31 @@ export interface Payment {
 }
 
 export interface Bill {
-  [x: string]: any;
   billId: string;
-  number: string;          // หมายเลขบิล
-  month: string;           // เดือนที่ออกบิล (ISO string)
-  total: number;           // ยอดรวมทั้งหมด
-  rent: number;            // ค่าเช่า
-  service: number;         // ค่าบริการส่วนกลาง
-  wBefore: number;         // หน่วยน้ำก่อนหน้า
-  wAfter: number;          // หน่วยน้ำปัจจุบัน
-  eBefore: number;         // หน่วยไฟก่อนหน้า
-  eAfter: number;          // หน่วยไฟปัจจุบัน
-  wUnits: number;          // จำนวนหน่วยน้ำที่ใช้
-  eUnits: number;          // จำนวนหน่วยไฟที่ใช้
-  waterCost: number;       // ค่าน้ำ
-  electricCost: number;    // ค่าไฟ
-  fine: number;            // ค่าปรับ (ถ้ามี)
-  status: number;          // 0=รอดำเนินการ, 1=ชำระแล้ว, 2=เลยกำหนด
-  dueDate: string;         // วันครบกำหนดชำระ
-  createdAt: string;       // วันที่สร้างบิล
-  slipUrl?: string | null; // URL ของสลิป (ถ้ามี)
-  room: Room;              // ห้องที่เกี่ยวข้อง
-  customer: Customer;      // ลูกค้าที่เกี่ยวข้อง
-  payment?: Payment;       // ข้อมูลการจ่ายเงิน (optional)
+  month: string;           // วันที่ออกบิล (ISO string)
+  rent: number;
+  service: number;
+  wBefore: number;
+  wAfter: number;
+  eBefore: number;
+  eAfter: number;
+  wUnits: number;
+  eUnits: number;
+  waterCost: number;
+  electricCost: number;
+  fine: number;
+  overdueDays: number;
+  total: number;
+  status: number;          // 0 = ค้างชำระ, 1 = ชำระแล้ว
+  dueDate: string;
+  slipUrl?: string | null; // ✅ ถ้ามีใน Bill โดยตรง
+
+  createdAt: string;
+  updatedAt: string;
+
+  // ✅ ความสัมพันธ์
+  room: Room;
+  booking?: Booking | null;     // ✅ ชื่อและเบอร์โทรจะอยู่ในนี้
+  customer?: Customer | null;   // ใช้ในบางกรณี
+  payment?: Payment | null;     // slip จาก Payment
 }

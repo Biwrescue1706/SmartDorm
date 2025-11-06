@@ -31,6 +31,7 @@ export default function AllBillsTable({
           <tr>
             <th style={{ minWidth: "60px" }}>#</th>
             <th style={{ minWidth: "90px" }}>ห้อง</th>
+            <th style={{ minWidth: "120px" }}>Line</th>
             <th style={{ minWidth: "120px" }}>ผู้เช่า</th>
             <th style={{ minWidth: "110px" }}>เบอร์โทร</th>
             <th style={{ minWidth: "90px" }}>เดือน</th>

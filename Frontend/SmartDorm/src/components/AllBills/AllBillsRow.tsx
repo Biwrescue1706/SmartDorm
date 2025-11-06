@@ -38,23 +38,32 @@ export default function AllBillsRow({
   return (
     <tr className={rowBg}>
       <td>{index + 1}</td>
-      <td>{bill.room?.number}</td>
-      <td>{bill.booking.fullName}</td>
-      <td>{bill.customer?.cphone}</td>
+      <td>{bill.room?.number || "-"}</td>
+      {/* ✅ ชื่อ LINE จาก Customer */}
+      <td>{bill.customer?.userName || "-"}</td>
+
+      {/* ✅ ชื่อ-สกุลจาก Booking */}
+     <td>{bill.booking?.fullName || "-"}</td>
+      {/* ✅ เบอร์โทรจาก Booking */}
+      <td>{bill.booking?.cphone || "-"}</td>
       <td>
-        {new Date(bill.month).toLocaleDateString("th-TH", {
-          year: "numeric",
-          month: "long",
-        })}
+        {bill.month
+          ? new Date(bill.month).toLocaleDateString("th-TH", {
+              year: "numeric",
+              month: "long",
+            })
+          : "-"}
       </td>
-      <td>{bill.total.toLocaleString()} บาท</td>
+      <td>{bill.total?.toLocaleString() || 0} บาท</td>
       <td>{renderStatus(bill.status)}</td>
       <td>
-        {new Date(bill.dueDate).toLocaleDateString("th-TH", {
-          year: "numeric",
-          month: "long",
-          day: "numeric",
-        })}
+        {bill.dueDate
+          ? new Date(bill.dueDate).toLocaleDateString("th-TH", {
+              year: "numeric",
+              month: "long",
+              day: "numeric",
+            })
+          : "-"}
       </td>
 
       {/* ปุ่มดูสลิป */}
@@ -101,7 +110,7 @@ export default function AllBillsRow({
               transition: "all 0.2s ease",
               opacity: bill.status === 1 ? 0 : 1,
             }}
-            onClick={() => onDelete(bill.billId, bill.room.number)}
+            onClick={() => onDelete(bill.billId, bill.room?.number || "-")}
             title="ลบบิล"
           >
             🗑️

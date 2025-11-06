@@ -29,24 +29,50 @@ export default function AllBillsTable({
       >
         <thead className="table-dark">
           <tr>
-            <th style={{ minWidth: "60px" }}>#</th>
-            <th style={{ minWidth: "90px" }}>ห้อง</th>
-            <th style={{ minWidth: "120px" }}>Line</th>
-            <th style={{ minWidth: "120px" }}>ผู้เช่า</th>
-            <th style={{ minWidth: "110px" }}>เบอร์โทร</th>
-            <th style={{ minWidth: "90px" }}>เดือน</th>
-            <th style={{ minWidth: "100px" }}>ยอดรวม</th>
-            <th style={{ minWidth: "100px" }}>สถานะ</th>
-            <th style={{ minWidth: "120px" }}>ครบกำหนด</th>
-            <th style={{ minWidth: "80px" }}>สลิป</th>
-            <th style={{ minWidth: "120px" }}>จัดการ</th>
+            <th scope="col" style={{ width: "35%" }}>
+              #
+            </th>
+            <th scope="col" style={{ width: "35%" }}>
+              ห้อง
+            </th>
+            <th scope="col" style={{ width: "35%" }}>
+              Line
+            </th>
+            <th scope="col" style={{ width: "35%" }}>
+              ผู้เช่า
+            </th>
+            <th scope="col" style={{ width: "35%" }}>
+              เบอร์โทร
+            </th>
+            <th scope="col" style={{ width: "35%" }}>
+              เดือน
+            </th>
+            <th scope="col" style={{ width: "35%" }}>
+              ยอดรวม
+            </th>
+
+            <th scope="col" style={{ width: "35%" }}>
+              ครบกำหนด
+            </th>
+            <th scope="col" style={{ width: "35%" }}>
+              สถานะ
+            </th>
+            <th scope="col" style={{ width: "35%" }}>
+              สลิป
+            </th>
+            <th scope="col" style={{ width: "35%" }}>
+              แก้ไข
+            </th>
+            <th scope="col" style={{ width: "35%" }}>
+              ลบ
+            </th>
           </tr>
         </thead>
 
         <tbody>
           {bills.length === 0 ? (
             <tr>
-              <td colSpan={10} className="text-center text-muted py-4">
+              <td colSpan={12} className="text-center text-muted py-4">
                 ไม่พบบิลที่ตรงกับเงื่อนไข
               </td>
             </tr>

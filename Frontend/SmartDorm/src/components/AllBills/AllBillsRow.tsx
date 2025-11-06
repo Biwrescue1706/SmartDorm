@@ -38,13 +38,9 @@ export default function AllBillsRow({
   return (
     <tr className={rowBg}>
       <td>{index + 1}</td>
-      <td>{bill.room?.number || "-"}</td>
-      {/* ✅ ชื่อ LINE จาก Customer */}
+      <td>{bill?.room?.number ?? "-"}</td>
       <td>{bill.customer?.userName || "-"}</td>
-
-      {/* ✅ ชื่อ-สกุลจาก Booking */}
-     <td>{bill.booking?.fullName || "-"}</td>
-      {/* ✅ เบอร์โทรจาก Booking */}
+      <td>{bill.booking?.fullName || "-"}</td>
       <td>{bill.booking?.cphone || "-"}</td>
       <td>
         {bill.month
@@ -54,8 +50,8 @@ export default function AllBillsRow({
             })
           : "-"}
       </td>
-      <td>{bill.total?.toLocaleString() || 0} บาท</td>
-      <td>{renderStatus(bill.status)}</td>
+      <td>{bill.total?.toLocaleString() || 0}</td>
+
       <td>
         {bill.dueDate
           ? new Date(bill.dueDate).toLocaleDateString("th-TH", {
@@ -65,7 +61,7 @@ export default function AllBillsRow({
             })
           : "-"}
       </td>
-
+      <td>{renderStatus(bill.status)}</td>
       {/* ปุ่มดูสลิป */}
       <td>
         {bill.status === 1 ? (
@@ -81,7 +77,7 @@ export default function AllBillsRow({
       </td>
 
       {/* ปุ่มจัดการ */}
-      <td style={{ minWidth: "120px" }}>
+      <td>
         <div
           className="d-flex justify-content-center align-items-center gap-2 flex-wrap"
           style={{ width: "100%" }}
@@ -100,7 +96,15 @@ export default function AllBillsRow({
           >
             ✏️
           </button>
+        </div>
+      </td>
 
+      {/* ปุ่มจัดการ */}
+      <td>
+        <div
+          className="d-flex justify-content-center align-items-center gap-2 flex-wrap"
+          style={{ width: "100%" }}
+        >
           {/* ปุ่มลบ */}
           <button
             className="btn btn-sm fw-semibold text-white px-2 py-1"

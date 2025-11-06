@@ -51,13 +51,17 @@ export default function BookingDetail() {
         className="card shadow-lg border-0 rounded-4 mx-auto"
         style={{ maxWidth: "480px", background: "white" }}
       >
-        <div
-          className="card-header text-white text-center fw-bold fs-5"
-          style={{ background: "linear-gradient(90deg, #002955, #8975fb)" }}
-        >
-          รายละเอียดการจองห้องพัก
+        {/* Header */}
+        <div className="card-header text-white text-center fw-bold fs-5">
+          <img
+            src="https://smartdorm-admin.biwbong.shop/assets/SmartDorm.png"
+            alt="SmartDorm Logo"
+            className="mb-0"
+            style={{ width: "80px", height: "80px" }}
+          />
+          <h4 className="mt-2 fw-bold text-success">🏫 SmartDorm 🎉</h4>
+          <h5 className="mt-2 fw-bold text-secondary">รายละเอียดการจองห้องพัก</h5>
         </div>
-
         <div className="card-body p-3 text-center">
           <CustomerInfoTable booking={booking} customer={booking.customer} />
           <BookingInfoTable booking={booking} />

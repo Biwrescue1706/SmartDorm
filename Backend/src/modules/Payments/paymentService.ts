@@ -46,7 +46,7 @@ export const paymentService = {
         customer.customerId
       );
 
-    const customerDetailUrl = `https://smartdorm-paymentbill.biwbong.shop`;
+    const customerDetailUrl = `https://smartdorm-detail.biwbong.shop/bill/${bill.billId}`;
     const adminUrl = `https://smartdorm-admin.biwbong.shop`;
 
     // ✅ แจ้งลูกค้า (ใช้ userId จาก customer)

@@ -30,19 +30,43 @@ export default function CheckoutInfoTable({ booking }: { booking: Booking }) {
 
         {/*  เนื้อหาตาราง */}
         <tbody>
-          <CheckoutInfoRow label="วันจอง" value={formatThaiDate(booking.createdAt)} />
-          <CheckoutInfoRow label="วันขอเข้าพัก" value={formatThaiDate(booking.checkin)} />
-          <CheckoutInfoRow label="วันเข้าเช็คอิน" value={formatThaiDate(booking.actualCheckin)} />
-          <CheckoutInfoRow label="วันที่ขอคืน" value={formatThaiDate(booking.checkout)} />
-          <CheckoutInfoRow label="วันที่คืนจริง" value={formatThaiDate(booking.actualCheckout)} />
+          <CheckoutInfoRow
+            label="วันจอง"
+            value={formatThaiDate(booking.createdAt)}
+          />
+          <CheckoutInfoRow
+            label="วันขอเข้าพัก"
+            value={formatThaiDate(booking.checkin)}
+          />
+          <CheckoutInfoRow
+            label="วันเข้าเช็คอิน"
+            value={formatThaiDate(booking.actualCheckin)}
+          />
+          {booking.checkout !== null && (
+          <CheckoutInfoRow
+            label="วันที่ขอคืน"
+            value={formatThaiDate(booking.checkout)}
+          />)}
+          {booking.actualCheckout !== null && (
+            <CheckoutInfoRow
+              label="วันที่คืนจริง"
+              value={formatThaiDate(booking.actualCheckout)}
+            />
+          )}
+          {booking.checkout !== null && (
           <CheckoutInfoRow
             label="สถานะการคืนห้อง"
             value={<StatusBadge type="return" status={booking.returnStatus} />}
           />
-          <CheckoutInfoRow
-            label="สถานะการเช็คเอาท์"
-            value={<StatusBadge type="checkout" status={booking.checkoutStatus} />}
-          />
+          )}
+          {booking.checkout !== null && (
+            <CheckoutInfoRow
+              label="สถานะการเช็คเอาท์"
+              value={
+                <StatusBadge type="checkout" status={booking.checkoutStatus} />
+              }
+            />
+          )}
         </tbody>
       </table>
     </div>

@@ -34,9 +34,17 @@ export const billService = {
   // 🧾 สร้างบิลใหม่
   async createBill(data: CreateBillInput, adminId: string) {
     try {
-      const { roomId, customerId, month, wBefore, wAfter, eBefore, eAfter } = data;
+      const {
+        roomId,
+        customerId,
+        bookingId,
+        month,
+        wBefore,
+        wAfter,
+        eBefore,
+        eAfter,
+      } = data;
 
-      // ✅ ตรวจสอบข้อมูลก่อนสร้าง
       if (!roomId || !customerId)
         throw new Error("ข้อมูลห้องหรือผู้เช่าไม่ครบ");
       if (!month) throw new Error("กรุณาเลือกเดือน");
@@ -51,18 +59,15 @@ export const billService = {
       const room = await billRepository.findRoom(roomId);
       if (!room) throw new Error("ไม่พบข้อมูลห้อง");
 
-      // ✅ ตั้งค่าคงที่
       const rent = room.rent;
       const service = 20;
       const wPrice = 19;
       const ePrice = 7;
 
-      // ✅ หาเดือนก่อนหน้าเพื่อใช้ค่า wBefore / eBefore
       const prevBill = await billRepository.findPrevBill(roomId, billMonth);
       const finalWBefore = prevBill?.wAfter ?? wBefore ?? 0;
       const finalEBefore = prevBill?.eAfter ?? eBefore ?? 0;
 
-      // ✅ คำนวณหน่วยและค่าใช้จ่าย
       const wUnits = Math.max(0, wAfter - finalWBefore);
       const eUnits = Math.max(0, eAfter - finalEBefore);
       const waterCost = wUnits * wPrice;
@@ -70,24 +75,11 @@ export const billService = {
       const fine = 0;
       const total = rent + service + waterCost + electricCost + fine;
 
-      // ✅ วันที่ครบกำหนด
       const createdAt = new Date();
       const dueDate = new Date(createdAt);
       dueDate.setMonth(dueDate.getMonth() + 1);
       dueDate.setDate(5);
 
-      console.log("🧾 Data ก่อนสร้างบิล:", {
-        roomId,
-        customerId,
-        createdBy: adminId,
-        month,
-        wBefore: finalWBefore,
-        wAfter,
-        eBefore: finalEBefore,
-        eAfter,
-      });
-
-      // ✅ บันทึกลงฐานข้อมูล
       const bill = await billRepository.create({
         month: billMonth,
         rent,
@@ -109,6 +101,7 @@ export const billService = {
         status: 0,
         roomId,
         customerId,
+        bookingId, // ✅ ผูก booking ให้ด้วย
         createdBy: adminId,
         createdAt,
       });
@@ -117,7 +110,7 @@ export const billService = {
       if (bill.customer?.userId) {
         const billUrl = `https://smartdorm-detail.biwbong.shop/bill/${bill.billId}`;
         await sendFlexMessage(
-          bill.customer?.userId,
+          bill.customer.userId,
           "🧾 บิลค่าเช่าห้อง SmartDorm ของคุณ",
           [
             { label: "🏠 ห้อง", value: bill.room.number },
@@ -128,8 +121,14 @@ export const billService = {
                 month: "long",
               }),
             },
-            { label: "💧 ค่าน้ำ", value: `${bill.wUnits} หน่วย (${bill.waterCost} บาท)` },
-            { label: "⚡ ค่าไฟ", value: `${bill.eUnits} หน่วย (${bill.electricCost} บาท)` },
+            {
+              label: "💧 ค่าน้ำ",
+              value: `${bill.wUnits} หน่วย (${bill.waterCost} บาท)`,
+            },
+            {
+              label: "⚡ ค่าไฟ",
+              value: `${bill.eUnits} หน่วย (${bill.electricCost} บาท)`,
+            },
             { label: "🏢 ค่าส่วนกลาง", value: `${bill.service} บาท` },
             { label: "💰 ค่าเช่าห้อง", value: `${bill.rent} บาท` },
             {
@@ -155,7 +154,7 @@ export const billService = {
     }
   },
 
-  // 🏠 สร้างบิลจาก roomId (สำหรับแอดมิน)
+  // 🏠 สร้างบิลจาก roomId
   async createBillFromRoom(roomId: string, body: any, adminId: string) {
     const { month, wBefore, wAfter, eBefore, eAfter } = body;
     const booking = await billRepository.findBooking(roomId);
@@ -164,7 +163,8 @@ export const billService = {
     return await this.createBill(
       {
         roomId,
-        customerId: booking.customerId,
+        customerId: booking.customer.customerId, // ✅ ดึงจาก customer ที่ join มา
+        bookingId: booking.bookingId, // ✅ เพิ่มเพื่อเชื่อม booking
         month,
         wBefore,
         wAfter,

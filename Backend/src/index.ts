@@ -10,29 +10,24 @@ dotenv.config();
 const app = express();
 app.set("trust proxy", 1);
 
-//  Allowed Origins
+// ---------------- Allowed Origins ----------------
 const allowedOrigins = [
-
   // localhost (dev)
   "http://localhost:5173",
   "http://localhost:5174",
-
+  "http://localhost:5175",
 
   // Render deploys
-  "https://smartdorm-frontend.onrender.com",
-  "https://smartdorm-bookingroom.onrender.com",
   "https://smartdorm-returnroom.onrender.com",
-  "https://smartdorm-paymentbill.onrender.com",
 
-    // Custom domains
+  // Custom domains
   "https://smartdorm-admin.biwbong.shop",
   "https://smartdorm-bookingsroom.biwbong.shop",
   "https://smartdorm-detail.biwbong.shop",
   "https://smartdorm-paymentbill.biwbong.shop",
-
 ];
 
-//  CORS Config
+// ---------------- CORS Config ----------------
 const corsOptions: cors.CorsOptions = {
   origin: (origin, callback) => {
     if (!origin) return callback(null, true);
@@ -45,14 +40,21 @@ const corsOptions: cors.CorsOptions = {
   exposedHeaders: ["Set-Cookie"],
 };
 
-// ใช้ CORS (production / dev mode)
+// ✅ FIX: ระบุ origin แบบ explicit สำหรับ dev mode
 if (process.env.NODE_ENV !== "production") {
-  app.use(cors({ origin: true, credentials: true }));
+  app.use(
+    cors({
+      origin: allowedOrigins,
+      credentials: true,
+      methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+      allowedHeaders: ["Content-Type", "Authorization"],
+    })
+  );
 } else {
   app.use(cors(corsOptions));
 }
 
-
+// ---------------- Middleware ----------------
 app.use(express.json());
 app.use(cookieParser());
 
@@ -79,7 +81,6 @@ app.use("/qr", qrRouter);
 
 // ---------------- Health Check ----------------
 app.get("/", (_req, res) => res.send("🚀 SmartDorm Backend is running"));
-
 app.get("/health", (_req, res) => {
   res.status(200).json({ status: "ok", uptime: process.uptime() });
 });
@@ -91,7 +92,7 @@ app.use((err: any, _req: any, res: any, _next: any) => {
 });
 
 // ---------------- Start Server ----------------
-const PORT = process.env.PORT || 3000; // ✅ Default local dev 3000
+const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, async () => {
   try {
@@ -106,10 +107,11 @@ app.listen(PORT, async () => {
   if (env !== "production") {
     console.log(`🚀 Server running locally at http://localhost:${PORT}`);
   } else {
-    console.log(`🚀 Server running `);
+    console.log(`🚀 Server running`);
   }
 });
 
+// ---------------- Prisma Disconnect ----------------
 process.on("SIGINT", async () => {
   await prisma.$disconnect();
   console.log("Prisma disconnected (SIGINT)");

@@ -3,10 +3,11 @@
 export interface CreateBillInput {
   roomId: string;
   customerId: string;
+  bookingId?: string; // ✅ เพิ่ม bookingId เพื่อเชื่อม booking กับบิล
   month: string;
-  wBefore?: number;
+  wBefore: number;
   wAfter: number;
-  eBefore?: number;
+  eBefore: number;
   eAfter: number;
 }
 

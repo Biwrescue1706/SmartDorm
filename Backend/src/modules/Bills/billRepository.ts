@@ -1,33 +1,33 @@
 import prisma from "../../prisma";
 
 export const billRepository = {
-  // 📋 ดึงบิลทั้งหมด (เรียงจากใหม่ไปเก่า)
+  // 📋 ดึงบิลทั้งหมด
   async findAll() {
     return prisma.bill.findMany({
       orderBy: { createdAt: "desc" },
       include: {
         room: true,
         booking: { select: { fullName: true, cphone: true } },
-        customer: { select: { userId: true, userName: true } }, // ✅ ดึง userId ด้วย
+        customer: { select: { userId: true, userName: true } },
         payment: { select: { slipUrl: true } },
       },
     });
   },
 
-  // 🔍 ดึงบิลรายตัว (ใช้ในหน้า detail)
+  // 🔍 ดึงบิลรายตัว
   async findById(billId: string) {
     return prisma.bill.findUnique({
       where: { billId },
       include: {
         room: true,
         booking: { select: { fullName: true, cphone: true } },
-        customer: { select: { userId: true, userName: true } }, // ✅ ดึง userId ด้วย
+        customer: { select: { userId: true, userName: true } },
         payment: { select: { slipUrl: true } },
       },
     });
   },
 
-  // 🕓 ดึงบิลเดือนก่อนหน้า (สำหรับดูหน่วยน้ำ/ไฟ)
+  // 🕓 ดึงบิลเดือนก่อนหน้า
   async findPrevBill(roomId: string, billMonth: Date) {
     const prevMonth = new Date(billMonth);
     prevMonth.setMonth(prevMonth.getMonth() - 1);
@@ -44,10 +44,9 @@ export const billRepository = {
     });
   },
 
-  // 🧾 สร้างบิลใหม่ (ใช้ connect เชื่อม relation)
+  // 🧾 สร้างบิลใหม่
   async create(data: any) {
-    const { roomId, customerId, createdBy, ...rest } = data;
-
+    const { roomId, customerId, bookingId, createdBy, ...rest } = data;
     if (!createdBy) throw new Error("Admin ID ไม่ถูกต้อง");
 
     return prisma.bill.create({
@@ -55,12 +54,13 @@ export const billRepository = {
         ...rest,
         room: { connect: { roomId } },
         customer: customerId ? { connect: { customerId } } : undefined,
-        adminCreated: { connect: { adminId: createdBy } }, // ✅ เชื่อมแอดมินที่สร้าง
+        booking: bookingId ? { connect: { bookingId } } : undefined, // ✅ เชื่อม booking
+        adminCreated: { connect: { adminId: createdBy } },
       },
       include: {
         room: true,
         booking: { select: { fullName: true, cphone: true } },
-        customer: { select: { userId: true, userName: true } }, // ✅ เพิ่ม userId ด้วย
+        customer: { select: { userId: true, userName: true } },
         payment: { select: { slipUrl: true } },
         adminCreated: true,
       },
@@ -75,7 +75,7 @@ export const billRepository = {
       include: {
         room: true,
         booking: { select: { fullName: true, cphone: true } },
-        customer: { select: { userId: true, userName: true } }, // ✅ เพิ่ม userId ด้วย
+        customer: { select: { userId: true, userName: true } },
         payment: { select: { slipUrl: true } },
         adminUpdated: true,
       },
@@ -84,16 +84,17 @@ export const billRepository = {
 
   // 🗑️ ลบบิล
   async delete(billId: string) {
-    return prisma.bill.delete({
-      where: { billId },
-    });
+    return prisma.bill.delete({ where: { billId } });
   },
 
   // 🧍‍♂️ ดึง Booking ปัจจุบันของห้อง (ที่เช่าอยู่)
   async findBooking(roomId: string) {
     return prisma.booking.findFirst({
       where: { roomId, approveStatus: 1, checkoutStatus: 0 },
-      include: {
+      select: {
+        bookingId: true, // ✅ เพิ่มตรงนี้
+        fullName: true,
+        cphone: true,
         customer: {
           select: { customerId: true, userId: true, userName: true },
         },
@@ -105,12 +106,7 @@ export const billRepository = {
   async findRoom(roomId: string) {
     return prisma.room.findUnique({
       where: { roomId },
-      select: {
-        roomId: true,
-        number: true,
-        rent: true,
-        size: true,
-      },
+      select: { roomId: true, number: true, rent: true, size: true },
     });
   },
 };

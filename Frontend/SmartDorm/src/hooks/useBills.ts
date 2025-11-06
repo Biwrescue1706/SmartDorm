@@ -34,14 +34,17 @@ export function useBills() {
   const updateBill = async (billId: string, formValues: any) => {
     try {
       Swal.fire({ title: "กำลังอัปเดต...", didOpen: () => Swal.showLoading() });
+
       const res = await fetch(`${API_BASE}${UpdateBill(billId)}`, {
         method: "PUT",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formValues),
       });
-      if (!res.ok) throw new Error();
-      Swal.fire({
+
+      if (!res.ok) throw new Error("Update failed");
+
+      await Swal.fire({
         toast: true,
         position: "top-end",
         icon: "success",
@@ -49,8 +52,10 @@ export function useBills() {
         timer: 1500,
         showConfirmButton: false,
       });
+
       fetchBills();
-    } catch {
+    } catch (err) {
+      console.error(err);
       Swal.fire({
         toast: true,
         position: "top-end",
@@ -61,7 +66,7 @@ export function useBills() {
       });
     }
   };
-
+  
   const deleteBill = async (billId: string, roomNumber: string) => {
     const confirm = await Swal.fire({
       title: `ลบบิลของห้อง ${roomNumber}?`,

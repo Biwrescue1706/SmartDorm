@@ -10,7 +10,6 @@ export interface Booking {
   fullName?: string | null; // ✅ snapshot จาก Booking
   cphone?: string | null;   // ✅ snapshot จาก Booking
 }
-
 export interface Customer {
   customerId: string;
   userId: string;

@@ -26,17 +26,32 @@ export default function BookingInfoTable({ booking }: { booking: Booking }) {
           </tr>
         </thead>
         <tbody>
-          <BookingInfoRow label="วันจอง" value={formatThaiDate(booking.createdAt)} />
-          <BookingInfoRow label="วันขอเข้าพัก" value={formatThaiDate(booking.checkin)} />
-          <BookingInfoRow label="วันเข้าเช็คอิน" value={formatThaiDate(booking.actualCheckin)} />
+          <BookingInfoRow
+            label="วันจอง"
+            value={formatThaiDate(booking.createdAt)}
+          />
+          <BookingInfoRow
+            label="วันขอเข้าพัก"
+            value={formatThaiDate(booking.checkin)}
+          />
+          <BookingInfoRow
+            label="วันเข้าเช็คอิน"
+            value={formatThaiDate(booking.actualCheckin)}
+          />
           <BookingInfoRow
             label="สถานะการจอง"
-            value={<StatusBadge type="approve" status={booking.approveStatus} />}
+            value={
+              <StatusBadge type="approve" status={booking.approveStatus} />
+            }
           />
-          <BookingInfoRow
-            label="สถานะการเช็คอิน"
-            value={<StatusBadge type="checkin" status={booking.checkinStatus} />}
-          />
+          {booking.approveStatus === 1 && (
+            <BookingInfoRow
+              label="สถานะการเช็คอิน"
+              value={
+                <StatusBadge type="checkin" status={booking.checkinStatus} />
+              }
+            />
+          )}
         </tbody>
       </table>
     </div>

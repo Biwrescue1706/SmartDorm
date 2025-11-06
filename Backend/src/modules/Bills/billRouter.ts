@@ -15,15 +15,11 @@ router.post("/create", authMiddleware, async (req, res) => {
   }
 });
 
-// 🏠 สร้างบิลจาก roomId (ใช้ในหน้า Admin)
+// 🏠 สร้างบิลจาก roomId
 router.post("/createFromRoom/:roomId", authMiddleware, async (req, res) => {
   try {
-    const bill = await billService.createBillFromRoom(
-      req.params.roomId,
-      req.body,
-      req.admin!.adminId
-    );
-    res.json({ message: "สร้างบิลสำเร็จและแจ้งลูกค้าแล้ว", bill });
+    const bill = await billService.createBillFromRoom(req.params.roomId, req.body, req.admin!.adminId);
+    res.json({ message: "สร้างบิลสำเร็จและเชื่อม Booking แล้ว", bill });
   } catch (err: any) {
     console.error("❌ [Router] CreateFromRoom Error:", err);
     res.status(500).json({ error: err.message });
@@ -51,13 +47,9 @@ router.get("/:billId", async (req, res) => {
 });
 
 // ✏️ อัปเดตบิล
-router.put("/:billId", async (req, res) => {
+router.put("/:billId", authMiddleware, async (req, res) => {
   try {
-    const updated = await billService.updateBill(
-      req.params.billId,
-      req.body,
-      req.admin!.adminId
-    );
+    const updated = await billService.updateBill(req.params.billId, req.body, req.admin!.adminId);
     res.json({ message: "อัปเดตบิลสำเร็จ", updated });
   } catch (err: any) {
     res.status(500).json({ error: err.message });

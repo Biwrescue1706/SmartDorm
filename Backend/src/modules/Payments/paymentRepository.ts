@@ -20,28 +20,33 @@ export const paymentRepository = {
       where: { billId },
       include: {
         room: true,
-        booking: true, // ✅ ดึง booking มาใช้แทน bill.Booking
-        customer: true,// ✅ เพิ่มตรงนี้ เพื่อให้ bill.customer ใช้งานได้
+        booking: true,
+        customer: true,
       },
     });
   },
 
-  // 📸 อัปโหลดสลิปไปยัง Supabase Storage
+  // 📸 อัปโหลดสลิปไปยัง Supabase Storage (เก็บในโฟลเดอร์ payment-slips/)
   async uploadSlipToSupabase(file: Express.Multer.File) {
-    const filename = `slip_${Date.now()}_${file.originalname}`;
+    if (!file) throw new Error("ไม่พบไฟล์สำหรับอัปโหลด");
+
+    // ❗ ไม่มี timestamp — ใช้ชื่อไฟล์ตรง ๆ แต่เก็บในโฟลเดอร์ payment-slips/
+    const filename = `payment-slips/${file.originalname}`;
+    const bucket = process.env.SUPABASE_BUCKET!;
+
     const { error } = await supabase.storage
-      .from(process.env.SUPABASE_BUCKET!)
+      .from(bucket)
       .upload(filename, file.buffer, {
         contentType: file.mimetype,
-        upsert: true,
+        upsert: true, // ✅ อนุญาตให้อัปทับได้ในกรณีชื่อซ้ำ
       });
 
-    if (error) throw new Error("อัปโหลดสลิปไม่สำเร็จ");
+    if (error) {
+      console.error("❌ Upload slip error:", error.message);
+      throw new Error("อัปโหลดสลิปไม่สำเร็จ");
+    }
 
-    const { data } = supabase.storage
-      .from(process.env.SUPABASE_BUCKET!)
-      .getPublicUrl(filename);
-
+    const { data } = supabase.storage.from(bucket).getPublicUrl(filename);
     return data.publicUrl;
   },
 
@@ -57,7 +62,7 @@ export const paymentRepository = {
       }),
       prisma.bill.update({
         where: { billId },
-        data: { status: 1 }, // ✅ ไม่ต้องอัป slipUrl ใน Bill แล้ว
+        data: { status: 1 },
       }),
     ]);
   },

@@ -64,7 +64,7 @@ export default function AllBills() {
       <Nav message={message} onLogout={handleLogout} role={role} />
 
       {/* 📋 Main Content */}
-      <main className="main-content flex-grow-1 px-1 py-2 mt-6 mt-lg-7">
+      <main className="main-content flex-grow-1 px-2 mx-my-3 py-2 mt-6 mt-lg-7">
         <div className="mx-auto container-max">
           <h2 className="text-center mb-3 fw-bold">📋 รายการบิลทั้งหมด</h2>
 

@@ -55,10 +55,10 @@ export async function sendFlexMessage(
             type: "text",
             text: "🏫 SmartDorm 🎉",
             weight: "bold",
-            color: "#20c997",
+            color: "#000000ff",
             size: "md",
             gravity: "center",
-            margin: "md",
+            margin: "center",
             wrap: true,
           },
         ],
@@ -99,7 +99,7 @@ export async function sendFlexMessage(
             text: "SmartDorm © 2025",
             align: "center",
             size: "xs",
-            color: "#aaaaaa",
+            color: "#000000ff",
             margin: "sm",
           },
         ],
@@ -121,5 +121,4 @@ export async function sendFlexMessage(
     }
   );
 
-  console.log(`✅ Flex Message sent to ${userId}: ${title}`);
 }

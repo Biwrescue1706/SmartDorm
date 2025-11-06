@@ -37,7 +37,6 @@ export default function BillDialog({
         });
         const data = await res.json();
 
-        // หา "บิลล่าสุด" ของห้องนี้
         const latestBill = data
           .filter((b: any) => b.roomId === room.roomId)
           .sort(
@@ -60,9 +59,13 @@ export default function BillDialog({
     loadPrevBill();
   }, [room]);
 
-  // ✅ ฟังก์ชันเปลี่ยนค่าใน input
+  // ✅ ฟังก์ชันเปลี่ยนค่า input (แปลง number ทันที)
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setForm({ ...form, [e.target.id]: e.target.value });
+    const { id, value, type } = e.target;
+    setForm({
+      ...form,
+      [id]: type === "number" ? Number(value) : value, // ✅ convert เป็น number ถ้าเป็น input[type=number]
+    });
   };
 
   // ✅ ฟังก์ชันกดยืนยันสร้างบิล
@@ -72,7 +75,6 @@ export default function BillDialog({
     try {
       const payload = {
         ...form,
-        // ✅ Prisma ต้องการเป็น string ISO
         month: form.month ? new Date(form.month).toISOString() : null,
       };
 

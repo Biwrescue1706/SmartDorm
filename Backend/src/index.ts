@@ -28,6 +28,7 @@ const allowedOrigins = [
   "https://smartdorm-admin.biwbong.shop",
   "https://smartdorm-bookingsroom.biwbong.shop",
   "https://smartdorm-detail.biwbong.shop",
+  "https://smartdorm-paymentbill.biwbong.shop",
 
 ];
 

@@ -16,6 +16,7 @@ export interface Payment {
 }
 
 export interface Bill {
+  [x: string]: any;
   billId: string;
   number: string;          // หมายเลขบิล
   month: string;           // เดือนที่ออกบิล (ISO string)

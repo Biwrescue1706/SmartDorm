@@ -51,7 +51,7 @@ router.get("/:billId", async (req, res) => {
 });
 
 // ✏️ อัปเดตบิล
-router.put("/:billId", authMiddleware, async (req, res) => {
+router.put("/:billId", async (req, res) => {
   try {
     const updated = await billService.updateBill(
       req.params.billId,

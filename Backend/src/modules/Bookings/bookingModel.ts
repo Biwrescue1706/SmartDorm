@@ -1,4 +1,5 @@
 // src/modules/Bookings/bookingModel.ts
+
 export interface BookingInput {
   accessToken: string; // token จาก LINE LIFF
   ctitle: string;
@@ -13,13 +14,21 @@ export interface BookingInput {
 }
 
 export interface BookingUpdateInput {
+  // 👤 ข้อมูลผู้จอง
+  ctitle?: string;
+  cname?: string;
+  csurname?: string;
+  cphone?: string;
+  cmumId?: string;
+  fullName?: string;
+
+  // 📅 สถานะ
   approveStatus?: number;
   checkinStatus?: number;
   checkoutStatus?: number;
   actualCheckin?: Date;
   actualCheckout?: Date;
   returnStatus?: number;
-  [key: string]: any;
 }
 
 export interface Booking {

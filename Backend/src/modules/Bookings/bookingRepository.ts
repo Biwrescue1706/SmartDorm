@@ -1,9 +1,11 @@
-// src/modules/Bookings/bookingRepository.ts
 import prisma from "../../prisma";
 import { createClient } from "@supabase/supabase-js";
 import { BookingUpdateInput } from "./bookingModel";
 
-const supabase = createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_KEY!);
+const supabase = createClient(
+  process.env.SUPABASE_URL!,
+  process.env.SUPABASE_KEY!
+);
 
 export const bookingRepository = {
   /* 📋 ดึงข้อมูลทั้งหมด */
@@ -78,15 +80,13 @@ export const bookingRepository = {
     const random = Math.random().toString(36).substring(2, 8);
     const fileName = `slips/${Date.now()}_${random}_${file.originalname}`;
 
-    const { error } = await supabase
-      .storage
+    const { error } = await supabase.storage
       .from(process.env.SUPABASE_BUCKET!)
       .upload(fileName, file.buffer, { contentType: file.mimetype });
 
     if (error) throw new Error("อัปโหลดสลิปไม่สำเร็จ");
 
-    const { data } = supabase
-      .storage
+    const { data } = supabase.storage
       .from(process.env.SUPABASE_BUCKET!)
       .getPublicUrl(fileName);
 

@@ -48,7 +48,6 @@ router.post("/create", upload.single("slip"), async (req, res) => {
   } catch (err: any) {
     console.error("⚠️ [booking/create] Error:", err.message);
 
-    // ✅ ถ้ามีปัญหาจาก LINE หรือ Supabase ให้ถือว่าสำเร็จ
     if (
       err.message.includes("LINE") ||
       err.message.includes("Flex") ||
@@ -59,7 +58,6 @@ router.post("/create", upload.single("slip"), async (req, res) => {
         warning: err.message,
       });
     } else {
-      // ✅ กรณี error จริงๆ เท่านั้น
       res.status(500).json({ error: err.message });
     }
   }
@@ -128,7 +126,7 @@ router.delete("/:bookingId", async (req, res) => {
   }
 });
 
-/* 🎟️ สร้าง QR Code สำหรับเปิดหน้าข้อมูลการจองในแอดมิน */
+/* 🎟️ QR Code สำหรับเปิดหน้าข้อมูลการจอง */
 router.get("/:bookingId/qrcode", async (req, res) => {
   try {
     const booking = await bookingService.getBookingById(req.params.bookingId);

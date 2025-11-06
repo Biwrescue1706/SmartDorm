@@ -267,14 +267,21 @@ export const bookingService = {
   },
 
   /* ✏️ แก้ไขข้อมูลการจอง (Admin) */
+  /* ✏️ แก้ไขข้อมูลการจอง (Admin) */
   async updateBooking(bookingId: string, data: BookingUpdateInput) {
     const booking = await bookingRepository.findById(bookingId);
     if (!booking) throw new Error("ไม่พบข้อมูลการจอง");
 
+    // ✅ ถ้ามีการเปลี่ยนชื่อ ให้สร้าง fullName ใหม่อัตโนมัติ
+    if (data.ctitle || data.cname || data.csurname) {
+      const title = data.ctitle ?? booking.ctitle ?? "";
+      const name = data.cname ?? booking.cname ?? "";
+      const surname = data.csurname ?? booking.csurname ?? "";
+      data.fullName = `${title}${name} ${surname}`.trim();
+    }
+
     const updated = await bookingRepository.updateBooking(bookingId, data);
-    console.log(
-      `[${new Date().toISOString()}] 📝 Updated booking ${bookingId}`
-    );
+    console.log(`✅ Updated booking ${bookingId}`, data);
     return updated;
   },
 

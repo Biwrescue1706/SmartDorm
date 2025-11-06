@@ -9,17 +9,10 @@ const upload = multer({ storage: multer.memoryStorage() });
 // 💸 ผู้เช่าส่งสลิปการชำระเงิน
 router.post("/create", upload.single("slip"), async (req: Request, res: Response) => {
   try {
-    const { billId, accessToken } = req.body;
-    const slip = req.file;
-
-    if (!billId || !accessToken || !slip) {
-      return res.status(400).json({ message: "Missing required fields" });
-    }
-
     const result = await paymentService.createPayment({
-      billId,
-      accessToken,
-      slip,
+      billId: req.body.billId,
+      accessToken: req.body.accessToken,
+      slip: req.file,
     });
 
     res.json({ message: "ส่งสลิปสำเร็จ", ...result });

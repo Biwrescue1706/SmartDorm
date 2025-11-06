@@ -20,8 +20,8 @@ export const paymentRepository = {
       where: { billId },
       include: {
         room: true,
-        booking: true,
-        customer: true,
+        booking: true, // ✅ ดึง booking มาใช้แทน bill.Booking
+        customer: true,// ✅ เพิ่มตรงนี้ เพื่อให้ bill.customer ใช้งานได้
       },
     });
   },

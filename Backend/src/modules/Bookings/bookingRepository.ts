@@ -75,7 +75,8 @@ export const bookingRepository = {
 
   /* 📸 อัปโหลดสลิป */
   async uploadSlip(file: Express.Multer.File) {
-    const fileName = `slips/${file.originalname}_${Date.now()}`;
+    const random = Math.random().toString(36).substring(2, 8);
+    const fileName = `slips/${Date.now()}_${random}_${file.originalname}`;
 
     const { error } = await supabase
       .storage

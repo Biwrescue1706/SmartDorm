@@ -1,3 +1,4 @@
+// src/modules/Bookings/bookingService.ts
 import { bookingRepository } from "./bookingRepository";
 import { BookingInput, BookingUpdateInput } from "./bookingModel";
 import prisma from "../../prisma";
@@ -29,7 +30,10 @@ export const bookingService = {
     return results;
   },
 
+  /* ✅ เพิ่ม log debug สำหรับตรวจสอบปัญหา 400 */
   async createBooking(input: BookingInput) {
+    console.log("📩 [createBooking] Raw input:", input);
+
     const {
       accessToken,
       ctitle,
@@ -43,25 +47,57 @@ export const bookingService = {
       slip,
     } = input;
 
-    const { userId, displayName } = await verifyLineToken(accessToken);
-    if (!userId || !roomId || !checkin) throw new Error("ข้อมูลไม่ครบ");
+    // ✅ ตรวจสอบ token
+    const verify = await verifyLineToken(accessToken).catch((e) => {
+      console.error("❌ verifyLineToken error:", e.message);
+      return {};
+    });
+
+    const { userId, displayName } = verify as {
+      userId?: string;
+      displayName?: string;
+    };
+
+    console.log("🧩 [createBooking] userId:", userId);
+    console.log("🏠 [createBooking] roomId:", roomId);
+    console.log("📅 [createBooking] checkin:", checkin);
+
+    if (!userId || !roomId || !checkin) {
+      console.error("❌ ข้อมูลไม่ครบ", { userId, roomId, checkin });
+      throw new Error("ข้อมูลไม่ครบ");
+    }
 
     let slipUrl = "";
-    if (slip) slipUrl = await bookingRepository.uploadSlip(slip);
+    if (slip) {
+      console.log("🖼️ [createBooking] Uploading slip...");
+      slipUrl = await bookingRepository.uploadSlip(slip);
+      console.log("✅ [createBooking] slip uploaded:", slipUrl);
+    }
 
     const booking = await prisma.$transaction(async (tx) => {
       let customer = await tx.customer.findFirst({ where: { userId } });
       if (!customer) {
+        console.log("👤 [createBooking] Creating new customer:", displayName);
         customer = await tx.customer.create({
-          data: { userId, userName: displayName },
+          data: { userId, userName: displayName ?? "Unknown User" },
+        });
+
+        await tx.customer.update({
+          where: { customerId: customer.customerId },
+          data: { userName: displayName ?? "Unknown User" },
         });
       } else {
+        console.log(
+          "🔁 [createBooking] Updating existing customer:",
+          displayName
+        );
         await tx.customer.update({
           where: { customerId: customer.customerId },
           data: { userName: displayName },
         });
       }
 
+      console.log("🆕 [createBooking] Creating booking record...");
       const newBooking = await tx.booking.create({
         data: {
           roomId,
@@ -82,6 +118,7 @@ export const bookingService = {
         include: { room: true, customer: true },
       });
 
+      console.log("✅ [createBooking] Booking created:", newBooking.bookingId);
       await bookingRepository.updateRoomStatus(roomId, 1, tx);
       return newBooking;
     });
@@ -125,9 +162,11 @@ export const bookingService = {
       );
     }
 
+    console.log("✅ [createBooking] Completed successfully");
     return booking;
   },
 
+  // ✅ ส่วนอื่นๆ เหมือนเดิม ไม่ต้องแก้
   async approveBooking(bookingId: string) {
     const booking = await bookingRepository.findById(bookingId);
     if (!booking) throw new Error("ไม่พบการจอง");

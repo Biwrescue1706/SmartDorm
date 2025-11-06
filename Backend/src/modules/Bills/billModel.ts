@@ -27,4 +27,5 @@ export interface Bill {
   fine: number;
   dueDate: Date;
   status: number;
+  slipUrl?: string | null; // ✅ เพิ่ม slipUrl ให้ตรงกับ Prisma
 }

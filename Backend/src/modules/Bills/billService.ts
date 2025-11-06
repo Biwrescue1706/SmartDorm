@@ -27,42 +27,34 @@ export const billService = {
       fullName: bill.booking?.fullName || "-",
       cphone: bill.booking?.cphone || "-",
       lineName: bill.customer?.userName || "-",
+      slipUrl: bill.payment?.slipUrl || null,
     };
   },
 
-  // 🧾 ✅ สร้างบิลใหม่
+  // 🧾 สร้างบิลใหม่
   async createBill(data: CreateBillInput, adminId: string) {
     try {
       const { roomId, customerId, month, wBefore, wAfter, eBefore, eAfter } =
         data;
 
-      // ✅ ตรวจสอบข้อมูลเบื้องต้น
       if (!roomId || !customerId)
         throw new Error("ข้อมูลห้องหรือผู้เช่าไม่ครบ");
       if (!month) throw new Error("กรุณาเลือกเดือน");
       if (wAfter === undefined || eAfter === undefined)
         throw new Error("กรุณากรอกหน่วยน้ำและหน่วยไฟ");
 
-      // ✅ ตรวจสอบรูปแบบวันที่
       const billMonth = new Date(month);
       if (isNaN(billMonth.getTime())) throw new Error("เดือนไม่ถูกต้อง");
 
-      console.log("DEBUG - createBill:", { roomId, month, billMonth });
-
-      // ✅ ดึงข้อมูลห้อง
       const room = await billRepository.findRoom(roomId);
       if (!room) throw new Error("ไม่พบข้อมูลห้อง");
 
-      // ✅ คำนวณราคาพื้นฐาน
       const rent = room.rent;
       const service = 20;
       const wPrice = 19;
       const ePrice = 7;
 
-      // 🔙 ดึงบิลเดือนก่อนหน้า
       const prevBill = await billRepository.findPrevBill(roomId, billMonth);
-      console.log("DEBUG - prevBill:", prevBill);
-
       const finalWBefore = prevBill?.wAfter ?? wBefore ?? 0;
       const finalEBefore = prevBill?.eAfter ?? eBefore ?? 0;
 
@@ -79,7 +71,17 @@ export const billService = {
       const fine = 0;
       const total = rent + service + waterCost + electricCost + fine;
 
-      // ✅ สร้างบิลใหม่
+      console.log("🧾 Data ก่อนสร้างบิล:", {
+        roomId,
+        customerId,
+        createdBy: adminId,
+        month,
+        wBefore: finalWBefore,
+        wAfter,
+        eBefore: finalEBefore,
+        eAfter,
+      });
+
       const bill = await billRepository.create({
         month: billMonth,
         rent,
@@ -97,7 +99,7 @@ export const billService = {
         fine,
         total,
         dueDate,
-        slipUrl: "", // ✅ ค่าเริ่มต้น (ว่าง)
+        slipUrl: "",
         status: 0,
         roomId,
         customerId,
@@ -105,7 +107,7 @@ export const billService = {
         createdAt,
       });
 
-      // ✅ แจ้งทาง LINE
+      // ✅ แจ้ง LINE ลูกค้า
       if (bill.customer && bill.customer.userId) {
         const billUrl = `https://smartdorm-detail.biwbong.shop/bill/${bill.billId}`;
         await sendFlexMessage(
@@ -122,23 +124,17 @@ export const billService = {
             },
             {
               label: "💧 ค่าน้ำ",
-              value: `${bill.wUnits} หน่วย (${bill.waterCost.toLocaleString()} บาท)`,
+              value: `${bill.wUnits} หน่วย (${bill.waterCost} บาท)`,
             },
             {
               label: "⚡ ค่าไฟ",
-              value: `${bill.eUnits} หน่วย (${bill.electricCost.toLocaleString()} บาท)`,
+              value: `${bill.eUnits} หน่วย (${bill.electricCost} บาท)`,
             },
-            {
-              label: "🏢 ค่าส่วนกลาง",
-              value: `${bill.service.toLocaleString()} บาท`,
-            },
-            {
-              label: "💰 ค่าเช่าห้อง",
-              value: `${bill.rent.toLocaleString()} บาท`,
-            },
+            { label: "🏢 ค่าส่วนกลาง", value: `${bill.service} บาท` },
+            { label: "💰 ค่าเช่าห้อง", value: `${bill.rent} บาท` },
             {
               label: "💵 ยอดรวมทั้งหมด",
-              value: `${bill.total.toLocaleString()} บาท`,
+              value: `${bill.total} บาท`,
               color: "#27ae60",
             },
             {
@@ -159,10 +155,9 @@ export const billService = {
     }
   },
 
-  // 🧾 สร้างบิลจาก roomId (แอดมินใช้)
+  // 🏠 สร้างบิลจาก roomId (สำหรับแอดมิน)
   async createBillFromRoom(roomId: string, body: any, adminId: string) {
     const { month, wBefore, wAfter, eBefore, eAfter } = body;
-
     const booking = await billRepository.findBooking(roomId);
     if (!booking) throw new Error("ไม่พบบุ๊กกิ้งของห้องนี้");
 

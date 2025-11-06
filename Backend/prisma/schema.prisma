@@ -93,24 +93,23 @@ model Bill {
   month  DateTime
 
   rent         Int
-  service      Int @default(20)
+  service      Int      @default(20)
   wBefore      Int
   wAfter       Int
   wUnits       Int
-  wPrice       Int @default(19)
-  waterCost    Int @default(0)
+  wPrice       Int      @default(19)
+  waterCost    Int      @default(0)
   eBefore      Int
   eAfter       Int
   eUnits       Int
-  ePrice       Int @default(7)
-  electricCost Int @default(0)
-
-  fine        Int      @default(0)
-  overdueDays Int      @default(0)
-  total       Int      @default(0)
-  slipUrl     String
-  status      Int      @default(0)
-  dueDate     DateTime
+  ePrice       Int      @default(7)
+  electricCost Int      @default(0)
+  slipUrl      String   @default("") // ✅ เพิ่ม default ค่าว่าง
+  fine         Int      @default(0)
+  overdueDays  Int      @default(0)
+  total        Int      @default(0)
+  status       Int      @default(0)
+  dueDate      DateTime
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

@@ -1,21 +1,21 @@
-// src/modules/Bills/billRouter.ts
 import { Router } from "express";
 import { authMiddleware } from "../../middleware/authMiddleware";
 import { billService } from "./billService";
 
 const router = Router();
 
-//  สร้างบิลใหม่
+// 🧾 สร้างบิลทั่วไป
 router.post("/create", authMiddleware, async (req, res) => {
   try {
     const bill = await billService.createBill(req.body, req.admin!.adminId);
     res.json({ message: "สร้างบิลสำเร็จและแจ้งลูกค้าแล้ว", bill });
   } catch (err: any) {
+    console.error("❌ [Router] Create Error:", err);
     res.status(500).json({ error: err.message });
   }
 });
 
-// 🏠 สร้างบิลจาก roomId (แอดมิน)
+// 🏠 สร้างบิลจาก roomId (ใช้ในหน้า Admin)
 router.post("/createFromRoom/:roomId", authMiddleware, async (req, res) => {
   try {
     const bill = await billService.createBillFromRoom(
@@ -25,6 +25,7 @@ router.post("/createFromRoom/:roomId", authMiddleware, async (req, res) => {
     );
     res.json({ message: "สร้างบิลสำเร็จและแจ้งลูกค้าแล้ว", bill });
   } catch (err: any) {
+    console.error("❌ [Router] CreateFromRoom Error:", err);
     res.status(500).json({ error: err.message });
   }
 });

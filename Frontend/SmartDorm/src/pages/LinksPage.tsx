@@ -10,7 +10,7 @@ interface LinkItem {
 }
 
 export default function LinksPage() {
-  const { message, handleLogout, role } = useAuth();
+  const { message, handleLogout, role, adminName, adminUsername } = useAuth();
 
   const links: LinkItem[] = [
     {
@@ -45,8 +45,16 @@ export default function LinksPage() {
   return (
     <>
       {/* 🔝 Navbar */}
-      <Nav message={message} onLogout={handleLogout} role={role} />
-
+      return (
+      <Nav
+        message={message}
+        onLogout={handleLogout}
+        role={role}
+        adminName={adminName}
+        adminUsername={adminUsername}
+      />
+      );
+      
       <main className="main-content flex-grow-1 px-3 py-4 mt-6 mt-lg-5">
         <div
           className="min-vh-100 d-flex flex-column align-items-center justify-content-start bg-light"

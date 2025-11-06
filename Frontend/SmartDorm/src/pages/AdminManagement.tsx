@@ -10,11 +10,13 @@ import { type Admin } from "../types/admin";
 
 export default function AdminManagement() {
   const { admins, loading, fetchAdmins } = useAdmins();
-  const { message, handleLogout, role } = useAuth();
+  const { message, handleLogout, role, adminName, adminUsername } = useAuth();
   const [openAdd, setOpenAdd] = useState(false);
   const [openEdit, setOpenEdit] = useState(false);
   const [selectedAdmin, setSelectedAdmin] = useState<Admin | null>(null);
-  const [filterRole, setFilterRole] = useState<"all" | "admin" | "staff">("all");
+  const [filterRole, setFilterRole] = useState<"all" | "admin" | "staff">(
+    "all"
+  );
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
@@ -31,8 +33,17 @@ export default function AdminManagement() {
   const currentAdmins = filteredAdmins.slice(indexOfFirst, indexOfLast);
 
   return (
-    <div className="d-flex flex-column" style={{ backgroundColor: "#f4f7fb", minHeight: "100vh" }}>
-      <Nav message={message} onLogout={handleLogout} pendingBookings={0} role={role} />
+    <div
+      className="d-flex flex-column"
+      style={{ backgroundColor: "#f4f7fb", minHeight: "100vh" }}
+    >
+      <Nav
+        message={message}
+        onLogout={handleLogout}
+        role={role}
+        adminName={adminName}
+        adminUsername={adminUsername}
+      />
 
       <main className="main-content flex-grow-1 px-1 py-2 mt-6 mt-lg-7">
         <div className="mx-auto container-max">
@@ -116,7 +127,11 @@ export default function AdminManagement() {
       </main>
 
       {/* Modal */}
-      <AdminAddDialog open={openAdd} onClose={() => setOpenAdd(false)} refresh={fetchAdmins} />
+      <AdminAddDialog
+        open={openAdd}
+        onClose={() => setOpenAdd(false)}
+        refresh={fetchAdmins}
+      />
       <AdminEditDialog
         open={openEdit}
         onClose={() => setOpenEdit(false)}

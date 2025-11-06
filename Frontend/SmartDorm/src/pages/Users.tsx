@@ -39,7 +39,7 @@ const formatThaiDate = (d?: string) => {
 };
 
 export default function Users() {
-  const { message, handleLogout, role } = useAuth();
+  const { message, handleLogout, role, adminName, adminUsername } = useAuth();
   const [users, setUsers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -127,7 +127,9 @@ export default function Users() {
         timer: 1500,
         showConfirmButton: false,
       });
-      setUsers((prevUsers) => prevUsers.filter((u) => u.customerId !== customerId));
+      setUsers((prevUsers) =>
+        prevUsers.filter((u) => u.customerId !== customerId)
+      );
       setShowDialog(false);
     } catch (err) {
       console.error(`❌ ลบลูกค้า ${userName} ไม่สำเร็จ:`, err);
@@ -146,7 +148,14 @@ export default function Users() {
 
   return (
     <>
-      <Nav message={message} role={role} onLogout={handleLogout} />
+      <Nav
+        message={message}
+        onLogout={handleLogout}
+        role={role}
+        adminName={adminName}
+        adminUsername={adminUsername}
+      />
+      
       <main className="main-content flex-grow-1 px-3 py-4 mt-6 mt-lg-5">
         <div className="mx-auto container-max">
           <h3 className="fw-bold mb-4 text-center">

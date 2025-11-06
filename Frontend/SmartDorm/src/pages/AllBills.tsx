@@ -10,7 +10,7 @@ import Swal from "sweetalert2";
 import type { Bill } from "../types/Bill";
 
 export default function AllBills() {
-  const { message, handleLogout, role } = useAuth();
+  const { message, handleLogout, role, adminName, adminUsername } = useAuth();
   const { bills, loading, updateBill, deleteBill } = useBills();
 
   const [filterStatus, setFilterStatus] = useState("all");
@@ -61,7 +61,13 @@ export default function AllBills() {
       style={{ backgroundColor: "#fcfcfc", minHeight: "100vh" }}
     >
       {/* 🧭 Navbar */}
-      <Nav message={message} onLogout={handleLogout} role={role} />
+      <Nav
+        message={message}
+        onLogout={handleLogout}
+        role={role}
+        adminName={adminName}
+        adminUsername={adminUsername}
+      />
 
       {/* 📋 Main Content */}
       <main className="main-content flex-grow-1 px-2 mx-my-3 py-2 mt-6 mt-lg-7">

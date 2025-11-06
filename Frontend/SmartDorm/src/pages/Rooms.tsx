@@ -10,8 +10,7 @@ import { useRooms } from "../hooks/useRooms";
 
 export default function Rooms() {
   const { rooms, loading, fetchRooms } = useRooms();
-  const { message, handleLogout, role } = useAuth();
-  const [pendingBookings] = useState(0);
+  const { message, handleLogout, role, adminName, adminUsername } = useAuth();
 
   // โหลดข้อมูลเมื่อเปิดหน้า
   useEffect(() => {
@@ -69,8 +68,9 @@ export default function Rooms() {
       <Nav
         message={message}
         onLogout={handleLogout}
-        pendingBookings={pendingBookings}
         role={role}
+        adminName={adminName}
+        adminUsername={adminUsername}
       />
 
       {/* Main */}

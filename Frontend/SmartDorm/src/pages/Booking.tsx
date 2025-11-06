@@ -6,8 +6,8 @@ import Nav from "../components/Nav";
 import { useAuth } from "../hooks/useAuth";
 
 export default function Booking() {
-  const [pendingBookings] = useState(0);
-  const { message, handleLogout, role } = useAuth();
+
+  const { message, handleLogout, role, adminName, adminUsername } = useAuth();
   const {
     bookings,
     loading,
@@ -49,8 +49,9 @@ export default function Booking() {
       <Nav
         message={message}
         onLogout={handleLogout}
-        pendingBookings={pendingBookings}
         role={role}
+        adminName={adminName}
+        adminUsername={adminUsername}
       />
 
       <main className="main-content flex-grow-1 px-1 py-2 mt-6 mt-lg-7">

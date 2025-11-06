@@ -8,7 +8,7 @@ import CheckoutEditDialog from "../components/Checkout/CheckoutEditDialog";
 import type { Booking } from "../types/Checkout";
 
 export default function Checkout() {
-  const { message, handleLogout, role } = useAuth();
+  const { message, handleLogout, role, adminName, adminUsername } = useAuth();
   const {
     checkouts,
     loading,
@@ -19,7 +19,6 @@ export default function Checkout() {
     confirmReturn,
   } = useCheckouts();
 
-  const [pendingBookings] = useState(0);
   const [filter, setFilter] = useState<
     "all" | "pending" | "approved" | "rejected"
   >("all");
@@ -36,13 +35,15 @@ export default function Checkout() {
   return (
     <div className="d-flex min-vh-100 bg-white">
       {/* 🔹 Navbar */}
+      return (
       <Nav
         message={message}
         onLogout={handleLogout}
-        pendingBookings={pendingBookings}
         role={role}
+        adminName={adminName}
+        adminUsername={adminUsername}
       />
-
+      );
       {/* 🔹 Main Content */}
       <main className="main-content flex-grow-1 px-1 py-2 mt-6 mt-lg-7">
         <div className="mx-auto container-max">
@@ -75,7 +76,6 @@ export default function Checkout() {
           )}
         </div>
       </main>
-
       {/* 🔹 Modal แก้ไขข้อมูลการคืน */}
       {editingBooking && (
         <CheckoutEditDialog

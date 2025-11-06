@@ -8,9 +8,11 @@ import type { LoginCredentials, RegisterData } from "../types/Auth";
 
 export function useAuth() {
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState("กำลังโหลด...");
   const [isAuth, setIsAuth] = useState<boolean | null>(null);
   const [role, setRole] = useState<number | null>(null);
+  const [adminName, setAdminName] = useState<string>("");
+  const [adminUsername, setAdminUsername] = useState<string>("");
+  const [message, setMessage] = useState("กำลังโหลด...");
   const navigate = useNavigate();
 
   // ----------------------------- Register -----------------------------
@@ -88,8 +90,8 @@ export function useAuth() {
 
       if (!res.ok) {
         Swal.fire({
-toast: true,
-        position: "top-end",
+          toast: true,
+          position: "top-end",
           icon: "error",
           title: "ล้มเหลว",
           text: data.error || "เข้าสู่ระบบไม่สำเร็จ",
@@ -100,7 +102,7 @@ toast: true,
       }
 
       Swal.fire({
-toast: true,
+        toast: true,
         position: "top-end",
         icon: "success",
         title: "เข้าสู่ระบบสำเร็จ",
@@ -146,6 +148,8 @@ toast: true,
     setIsAuth(false);
     setRole(null);
     setMessage("กำลังโหลด...");
+    setAdminName("");
+    setAdminUsername("");
     setTimeout(() => navigate("/"), 1500);
   };
 
@@ -161,6 +165,8 @@ toast: true,
       if (!res || !res.ok) {
         setIsAuth(false);
         setRole(null);
+        setAdminName("");
+        setAdminUsername("");
         Swal.fire({
           toast: true,
           position: "top-end",
@@ -177,17 +183,32 @@ toast: true,
       if (data?.valid) {
         setIsAuth(true);
         setRole(data.admin?.role ?? 1);
-        setMessage(`${data.admin?.name}`);
+        setAdminName(data.admin?.name ?? "");
+        setAdminUsername(data.admin?.username ?? "");
+        setMessage(data.admin?.name || "ไม่พบชื่อ");
       } else {
         setIsAuth(false);
         setRole(null);
+        setAdminName("");
+        setAdminUsername("");
       }
     };
 
     verify();
   }, [navigate]);
 
-  return { register, login, loading, message, isAuth, handleLogout, role };
+  // ✅ ส่งออกทั้งหมด
+  return {
+    register,
+    login,
+    loading,
+    isAuth,
+    handleLogout,
+    role,
+    message,
+    adminName,
+    adminUsername,
+  };
 }
 
 // ----------------------------- Route Guard -----------------------------

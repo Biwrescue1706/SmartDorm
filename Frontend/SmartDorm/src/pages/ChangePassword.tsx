@@ -3,11 +3,17 @@ import { useAuth } from "../hooks/useAuth";
 import ChangePasswordForm from "../components/ChangePassword/ChangePasswordForm";
 
 export default function ChangePassword() {
-  const { message, handleLogout, role } = useAuth();
+  const { message, handleLogout, role, adminName, adminUsername } = useAuth();
 
   return (
     <>
-      <Nav message={message} onLogout={handleLogout} role={role} />
+      <Nav
+        message={message}
+        onLogout={handleLogout}
+        role={role}
+        adminName={adminName}
+        adminUsername={adminUsername}
+      />
 
       <div
         className="container d-flex justify-content-center align-items-center"

@@ -154,10 +154,11 @@ export default function BookingRow({
             <td>
               <button
                 type="button"
-                className="btn btn-sm fw-semibold text-white"
+                className="btn btn-sm fw-semibold text-white ms-1 mt-1 mx-1 my-1 "
                 style={{
                   background: "linear-gradient(100deg, #ff0505, #f645c4)",
                   border: "none",
+                  padding: "4px 8px",
                 }}
                 onClick={() => onDelete(booking.bookingId, booking.room.number)}
               >

@@ -80,12 +80,12 @@ export default function BookingTable({
                 สถานะ
               </th>
               {role === 0 && (
-                <th scope="col" style={{ width: "90%" }}>
+                <th scope="col" style={{ width: "120%" }}>
                   แก้ไข
                 </th>
               )}
               {role === 0 && (
-                <th scope="col" style={{ width: "90%" }}>
+                <th scope="col" style={{ width: "120%" }}>
                   ลบ
                 </th>
               )}

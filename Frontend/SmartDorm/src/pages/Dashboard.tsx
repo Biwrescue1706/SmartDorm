@@ -10,7 +10,7 @@ import DashboardSummary from "../components/Dashboard/DashboardSummary";
 import DashboardRevenue from "../components/Dashboard/DashboardRevenue";
 
 export default function Dashboard() {
-  const { message, handleLogout, role } = useAuth();
+  const { message, handleLogout, role, adminName, adminUsername } = useAuth();
   const { rooms, fetchRooms } = useRooms();
   const { bookings, fetchBookings } = useBookings();
   const { checkouts, fetchCheckouts } = useCheckouts();
@@ -21,7 +21,12 @@ export default function Dashboard() {
 
   useEffect(() => {
     const loadAll = async () => {
-      await Promise.all([fetchRooms(), fetchBookings(), fetchCheckouts(), fetchBills()]);
+      await Promise.all([
+        fetchRooms(),
+        fetchBookings(),
+        fetchCheckouts(),
+        fetchBills(),
+      ]);
     };
     loadAll();
   }, []);
@@ -37,9 +42,16 @@ export default function Dashboard() {
 
   return (
     <div className="d-flex flex-column min-vh-100 bg-light">
-      <Nav message={message} onLogout={handleLogout} pendingBookings={pendingBookings} role={role} />
-
-         <main className="main-content flex-grow-1 px-1 py-2 mt-6 mt-lg-7">
+      return (
+      <Nav
+        message={message}
+        onLogout={handleLogout}
+        role={role}
+        adminName={adminName}
+        adminUsername={adminUsername}
+      />
+      );
+      <main className="main-content flex-grow-1 px-1 py-2 mt-3 mt-lg-7">
         <div className="mx-auto container-max">
           <h2 className="text-center mt-3 fw-bold mb-4">📊 สรุปข้อมูลหอพัก</h2>
 
@@ -52,7 +64,6 @@ export default function Dashboard() {
           />
 
           <DashboardRevenue bills={bills} bookings={bookings} />
-
         </div>
       </main>
     </div>

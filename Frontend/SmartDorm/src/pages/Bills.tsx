@@ -8,7 +8,7 @@ import Pagination from "../components/Pagination";
 import "bootstrap/dist/css/bootstrap.min.css";
 
 export default function Bills() {
-  const { message, handleLogout, role } = useAuth();
+  const { message, handleLogout, role, adminName, adminUsername } = useAuth();
 
   // ✅ Hook โหลดข้อมูลทั้งหมด
   const {
@@ -16,7 +16,6 @@ export default function Bills() {
     bookings,
     existingBills,
     loading,
-    pendingBookings,
     reloadAll,
   } = useCreateBill();
 
@@ -87,8 +86,9 @@ export default function Bills() {
       <Nav
         message={message}
         onLogout={handleLogout}
-        pendingBookings={pendingBookings}
         role={role}
+        adminName={adminName}
+        adminUsername={adminUsername}
       />
 
       {/* 🔹 เนื้อหา */}

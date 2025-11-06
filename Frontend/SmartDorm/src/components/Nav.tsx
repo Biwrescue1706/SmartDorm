@@ -6,13 +6,16 @@ export interface NavProps {
   onLogout: () => void;
   pendingBookings?: number;
   role?: number | null;
+  adminName?: string;
+  adminUsername?: string;
 }
 
 export default function Nav({
-  message,
   onLogout,
   pendingBookings,
   role,
+  adminName,
+  adminUsername,
 }: NavProps) {
   const navigate = useNavigate();
   const location = useLocation();
@@ -22,7 +25,7 @@ export default function Nav({
   const [, setIsWideScreen] = useState(window.innerWidth >= 1400);
 
   // 🔠 ย่อชื่อ
-  const shortenName = (name: string, maxLength = 12) => {
+  const shortenName = (name: string, maxLength = 10) => {
     if (!name) return "-";
     if (name.length <= maxLength) return name;
     const parts = name.split(" ");
@@ -121,7 +124,7 @@ export default function Nav({
               style={{ cursor: "pointer" }}
             >
               <h6 className="fw-bold text-warning mb-0">
-                {shortenName(message)}
+                {shortenName(adminName || "-")}
               </h6>
               <h6 className="fw-bold text-white mb-0">
                 {role === 0 ? "แอดมิน" : role === 1 ? "พนักงาน" : "⏳"}
@@ -137,10 +140,9 @@ export default function Nav({
                 {/* ส่วนหัวของ dropdown */}
                 <div className="border-bottom pb-2 mb-2">
                   <div className="fw-bold text-primary small">
-                    {message || "ไม่พบชื่อผู้ใช้"}
-                  </div>
-                  <div className="text-secondary small">
-                    {role === 0 ? "แอดมิน" : role === 1 ? "พนักงาน" : ""}
+                    👤 {adminName || "ไม่พบชื่อจริง"}
+                    <br />
+                    <span className="text-muted">{adminUsername || "-"}</span>
                   </div>
                 </div>
 
@@ -322,20 +324,6 @@ export default function Nav({
             🔗 รวมลิงก์
           </button>
         </div>
-
-        {/* Logout */}
-        <div className="border-top border-light p-2 mt-auto">
-          <button
-            onClick={onLogout}
-            className="btn w-100 text-white fw-bold"
-            style={{
-              background: "linear-gradient(135deg, #ff512f, #dd2476)",
-              border: "none",
-            }}
-          >
-            🚪 ออกจากระบบ
-          </button>
-        </div>
       </div>
 
       {/* ===== 📱 Slide Menu (<1400px) ===== */}
@@ -489,20 +477,6 @@ export default function Nav({
                 </button>
               </div>
             </div>
-
-            <button
-              onClick={() => {
-                onLogout();
-                setMenuOpen(false);
-              }}
-              className="btn w-100 text-white fw-bold mt-3"
-              style={{
-                background: "linear-gradient(135deg, #ff512f, #dd2476)",
-                border: "none",
-              }}
-            >
-              🚪 ออกจากระบบ
-            </button>
           </div>
 
           {/* Overlay */}

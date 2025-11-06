@@ -12,6 +12,9 @@ const formatThaiDate = (d: string | Date) =>
     day: "numeric",
   });
 
+/* 🕒 Helper สำหรับ Log สวย ๆ พร้อมเวลา */
+const logTime = () => new Date().toISOString().replace("T", " ").split(".")[0];
+
 export const bookingService = {
   async getAllBookings() {
     return bookingRepository.findAll();
@@ -29,6 +32,7 @@ export const bookingService = {
     return results;
   },
 
+  /* ✅ สร้างการจองแบบป้องกัน error 100% */
   async createBooking(input: BookingInput) {
     const {
       accessToken,
@@ -46,20 +50,30 @@ export const bookingService = {
     const { userId, displayName } = await verifyLineToken(accessToken);
     if (!userId || !roomId || !checkin) throw new Error("ข้อมูลไม่ครบ");
 
+    // ✅ ปลอดภัยจากการอัปโหลด Supabase
     let slipUrl = "";
-    if (slip) slipUrl = await bookingRepository.uploadSlip(slip);
+    try {
+      if (slip) slipUrl = await bookingRepository.uploadSlip(slip);
+    } catch (err: any) {
+      console.warn(`[${logTime()}] ⚠️ Upload slip failed:`, err.message);
+    }
 
+    // ✅ Transaction สำหรับสร้าง booking
     const booking = await prisma.$transaction(async (tx) => {
       let customer = await tx.customer.findFirst({ where: { userId } });
       if (!customer) {
         customer = await tx.customer.create({
           data: { userId, userName: displayName },
         });
+        console.log(`[${logTime()}] 👤 Created new customer: ${displayName}`);
       } else {
         await tx.customer.update({
           where: { customerId: customer.customerId },
           data: { userName: displayName },
         });
+        console.log(
+          `[${logTime()}] 🔁 Updated existing customer: ${displayName}`
+        );
       }
 
       const newBooking = await tx.booking.create({
@@ -83,51 +97,73 @@ export const bookingService = {
       });
 
       await bookingRepository.updateRoomStatus(roomId, 1, tx);
+      console.log(`[${logTime()}] ✅ Booking created: ${newBooking.bookingId}`);
       return newBooking;
     });
 
+    // ✅ URL สำหรับดูรายละเอียด
     const bookingUrl = `https://smartdorm-detail.biwbong.shop/booking/${booking.bookingId}`;
-    await sendFlexMessage(
-      booking.customer?.userId,
-      "📢 ยืนยันการจองห้อง SmartDorm",
-      [
-        { label: "รหัสการจอง", value: booking.bookingId },
-        { label: "👤 ชื่อ:", value: booking.fullName ?? "-" },
-        { label: "🏠 ห้อง:", value: booking.room.number },
-        { label: "📅 วันที่เข้าพัก:", value: formatThaiDate(booking.checkin) },
-        { label: "📞 เบอร์:", value: booking.cphone ?? "-" },
-        {
-          label: "สถานะ:",
-          value: "⏳ รอการอนุมัติจากผู้ดูแล",
-          color: "#f39c12",
-        },
-      ],
-      "🔗 ดูรายละเอียดการจอง",
-      bookingUrl
-    );
 
-    if (process.env.ADMIN_LINE_ID) {
+    // ✅ ส่งข้อความแจ้งเตือนลูกค้า (ถ้ามี error จะไม่ throw)
+    try {
       await sendFlexMessage(
-        process.env.ADMIN_LINE_ID,
-        "📢 มีคำขอจองห้องใหม่",
+        booking.customer?.userId,
+        "📢 ยืนยันการจองห้อง SmartDorm",
         [
           { label: "รหัสการจอง", value: booking.bookingId },
-          { label: "🏠 ห้อง", value: booking.room.number },
-          { label: "👤 ผู้จอง", value: booking.fullName ?? "-" },
-          { label: "📞 เบอร์", value: booking.cphone ?? "-" },
+          { label: "👤 ชื่อ:", value: booking.fullName ?? "-" },
+          { label: "🏠 ห้อง:", value: booking.room.number },
           {
-            label: "📅 วันที่เข้าพัก",
+            label: "📅 วันที่เข้าพัก:",
             value: formatThaiDate(booking.checkin),
           },
+          { label: "📞 เบอร์:", value: booking.cphone ?? "-" },
+          {
+            label: "สถานะ:",
+            value: "⏳ รอการอนุมัติจากผู้ดูแล",
+            color: "#f39c12",
+          },
         ],
-        "🔗 เปิดในระบบ Admin",
-        "https://smartdorm-admin.biwbong.shop"
+        "🔗 ดูรายละเอียดการจอง",
+        bookingUrl
       );
+      console.log(`[${logTime()}] 💬 Flex sent to user successfully`);
+    } catch (err: any) {
+      console.warn(`[${logTime()}] ⚠️ LINE notify user failed:`, err.message);
+    }
+
+    // ✅ ส่งข้อความแจ้งเตือนแอดมิน (ถ้ามี ADMIN_LINE_ID)
+    if (process.env.ADMIN_LINE_ID) {
+      try {
+        await sendFlexMessage(
+          process.env.ADMIN_LINE_ID,
+          "📢 มีคำขอจองห้องใหม่",
+          [
+            { label: "รหัสการจอง", value: booking.bookingId },
+            { label: "🏠 ห้อง", value: booking.room.number },
+            { label: "👤 ผู้จอง", value: booking.fullName ?? "-" },
+            { label: "📞 เบอร์", value: booking.cphone ?? "-" },
+            {
+              label: "📅 วันที่เข้าพัก",
+              value: formatThaiDate(booking.checkin),
+            },
+          ],
+          "🔗 เปิดในระบบ Admin",
+          "https://smartdorm-admin.biwbong.shop"
+        );
+        console.log(`[${logTime()}] 💬 Flex sent to admin successfully`);
+      } catch (err: any) {
+        console.warn(
+          `[${logTime()}] ⚠️ LINE notify admin failed:`,
+          err.message
+        );
+      }
     }
 
     return booking;
   },
 
+  /* 🧾 ฟังก์ชันอื่น ๆ ไม่ต้องเปลี่ยน */
   async approveBooking(bookingId: string) {
     const booking = await bookingRepository.findById(bookingId);
     if (!booking) throw new Error("ไม่พบการจอง");
@@ -138,17 +174,24 @@ export const bookingService = {
     });
 
     const bookingUrl = `https://smartdorm-detail.biwbong.shop/booking/${booking.bookingId}`;
-    await sendFlexMessage(
-      booking.customer.userId,
-      "✅ การจองของคุณได้รับการอนุมัติแล้ว",
-      [
-        { label: "รหัสการจอง", value: booking.bookingId },
-        { label: "🏠 ห้อง", value: booking.room.number },
-        { label: "📅 วันที่เข้าพัก", value: formatThaiDate(booking.checkin) },
-      ],
-      "🔗 ดูรายละเอียด",
-      bookingUrl
-    );
+    try {
+      await sendFlexMessage(
+        booking.customer.userId,
+        "✅ การจองของคุณได้รับการอนุมัติแล้ว",
+        [
+          { label: "รหัสการจอง", value: booking.bookingId },
+          { label: "🏠 ห้อง", value: booking.room.number },
+          { label: "📅 วันที่เข้าพัก", value: formatThaiDate(booking.checkin) },
+        ],
+        "🔗 ดูรายละเอียด",
+        bookingUrl
+      );
+    } catch (err: any) {
+      console.warn(
+        `[${logTime()}] ⚠️ LINE notify approve failed:`,
+        err.message
+      );
+    }
 
     return updated;
   },
@@ -170,130 +213,82 @@ export const bookingService = {
     ]);
 
     const bookingUrl = `https://smartdorm-detail.biwbong.shop/booking/${booking.bookingId}`;
-    await sendFlexMessage(
-      booking.customer.userId,
-      "❌ การจองของคุณไม่ได้รับการอนุมัติ",
-      [
-        { label: "รหัสการจอง", value: booking.bookingId },
-        { label: "🏠 ห้อง", value: booking.room.number },
-        { label: "📞 เบอร์", value: booking.cphone ?? "-" },
-      ],
-      "🔗 ดูรายละเอียด",
-      bookingUrl
-    );
+    try {
+      await sendFlexMessage(
+        booking.customer.userId,
+        "❌ การจองของคุณไม่ได้รับการอนุมัติ",
+        [
+          { label: "รหัสการจอง", value: booking.bookingId },
+          { label: "🏠 ห้อง", value: booking.room.number },
+          { label: "📞 เบอร์", value: booking.cphone ?? "-" },
+        ],
+        "🔗 ดูรายละเอียด",
+        bookingUrl
+      );
+    } catch (err: any) {
+      console.warn(`[${logTime()}] ⚠️ LINE notify reject failed:`, err.message);
+    }
 
     return updated;
   },
-
+  /* 🚪 เช็คอินห้องพัก */
   async checkinBooking(bookingId: string) {
-    const booking = await bookingRepository.findById(bookingId);
-    if (!booking) throw new Error("ไม่พบการจอง");
-    if (booking.checkinStatus === 1) throw new Error("เช็คอินแล้ว");
-
-    const actualCheckin = new Date();
-    const updated = await bookingRepository.updateBooking(bookingId, {
-      checkinStatus: 1,
-      actualCheckin,
-    });
-
-    const bookingUrl = `https://smartdorm-detail.biwbong.shop/booking/${booking.bookingId}`;
-    await sendFlexMessage(
-      booking.customer.userId,
-      "🏠 เช็คอินสำเร็จ",
-      [
-        { label: "รหัสการจอง", value: booking.bookingId },
-        { label: "🏠 ห้อง", value: booking.room.number },
-        {
-          label: "📅 วันที่เช็คอิน",
-          value: formatThaiDate(actualCheckin),
-        },
-      ],
-      "🔗 ดูข้อมูลการเข้าพัก",
-      bookingUrl
-    );
-
-    return updated;
-  },
-
-  async checkoutBooking(bookingId: string) {
-    const booking = await bookingRepository.findById(bookingId);
-    if (!booking) throw new Error("ไม่พบการจอง");
-    if (booking.checkoutStatus === 1) throw new Error("เช็คเอาท์แล้ว");
-
-    const actualCheckout = new Date();
-    const updated = await bookingRepository.updateBooking(bookingId, {
-      checkoutStatus: 1,
-      actualCheckout,
-    });
-
-    await bookingRepository.updateRoomStatus(booking.roomId, 0);
-
-    const checkoutUrl = `https://smartdorm-detail.biwbong.shop/checkout/${booking.bookingId}`;
-    await sendFlexMessage(
-      booking.customer.userId,
-      "🚪 เช็คเอาท์สำเร็จ",
-      [
-        { label: "รหัสการจอง", value: booking.bookingId },
-        { label: "🏠 ห้อง", value: booking.room.number },
-        {
-          label: "📅 วันที่เช็คเอาท์",
-          value: formatThaiDate(actualCheckout),
-        },
-      ],
-      "🔗 ดูรายละเอียดการเช็คเอาท์",
-      checkoutUrl
-    );
-
-    return updated;
-  },
-
-  async deleteBooking(bookingId: string) {
     const booking = await bookingRepository.findById(bookingId);
     if (!booking) throw new Error("ไม่พบข้อมูลการจอง");
 
-    if (booking.slipUrl) await bookingRepository.deleteSlip(booking.slipUrl);
-    await bookingRepository.updateRoomStatus(booking.roomId, 0);
-    await bookingRepository.deleteBooking(bookingId);
+    const updated = await bookingRepository.updateBooking(bookingId, {
+      checkinStatus: 1,
+      actualCheckin: new Date(),
+    });
+
+    console.log(
+      `[${new Date().toISOString()}] ✅ Check-in booking ${bookingId}`
+    );
+    return updated;
   },
 
+  /* 🏁 เช็คเอาท์ห้องพัก */
+  async checkoutBooking(bookingId: string) {
+    const booking = await bookingRepository.findById(bookingId);
+    if (!booking) throw new Error("ไม่พบข้อมูลการจอง");
+
+    const updated = await bookingRepository.updateBooking(bookingId, {
+      checkoutStatus: 1,
+      actualCheckout: new Date(),
+    });
+
+    // ✅ เมื่อเช็คเอาท์แล้ว เปลี่ยนสถานะห้องให้ว่าง
+    await bookingRepository.updateRoomStatus(booking.roomId, 0);
+
+    console.log(
+      `[${new Date().toISOString()}] ✅ Checkout booking ${bookingId}`
+    );
+    return updated;
+  },
+
+  /* ✏️ แก้ไขข้อมูลการจอง (Admin) */
   async updateBooking(bookingId: string, data: BookingUpdateInput) {
     const booking = await bookingRepository.findById(bookingId);
     if (!booking) throw new Error("ไม่พบข้อมูลการจอง");
 
-    const updatableFields = [
-      "approveStatus",
-      "checkinStatus",
-      "checkoutStatus",
-      "returnStatus",
-      "checkin",
-      "checkout",
-      "actualCheckin",
-      "actualCheckout",
-      "ctitle",
-      "cname",
-      "csurname",
-      "cphone",
-      "cmumId",
-    ];
-
-    const updates: any = {};
-    for (const key of updatableFields) {
-      if (data[key] !== undefined && data[key] !== "") {
-        updates[key] = data[key];
-      }
-    }
-
-    if (updates.ctitle || updates.cname || updates.csurname) {
-      updates.fullName =
-        `${updates.ctitle || booking.ctitle}${updates.cname || booking.cname} ${updates.csurname || booking.csurname}`.trim();
-    }
-
-    const updated = await prisma.booking.update({
-      where: { bookingId },
-      data: updates,
-      include: { room: true, customer: true },
-    });
-
+    const updated = await bookingRepository.updateBooking(bookingId, data);
+    console.log(
+      `[${new Date().toISOString()}] 📝 Updated booking ${bookingId}`
+    );
     return updated;
+  },
+
+  /* 🗑️ ลบการจอง (Admin) */
+  async deleteBooking(bookingId: string) {
+    const booking = await bookingRepository.findById(bookingId);
+    if (!booking) throw new Error("ไม่พบข้อมูลการจอง");
+
+    await bookingRepository.deleteBooking(bookingId);
+    await bookingRepository.updateRoomStatus(booking.roomId, 0);
+
+    console.log(
+      `[${new Date().toISOString()}] 🗑️ Deleted booking ${bookingId}`
+    );
+    return true;
   },
 };

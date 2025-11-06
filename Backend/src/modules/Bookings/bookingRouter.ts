@@ -45,30 +45,26 @@ router.post("/create", upload.single("slip"), async (req, res) => {
       ...req.body,
       slip: req.file,
     });
-
-    console.log("✅ [booking/create] Booking created successfully");
     res.status(200).json({ message: "จองสำเร็จ", booking });
-
   } catch (err: any) {
     console.error("⚠️ [booking/create] Error:", err.message);
 
-    // ถ้า booking สำเร็จแต่การแจ้งเตือน LINE ล้มเหลว → ไม่ให้ fail
+    // ✅ ถ้ามีปัญหาจาก LINE หรือ Supabase ให้ถือว่าสำเร็จ
     if (
       err.message.includes("LINE") ||
-      err.message.includes("sendFlexMessage") ||
       err.message.includes("Flex") ||
       err.message.includes("Supabase")
     ) {
       res.status(200).json({
-        message: "จองสำเร็จ (มี Warning จากระบบภายใน)",
+        message: "จองสำเร็จ (มี Warning ภายใน)",
         warning: err.message,
       });
     } else {
-      res.status(400).json({ error: err.message });
+      // ✅ กรณี error จริงๆ เท่านั้น
+      res.status(500).json({ error: err.message });
     }
   }
 });
-
 
 /* ✅ Admin อนุมัติการจอง */
 router.put("/:bookingId/approve", authMiddleware, async (req, res) => {

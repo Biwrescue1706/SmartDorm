@@ -70,27 +70,24 @@ export default function BillDialog({
     if (!room) return;
     setLoading(true);
     try {
+      const payload = {
+        ...form,
+        // ✅ Prisma ต้องการเป็น string ISO
+        month: form.month ? new Date(form.month).toISOString() : null,
+      };
+
       const res = await fetch(
         `${API_BASE}/bill/createFromRoom/${room.roomId}`,
         {
           method: "POST",
           credentials: "include",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(form),
+          body: JSON.stringify(payload),
         }
       );
 
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "ไม่สามารถสร้างบิลได้");
-
-      const newBill = data.bill; // ✅ ดึงข้อมูลบิลจาก backend
-      if (newBill) {
-        setForm((prev) => ({
-          ...prev,
-          wBefore: newBill.wBefore,
-          eBefore: newBill.eBefore,
-        }));
-      }
 
       alert("✅ สร้างบิลสำเร็จ");
       await reloadExistingBills();

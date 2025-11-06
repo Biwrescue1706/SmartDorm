@@ -56,7 +56,7 @@ export default function Bills() {
   useEffect(() => {
     const now = new Date();
     setTodayStr(formatThaiDate(now.toISOString()));
-    setCanCreateBill(now.getDate() >= 15 && now.getDate() <= 31);
+    setCanCreateBill(now.getDate() >= 1 && now.getDate() <= 31);
   }, []);
 
   // ✅ ฟังก์ชันเปิด Dialog

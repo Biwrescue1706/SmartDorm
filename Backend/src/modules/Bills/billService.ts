@@ -1,4 +1,3 @@
-// src/modules/Bills/billService.ts
 import { billRepository } from "./billRepository";
 import { CreateBillInput, BillUpdateInput } from "./billModel";
 import { sendFlexMessage } from "../../utils/lineFlex";
@@ -31,7 +30,7 @@ export const billService = {
     };
   },
 
-  // 🧾 ✅ สร้างบิลใหม่ (เหลืออันเดียวเท่านั้น)
+  // 🧾 ✅ สร้างบิลใหม่
   async createBill(data: CreateBillInput, adminId: string) {
     try {
       const { roomId, customerId, month, wBefore, wAfter, eBefore, eAfter } =
@@ -44,16 +43,17 @@ export const billService = {
       if (wAfter === undefined || eAfter === undefined)
         throw new Error("กรุณากรอกหน่วยน้ำและหน่วยไฟ");
 
+      // ✅ ตรวจสอบรูปแบบวันที่
       const billMonth = new Date(month);
       if (isNaN(billMonth.getTime())) throw new Error("เดือนไม่ถูกต้อง");
 
       console.log("DEBUG - createBill:", { roomId, month, billMonth });
 
-      // ดึงข้อมูลห้อง
+      // ✅ ดึงข้อมูลห้อง
       const room = await billRepository.findRoom(roomId);
       if (!room) throw new Error("ไม่พบข้อมูลห้อง");
 
-      // คำนวณราคาพื้นฐาน
+      // ✅ คำนวณราคาพื้นฐาน
       const rent = room.rent;
       const service = 20;
       const wPrice = 19;
@@ -79,6 +79,7 @@ export const billService = {
       const fine = 0;
       const total = rent + service + waterCost + electricCost + fine;
 
+      // ✅ สร้างบิลใหม่
       const bill = await billRepository.create({
         month: billMonth,
         rent,
@@ -96,7 +97,7 @@ export const billService = {
         fine,
         total,
         dueDate,
-        slipUrl: "",
+        slipUrl: "", // ✅ ค่าเริ่มต้น (ว่าง)
         status: 0,
         roomId,
         customerId,
@@ -104,7 +105,7 @@ export const billService = {
         createdAt,
       });
 
-      // ✅ ส่งข้อความ LINE ถ้ามี
+      // ✅ แจ้งทาง LINE
       if (bill.customer && bill.customer.userId) {
         const billUrl = `https://smartdorm-detail.biwbong.shop/bill/${bill.billId}`;
         await sendFlexMessage(
@@ -161,6 +162,7 @@ export const billService = {
   // 🧾 สร้างบิลจาก roomId (แอดมินใช้)
   async createBillFromRoom(roomId: string, body: any, adminId: string) {
     const { month, wBefore, wAfter, eBefore, eAfter } = body;
+
     const booking = await billRepository.findBooking(roomId);
     if (!booking) throw new Error("ไม่พบบุ๊กกิ้งของห้องนี้");
 

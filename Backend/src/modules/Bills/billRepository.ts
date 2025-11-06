@@ -1,4 +1,3 @@
-// src/modules/Bills/billRepository.ts
 import prisma from "../../prisma";
 
 export const billRepository = {
@@ -34,7 +33,6 @@ export const billRepository = {
 
   // 🕓 ดึงบิลเดือนก่อนหน้า (ใช้ค่าน้ำ/ไฟก่อนหน้า)
   async findPrevBill(roomId: string, billMonth: Date) {
-    // คำนวณเดือนก่อนหน้า
     const prevMonth = new Date(billMonth);
     prevMonth.setMonth(prevMonth.getMonth() - 1);
 
@@ -50,10 +48,17 @@ export const billRepository = {
     });
   },
 
-  // 🧾 สร้างบิลใหม่
+  // 🧾 ✅ สร้างบิลใหม่ (แก้ให้รองรับ relation)
   async create(data: any) {
+    const { roomId, customerId, createdBy, ...rest } = data;
+
     return prisma.bill.create({
-      data,
+      data: {
+        ...rest,
+        room: { connect: { roomId } },
+        customer: customerId ? { connect: { customerId } } : undefined,
+        adminCreated: { connect: { adminId: createdBy } },
+      },
       include: { room: true, customer: true, adminCreated: true },
     });
   },

@@ -111,8 +111,7 @@ export default function BookingTable({
               <tr>
                 <td
                   colSpan={
-                    9 +
-                    (activeFilter === "checkinPending" ? 1 : 0) +
+                    10 +
                     (role === 0 ? 2 : 0)
                   }
                   className="text-center py-4 text-muted"

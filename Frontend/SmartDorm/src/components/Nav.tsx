@@ -285,16 +285,18 @@ export default function Nav({
             )}
           </div>
 
-          <button
-            onClick={() => navigate("/admin/manage")}
-            className={`btn text-start ${
-              location.pathname.startsWith("/admin/manage")
-                ? "btn-light text-primary fw-bold"
-                : "btn-outline-light"
-            }`}
-          >
-            👥 จัดการสมาชิก
-          </button>
+          {role === 0 && (
+            <button
+              onClick={() => navigate("/admin/manage")}
+              className={`btn text-start ${
+                location.pathname.startsWith("/admin/manage")
+                  ? "btn-light text-primary fw-bold"
+                  : "btn-outline-light"
+              }`}
+            >
+              👥 จัดการสมาชิก
+            </button>
+          )}
 
           {/* ลูกค้า */}
           <button
@@ -458,16 +460,18 @@ export default function Nav({
                   👤 ข้อมูลลูกค้า
                 </button>
 
-                <button
-                  onClick={() => navigate("/admin/manage")}
-                  className={`btn text-start ${
-                    location.pathname.startsWith("/admin/manage")
-                      ? "btn-light text-primary fw-bold"
-                      : "btn-outline-light"
-                  }`}
-                >
-                  👥 จัดการสมาชิก
-                </button>
+                {role === 0 && (
+                  <button
+                    onClick={() => navigate("/admin/manage")}
+                    className={`btn text-start ${
+                      location.pathname.startsWith("/admin/manage")
+                        ? "btn-light text-primary fw-bold"
+                        : "btn-outline-light"
+                    }`}
+                  >
+                    👥 จัดการสมาชิก
+                  </button>
+                )}
 
                 {/* รวมลิงก์ */}
                 <button

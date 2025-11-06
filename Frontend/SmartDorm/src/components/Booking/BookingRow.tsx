@@ -58,15 +58,18 @@ export default function BookingRow({
     if (result.isConfirmed) {
       onCheckin?.(booking.bookingId);
       setShowCheckinModal(false);
+      Swal.fire({
+        icon: "success",
+        title: "เช็คอินสำเร็จแล้ว!",
+        timer: 1500,
+        showConfirmButton: false,
+      });
     }
   };
 
-  const canCheckin =
-    booking.approveStatus === 1 &&
-    canManage &&
-    new Date() >= new Date(booking.checkin || "");
-
-  const isCheckinManageable = booking.approveStatus === 1 && canManage;
+  const now = new Date();
+  const checkinDate = new Date(booking.checkin || "");
+  const hasReachedCheckinDay = now >= checkinDate;
 
   return (
     <>
@@ -79,31 +82,34 @@ export default function BookingRow({
         <td>{formatThaiDate(booking.createdAt)}</td>
         <td>{formatThaiDate(booking.checkin)}</td>
 
-        {/* ✅ วันเข้าพักจริง: role === 0 หรือ 1 เห็นปุ่มจัดการ */}
-        {activeFilter === 'checkinPending' && (
-          <td>
-            {booking.actualCheckin ? (
-              <span className="text-success fw-semibold">
-                {formatThaiDate(booking.actualCheckin)}
-              </span>
-            ) : isCheckinManageable ? (
+        {/* ✅ วันเข้าพักจริง */}
+        <td>
+          {booking.actualCheckin ? (
+            <span className="text-success fw-semibold">
+              {formatThaiDate(booking.actualCheckin)}
+            </span>
+          ) : canManage && activeFilter === "checkinPending" ? (
+            hasReachedCheckinDay ? (
               <button
+                type="button"
                 className="btn btn-sm btn-warning fw-semibold"
                 onClick={() => setShowCheckinModal(true)}
-                disabled={!canCheckin}
               >
                 จัดการ
               </button>
             ) : (
-              <span className="text-muted">-</span>
-            )}
-          </td>
-        )}
+              "-"
+            )
+          ) : (
+            <span className="text-muted">-</span>
+          )}
+        </td>
 
         {/* ปุ่มดูสลิป */}
         <td>
           {booking.slipUrl ? (
             <button
+              type="button"
               className="btn btn-sm btn-outline-primary"
               onClick={() => setShowSlip(true)}
             >
@@ -114,7 +120,7 @@ export default function BookingRow({
           )}
         </td>
 
-        {/* ✅ ปุ่มจัดการการจอง: role === 0 หรือ 1 */}
+        {/* ✅ ปุ่มจัดการการจอง */}
         <td>
           {canManage ? (
             booking.approveStatus === 0 ? (
@@ -139,7 +145,7 @@ export default function BookingRow({
           )}
         </td>
 
-        {/* ✅ แก้ไข / ลบ เฉพาะ SuperAdmin */}
+        {/* ✅ เฉพาะ SuperAdmin เท่านั้น */}
         {isSuperAdmin && (
           <>
             <td>
@@ -147,6 +153,7 @@ export default function BookingRow({
             </td>
             <td>
               <button
+                type="button"
                 className="btn btn-sm fw-semibold text-white"
                 style={{
                   background: "linear-gradient(100deg, #ff0505, #f645c4)",
@@ -189,12 +196,14 @@ export default function BookingRow({
                 </div>
                 <div className="modal-footer justify-content-center">
                   <button
+                    type="button"
                     className="btn btn-success px-4"
                     onClick={handleConfirmCheckin}
                   >
                     มาเช็คอินแล้ว
                   </button>
                   <button
+                    type="button"
                     className="btn btn-secondary px-4"
                     onClick={() => setShowCheckinModal(false)}
                   >

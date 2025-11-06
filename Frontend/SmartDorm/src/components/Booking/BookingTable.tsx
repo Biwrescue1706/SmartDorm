@@ -69,11 +69,10 @@ export default function BookingTable({
               <th scope="col" style={{ width: "120%" }}>
                 วันที่แจ้งเข้าพัก
               </th>
-              {activeFilter === 'checkinPending' && (
-                <th scope="col" style={{ width: "120%" }}>
-                  วันเข้าพักจริง
-                </th>
-              )}
+
+              <th scope="col" style={{ width: "120%" }}>
+                วันเข้าพักจริง
+              </th>
               <th scope="col" style={{ width: "120%" }}>
                 สลิป
               </th>
@@ -110,7 +109,14 @@ export default function BookingTable({
               ))
             ) : (
               <tr>
-                <td colSpan={9 + (activeFilter === 'checkinPending' ? 1 : 0) + (role === 0 ? 2 : 0)} className="text-center py-4 text-muted">
+                <td
+                  colSpan={
+                    9 +
+                    (activeFilter === "checkinPending" ? 1 : 0) +
+                    (role === 0 ? 2 : 0)
+                  }
+                  className="text-center py-4 text-muted"
+                >
                   ไม่พบข้อมูลการจอง
                 </td>
               </tr>

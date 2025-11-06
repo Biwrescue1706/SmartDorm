@@ -50,14 +50,15 @@ export default function Users() {
 
   const startIndex = (currentPage - 1) * rowsPerPage;
 
-  // ✅ โหลดข้อมูลลูกค้าทั้งหมด
+  // 📋 ดึงข้อมูลลูกค้าทั้งหมด
   const fetchUsers = async () => {
     try {
-      setLoading(true); // ✅ เริ่มโหลดก่อน
+      setLoading(true);
+      setSearch(""); // ✅ เคลียร์ช่องค้นหาเมื่อกดโหลดใหม่
       const res = await axios.get(`${API_BASE}/user/getall`);
       let allUsers: Customer[] = res.data.users || [];
 
-      // รวม bookings ที่ซ้ำชื่อ
+      // 🔹 รวม LINE ซ้ำ
       const merged: Record<string, Customer & { bookings: BookingDetail[] }> =
         {};
       allUsers.forEach((u) => {
@@ -68,15 +69,17 @@ export default function Users() {
         }
       });
 
-      // เรียงตามชื่อ
       const sorted = Object.values(merged).sort((a, b) =>
         a.userName.localeCompare(b.userName, "th")
       );
+
       setUsers(sorted);
+      return sorted;
     } catch (err) {
       console.error("❌ โหลดข้อมูลลูกค้าไม่สำเร็จ:", err);
+      return null;
     } finally {
-      setLoading(false); // ✅ ปิดโหลดหลังเสร็จจริง
+      setLoading(false);
     }
   };
 
@@ -101,36 +104,34 @@ export default function Users() {
     }
   };
 
-  // ✅ ลบประวัติการจอง
-  const handleDeleteBooking = async (bookingId: string, roomNumber?: string) => {
+  // ❌ ลบลูกค้า
+  const handleDeleteCustomer = async () => {
+    if (!selectedUser) return;
+    const { customerId, userName } = selectedUser;
     const result = await Swal.fire({
-      title: `ยืนยันการลบ`,
-      text: `คุณต้องการลบประวัติการจองนี้ (${
-        roomNumber ? `ห้อง ${roomNumber}` : "การจองนี้"
-      }) ใช่หรือไม่?`,
+      title: `ยืนยันการลบลูกค้า`,
+      text: `คุณต้องการลบลูกค้า '${userName}' ใช่หรือไม่? การกระทำนี้จะลบข้อมูลทั้งหมดของลูกค้าและไม่สามารถย้อนกลับได้`,
       icon: "warning",
       showCancelButton: true,
       confirmButtonText: "ใช่, ลบเลย",
       cancelButtonText: "ยกเลิก",
       confirmButtonColor: "#e74c3c",
     });
-
     if (!result.isConfirmed) return;
-
     try {
-      await axios.delete(`${API_BASE}/booking/${bookingId}`);
+      await axios.delete(`${API_BASE}/user/${customerId}`);
       await Swal.fire({
         title: "สำเร็จ",
-        text: "ลบประวัติการจองเรียบร้อยแล้ว",
+        text: `ลบลูกค้า ${userName} เรียบร้อยแล้ว`,
         icon: "success",
         timer: 1500,
         showConfirmButton: false,
       });
-      await fetchUsers();
-      setShowDialog(false); // ✅ ปิด Dialog หลังลบเสร็จ
+      setUsers((prevUsers) => prevUsers.filter((u) => u.customerId !== customerId));
+      setShowDialog(false);
     } catch (err) {
-      console.error("❌ ลบประวัติการจองไม่สำเร็จ:", err);
-      Swal.fire("เกิดข้อผิดพลาด", "ไม่สามารถลบประวัติการจองได้", "error");
+      console.error(`❌ ลบลูกค้า ${userName} ไม่สำเร็จ:`, err);
+      Swal.fire("เกิดข้อผิดพลาด", "ไม่สามารถลบลูกค้าได้", "error");
     }
   };
 
@@ -146,14 +147,11 @@ export default function Users() {
   return (
     <>
       <Nav message={message} role={role} onLogout={handleLogout} />
-
       <main className="main-content flex-grow-1 px-3 py-4 mt-6 mt-lg-5">
         <div className="mx-auto container-max">
           <h3 className="fw-bold mb-4 text-center">
             📋 รายชื่อลูกค้าทั้งหมด ({users.length} คน)
           </h3>
-
-          {/* 🔍 กล่องค้นหา */}
           <div className="d-flex justify-content-center mb-3">
             <input
               type="text"
@@ -181,8 +179,6 @@ export default function Users() {
               โหลดใหม่
             </button>
           </div>
-
-          {/* 📊 ตารางข้อมูล */}
           <div className="responsive-table" style={{ overflowX: "auto" }}>
             <table
               className="table table-sm table-striped align-middle text-center"
@@ -193,6 +189,7 @@ export default function Users() {
                   <th>#</th>
                   <th>LINE</th>
                   <th>ดูประวัติ</th>
+                  <th>ลบ</th>
                 </tr>
               </thead>
               <tbody>
@@ -212,11 +209,21 @@ export default function Users() {
                           ดูประวัติ
                         </button>
                       </td>
+                      <td>
+                        {role === 0 && (
+                          <button
+                            className="btn btn-sm btn-danger"
+                            onClick={() => handleDeleteCustomer()}
+                          >
+                            🗑️
+                          </button>
+                        )}
+                      </td>
                     </tr>
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={3} className="text-center text-muted py-4">
+                    <td colSpan={4} className="text-center text-muted py-4">
                       ไม่พบข้อมูลลูกค้า
                     </td>
                   </tr>
@@ -224,8 +231,6 @@ export default function Users() {
               </tbody>
             </table>
           </div>
-
-          {/* ✅ Pagination */}
           <Pagination
             currentPage={currentPage}
             totalItems={users.length}
@@ -238,8 +243,6 @@ export default function Users() {
           />
         </div>
       </main>
-
-      {/* ✅ Dialog ประวัติการจอง */}
       <Dialog.Root open={showDialog} onOpenChange={setShowDialog}>
         <Dialog.Portal>
           <Dialog.Overlay
@@ -259,15 +262,12 @@ export default function Users() {
             <Dialog.Title className="fw-bold fs-5 mb-3 text-center">
               รายละเอียดของ {selectedUser?.userName}
             </Dialog.Title>
-
             <Dialog.Description className="text-muted text-center mb-3">
               ดูข้อมูลลูกค้าและประวัติการจองห้องพัก
             </Dialog.Description>
-
             <p className="text-start mx-3 text-primary mb-3">
               {formatThaiDate(selectedUser?.createdAt)}
             </p>
-
             {selectedUser?.bookings?.length ? (
               <div className="d-flex flex-column gap-3">
                 {[...selectedUser.bookings]
@@ -304,26 +304,21 @@ export default function Users() {
                           {formatThaiDate(b.actualCheckin)}
                         </p>
                       </div>
-                      <div className="text-center mt-3">
-                        {role === 0 && (
-                          <button
-                            className="btn btn-sm btn-danger"
-                            onClick={() =>
-                              handleDeleteBooking(b.bookingId, b.room?.number)
-                            }
-                          >
-                            🗑️
-                          </button>
-                        )}
-                      </div>
                     </div>
                   ))}
               </div>
             ) : (
               <p className="text-muted text-center">ไม่มีประวัติการจอง</p>
             )}
-
-            <div className="text-center mt-4">
+            <div className="d-flex justify-content-center gap-2 mt-4">
+              {role === 0 && (
+                <button
+                  className="btn btn-danger px-4"
+                  onClick={handleDeleteCustomer}
+                >
+                  ลบลูกค้า
+                </button>
+              )}
               <Dialog.Close asChild>
                 <button className="btn btn-secondary px-4">ปิด</button>
               </Dialog.Close>

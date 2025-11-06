@@ -13,11 +13,11 @@ interface Props {
 export default function EditBookingDialog({ booking, onSuccess }: Props) {
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({
-    ctitle: booking.customer.ctitle || "นาย",
-    cname: booking.customer.cname || "",
-    csurname: booking.customer.csurname || "",
-    cphone: booking.customer.cphone || "",
-    cmumId: booking.customer.cmumId || "",
+    ctitle: booking.ctitle || "นาย",
+    cname: booking.cname || "",
+    csurname: booking.csurname || "",
+    cphone: booking.cphone || "",
+    cmumId: booking.cmumId || "",
     approveStatus: booking.approveStatus ?? 0,
     checkinStatus: booking.checkinStatus ?? 0, // ✅ เพิ่ม
     checkoutStatus: booking.checkoutStatus ?? 0, // ✅ เพิ่ม

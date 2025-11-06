@@ -95,7 +95,9 @@ export const bookingRepository = {
 
   /* 🧹 ลบสลิป */
   async deleteSlip(url: string) {
-    const path = url.split("/smartdorm-slips/")[1];
-    if (path) await supabase.storage.from("smartdorm-slips").remove([path]);
+    const bucket = process.env.SUPABASE_BUCKET!;
+    const path = url.split(`/${bucket}/`)[1];
+    if (path) await supabase.storage.from(bucket).remove([path]);
   },
 };
+

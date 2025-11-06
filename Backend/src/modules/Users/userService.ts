@@ -3,7 +3,7 @@ import prisma from "../../prisma";
 import { userRepository } from "./userRepository";
 import { RegisterInput } from "./userModel";
 import { verifyLineToken } from "../../utils/verifyLineToken";
-import { supabase } from "../../utils/supabaseClient";
+import { bookingRepository } from "../Bookings/bookingRepository";
 
 export const userService = {
   // 🧩 สมัครหรืออัปเดตข้อมูลลูกค้า
@@ -90,7 +90,7 @@ export const userService = {
     return userRepository.searchCustomers(keyword);
   },
 
- // ❌ ลบลูกค้า (และอัปเดตห้องให้ว่าง)
+  // ❌ ลบลูกค้า (และอัปเดตห้องให้ว่าง)
   async deleteUser(customerId: string) {
     return prisma.$transaction(async (tx) => {
       // ✅ ดึงรายการ booking ที่มี slipUrl
@@ -111,17 +111,16 @@ export const userService = {
 
       // ✅ ลบรูป slip ทั้งหมดใน Supabase (ถ้ามี)
       for (const booking of bookingsWithSlip) {
-        if (!booking.slipUrl) continue;
-        try {
-          const path = booking.slipUrl.split("/storage/v1/object/public/")[1];
-          if (path) {
-            const bucket = path.split("/")[0];
-            const filePath = path.substring(bucket.length + 1);
-            await supabase.storage.from(bucket).remove([filePath]);
-            console.log("🧹 ลบรูปออกจาก Supabase:", filePath);
+        if (booking.slipUrl) {
+          try {
+            await bookingRepository.deleteSlip(booking.slipUrl);
+            console.log(`🧹 Deleted slip from Supabase: ${booking.slipUrl}`);
+          } catch (err) {
+            console.error(
+              `⚠️ Failed to delete slip from Supabase: ${booking.slipUrl}`,
+              err
+            );
           }
-        } catch (err) {
-          console.error("⚠️ ลบรูปจาก Supabase ไม่สำเร็จ:", err);
         }
       }
 

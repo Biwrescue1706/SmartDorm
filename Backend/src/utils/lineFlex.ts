@@ -25,13 +25,32 @@ export async function sendFlexMessage(
       wrap: true,
     },
     { type: "separator", margin: "md" },
-    ...fields.map((f) => ({
-      type: "text",
-      text: `${f.label} ${f.value}`,
-      color: f.color || "#333333",
-      wrap: true,
-      margin: "sm",
-    })),
+    ...fields.map((f) => {
+      const textContent = `${f.label}: ${f.value}`;
+      return {
+        type: "box",
+        layout: "horizontal",
+        margin: "md",
+        contents: [
+          {
+            type: "text",
+            text: f.label,
+            flex: 2,
+            size: "sm",
+            color: "#555555",
+          },
+          {
+            type: "text",
+            text: f.value,
+            flex: 3,
+            size: "sm",
+            align: "start",
+            color: f.color || "#111111",
+            wrap: true,
+          },
+        ],
+      };
+    }),
   ];
 
   const flex = {

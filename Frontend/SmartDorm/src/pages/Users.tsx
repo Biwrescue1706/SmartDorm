@@ -156,11 +156,12 @@ export default function Users() {
         adminUsername={adminUsername}
       />
 
-      <main className="main-content flex-grow-1 px-3 py-4 mt-6 mt-lg-5">
+      <main className="main-content flex-grow-1 px-1 py-2 mt-6 mt-lg-6">
         <div className="mx-auto container-max">
-          <h3 className="fw-bold mb-4 text-center">
-            📋 รายชื่อลูกค้าทั้งหมด ({users.length} คน)
-          </h3>
+          <div className="d-flex justify-content-center align-items-center mb-3 mt-3">
+            <h2 className="fw-bold text-dark">📋 รายชื่อลูกค้าทั้งหมด ({users.length} คน)</h2>
+          </div>
+
           <div className="d-flex justify-content-center mb-3">
             <input
               type="text"

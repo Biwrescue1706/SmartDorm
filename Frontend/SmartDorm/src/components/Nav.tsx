@@ -237,7 +237,7 @@ export default function Nav({
                     </span>
                   )}
                 </button>
-                {/* <button
+                <button
                   onClick={() => navigate("/checkout")}
                   className={`btn text-start ${
                     location.pathname.startsWith("/checkout")
@@ -246,13 +246,13 @@ export default function Nav({
                   }`}
                 >
                   🔄 หน้าคืน
-                </button> */}
+                </button>
               </div>
             )}
           </div>
 
           {/* บิล */}
-          {/* <div>
+          <div>
             <button
               type="button"
               onClick={() => toggleDropdown("bill")}
@@ -285,7 +285,7 @@ export default function Nav({
                 </button>
               </div>
             )}
-          </div> */}
+          </div>
 
           {role === 0 && (
             <button
@@ -301,7 +301,7 @@ export default function Nav({
           )}
 
           {/* ลูกค้า */}
-          {/* <button
+          <button
             onClick={() => navigate("/users")}
             className={`btn text-start ${
               location.pathname.startsWith("/users")
@@ -310,10 +310,10 @@ export default function Nav({
             }`}
           >
             👤 ข้อมูลลูกค้า
-          </button> */}
+          </button>
 
           {/* รวมลิงก์ LIFF */}
-          {/* <button
+          <button
             onClick={() => navigate("/links")}
             className={`btn text-start ${
               location.pathname.startsWith("/links")
@@ -322,7 +322,7 @@ export default function Nav({
             }`}
           >
             🔗 รวมลิงก์
-          </button> */}
+          </button>
         </div>
       </div>
 
@@ -462,7 +462,7 @@ export default function Nav({
                 )}
 
                 {/* รวมลิงก์ */}
-                {/* <button
+                <button
                   onClick={() => {
                     navigate("/links");
                     setMenuOpen(false);
@@ -474,7 +474,7 @@ export default function Nav({
                   }`}
                 >
                   🔗 รวมลิงก์
-                </button> */}
+                </button>
               </div>
             </div>
           </div>

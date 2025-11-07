@@ -79,7 +79,7 @@ export const paymentService = {
           { label: "เบอร์โทร", value: bill.booking.cphone ?? "-" },
           { label: "ยอดชำระ", value: `${bill.total.toLocaleString()} บาท` },
           { label: "วันที่ชำระ", value: formatThaiDate(payment.createdAt) },
-          { label: "สลิป", value: slipUrl ?? "-" },
+          { label: "สลิป", value: "[ดูสลิป](" + slipUrl + ")" },
         ],
         "🔗 เปิดในระบบ Admin",
         adminUrl

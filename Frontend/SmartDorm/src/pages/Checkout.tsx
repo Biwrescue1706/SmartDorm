@@ -25,7 +25,7 @@ export default function Checkout() {
   >("all");
   const [editingBooking, setEditingBooking] = useState<Booking | null>(null);
 
-  // ✅ ฟิลเตอร์ข้อมูลตามสถานะการคืน
+  //  ฟิลเตอร์ข้อมูลตามสถานะการคืน
   const filteredCheckouts = checkouts.filter((b) => {
     if (filter === "pending") return b.returnStatus === 0;
     if (filter === "approved") return b.returnStatus === 1;
@@ -56,7 +56,7 @@ export default function Checkout() {
               onClick={fetchCheckouts}
               disabled={loading}
             >
-              {loading ? "กำลังโหลด..." : "โหลดข้อมูลใหม่"}
+              {loading ? "กำลังโหลด..." : "รีเฟรชข้อมูล"}
             </button>
           </div>
 

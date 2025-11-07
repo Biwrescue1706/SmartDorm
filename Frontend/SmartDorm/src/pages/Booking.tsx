@@ -63,14 +63,14 @@ export default function Booking() {
               onClick={fetchBookings}
               disabled={loading}
             >
-              {loading ? "กำลังโหลด..." : "โหลดข้อมูล"}
+              {loading ? "กำลังโหลด..." : "รีเฟรชข้อมูล"}
             </button>
           </div>
           <div className="py-1 text-center text-while mb-3">
             <BookingFilter
               active={active}
               onChange={handleFilter}
-              bookings={bookings} // ✅ ส่งข้อมูลทั้งหมดมาเพื่อคำนวณจำนวน
+              bookings={bookings} //  ส่งข้อมูลทั้งหมดมาเพื่อคำนวณจำนวน
             />
           </div>
 

@@ -155,7 +155,7 @@ export default function Users() {
         adminName={adminName}
         adminUsername={adminUsername}
       />
-      
+
       <main className="main-content flex-grow-1 px-3 py-4 mt-6 mt-lg-5">
         <div className="mx-auto container-max">
           <h3 className="fw-bold mb-4 text-center">
@@ -320,14 +320,6 @@ export default function Users() {
               <p className="text-muted text-center">ไม่มีประวัติการจอง</p>
             )}
             <div className="d-flex justify-content-center gap-2 mt-4">
-              {role === 0 && (
-                <button
-                  className="btn btn-danger px-4"
-                  onClick={handleDeleteCustomer}
-                >
-                  ลบลูกค้า
-                </button>
-              )}
               <Dialog.Close asChild>
                 <button className="btn btn-secondary px-4">ปิด</button>
               </Dialog.Close>

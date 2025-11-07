@@ -10,14 +10,14 @@ import "bootstrap/dist/css/bootstrap.min.css";
 export default function Bills() {
   const { message, handleLogout, role, adminName, adminUsername } = useAuth();
 
-  // ✅ Hook โหลดข้อมูลทั้งหมด
+  //  Hook โหลดข้อมูลทั้งหมด
   const { rooms, bookings, existingBills, loading, reloadAll, } =
     useCreateBill();
 
   const [openDialog, setOpenDialog] = useState(false);
   const [selectedRoom, setSelectedRoom] = useState<any>(null);
 
-  // ✅ Pagination
+  //  Pagination
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
@@ -46,20 +46,20 @@ export default function Bills() {
     }`;
   };
 
-  // ✅ ตรวจว่าสามารถออกบิลได้ (วันที่ 15–31 เท่านั้น)
+  //  ตรวจว่าสามารถออกบิลได้ (วันที่ 15–31 เท่านั้น)
   useEffect(() => {
     const now = new Date();
     setTodayStr(formatThaiDate(now.toISOString()));
     setCanCreateBill(now.getDate() >= 1 && now.getDate() <= 31);
   }, []);
 
-  // ✅ ฟังก์ชันเปิด Dialog
+  //  ฟังก์ชันเปิด Dialog
   const handleOpenDialog = (room: any) => {
     setSelectedRoom(room);
     setOpenDialog(true);
   };
 
-  // ✅ Pagination Logic
+  //  Pagination Logic
   const totalItems = rooms.length;
   const startIndex = (currentPage - 1) * rowsPerPage;
   const paginatedRooms = rooms.slice(startIndex, startIndex + rowsPerPage);
@@ -116,17 +116,19 @@ export default function Bills() {
                 onCreateBill={handleOpenDialog}
               />
 
-              {/* ✅ Pagination ด้านล่าง */}
-              <Pagination
-                currentPage={currentPage}
-                totalItems={totalItems}
-                rowsPerPage={rowsPerPage}
-                onPageChange={setCurrentPage}
-                onRowsPerPageChange={(rows) => {
-                  setRowsPerPage(rows);
-                  setCurrentPage(1); // กลับไปหน้าแรกเมื่อเปลี่ยนจำนวนแถว
-                }}
-              />
+              {/*  Pagination ด้านล่าง */}
+              {!openDialog && (
+                <Pagination
+                  currentPage={currentPage}
+                  totalItems={totalItems}
+                  rowsPerPage={rowsPerPage}
+                  onPageChange={setCurrentPage}
+                  onRowsPerPageChange={(rows) => {
+                    setRowsPerPage(rows);
+                    setCurrentPage(1); // กลับไปหน้าแรกเมื่อเปลี่ยนจำนวนแถว
+                  }}
+                />
+              )}
             </>
           )}
         </div>

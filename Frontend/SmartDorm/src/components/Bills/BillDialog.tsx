@@ -26,7 +26,7 @@ export default function BillDialog({
   });
   const [loading, setLoading] = useState(false);
 
-  // ✅ โหลดบิลล่าสุดของห้อง เพื่อเติมค่าหน่วยก่อนหน้าอัตโนมัติ
+  //  โหลดบิลล่าสุดของห้อง เพื่อเติมค่าหน่วยก่อนหน้าอัตโนมัติ
   useEffect(() => {
     if (!room) return;
 
@@ -59,16 +59,16 @@ export default function BillDialog({
     loadPrevBill();
   }, [room]);
 
-  // ✅ ฟังก์ชันเปลี่ยนค่า input (แปลง number ทันที)
+  //  ฟังก์ชันเปลี่ยนค่า input (แปลง number ทันที)
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value, type } = e.target;
     setForm({
       ...form,
-      [id]: type === "number" ? Number(value) : value, // ✅ convert เป็น number ถ้าเป็น input[type=number]
+      [id]: type === "number" ? Number(value) : value, //  convert เป็น number ถ้าเป็น input[type=number]
     });
   };
 
-  // ✅ ฟังก์ชันกดยืนยันสร้างบิล
+  //  ฟังก์ชันกดยืนยันสร้างบิล
   const handleSubmit = async () => {
     if (!room) return;
     setLoading(true);
@@ -91,7 +91,7 @@ export default function BillDialog({
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "ไม่สามารถสร้างบิลได้");
 
-      alert("✅ สร้างบิลสำเร็จ");
+      alert(" สร้างบิลสำเร็จ");
       await reloadExistingBills();
       onClose();
     } catch (err: any) {
@@ -106,80 +106,135 @@ export default function BillDialog({
       <Dialog.Portal>
         <Dialog.Overlay className="position-fixed top-0 start-0 w-100 h-100 bg-dark bg-opacity-50" />
         <Dialog.Content
-          className="position-fixed top-50 start-50 translate-middle card shadow-lg border-0 rounded-4 p-4"
-          style={{ width: "400px" }}
+          className="position-fixed top-50 start-50 translate-middle bg-white rounded-4 shadow-lg"
+          style={{
+            width: "90%",
+            maxWidth: "460px",
+            maxHeight: "85vh",
+            overflowY: "auto",
+            zIndex: 1100,
+          }}
         >
-          <Dialog.Title className="fw-bold text-center mb-3">
-            ออกบิลห้อง {room?.number}
+          <Dialog.Title asChild>
+            <h5
+              className="text-center text-white fw-bold py-2 mb-3 rounded-top-4"
+              style={{
+                background: "linear-gradient(135deg, #6a11cb, #2575fc)",
+                fontSize: "1rem",
+                position: "sticky",
+                top: 0,
+                zIndex: 5,
+              }}
+            >
+              ออกบิลห้อง {room?.number}
+            </h5>
           </Dialog.Title>
+          <Dialog.Description asChild>
+            <p className="visually-hidden">แบบฟอร์มสำหรับออกบิลห้องพัก</p>
+          </Dialog.Description>
 
-          <div className="mb-2">
-            <label className="form-label">เดือนที่ออกบิล</label>
-            <input
-              id="month"
-              type="date"
-              className="form-control"
-              value={form.month}
-              onChange={handleChange}
-            />
+          <div className="px-4 pb-3">
+            <div className="mb-3">
+              <label htmlFor="month" className="form-label fw-semibold mb-1">
+                เดือนที่ออกบิล
+              </label>
+              <input
+                id="month"
+                type="date"
+                className="form-control form-control-lg rounded-3 shadow-sm"
+                value={form.month}
+                onChange={handleChange}
+              />
+            </div>
+
+            <div className="row mb-4">
+              <div>
+                <label
+                  htmlFor="wBefore"
+                  className="form-label fw-semibold mb-1"
+                >
+                  หน่วยน้ำก่อนหน้า
+                </label>
+                <input
+                  id="wBefore"
+                  type="number"
+                  className="form-control form-control-lg rounded-3 shadow-sm"
+                  value={form.wBefore}
+                  onChange={handleChange}
+                />
+              </div>
+            </div>
+
+            <div className="row mb-4">
+              <div>
+                <label htmlFor="wAfter" className="form-label fw-semibold mb-1">
+                  หน่วยน้ำปัจจุบัน
+                </label>
+                <input
+                  id="wAfter"
+                  type="number"
+                  className="form-control form-control-lg rounded-3 shadow-sm"
+                  value={form.wAfter}
+                  onChange={handleChange}
+                />
+              </div>
+            </div>
+
+            <div className="row mb-4">
+              <div>
+                <label
+                  htmlFor="eBefore"
+                  className="form-label fw-semibold mb-1"
+                >
+                  หน่วยไฟก่อนหน้า
+                </label>
+                <input
+                  id="eBefore"
+                  type="number"
+                  className="form-control form-control-lg rounded-3 shadow-sm"
+                  value={form.eBefore}
+                  onChange={handleChange}
+                />
+              </div>
+            </div>
+            <div className="row mb-4">
+              <div>
+                <label htmlFor="eAfter" className="form-label fw-semibold mb-1">
+                  หน่วยไฟปัจจุบัน
+                </label>
+                <input
+                  id="eAfter"
+                  type="number"
+                  className="form-control form-control-lg rounded-3 shadow-sm"
+                  value={form.eAfter}
+                  onChange={handleChange}
+                />
+              </div>
+            </div>
           </div>
 
-          <div className="row">
-            <div className="col-6 mb-2">
-              <label className="form-label">หน่วยน้ำก่อนหน้า</label>
-              <input
-                id="wBefore"
-                type="number"
-                className="form-control"
-                value={form.wBefore}
-                onChange={handleChange}
-              />
-            </div>
-            <div className="col-6 mb-2">
-              <label className="form-label">หน่วยน้ำปัจจุบัน</label>
-              <input
-                id="wAfter"
-                type="number"
-                className="form-control"
-                value={form.wAfter}
-                onChange={handleChange}
-              />
-            </div>
-          </div>
-
-          <div className="row">
-            <div className="col-6 mb-2">
-              <label className="form-label">หน่วยไฟก่อนหน้า</label>
-              <input
-                id="eBefore"
-                type="number"
-                className="form-control"
-                value={form.eBefore}
-                onChange={handleChange}
-              />
-            </div>
-            <div className="col-6 mb-2">
-              <label className="form-label">หน่วยไฟปัจจุบัน</label>
-              <input
-                id="eAfter"
-                type="number"
-                className="form-control"
-                value={form.eAfter}
-                onChange={handleChange}
-              />
-            </div>
-          </div>
-
-          <div className="mt-3 d-flex justify-content-between">
+          <div className="d-flex justify-content-between p-3 border-top">
             <Dialog.Close asChild>
-              <button className="btn btn-secondary btn-sm px-3">ยกเลิก</button>
+              <button
+                className="btn text-white fw-bold mx-4 px-4"
+                style={{
+                  background: "linear-gradient(135deg, #ff512f, #dd2476)",
+                  border: "none",
+                }}
+              >
+                ยกเลิก
+              </button>
             </Dialog.Close>
             <button
-              className="btn btn-success btn-sm px-3"
+              className="btn text-white fw-bold mx-4 px-4"
+              style={{
+                background: "linear-gradient(135deg, #11998e, #38ef7d)",
+                border: "none",
+              }}
               onClick={handleSubmit}
               disabled={loading}
             >
-              {loading ? "กำลังสร้าง..." : "ยืนยันออกบิล"}
+              {loading ? "กำลังสร้าง..." : "ออกบิล"}
             </button>
           </div>
         </Dialog.Content>

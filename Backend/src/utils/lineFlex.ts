@@ -91,73 +91,10 @@ export async function sendFlexMessage(
     altText: title,
     contents: {
       type: "bubble",
-      hero: {
-        type: "box",
-        layout: "horizontal",
-        backgroundColor: "#ffffff",
-        contents: [
-          {
-            type: "image",
-            url: "https://smartdorm-admin.biwbong.shop/assets/SmartDorm.png", // โลโก้ SmartDorm
-            size: "xs",
-            aspectMode: "fit",
-            align: "start",
-          },
-          {
-            type: "text",
-            text: "🏫 SmartDorm 🎉",
-            weight: "bold",
-            color: "#000000ff",
-            size: "md",
-            gravity: "center",
-            margin: "center",
-            wrap: true,
-          },
-        ],
-        paddingAll: "12px",
-      },
       body: {
         type: "box",
         layout: "vertical",
         contents: bodyContents,
-      },
-      footer: {
-        type: "box",
-        layout: "vertical",
-        contents: [
-          {
-            type: "button",
-            style: "primary",
-            color: "#20c997",
-            height: "sm",
-            action: {
-              type: "uri",
-              label: buttonLabel,
-              uri: buttonUrl,
-            },
-          },
-          {
-            type: "text",
-            text: "ขอบคุณที่ใช้บริการ 🏫 SmartDorm 🎉",
-            align: "center",
-            size: "sm",
-            color: "#20c997",
-            weight: "bold",
-            margin: "md",
-            wrap: true,
-          },
-          {
-            type: "text",
-            text: "SmartDorm © 2025",
-            align: "center",
-            size: "xs",
-            color: "#000000ff",
-            margin: "sm",
-          },
-        ],
-      },
-      styles: {
-        footer: { separator: true },
       },
     },
   };

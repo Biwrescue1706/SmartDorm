@@ -129,9 +129,10 @@ export default function DashboardRevenue({ bills, bookings }: Props) {
 
   return (
     <div className="mt-4">
-      <h4 className="fw-bold mb-3 text-center">
-        💰 สรุปรายรับรวม ( {displayTitle} )
-      </h4>
+      <div>
+        <h1 className="fw-bold mb-3 text-center">💰 สรุปรายรับรวม</h1>
+        <h4 className="fw-bold mb-3 text-center">( {displayTitle} )</h4>
+      </div>
 
       {/* ฟิลเตอร์เลือก ปี / เดือน */}
       <div className="d-flex flex-wrap justify-content-center gap-2 mb-3">
@@ -168,20 +169,20 @@ export default function DashboardRevenue({ bills, bookings }: Props) {
 
       {/* การ์ดยอดรวม */}
       <div className="row g-2 justify-content-center mb-3">
-        <div className="col-5 col-md-2">
+        <div className="col-4 col-md-2 mx-2 col-sm-4 col-lg-2">
           <RevenueCard title="ค่าเช่า" amount={totalRent} color="#0077b6" />
         </div>
-        <div className="col-5 col-md-2">
+        <div className="col-4 col-md-2 mx-2 col-sm-4 col-lg-2">
           <RevenueCard
             title="ค่าประกัน"
             amount={totalDeposit}
             color="#8338ec"
           />
         </div>
-        <div className="col-5 col-md-2">
+        <div className="col-4 col-md-2 mx-2 col-sm-4 col-lg-2">
           <RevenueCard title="ค่าจอง" amount={totalBooking} color="#ffb703" />
         </div>
-        <div className="col-5 col-md-2">
+        <div className="col-4 col-md-2 mx-2 col-sm-4 col-lg-2">
           <RevenueCard title="รายรับบิล" amount={totalAll} color="#00b4d8" />
         </div>
       </div>
@@ -194,8 +195,8 @@ export default function DashboardRevenue({ bills, bookings }: Props) {
         >
           <thead className="table-dark">
             <tr>
-              <th style={{ width: "2%" }}>เดือน</th>
-              <th style={{ width: "2%" }}>รายรับรวม (บาท)</th>
+              <th>เดือน</th>
+              <th>รายรับรวม (บาท)</th>
             </tr>
           </thead>
           <tbody>
@@ -204,19 +205,19 @@ export default function DashboardRevenue({ bills, bookings }: Props) {
                 .sort((a, b) => (a.sortKey > b.sortKey ? -1 : 1))
                 .map((m) => (
                   <tr key={m.sortKey}>
-                    <td>{m.month}</td>
+                    <td>{m.month }</td>
                     <td>{m.total.toLocaleString("th-TH")}</td>
                   </tr>
                 ))
             ) : (
               <tr>
                 <td colSpan={2} className="text-muted">
-                  ไม่มีข้อมูลรายรับของ{" "}
+                  ไม่มีข้อมูลรายรับของ {" "}
                   {selectedYear && selectedMonth
                     ? `${selectedMonthName} ${selectedYearTH}`
                     : selectedYear
                     ? `ปี ${selectedYearTH}`
-                    : "ช่วงที่เลือก"}
+                    : `ช่วงที่เลือก `}
                 </td>
               </tr>
             )}

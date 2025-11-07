@@ -19,7 +19,7 @@ export default function DashboardSummary({
     <div className="container my-3">
       {/*  ปรับ grid ให้การ์ดขนาดเล็กและจัดแน่นขึ้น */}
       <div className="row g-2 justify-content-center">
-        <div className="col-5 col-sm-3 col-md-2 col-lg-2">
+        <div className="col-4 col-md-2 mx-2 col-sm-4 col-lg-2">
           <DashboardCard
             title="ห้องทั้งหมด"
             count={totalRooms}
@@ -28,7 +28,7 @@ export default function DashboardSummary({
           />
         </div>
 
-        <div className="col-3 col-sm-3 col-md-2 col-lg-2">
+        <div className="col-4 col-md-2 mx-2 col-sm-4 col-lg-2">
           <DashboardCard
             title="ห้องว่าง"
             count={availableRooms}
@@ -37,7 +37,7 @@ export default function DashboardSummary({
           />
         </div>
 
-        <div className="col-3 col-sm-3 col-md-2 col-lg-2">
+        <div className="col-4 col-md-2 mx-2 col-sm-4 col-lg-2">
           <DashboardCard
             title="ห้องเต็ม"
             count={bookedRooms}
@@ -46,7 +46,7 @@ export default function DashboardSummary({
           />
         </div>
 
-        <div className="col-3 col-sm-3 col-md-2 col-lg-2">
+        <div className="col-4 col-md-2 mx-2 col-sm-4 col-lg-2">
           <DashboardCard
             title="คำขอจองห้อง"
             count={pendingBookings}
@@ -55,7 +55,7 @@ export default function DashboardSummary({
           />
         </div>
 
-        <div className="col-3 col-sm-3 col-md-2 col-lg-2">
+        <div className="col-4 col-md-2 mx-2 col-sm-4 col-lg-2">
           <DashboardCard
             title="คำขอคืนห้อง"
             count={pendingCheckouts}

@@ -18,6 +18,7 @@ export function useCheckouts() {
   //  ดึงข้อมูลทั้งหมด
   const fetchCheckouts = async () => {
     try {
+      setLoading(true);
       const res = await fetch(`${API_BASE}${GetAllCheckout}`, {
         method: "GET",
         credentials: "include",

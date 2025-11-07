@@ -57,6 +57,15 @@ export default function Booking() {
       <main className="main-content flex-grow-1 px-1 py-2 mt-6 mt-lg-7">
         <div className="mx-auto container-max">
           <h2 className="py-1 text-center text-while mb-3">จัดการการจอง</h2>
+          <div className="text-center mb-3">
+            <button
+              className="btn btn-sm btn-outline-primary"
+              onClick={fetchBookings}
+              disabled={loading}
+            >
+              {loading ? "กำลังโหลด..." : "โหลดข้อมูล"}
+            </button>
+          </div>
           <div className="py-1 text-center text-while mb-3">
             <BookingFilter
               active={active}

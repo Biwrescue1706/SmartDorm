@@ -13,6 +13,7 @@ export default function Checkout() {
     checkouts,
     loading,
     approveCheckout,
+    fetchCheckouts,
     rejectCheckout,
     deleteCheckout,
     editCheckout,
@@ -20,7 +21,7 @@ export default function Checkout() {
   } = useCheckouts();
 
   const [filter, setFilter] = useState<
-    "all" | "pending" | "approved" | "rejected"
+    "all" | "pending" | "approved" | "rejected" | "waitingCheckout"
   >("all");
   const [editingBooking, setEditingBooking] = useState<Booking | null>(null);
 
@@ -29,13 +30,13 @@ export default function Checkout() {
     if (filter === "pending") return b.returnStatus === 0;
     if (filter === "approved") return b.returnStatus === 1;
     if (filter === "rejected") return b.returnStatus === 2;
+    if (filter === "waitingCheckout") return b.checkoutStatus === 1 && !b.actualCheckout;
     return true;
   });
 
   return (
     <div className="d-flex min-vh-100 bg-white">
       {/* 🔹 Navbar */}
-      return (
       <Nav
         message={message}
         onLogout={handleLogout}
@@ -43,23 +44,24 @@ export default function Checkout() {
         adminName={adminName}
         adminUsername={adminUsername}
       />
-      );
       {/* 🔹 Main Content */}
-      <main className="main-content flex-grow-1 px-1 py-2 mt-6 mt-lg-7">
+      <main className="main-content flex-grow-1 px-1 py-1 mt-6 mt-lg-7">
         <div className="mx-auto container-max">
-          <h2
-            className="mb-3 mt-2 py-2 text-center fw-bold text-white rounded shadow-sm"
-            style={{
-              background: "linear-gradient(100deg, #007bff, #00d4ff)",
-              boxShadow: "0 2px 6px rgba(0, 0, 0, 0.1)",
-              fontSize: "1.4rem",
-            }}
-          >
+          <h2 className="mb-3 mt-2 py-2 text-center fw-bold text-black rounded shadow-sm">
             จัดการการคืนห้อง
           </h2>
+          <div className="text-center mb-3">
+            <button
+              className="btn btn-sm btn-outline-primary"
+              onClick={fetchCheckouts}
+              disabled={loading}
+            >
+              {loading ? "กำลังโหลด..." : "โหลดข้อมูลใหม่"}
+            </button>
+          </div>
 
           {/* 🔹 ตัวกรองสถานะ */}
-          <CheckoutFilter active={filter} onChange={setFilter} />
+          <CheckoutFilter active={filter} onChange={setFilter} checkouts={checkouts} />
 
           {/* 🔹 ตารางแสดงข้อมูล */}
           {loading ? (

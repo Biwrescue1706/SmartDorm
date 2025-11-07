@@ -25,7 +25,7 @@ export default function BookingFilter({ active, onChange, bookings }: BookingFil
     { key: "pending", label: "รออนุมัติ", color: "#ffc107" },
     { key: "approved", label: "อนุมัติแล้ว", color: "#28a745" },
     { key: "rejected", label: "ไม่อนุมัติ", color: "#dc3545" },
-    { key: "checkinPending", label: "รอวันเข้าพัก", color: "#0dcaf0" },
+    { key: "checkinPending", label: "รอเข้าพัก", color: "#0dcaf0" },
   ] as const;
 
   return (

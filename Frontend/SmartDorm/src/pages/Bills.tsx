@@ -11,13 +11,8 @@ export default function Bills() {
   const { message, handleLogout, role, adminName, adminUsername } = useAuth();
 
   // ✅ Hook โหลดข้อมูลทั้งหมด
-  const {
-    rooms,
-    bookings,
-    existingBills,
-    loading,
-    reloadAll,
-  } = useCreateBill();
+  const { rooms, bookings, existingBills, loading, reloadAll, } =
+    useCreateBill();
 
   const [openDialog, setOpenDialog] = useState(false);
   const [selectedRoom, setSelectedRoom] = useState<any>(null);

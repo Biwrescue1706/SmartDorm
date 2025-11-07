@@ -10,7 +10,6 @@ export interface Room {
 }
 
 export interface Booking {
- 
   fullName: string;
   cphone: string;
   checkin: string;
@@ -19,7 +18,7 @@ export interface Booking {
   checkoutStatus: number; // ✅ 0=ยังไม่เช็คเอาท์, 1=เช็คเอาท์แล้ว
   returnStatus: number | null; // ✅ 0=รออนุมัติ, 1=อนุมัติ, 2=ปฏิเสธ
   createdAt: string;
-    bookingId: string;
+  bookingId: string;
   room: Room;
-  customer: Customer; 
+  customer: Customer;
 }

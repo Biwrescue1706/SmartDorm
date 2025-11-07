@@ -42,7 +42,7 @@ export default function Dashboard() {
 
   return (
     <div className="d-flex flex-column min-vh-100 bg-light">
-      return (
+      
       <Nav
         message={message}
         onLogout={handleLogout}
@@ -50,7 +50,7 @@ export default function Dashboard() {
         adminName={adminName}
         adminUsername={adminUsername}
       />
-      );
+
       <main className="main-content flex-grow-1 px-1 py-2 mt-3 mt-lg-7">
         <div className="mx-auto container-max">
           <h2 className="text-center mt-3 fw-bold mb-4">📊 สรุปข้อมูลหอพัก</h2>

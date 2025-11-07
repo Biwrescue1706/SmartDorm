@@ -78,40 +78,33 @@ export default function DashboardRevenue({ bills, bookings }: Props) {
     });
   }, [bookings, selectedYear, selectedMonth]);
 
-  const hasMonthData =
-    selectedYear && selectedMonth ? filteredBills.length > 0 : true;
-
   // 💰 รวมค่าเช่า
   const totalRent = useMemo(() => {
-    if (!hasMonthData) return 0;
     return filteredBookings
       .filter((b) => b.approveStatus === 1 && b.room)
       .reduce((sum, b) => sum + (b.room.rent || 0), 0);
-  }, [filteredBookings, hasMonthData]);
+  }, [filteredBookings]);
 
   // 💵 รวมค่าประกัน
   const totalDeposit = useMemo(() => {
-    if (!hasMonthData) return 0;
     return filteredBookings
       .filter((b) => b.approveStatus === 1 && b.room)
       .reduce((sum, b) => sum + (b.room.deposit || 0), 0);
-  }, [filteredBookings, hasMonthData]);
+  }, [filteredBookings]);
 
   // 💳 รวมค่าจอง
   const totalBooking = useMemo(() => {
-    if (!hasMonthData) return 0;
     return filteredBookings
       .filter((b) => b.approveStatus === 1 && b.room)
       .reduce((sum, b) => sum + (b.room.bookingFee || 0), 0);
-  }, [filteredBookings, hasMonthData]);
+  }, [filteredBookings]);
 
   // 💰 รวมรายรับจากบิล (เฉพาะ Bill.status === 1)
   const totalAll = useMemo(() => {
-    if (!hasMonthData) return 0;
     return filteredBills
       .filter((b) => b.status === 1)
       .reduce((sum, b) => sum + (b.total || 0), 0);
-  }, [filteredBills, hasMonthData]);
+  }, [filteredBills]);
 
   // 📊 รวมรายเดือน (เฉพาะบิลที่ status === 1)
   const monthlyData = useMemo(() => {

@@ -1,11 +1,13 @@
 import { useMemo, useState } from "react";
 import type { Bill } from "../../types/Bill";
+import type { Booking } from "../../types/Booking";
 
 interface Props {
   bills: Bill[];
+  bookings: Booking[];
 }
 
-export default function DashboardRevenue({ bills }: Props) {
+export default function DashboardRevenue({ bills, bookings }: Props) {
   const [selectedYear, setSelectedYear] = useState<string>("");
   const [selectedMonth, setSelectedMonth] = useState<string>("");
 
@@ -31,57 +33,64 @@ export default function DashboardRevenue({ bills }: Props) {
       ? `ปี ${selectedYearTH}`
       : "ทั้งหมด";
 
-  // 🔍 กรองบิลตามปี / เดือน
+  // 🧾 กรองบิล
   const filteredBills = useMemo(() => {
     return bills.filter((b) => {
       const d = new Date(b.month);
       const yearBE = d.getUTCFullYear() + 543;
       const monthStr = String(d.getUTCMonth() + 1).padStart(2, "0");
-
       if (selectedYear && selectedMonth) {
         return yearBE.toString() === selectedYear && monthStr === selectedMonth;
       } else if (selectedYear) {
         return yearBE.toString() === selectedYear;
-      } else {
-        return true;
       }
+      return true;
     });
   }, [bills, selectedYear, selectedMonth]);
 
-  // 💰 รวมยอดตามประเภท (เฉพาะบิลที่ชำระแล้ว)
-  const totalRent = useMemo(
-    () =>
-      filteredBills
-        .filter((b) => b.status === 1)
-        .reduce((sum, b) => sum + (b.rent || 0), 0),
-    [filteredBills]
-  );
+  // 🧾 กรอง booking (ใช้ createdAt)
+  const filteredBookings = useMemo(() => {
+    return bookings.filter((b) => {
+      if (!b.createdAt) return false;
+      const d = new Date(b.createdAt);
+      const yearBE = d.getUTCFullYear() + 543;
+      const monthStr = String(d.getUTCMonth() + 1).padStart(2, "0");
+      if (selectedYear && selectedMonth) {
+        return yearBE.toString() === selectedYear && monthStr === selectedMonth;
+      } else if (selectedYear) {
+        return yearBE.toString() === selectedYear;
+      }
+      return true;
+    });
+  }, [bookings, selectedYear, selectedMonth]);
 
-  const totalWater = useMemo(
-    () =>
-      filteredBills
-        .filter((b) => b.status === 1)
-        .reduce((sum, b) => sum + (b.waterCost || 0), 0),
-    [filteredBills]
-  );
+  // 💵 รวมยอดจาก booking ที่อนุมัติแล้ว
+  const totalRent = useMemo(() => {
+    return filteredBookings
+      .filter((b) => b.approveStatus === 1 && b.room)
+      .reduce((sum, b) => sum + (b.room?.rent || 0), 0);
+  }, [filteredBookings]);
 
-  const totalElectric = useMemo(
-    () =>
-      filteredBills
-        .filter((b) => b.status === 1)
-        .reduce((sum, b) => sum + (b.electricCost || 0), 0),
-    [filteredBills]
-  );
+  const totalDeposit = useMemo(() => {
+    return filteredBookings
+      .filter((b) => b.approveStatus === 1 && b.room)
+      .reduce((sum, b) => sum + (b.room?.deposit || 0), 0);
+  }, [filteredBookings]);
 
-  const totalAll = useMemo(
-    () =>
-      filteredBills
-        .filter((b) => b.status === 1)
-        .reduce((sum, b) => sum + (b.total || 0), 0),
-    [filteredBills]
-  );
+  const totalBooking = useMemo(() => {
+    return filteredBookings
+      .filter((b) => b.approveStatus === 1 && b.room)
+      .reduce((sum, b) => sum + (b.room?.bookingFee || 0), 0);
+  }, [filteredBookings]);
 
-  // 📊 รวมรายเดือน (เฉพาะบิลที่ status === 1)
+  // 💰 รายรับจากบิลที่ชำระแล้ว
+  const totalAll = useMemo(() => {
+    return filteredBills
+      .filter((b) => b.status === 1)
+      .reduce((sum, b) => sum + (b.total || 0), 0);
+  }, [filteredBills]);
+
+  // 📊 รวมรายเดือน (จาก Bill status === 1)
   const monthlyData = useMemo(() => {
     const acc = new Map<
       string,
@@ -120,11 +129,11 @@ export default function DashboardRevenue({ bills }: Props) {
 
   return (
     <div className="mt-4">
-      <h1 className="fw-bold mb-2 text-center">💰 สรุปรายรับรวม</h1>
-      <h4 className="fw-bold mb-4 text-center">( {displayTitle} )</h4>
+      <h1 className="fw-bold mb-3 text-center">💰 สรุปรายรับรวม</h1>
+      <h4 className="fw-bold mb-3 text-center">( {displayTitle} )</h4>
 
       {/* ฟิลเตอร์ */}
-      <div className="d-flex flex-wrap justify-content-center gap-2 mb-4">
+      <div className="d-flex flex-wrap justify-content-center gap-2 mb-3">
         <select
           className="form-select w-auto"
           value={selectedYear}
@@ -135,10 +144,11 @@ export default function DashboardRevenue({ bills }: Props) {
         >
           <option value="">ทุกปี</option>
           {availableYears.map((y) => (
-            <option key={y}>{y}</option>
+            <option key={y} value={y}>
+              {y}
+            </option>
           ))}
         </select>
-
         <select
           className="form-select w-auto"
           value={selectedMonth}
@@ -155,24 +165,24 @@ export default function DashboardRevenue({ bills }: Props) {
       </div>
 
       {/* การ์ดยอดรวม */}
-      <div className="row g-3 justify-content-center mb-4">
-        <div className="col-6 col-md-3 col-lg-2">
-          <RevenueCard title="ค่าเช่าห้อง" amount={totalRent} color="#0077b6" />
+      <div className="row g-2 justify-content-center mb-3">
+        <div className="col-6 col-md-2">
+          <RevenueCard title="ค่าเช่า" amount={totalRent} color="#0077b6" />
         </div>
-        <div className="col-6 col-md-3 col-lg-2">
-          <RevenueCard title="ค่าน้ำ" amount={totalWater} color="#48cae4" />
+        <div className="col-6 col-md-2">
+          <RevenueCard title="ค่ามัดจำ" amount={totalDeposit} color="#8338ec" />
         </div>
-        <div className="col-6 col-md-3 col-lg-2">
-          <RevenueCard title="ค่าไฟ" amount={totalElectric} color="#ffb703" />
+        <div className="col-6 col-md-2">
+          <RevenueCard title="ค่าจอง" amount={totalBooking} color="#ffb703" />
         </div>
-        <div className="col-6 col-md-3 col-lg-2">
-          <RevenueCard title="รายรับรวม" amount={totalAll} color="#00b4d8" />
+        <div className="col-6 col-md-2">
+          <RevenueCard title="รายรับบิล" amount={totalAll} color="#00b4d8" />
         </div>
       </div>
 
-      {/* ตารางรายเดือน */}
+      {/* ✅ ตารางรายเดือน */}
       <div className="table-responsive">
-        <table className="table table-striped align-middle text-center shadow-sm">
+        <table className="table table-sm table-striped align-middle text-center shadow-sm">
           <thead className="table-dark">
             <tr>
               <th>เดือน</th>
@@ -211,7 +221,7 @@ export default function DashboardRevenue({ bills }: Props) {
   );
 }
 
-// ✅ Sub Component การ์ดยอดรวม
+// ✅ Sub component
 function RevenueCard({
   title,
   amount,

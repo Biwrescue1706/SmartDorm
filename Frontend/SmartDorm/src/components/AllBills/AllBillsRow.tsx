@@ -1,127 +1,109 @@
-import { useState, useEffect } from "react";
-import Nav from "../components/Nav";
-import { useAuth } from "../hooks/useAuth";
-import { useBills } from "../hooks/useBills";
-import AllBillsTable from "../components/AllBills/AllBillsTable";
-import BillFilterBar from "../components/AllBills/BillFilterBar";
-import AllBillsEditDialog from "../components/AllBills/AllBillsEditDialog";
-import Pagination from "../components/Pagination";
-import Swal from "sweetalert2";
-import type { Bill } from "../types/Bill";
+import type { Bill } from "../../types/Bill";
 
-export default function AllBills() {
-  const { message, handleLogout, role, adminName, adminUsername } = useAuth();
-  const { bills, loading, updateBill, deleteBill } = useBills();
+interface Props {
+  index: number;
+  bill: Bill;
+  onEdit: (bill: Bill) => void;
+  onDelete: (billId: string, room: string) => void;
+  onViewSlip: (bill: Bill) => void; // ✅
+}
 
-  const [filterStatus, setFilterStatus] = useState("all");
-  const [filterMonth, setFilterMonth] = useState("");
-  const [filterRoom, setFilterRoom] = useState("");
-  const [filtered, setFiltered] = useState<Bill[]>([]);
-  const [editingBill, setEditingBill] = useState<Bill | null>(null);
-
-  const [page, setPage] = useState(1);
-  const [rows, setRows] = useState(10);
-
-  // ✅ ฟิลเตอร์ข้อมูล
-  useEffect(() => {
-    let result = bills;
-    if (filterStatus !== "all")
-      result = result.filter((b) => b.status === Number(filterStatus));
-    if (filterMonth)
-      result = result.filter(
-        (b) => new Date(b.month).toISOString().slice(0, 7) === filterMonth
-      );
-    if (filterRoom)
-      result = result.filter((b) => b.room.number.includes(filterRoom));
-    setFiltered(result);
-    setPage(1);
-  }, [bills, filterStatus, filterMonth, filterRoom]);
-
-  const start = (page - 1) * rows;
-  const currentBills = filtered.slice(start, start + rows);
-
-  // ✅ แสดงสลิป
-  const handleViewSlip = (bill: Bill) => {
-    const url = bill.payment?.slipUrl || bill.slipUrl;
-    if (!url)
-      return Swal.fire("ไม่มีสลิป", "ยังไม่มีหลักฐานการชำระ", "info");
-
-    Swal.fire({
-      title: "สลิปการชำระเงิน",
-      imageUrl: url,
-      imageAlt: "Slip",
-      imageWidth: 400,
-      background: "#f9fafb",
-      showCloseButton: true,
-      confirmButtonText: "ปิด",
-      footer: `<a href="${url}" target="_blank" class="btn btn-sm btn-primary mt-2">ดาวน์โหลด</a>`,
-    });
+export default function AllBillsRow({
+  index,
+  bill,
+  onEdit,
+  onDelete,
+  onViewSlip,
+}: Props) {
+  // ✅ แสดง badge สถานะ
+  const renderStatus = (status: number) => {
+    switch (status) {
+      case 0:
+        return <span className="badge bg-warning text-dark">ค้างชำระ</span>;
+      case 1:
+        return <span className="badge bg-success">ชำระแล้ว</span>;
+      default:
+        return <span className="badge bg-secondary">ไม่ทราบ</span>;
+    }
   };
 
+  const rowBg =
+    bill.status === 1
+      ? "table-success-subtle"
+      : bill.status === 0
+      ? "table-warning-subtle"
+      : "";
+
   return (
-    <div
-      className="d-flex flex-column"
-      style={{ backgroundColor: "#fcfcfc", minHeight: "100vh" }}
-    >
-      <Nav
-        message={message}
-        onLogout={handleLogout}
-        role={role}
-        adminName={adminName}
-        adminUsername={adminUsername}
-      />
+    <tr className={rowBg}>
+      <td>{index + 1}</td>
+      <td>{bill?.room?.number ?? "-"}</td>
+      <td>{bill.customer?.userName || "-"}</td>
+      <td>{bill.booking?.fullName || "-"}</td>
+      <td>{bill.booking?.cphone || "-"}</td>
+      <td>
+        {bill.month
+          ? new Date(bill.month).toLocaleDateString("th-TH", {
+              year: "numeric",
+              month: "long",
+            })
+          : "-"}
+      </td>
+      <td>{bill.total?.toLocaleString() || 0}</td>
+      <td>
+        {bill.dueDate
+          ? new Date(bill.dueDate).toLocaleDateString("th-TH", {
+              year: "numeric",
+              month: "long",
+              day: "numeric",
+            })
+          : "-"}
+      </td>
+      <td>{renderStatus(bill.status)}</td>
 
-      <main className="main-content flex-grow-1 px-2 mx-my-3 py-2 mt-6 mt-lg-7">
-        <div className="mx-auto container-max">
-          <h2 className="text-center mb-3 fw-bold">📋 รายการบิลทั้งหมด</h2>
+      {/* ✅ ปุ่มดูสลิป */}
+      <td>
+        {bill.status === 1 ? (
+          <button
+            className="btn btn-outline-primary btn-sm"
+            onClick={() => onViewSlip(bill)} // ✅ ส่ง bill
+          >
+            ดูสลิป
+          </button>
+        ) : (
+          <span className="text-muted small">—</span>
+        )}
+      </td>
 
-          {/* 🎚 ฟิลเตอร์ */}
-          <BillFilterBar
-            filterStatus={filterStatus}
-            filterMonth={filterMonth}
-            filterRoom={filterRoom}
-            setFilterStatus={setFilterStatus}
-            setFilterMonth={setFilterMonth}
-            setFilterRoom={setFilterRoom}
-          />
+      {/* ✏️ แก้ไข */}
+      <td>
+        <button
+          className="btn btn-sm fw-semibold text-white px-2 py-1"
+          style={{
+            background: "linear-gradient(100deg, #26ff05, #f9d849)",
+            border: "none",
+            opacity: bill.status === 1 ? 0.4 : 1,
+          }}
+          onClick={() => onEdit(bill)}
+        >
+          ✏️
+        </button>
+      </td>
 
-          {/* 📄 ตาราง */}
-          {loading ? (
-            <p className="text-center text-muted">⏳ กำลังโหลด...</p>
-          ) : (
-            <>
-              <AllBillsTable
-                bills={currentBills}
-                onEdit={(bill) => setEditingBill(bill)}
-                onDelete={deleteBill}
-                onViewSlip={(bill) => handleViewSlip(bill)} // ✅ ส่งทั้ง bill
-              />
-
-              {filtered.length > 0 && (
-                <Pagination
-                  currentPage={page}
-                  totalItems={filtered.length}
-                  rowsPerPage={rows}
-                  onPageChange={setPage}
-                  onRowsPerPageChange={(r) => {
-                    setRows(r);
-                    setPage(1);
-                  }}
-                />
-              )}
-            </>
-          )}
-        </div>
-      </main>
-
-      {/* ✏️ Dialog แก้ไขบิล */}
-      {editingBill && (
-        <AllBillsEditDialog
-          bill={editingBill}
-          onSave={updateBill}
-          onClose={() => setEditingBill(null)}
-        />
-      )}
-    </div>
+      {/* 🗑️ ลบ */}
+      <td>
+        <button
+          className="btn btn-sm fw-semibold text-white px-2 py-1"
+          style={{
+            background: "linear-gradient(100deg, #ff0505, #f645c4)",
+            border: "none",
+            opacity: bill.status === 1 ? 0.4 : 1,
+          }}
+          onClick={() => onDelete(bill.billId, bill.room?.number || "-")}
+        >
+          🗑️
+        </button>
+      </td>
+    </tr>
   );
 }

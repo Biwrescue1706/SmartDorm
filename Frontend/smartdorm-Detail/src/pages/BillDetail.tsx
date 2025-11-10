@@ -205,23 +205,28 @@ export default function BillDetail() {
             </tr>
           </tbody>
         </table>
-        <div className="text-center mt-4">
-          <p className="mb-2 text-muted">
-            คุณสามารถกดปุ่มด้านล่างเพื่อไปยังหน้าชำระเงินผ่าน LIFF ได้ทันที
-          </p>
-          <a
-            href="https://liff.line.me/2008099518-RGPO9wep"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="btn btn-success px-4 py-2 fw-bold shadow-sm"
-            style={{
-              borderRadius: "10px",
-              fontSize: "1.1rem",
-            }}
-          >
-            ไปหน้าชำระเงินผ่าน LINE
-          </a>
-        </div>
+        
+{/* ปุ่มชำระเงินจะแสดงเฉพาะเมื่อสถานะบิล = 0 (รอชำระ) */}
+{bill.status === 0 && (
+  <div className="text-center mt-4">
+    <p className="mb-2 text-muted">
+      คุณสามารถกดปุ่มด้านล่างเพื่อไปยังหน้าชำระเงินผ่าน LIFF ได้ทันที
+    </p>
+    <a
+      href={`https://liff.line.me/2008099518-RGPO9wep?billId=${bill.billId}`}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="btn btn-success px-4 py-2 fw-bold shadow-sm"
+      style={{
+        borderRadius: "10px",
+        fontSize: "1.1rem",
+      }}
+    >
+      ไปหน้าชำระเงินผ่าน LINE
+    </a>
+  </div>
+)}
+
       </div>
     </div>
   );

@@ -110,16 +110,27 @@ export default function BillDetail() {
       }}
     >
       {/* Header */}
-      <div className="text-center mb-4">
-        <img
-          src="https://smartdorm-admin.biwbong.shop/assets/SmartDorm.png"
-          alt="SmartDorm Logo"
-          className="mb-0"
-          style={{ width: "80px", height: "80px" }}
-        />
-        <h4 className="mt-2 fw-bold text-success">🏫 SmartDorm 🎉</h4>
-        <h5 className="mt-2 fw-bold text-secondary">บิลค่าเช่าห้อง</h5>
-      </div>
+    {/* Header */}
+<div className="text-center mb-4">
+  <div
+    className="d-flex justify-content-center align-items-center gap-2 flex-wrap"
+    style={{ columnGap: "10px" }}
+  >
+    <div>
+      <h4 className="mt-2 fw-bold text-success mb-0">🏫 SmartDorm 🎉</h4>
+      <h5 className="fw-bold text-secondary">บิลค่าเช่าห้อง</h5>
+    </div>
+    <img
+      src="https://smartdorm-admin.biwbong.shop/assets/SmartDorm.png"
+      alt="SmartDorm Logo"
+      style={{
+        width: "70px",
+        height: "70px",
+        marginLeft: "10px",
+      }}
+    />
+  </div>
+</div>
 
       {/* Bill Info */}
       <div className="border rounded p-3 bg-light mb-3">
@@ -137,10 +148,11 @@ export default function BillDetail() {
             month: "long",
           })}
         </p>
+{bill.status === 0 && (
         <p className="mb-1">
           <strong>ครบกำหนดชำระ : </strong>{" "}
           <span className="text-danger">{formatThaiDate(bill.dueDate)}</span>
-        </p>
+        </p> )}
         <p className="mb-1">
           <strong>สถานะ : </strong>{" "}
           <span className={`badge bg-${statusColor}`}>{statusText}</span>

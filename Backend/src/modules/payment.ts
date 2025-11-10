@@ -16,6 +16,7 @@ const supabase = createClient(
 );
 
 // 🕒 Helper
+const logTime = () => new Date().toISOString().replace("T", " ").split(".")[0];
 const formatThaiDate = (d?: string | Date | null) =>
   d
     ? new Date(d).toLocaleDateString("th-TH", {
@@ -113,6 +114,7 @@ paymentRouter.post("/create", upload.single("slip"), async (req, res) => {
           ]
         );
       }
+      
     } catch (err: any) {
       console.warn("⚠️ แจ้งเตือนลูกค้าไม่สำเร็จ:", err.message);
     }
@@ -132,14 +134,18 @@ paymentRouter.post("/create", upload.single("slip"), async (req, res) => {
             { label: "วันที่ชำระ", value: formatThaiDate(payment.createdAt) },
           ],
           [
+            { label: "ดูสลิป", url: `${bill.slipUrl}`, style: "secondary" },
             {
               label: "เปิดในระบบ Admin",
-              url: adminUrl,
+              url: `https://smartdorm-admin.biwbong.shop`,
               style: "secondary",
             },
           ]
         );
       }
+       console.log(
+      `[${logTime()}] ส่งแจ้งเตือนไลน์  รหัสบิล ${bill.billId} สำเร็จแล้ว`
+    );
     } catch (err: any) {
       console.warn("⚠️ แจ้งเตือนแอดมินไม่สำเร็จ:", err.message);
     }

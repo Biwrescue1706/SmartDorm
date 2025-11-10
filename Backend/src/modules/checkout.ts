@@ -8,6 +8,7 @@ import { sendFlexMessage } from "../utils/lineFlex";
 const checkoutRouter = Router();
 
 // 🧮 Helper
+const logTime = () => new Date().toISOString().replace("T", " ").split(".")[0];
 const formatThaiDate = (dateInput?: string | Date | null) => {
   if (!dateInput) return "-";
   const date = typeof dateInput === "string" ? new Date(dateInput) : dateInput;
@@ -154,7 +155,9 @@ checkoutRouter.put("/:bookingId/checkout", async (req, res) => {
         },
       ]
     );
-
+    console.log(
+      `[${logTime()}] ส่งแจ้งเตือนไลน์ คำขอคืนห้อง ของ ${updated.customer?.userName} สำเร็จแล้ว`
+    );
     res.json({ message: "ส่งคำขอคืนห้องสำเร็จ", booking: updated });
   } catch (err: any) {
     res.status(400).json({ error: err.message });
@@ -210,7 +213,9 @@ checkoutRouter.put(
           },
         ]
       );
-
+      console.log(
+        `[${logTime()}] ส่งแจ้งเตือนไลน์ การคืนห้อง ของ ${updated.customer?.userName} สำเร็จแล้ว`
+      );
       res.json({ message: "อนุมัติการคืนสำเร็จ", booking: updated });
     } catch (err: any) {
       res.status(400).json({ error: err.message });
@@ -244,7 +249,11 @@ checkoutRouter.put(
           { label: "รหัสการจอง", value: booking.bookingId },
           { label: "🏠 ห้อง", value: booking.room.number ?? "-" },
           { label: "📅 วันที่ขอคืน", value: formatThaiDate(booking.checkout) },
-          { label: "สถานะ", value: "ปฏิเสธคำขอคืนห้องของคุณ", color: "#e74c3c" },
+          {
+            label: "สถานะ",
+            value: "ปฏิเสธคำขอคืนห้องของคุณ",
+            color: "#e74c3c",
+          },
         ],
         [
           {

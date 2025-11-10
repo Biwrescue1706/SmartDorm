@@ -17,6 +17,7 @@ const formatThaiDate = (dateInput?: string | Date | null) => {
 
 // 🌐 Router
 const billRouter = Router();
+const logTime = () => new Date().toISOString().replace("T", " ").split(".")[0];
 
 // 🧾 สร้างบิลใหม่
 billRouter.post("/create", authMiddleware, async (req, res) => {
@@ -127,8 +128,14 @@ billRouter.post("/create", authMiddleware, async (req, res) => {
         `🧾 SmartDorm แจ้งบิลค่าเช่าห้อง ประจำเดือน ${formattedMonth}`,
         [
           { label: "🏠 ห้อง", value: bill.room.number },
-          { label: "ค่าน้ำ", value: `${bill.wUnits} หน่วย (${bill.waterCost} บาท)` },
-          { label: "ค่าไฟ", value: `${bill.eUnits} หน่วย (${bill.electricCost} บาท)` },
+          {
+            label: "ค่าน้ำ",
+            value: `${bill.wUnits} หน่วย (${bill.waterCost} บาท)`,
+          },
+          {
+            label: "ค่าไฟ",
+            value: `${bill.eUnits} หน่วย (${bill.electricCost} บาท)`,
+          },
           { label: "ค่าส่วนกลาง", value: `${bill.service} บาท` },
           { label: "ค่าเช่าห้อง", value: `${bill.rent} บาท` },
           {
@@ -151,7 +158,9 @@ billRouter.post("/create", authMiddleware, async (req, res) => {
         ]
       );
     }
-
+    console.log(
+      `[${logTime()}] ส่งแจ้งเตือนไลน์ สำเร็จแล้ว รหัสการจอง ${bill.customer?.userName} : `
+    );
     res.json({ message: "สร้างบิลสำเร็จและแจ้งลูกค้าแล้ว", bill });
   } catch (err: any) {
     console.error("❌ [createBill] Error:", err.message);
@@ -172,7 +181,9 @@ billRouter.post("/createFromRoom/:roomId", authMiddleware, async (req, res) => {
         bookingId: true,
         fullName: true,
         cphone: true,
-        customer: { select: { customerId: true, userId: true, userName: true } },
+        customer: {
+          select: { customerId: true, userId: true, userName: true },
+        },
       },
     });
 
@@ -189,11 +200,17 @@ billRouter.post("/createFromRoom/:roomId", authMiddleware, async (req, res) => {
       eAfter,
     };
 
-    const response = await fetch(`${req.protocol}://${req.get("host")}/bill/create`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", cookie: req.headers.cookie || "" },
-      body: JSON.stringify(data),
-    });
+    const response = await fetch(
+      `${req.protocol}://${req.get("host")}/bill/create`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          cookie: req.headers.cookie || "",
+        },
+        body: JSON.stringify(data),
+      }
+    );
     const result = await response.json();
 
     res.json({ message: "สร้างบิลสำเร็จและเชื่อม Booking แล้ว", result });

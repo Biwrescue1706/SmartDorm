@@ -180,7 +180,7 @@ bookingRouter.post("/create", upload.single("slip"), async (req, res) => {
           { label: "ห้อง : ", value: booking.room.number },
           { label: "วันที่เข้าพัก : ", value: formatThaiDate(booking.checkin) },
           { label: "เบอร์โทร : ", value: booking.cphone ?? "-" },
-          { label: "สถานะ", value: "รออนุมัติจากผู้ดูแล" },
+          { label: "สถานะ", value: "รออนุมัติจากผู้ดูแล", color: "#f39c12" },
         ],
         [{ label: "ดูรายละเอียด", url: bookingUrl, style: "primary" }]
       );
@@ -207,8 +207,7 @@ bookingRouter.post("/create", upload.single("slip"), async (req, res) => {
         );
       }
       console.log(
-        `[${logTime()}] ส่งแจ้งเตือนไลน์ สำเร็จแล้ว : `,
-        booking.bookingId
+        `[${logTime()}] ส่งแจ้งเตือนไลน์ สำเร็จแล้ว รหัสการจอง ${booking.customer?.userName} : `
       );
     } catch (err: any) {
       console.warn(
@@ -243,16 +242,14 @@ bookingRouter.put("/:bookingId/approve", async (req, res) => {
         { label: "ห้อง : ", value: updated.room.number },
         { label: "วันที่อนุมัติ : ", value: formatThaiDate(new Date()) },
         { label: "วันที่เข้าพัก : ", value: formatThaiDate(updated.checkin) },
-        { label: "สถานะ", value: " อนุมัติแล้ว" },
+        { label: "สถานะ", value: "อนุมัติแล้ว", color: "#27ae60" },
       ],
       [{ label: "ดูรายละเอียด", url: bookingUrl, style: "primary" }]
     );
-
-    res.json({ message: "อนุมัติการจองสำเร็จ", booking: updated });
     console.log(
-      `[${logTime()}] ส่งแจ้งเตือนไลน์ สำเร็จแล้ว : `,
-      updated.bookingId
+      `[${logTime()}] ส่งแจ้งเตือนไลน์ ผลอนุมัติการจอง ของ ${updated.customer?.userName} สำเร็จแล้ว `
     );
+    res.json({ message: "อนุมัติการจองสำเร็จ", booking: updated });
   } catch (err: any) {
     res.status(400).json({ error: err.message });
   }
@@ -281,15 +278,14 @@ bookingRouter.put("/:bookingId/reject", async (req, res) => {
         { label: "ชื่อ : ", value: updated.fullName ?? "-" },
         { label: "ห้อง : ", value: updated.room.number },
         { label: "วันที่เข้าพัก : ", value: formatThaiDate(updated.checkin) },
-        { label: "สถานะ", value: " ไม่อนุมัติ" },
+        { label: "สถานะ", value: " ไม่อนุมัติการจอง", color: "#e74c3c" },
       ],
       [{ label: "ดูรายละเอียด", url: bookingUrl, style: "primary" }]
     );
 
     res.json({ message: "ปฏิเสธการจองสำเร็จ" });
     console.log(
-      `[${logTime()}] ส่งแจ้งเตือนไลน์ สำเร็จแล้ว : `,
-      updated.bookingId
+      `[${logTime()}] ส่งแจ้งเตือนไลน์ ผลปฏิเสธการจอง ของ ${updated.customer?.userName} สำเร็จแล้ว `
     );
   } catch (err: any) {
     res.status(400).json({ error: err.message });
@@ -323,8 +319,7 @@ bookingRouter.put("/:bookingId/checkin", async (req, res) => {
 
     res.json({ message: "เช็คอินสำเร็จ", booking: updated });
     console.log(
-      `[${logTime()}] ส่งแจ้งเตือนไลน์ สำเร็จแล้ว : `,
-      updated.bookingId
+      `[${logTime()}] ส่งแจ้งเตือนไลน์ ผลเช็คอิน ของ ${updated.customer?.userName} สำเร็จแล้ว `
     );
   } catch (err: any) {
     res.status(400).json({ error: err.message });
@@ -362,10 +357,42 @@ bookingRouter.put("/:bookingId/checkout", async (req, res) => {
     );
 
     console.log(
-      `[${logTime()}] ส่งแจ้งเตือนไลน์ สำเร็จแล้ว : `,
-      updated.bookingId
+      `[${logTime()}] ส่งแจ้งเตือนไลน์ ผลเช็คเอาท์ ของ ${updated.customer?.userName} สำเร็จแล้ว`
     );
     res.json({ message: "เช็คเอาท์สำเร็จ", booking: updated });
+  } catch (err: any) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+// ✏️ Admin แก้ไขข้อมูลการจอง
+bookingRouter.put("/:bookingId", async (req, res) => {
+  try {
+    const { bookingId } = req.params;
+    const data = req.body;
+
+    const booking = await prisma.booking.findUnique({
+      where: { bookingId },
+      include: { room: true, customer: true },
+    });
+    if (!booking) throw new Error("ไม่พบข้อมูลการจอง");
+
+    //  ถ้ามีการเปลี่ยนชื่อ ให้สร้าง fullName ใหม่อัตโนมัติ
+    if (data.ctitle || data.cname || data.csurname) {
+      const title = data.ctitle ?? booking.ctitle ?? "";
+      const name = data.cname ?? booking.cname ?? "";
+      const surname = data.csurname ?? booking.csurname ?? "";
+      data.fullName = `${title}${name} ${surname}`.trim();
+    }
+
+    const updated = await prisma.booking.update({
+      where: { bookingId },
+      data,
+      include: { room: true, customer: true },
+    });
+
+    console.log(` Updated booking ${bookingId}`, data);
+    res.json({ message: "แก้ไขข้อมูลสำเร็จ", booking: updated });
   } catch (err: any) {
     res.status(400).json({ error: err.message });
   }

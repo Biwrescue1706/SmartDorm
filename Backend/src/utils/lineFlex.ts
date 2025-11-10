@@ -73,7 +73,7 @@ export async function sendFlexMessage(
       ? buttons.map((btn) => ({
           type: "button",
           style: btn.style || "primary",
-          color: btn.color || "#20c997",
+          color: btn.color || "#0015ffff",
           height: "sm",
           action: {
             type: "uri",
@@ -111,7 +111,7 @@ export async function sendFlexMessage(
       hero: {
         type: "box",
         layout: "horizontal",
-        backgroundColor: "#ffffff",
+        backgroundColor: "#81f8c0ff",
         contents: [
           {
             type: "image",

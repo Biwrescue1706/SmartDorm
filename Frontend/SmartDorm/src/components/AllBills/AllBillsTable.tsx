@@ -6,7 +6,7 @@ interface Props {
   bills: Bill[];
   onEdit: (bill: Bill) => void;
   onDelete: (id: string, room: string) => void;
-  onViewSlip: (url?: string | null) => void;
+  onViewSlip: (bill: Bill) => void; // ✅ รับทั้ง bill
 }
 
 export default function AllBillsTable({
@@ -29,43 +29,18 @@ export default function AllBillsTable({
       >
         <thead className="table-dark">
           <tr>
-            <th scope="col" style={{ width: "35%" }}>
-              #
-            </th>
-            <th scope="col" style={{ width: "35%" }}>
-              ห้อง
-            </th>
-            <th scope="col" style={{ width: "35%" }}>
-              Line
-            </th>
-            <th scope="col" style={{ width: "35%" }}>
-              ผู้เช่า
-            </th>
-            <th scope="col" style={{ width: "35%" }}>
-              เบอร์โทร
-            </th>
-            <th scope="col" style={{ width: "35%" }}>
-              เดือน
-            </th>
-            <th scope="col" style={{ width: "35%" }}>
-              ยอดรวม
-            </th>
-
-            <th scope="col" style={{ width: "35%" }}>
-              ครบกำหนด
-            </th>
-            <th scope="col" style={{ width: "35%" }}>
-              สถานะ
-            </th>
-            <th scope="col" style={{ width: "35%" }}>
-              สลิป
-            </th>
-            <th scope="col" style={{ width: "35%" }}>
-              แก้ไข
-            </th>
-            <th scope="col" style={{ width: "35%" }}>
-              ลบ
-            </th>
+            <th>#</th>
+            <th>ห้อง</th>
+            <th>LINE</th>
+            <th>ผู้เช่า</th>
+            <th>เบอร์โทร</th>
+            <th>เดือน</th>
+            <th>ยอดรวม</th>
+            <th>ครบกำหนด</th>
+            <th>สถานะ</th>
+            <th>สลิป</th>
+            <th>แก้ไข</th>
+            <th>ลบ</th>
           </tr>
         </thead>
 
@@ -84,7 +59,7 @@ export default function AllBillsTable({
                 bill={bill}
                 onEdit={onEdit}
                 onDelete={onDelete}
-                onViewSlip={onViewSlip}
+                onViewSlip={onViewSlip} // ✅ ส่งต่อ bill
               />
             ))
           )}

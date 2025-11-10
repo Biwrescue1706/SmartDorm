@@ -142,26 +142,25 @@ export default function DashboardRevenue({ bills, bookings }: Props) {
       {/* การ์ดจาก Booking */}
       <h5 className="fw-bold text-center mb-2 text-primary">📦 รายรับจากการจอง</h5>
       <div className="row g-2 justify-content-center mb-4">
-        <div className="col-6 col-md-3 col-lg-2"><RevenueCard title="ค่าเช่า (Booking)" amount={totalRentBooking} color="#0077b6" /></div>
-        <div className="col-6 col-md-3 col-lg-2"><RevenueCard title="ค่ามัดจำ" amount={totalDepositBooking} color="#8338ec" /></div>
-        <div className="col-6 col-md-3 col-lg-2"><RevenueCard title="ค่าจอง" amount={totalBookingFee} color="#ffb703" /></div>
-        <div className="col-6 col-md-3 col-lg-2"><RevenueCard title="รวมรายรับจากการจอง" amount={totalRentBooking + totalDepositBooking + totalBookingFee} color="#00916e" /></div>
+                <div className="col-4 col-md-2 mx-2 col-sm-4 col-lg-2"><RevenueCard title="ค่าเช่า (Booking)" amount={totalRentBooking} color="#0077b6" /></div>
+                <div className="col-4 col-md-2 mx-2 col-sm-4 col-lg-2"><RevenueCard title="ค่ามัดจำ" amount={totalDepositBooking} color="#8338ec" /></div>
+                <div className="col-4 col-md-2 mx-2 col-sm-4 col-lg-2"><RevenueCard title="ค่าจอง" amount={totalBookingFee} color="#ffb703" /></div>
+                <div className="col-4 col-md-2 mx-2 col-sm-4 col-lg-2"><RevenueCard title="รายรับรวม" amount={totalRentBooking + totalDepositBooking + totalBookingFee} color="#00916e" /></div>
       </div>
 
       {/* การ์ดจาก Bill */}
       <h5 className="fw-bold text-center mb-2 text-success">📄 รายรับจากบิล (ชำระแล้ว)</h5>
       <div className="row g-2 justify-content-center mb-4">
-        <div className="col-6 col-md-3 col-lg-2"><RevenueCard title="ค่าเช่าห้อง" amount={totalRentBill} color="#0077b6" /></div>
-        <div className="col-6 col-md-3 col-lg-2"><RevenueCard title="ค่าน้ำ" amount={totalWaterBill} color="#48cae4" /></div>
-        <div className="col-6 col-md-3 col-lg-2"><RevenueCard title="ค่าไฟ" amount={totalElectricBill} color="#ffb703" /></div>
-        <div className="col-6 col-md-3 col-lg-2"><RevenueCard title="รายรับรวม" amount={totalAllBill} color="#00b4d8" /></div>
+                <div className="col-4 col-md-2 mx-2 col-sm-4 col-lg-2"> <RevenueCard title="ค่าเช่าห้อง" amount={totalRentBill} color="#0077b6" /></div>
+                <div className="col-4 col-md-2 mx-2 col-sm-4 col-lg-2"> <RevenueCard title="ค่าน้ำ" amount={totalWaterBill} color="#48cae4" /></div>
+                <div className="col-4 col-md-2 mx-2 col-sm-4 col-lg-2"> <RevenueCard title="ค่าไฟ" amount={totalElectricBill} color="#ffb703" /></div>
+        <div className="col-4 col-md-2 mx-2 col-sm-4 col-lg-2"> <RevenueCard title="รายรับรวม" amount={totalAllBill} color="#00b4d8" /></div>
       </div>
 
       {/* ✅ รวมรายรับทั้งหมด */}
       <h5 className="fw-bold text-center mb-2 text-danger">💵 รายรับทั้งหมด (Booking + Bill)</h5>
       <div className="row justify-content-center mb-5">
-        <div className="col-10 col-md-4">
-          <RevenueCard title="รวมรายรับทั้งหมด" amount={totalAllRevenue} color="#28a745" />
+                <div className="col-4 col-md-2 mx-2 col-sm-4 col-lg-2"> <RevenueCard title="รวมรายรับทั้งหมด" amount={totalAllRevenue} color="#28a745" />
         </div>
       </div>
 

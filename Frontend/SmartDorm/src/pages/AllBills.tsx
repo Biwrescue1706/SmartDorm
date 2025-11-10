@@ -42,21 +42,22 @@ export default function AllBills() {
 
   // ✅ แสดงสลิป
   const handleViewSlip = (bill: Bill) => {
-    const url = bill.payment.slipUrl ||"-"
-    if (!url)
-      return Swal.fire("ไม่มีสลิป", "ยังไม่มีหลักฐานการชำระ", "info");
+  const url = bill.payment?.slipUrl || bill.slipUrl || null; // ✅ รองรับทั้งจาก payment และ bill
+  if (!url || url === "-") {
+    return Swal.fire("ไม่มีสลิป", "ยังไม่มีหลักฐานการชำระ", "info");
+  }
 
-    Swal.fire({
-      title: "สลิปการชำระเงิน",
-      imageUrl: url,
-      imageAlt: "Slip",
-      imageWidth: 400,
-      background: "#f9fafb",
-      showCloseButton: true,
-      confirmButtonText: "ปิด",
-      footer: `<a href="${url}" target="_blank" class="btn btn-sm btn-primary mt-2">ดาวน์โหลด</a>`,
-    });
-  };
+  Swal.fire({
+    title: "สลิปการชำระเงิน",
+    imageUrl: url,
+    imageAlt: "Slip",
+    imageWidth: 400,
+    background: "#f9fafb",
+    showCloseButton: true,
+    confirmButtonText: "ปิด",
+    footer: `<a href="${url}" target="_blank" class="btn btn-sm btn-primary mt-2">ดาวน์โหลด</a>`,
+  });
+};
 
   return (
     <div

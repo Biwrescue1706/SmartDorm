@@ -40,13 +40,11 @@ export default function AllBills() {
   const start = (page - 1) * rows;
   const currentBills = filtered.slice(start, start + rows);
 
-  // ✅ ฟังก์ชันแสดงสลิปจาก payment.slipUrl
+  // ✅ แสดงสลิป
   const handleViewSlip = (bill: Bill) => {
-    const url = bill.payment?.slipUrl;
-
-    if (!url) {
+    const url = bill.payment?.slipUrl || bill.slipUrl;
+    if (!url)
       return Swal.fire("ไม่มีสลิป", "ยังไม่มีหลักฐานการชำระ", "info");
-    }
 
     Swal.fire({
       title: "สลิปการชำระเงิน",
@@ -65,7 +63,6 @@ export default function AllBills() {
       className="d-flex flex-column"
       style={{ backgroundColor: "#fcfcfc", minHeight: "100vh" }}
     >
-      {/* 🧭 Navbar */}
       <Nav
         message={message}
         onLogout={handleLogout}
@@ -74,7 +71,6 @@ export default function AllBills() {
         adminUsername={adminUsername}
       />
 
-      {/* 📋 Main Content */}
       <main className="main-content flex-grow-1 px-2 mx-my-3 py-2 mt-6 mt-lg-7">
         <div className="mx-auto container-max">
           <h2 className="text-center mb-3 fw-bold">📋 รายการบิลทั้งหมด</h2>
@@ -98,10 +94,9 @@ export default function AllBills() {
                 bills={currentBills}
                 onEdit={(bill) => setEditingBill(bill)}
                 onDelete={deleteBill}
-                onViewSlip={(bill) => handleViewSlip(bill)} // ✅ ส่งทั้ง bill object
+                onViewSlip={(bill) => handleViewSlip(bill)} // ✅ ส่งทั้ง bill
               />
 
-              {/* 📑 Pagination */}
               {filtered.length > 0 && (
                 <Pagination
                   currentPage={page}

@@ -22,7 +22,7 @@ export default function AllBills() {
   const [page, setPage] = useState(1);
   const [rows, setRows] = useState(10);
 
-  // ✅ กรองข้อมูลบิล
+  // ✅ ฟิลเตอร์ข้อมูล
   useEffect(() => {
     let result = bills;
     if (filterStatus !== "all")
@@ -40,9 +40,14 @@ export default function AllBills() {
   const start = (page - 1) * rows;
   const currentBills = filtered.slice(start, start + rows);
 
-  // ✅ แสดงสลิป
-  const handleViewSlip = (url?: string | null) => {
-    if (!url) return Swal.fire("ไม่มีสลิป", "ยังไม่มีหลักฐานการชำระ", "info");
+  // ✅ ฟังก์ชันแสดงสลิปจาก payment.slipUrl
+  const handleViewSlip = (bill: Bill) => {
+    const url = bill.payment?.slipUrl;
+
+    if (!url) {
+      return Swal.fire("ไม่มีสลิป", "ยังไม่มีหลักฐานการชำระ", "info");
+    }
+
     Swal.fire({
       title: "สลิปการชำระเงิน",
       imageUrl: url,
@@ -93,7 +98,7 @@ export default function AllBills() {
                 bills={currentBills}
                 onEdit={(bill) => setEditingBill(bill)}
                 onDelete={deleteBill}
-                onViewSlip={handleViewSlip}
+                onViewSlip={(bill) => handleViewSlip(bill)} // ✅ ส่งทั้ง bill object
               />
 
               {/* 📑 Pagination */}

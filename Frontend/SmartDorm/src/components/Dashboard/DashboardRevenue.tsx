@@ -1,13 +1,11 @@
 import { useMemo, useState } from "react";
 import type { Bill } from "../../types/Bill";
-import type { Booking } from "../../types/Booking";
 
 interface Props {
   bills: Bill[];
-  bookings: Booking[];
 }
 
-export default function DashboardRevenue({ bills, bookings }: Props) {
+export default function DashboardRevenue({ bills }: Props) {
   const [selectedYear, setSelectedYear] = useState<string>("");
   const [selectedMonth, setSelectedMonth] = useState<string>("");
 
@@ -17,10 +15,13 @@ export default function DashboardRevenue({ bills, bookings }: Props) {
     "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม",
   ];
 
-  // 📅 ปี พ.ศ. 2568–2666
-  const availableYears = Array.from({ length: 8 }, (_, i) => (2568 + i).toString());
+  // 📅 ปี พ.ศ. (2568–2666)
+  const availableYears = Array.from({ length: 8 }, (_, i) =>
+    (2568 + i).toString()
+  );
 
-  const selectedMonthName = selectedMonth && monthNamesTH[parseInt(selectedMonth) - 1];
+  const selectedMonthName =
+    selectedMonth && monthNamesTH[parseInt(selectedMonth) - 1];
   const selectedYearTH = selectedYear || "";
 
   const displayTitle =
@@ -30,7 +31,7 @@ export default function DashboardRevenue({ bills, bookings }: Props) {
       ? `ปี ${selectedYearTH}`
       : "ทั้งหมด";
 
-  // 🧾 กรองบิลตามเดือน/ปี (UTC ป้องกัน timezone)
+  // 🔍 กรองบิลตามปี / เดือน
   const filteredBills = useMemo(() => {
     return bills.filter((b) => {
       const d = new Date(b.month);
@@ -47,30 +48,45 @@ export default function DashboardRevenue({ bills, bookings }: Props) {
     });
   }, [bills, selectedYear, selectedMonth]);
 
-  // 💰 รวมยอดจาก booking (เช่า / มัดจำ / ค่าจอง)
+  // 💰 รวมยอดตามประเภท (เฉพาะบิลที่ชำระแล้ว)
   const totalRent = useMemo(
-    () => filteredBills.filter((b) => b.status === 1).reduce((s, b) => s + (b.rent || 0), 0),
+    () =>
+      filteredBills
+        .filter((b) => b.status === 1)
+        .reduce((sum, b) => sum + (b.rent || 0), 0),
     [filteredBills]
   );
 
   const totalWater = useMemo(
-    () => filteredBills.filter((b) => b.status === 1).reduce((s, b) => s + (b.waterCost || 0), 0),
+    () =>
+      filteredBills
+        .filter((b) => b.status === 1)
+        .reduce((sum, b) => sum + (b.waterCost || 0), 0),
     [filteredBills]
   );
 
   const totalElectric = useMemo(
-    () => filteredBills.filter((b) => b.status === 1).reduce((s, b) => s + (b.electricCost || 0), 0),
+    () =>
+      filteredBills
+        .filter((b) => b.status === 1)
+        .reduce((sum, b) => sum + (b.electricCost || 0), 0),
     [filteredBills]
   );
 
   const totalAll = useMemo(
-    () => filteredBills.filter((b) => b.status === 1).reduce((s, b) => s + (b.total || 0), 0),
+    () =>
+      filteredBills
+        .filter((b) => b.status === 1)
+        .reduce((sum, b) => sum + (b.total || 0), 0),
     [filteredBills]
   );
 
-  // 📊 รวมรายเดือน (เฉพาะ Bill ที่ชำระแล้ว)
+  // 📊 รวมรายเดือน (เฉพาะบิลที่ status === 1)
   const monthlyData = useMemo(() => {
-    const map = new Map<string, { rent: number; water: number; electric: number; total: number }>();
+    const acc = new Map<
+      string,
+      { rent: number; water: number; electric: number; total: number }
+    >();
 
     filteredBills
       .filter((b) => b.status === 1)
@@ -79,20 +95,26 @@ export default function DashboardRevenue({ bills, bookings }: Props) {
         const yearBE = d.getUTCFullYear() + 543;
         const monthNum = d.getUTCMonth() + 1;
         const key = `${yearBE}-${String(monthNum).padStart(2, "0")}`;
-        const current = map.get(key) || { rent: 0, water: 0, electric: 0, total: 0 };
+
+        const current = acc.get(key) || {
+          rent: 0,
+          water: 0,
+          electric: 0,
+          total: 0,
+        };
 
         current.rent += b.rent || 0;
         current.water += b.waterCost || 0;
         current.electric += b.electricCost || 0;
         current.total += b.total || 0;
 
-        map.set(key, current);
+        acc.set(key, current);
       });
 
-    return Array.from(map.entries()).map(([key, val]) => {
+    return Array.from(acc.entries()).map(([key, v]) => {
       const [yearBE, mm] = key.split("-");
       const monthName = monthNamesTH[parseInt(mm) - 1];
-      return { month: `${monthName} ${yearBE}`, ...val, sortKey: key };
+      return { month: `${monthName} ${yearBE}`, ...v, sortKey: key };
     });
   }, [filteredBills]);
 
@@ -189,7 +211,7 @@ export default function DashboardRevenue({ bills, bookings }: Props) {
   );
 }
 
-// ✅ Sub Component: การ์ดยอดรวม
+// ✅ Sub Component การ์ดยอดรวม
 function RevenueCard({
   title,
   amount,

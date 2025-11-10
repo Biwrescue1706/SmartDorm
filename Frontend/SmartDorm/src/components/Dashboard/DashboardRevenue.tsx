@@ -234,6 +234,14 @@ export default function DashboardRevenue({ bills, bookings }: Props) {
             color="#ffb703"
           />
         </div>
+      {/* ✅ การ์ดรวมรายรับจากการจอง */}
+        <div className="col-6 col-md-2">
+          <RevenueCard
+            title="รวมรายรับจากการจอง"
+            amount={totalRentBooking + totalDepositBooking + totalBookingFee}
+            color="#00916e"
+          />
+        </div>
       </div>
 
       {/* การ์ดจาก Bill */}

@@ -1,3 +1,4 @@
+// src/components/Dashboard/DashboardRevenue.tsx
 import { useMemo, useState } from "react";
 import type { Bill } from "../../types/Bill";
 import type { Booking } from "../../types/Booking";
@@ -12,9 +13,20 @@ export default function DashboardRevenue({ bills, bookings }: Props) {
   const [selectedMonth, setSelectedMonth] = useState<string>("");
 
   const monthNamesTH = [
-    "มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน",
-    "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม",
+    "มกราคม",
+    "กุมภาพันธ์",
+    "มีนาคม",
+    "เมษายน",
+    "พฤษภาคม",
+    "มิถุนายน",
+    "กรกฎาคม",
+    "สิงหาคม",
+    "กันยายน",
+    "ตุลาคม",
+    "พฤศจิกายน",
+    "ธันวาคม",
   ];
+
   const availableYears = Array.from({ length: 8 }, (_, i) =>
     (2568 + i).toString()
   );
@@ -22,6 +34,7 @@ export default function DashboardRevenue({ bills, bookings }: Props) {
   const selectedMonthName =
     selectedMonth && monthNamesTH[parseInt(selectedMonth) - 1];
   const selectedYearTH = selectedYear || "";
+
   const displayTitle =
     selectedYear && selectedMonth
       ? `${selectedMonthName} ${selectedYearTH}`
@@ -29,12 +42,13 @@ export default function DashboardRevenue({ bills, bookings }: Props) {
       ? `ปี ${selectedYearTH}`
       : "ทั้งหมด";
 
-  // 🧾 กรองบิล
+  // 🧾 กรองบิลตามปี/เดือน (เฉพาะช่วงที่เลือก)
   const filteredBills = useMemo(() => {
     return bills.filter((b) => {
       const d = new Date(b.month);
       const yearBE = d.getUTCFullYear() + 543;
       const monthStr = String(d.getUTCMonth() + 1).padStart(2, "0");
+
       if (selectedYear && selectedMonth) {
         return yearBE.toString() === selectedYear && monthStr === selectedMonth;
       } else if (selectedYear) {
@@ -44,13 +58,14 @@ export default function DashboardRevenue({ bills, bookings }: Props) {
     });
   }, [bills, selectedYear, selectedMonth]);
 
-  // 🧾 กรอง booking (ใช้ createdAt)
+  // 🧾 กรอง Booking (ใช้ createdAt)
   const filteredBookings = useMemo(() => {
     return bookings.filter((b) => {
       if (!b.createdAt) return false;
       const d = new Date(b.createdAt);
       const yearBE = d.getUTCFullYear() + 543;
       const monthStr = String(d.getUTCMonth() + 1).padStart(2, "0");
+
       if (selectedYear && selectedMonth) {
         return yearBE.toString() === selectedYear && monthStr === selectedMonth;
       } else if (selectedYear) {
@@ -60,7 +75,7 @@ export default function DashboardRevenue({ bills, bookings }: Props) {
     });
   }, [bookings, selectedYear, selectedMonth]);
 
-  // 💵 รวมยอดจาก booking ที่อนุมัติแล้ว
+  // 💵 จาก Booking (approve แล้ว)
   const totalRentBooking = useMemo(
     () =>
       filteredBookings
@@ -85,7 +100,7 @@ export default function DashboardRevenue({ bills, bookings }: Props) {
     [filteredBookings]
   );
 
-  // 💰 รวมจากบิลที่ชำระแล้ว
+  // 💰 จาก Bill (status === 1 เท่านั้น)
   const totalRentBill = useMemo(
     () =>
       filteredBills
@@ -118,7 +133,7 @@ export default function DashboardRevenue({ bills, bookings }: Props) {
     [filteredBills]
   );
 
-  // 📊 รวมรายเดือน (จาก Bill status === 1)
+  // 📊 รวมรายเดือนจากบิล (status === 1)
   const monthlyData = useMemo(() => {
     const acc = new Map<
       string,
@@ -193,42 +208,78 @@ export default function DashboardRevenue({ bills, bookings }: Props) {
         </select>
       </div>
 
-      {/* การ์ดยอดรวมจาก Booking */}
-      <h5 className="fw-bold text-center mb-2 text-primary">📦 รายรับจากการจอง</h5>
+      {/* การ์ดจาก Booking */}
+      <h5 className="fw-bold text-center mb-2 text-primary">
+        📦 รายรับจากการจอง
+      </h5>
       <div className="row g-2 justify-content-center mb-4">
         <div className="col-6 col-md-2">
-          <RevenueCard title="ค่าเช่า (Booking)" amount={totalRentBooking} color="#0077b6" />
+          <RevenueCard
+            title="ค่าเช่า (Booking)"
+            amount={totalRentBooking}
+            color="#0077b6"
+          />
         </div>
         <div className="col-6 col-md-2">
-          <RevenueCard title="ค่ามัดจำ" amount={totalDepositBooking} color="#8338ec" />
+          <RevenueCard
+            title="ค่ามัดจำ"
+            amount={totalDepositBooking}
+            color="#8338ec"
+          />
         </div>
         <div className="col-6 col-md-2">
-          <RevenueCard title="ค่าจอง" amount={totalBookingFee} color="#ffb703" />
+          <RevenueCard
+            title="ค่าจอง"
+            amount={totalBookingFee}
+            color="#ffb703"
+          />
         </div>
       </div>
 
-      {/* การ์ดยอดรวมจาก Bill */}
-      <h5 className="fw-bold text-center mb-2 text-success">📄 รายรับจากบิล (ชำระแล้ว)</h5>
+      {/* การ์ดจาก Bill */}
+      <h5 className="fw-bold text-center mb-2 text-success">
+        📄 รายรับจากบิล (ชำระแล้ว)
+      </h5>
       <div className="row g-2 justify-content-center mb-4">
         <div className="col-6 col-md-2">
-          <RevenueCard title="ค่าเช่าห้อง" amount={totalRentBill} color="#0077b6" />
+          <RevenueCard
+            title="ค่าเช่าห้อง"
+            amount={totalRentBill}
+            color="#0077b6"
+          />
         </div>
         <div className="col-6 col-md-2">
-          <RevenueCard title="ค่าน้ำ" amount={totalWaterBill} color="#48cae4" />
+          <RevenueCard
+            title="ค่าน้ำ"
+            amount={totalWaterBill}
+            color="#48cae4"
+          />
         </div>
         <div className="col-6 col-md-2">
-          <RevenueCard title="ค่าไฟ" amount={totalElectricBill} color="#ffb703" />
+          <RevenueCard
+            title="ค่าไฟ"
+            amount={totalElectricBill}
+            color="#ffb703"
+          />
         </div>
         <div className="col-6 col-md-2">
-          <RevenueCard title="รายรับรวม" amount={totalAllBill} color="#00b4d8" />
+          <RevenueCard
+            title="รายรับรวม"
+            amount={totalAllBill}
+            color="#00b4d8"
+          />
         </div>
       </div>
 
-      {/* ✅ ตารางรายเดือน */}
-      <div className="table-responsive">
-        <table className="table table-sm table-striped align-middle text-center shadow-sm">
+      {/* ตารางรายเดือนจาก Bill */}
+      <div className="responsive-table" style={{ overflowX: "auto" }}>
+        <table
+          className="table table-sm table-striped align-middle text-center"
+          style={{ tableLayout: "fixed", width: "100%" }}
+        >
           <thead className="table-dark">
             <tr>
+              <th>#</th>
               <th>เดือน</th>
               <th>ค่าเช่าห้อง</th>
               <th>ค่าน้ำ</th>
@@ -240,8 +291,9 @@ export default function DashboardRevenue({ bills, bookings }: Props) {
             {monthlyData.length > 0 ? (
               monthlyData
                 .sort((a, b) => (a.sortKey > b.sortKey ? -1 : 1))
-                .map((m) => (
+                .map((m, idx) => (
                   <tr key={m.sortKey}>
+                    <td>{idx + 1}</td>
                     <td>{m.month}</td>
                     <td>{m.rent.toLocaleString("th-TH")}</td>
                     <td>{m.water.toLocaleString("th-TH")}</td>
@@ -253,7 +305,7 @@ export default function DashboardRevenue({ bills, bookings }: Props) {
                 ))
             ) : (
               <tr>
-                <td colSpan={5} className="text-muted">
+                <td colSpan={6} className="text-muted">
                   ไม่มีข้อมูลรายรับในช่วงที่เลือก
                 </td>
               </tr>

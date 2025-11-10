@@ -11,13 +11,10 @@ export default function DashboardRevenue({ bills, bookings }: Props) {
   const [selectedYear, setSelectedYear] = useState<string>("");
   const [selectedMonth, setSelectedMonth] = useState<string>("");
 
-  // 🗓️ รายชื่อเดือนภาษาไทย
   const monthNamesTH = [
     "มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน",
     "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม",
   ];
-
-  // 📅 ปี พ.ศ. (2568–2666)
   const availableYears = Array.from({ length: 8 }, (_, i) =>
     (2568 + i).toString()
   );
@@ -25,7 +22,6 @@ export default function DashboardRevenue({ bills, bookings }: Props) {
   const selectedMonthName =
     selectedMonth && monthNamesTH[parseInt(selectedMonth) - 1];
   const selectedYearTH = selectedYear || "";
-
   const displayTitle =
     selectedYear && selectedMonth
       ? `${selectedMonthName} ${selectedYearTH}`
@@ -65,30 +61,62 @@ export default function DashboardRevenue({ bills, bookings }: Props) {
   }, [bookings, selectedYear, selectedMonth]);
 
   // 💵 รวมยอดจาก booking ที่อนุมัติแล้ว
-  const totalRent = useMemo(() => {
-    return filteredBookings
-      .filter((b) => b.approveStatus === 1 && b.room)
-      .reduce((sum, b) => sum + (b.room?.rent || 0), 0);
-  }, [filteredBookings]);
+  const totalRentBooking = useMemo(
+    () =>
+      filteredBookings
+        .filter((b) => b.approveStatus === 1 && b.room)
+        .reduce((sum, b) => sum + (b.room?.rent || 0), 0),
+    [filteredBookings]
+  );
 
-  const totalDeposit = useMemo(() => {
-    return filteredBookings
-      .filter((b) => b.approveStatus === 1 && b.room)
-      .reduce((sum, b) => sum + (b.room?.deposit || 0), 0);
-  }, [filteredBookings]);
+  const totalDepositBooking = useMemo(
+    () =>
+      filteredBookings
+        .filter((b) => b.approveStatus === 1 && b.room)
+        .reduce((sum, b) => sum + (b.room?.deposit || 0), 0),
+    [filteredBookings]
+  );
 
-  const totalBooking = useMemo(() => {
-    return filteredBookings
-      .filter((b) => b.approveStatus === 1 && b.room)
-      .reduce((sum, b) => sum + (b.room?.bookingFee || 0), 0);
-  }, [filteredBookings]);
+  const totalBookingFee = useMemo(
+    () =>
+      filteredBookings
+        .filter((b) => b.approveStatus === 1 && b.room)
+        .reduce((sum, b) => sum + (b.room?.bookingFee || 0), 0),
+    [filteredBookings]
+  );
 
-  // 💰 รายรับจากบิลที่ชำระแล้ว
-  const totalAll = useMemo(() => {
-    return filteredBills
-      .filter((b) => b.status === 1)
-      .reduce((sum, b) => sum + (b.total || 0), 0);
-  }, [filteredBills]);
+  // 💰 รวมจากบิลที่ชำระแล้ว
+  const totalRentBill = useMemo(
+    () =>
+      filteredBills
+        .filter((b) => b.status === 1)
+        .reduce((sum, b) => sum + (b.rent || 0), 0),
+    [filteredBills]
+  );
+
+  const totalWaterBill = useMemo(
+    () =>
+      filteredBills
+        .filter((b) => b.status === 1)
+        .reduce((sum, b) => sum + (b.waterCost || 0), 0),
+    [filteredBills]
+  );
+
+  const totalElectricBill = useMemo(
+    () =>
+      filteredBills
+        .filter((b) => b.status === 1)
+        .reduce((sum, b) => sum + (b.electricCost || 0), 0),
+    [filteredBills]
+  );
+
+  const totalAllBill = useMemo(
+    () =>
+      filteredBills
+        .filter((b) => b.status === 1)
+        .reduce((sum, b) => sum + (b.total || 0), 0),
+    [filteredBills]
+  );
 
   // 📊 รวมรายเดือน (จาก Bill status === 1)
   const monthlyData = useMemo(() => {
@@ -133,7 +161,7 @@ export default function DashboardRevenue({ bills, bookings }: Props) {
       <h4 className="fw-bold mb-3 text-center">( {displayTitle} )</h4>
 
       {/* ฟิลเตอร์ */}
-      <div className="d-flex flex-wrap justify-content-center gap-2 mb-3">
+      <div className="d-flex flex-wrap justify-content-center gap-2 mb-4">
         <select
           className="form-select w-auto"
           value={selectedYear}
@@ -149,6 +177,7 @@ export default function DashboardRevenue({ bills, bookings }: Props) {
             </option>
           ))}
         </select>
+
         <select
           className="form-select w-auto"
           value={selectedMonth}
@@ -164,19 +193,34 @@ export default function DashboardRevenue({ bills, bookings }: Props) {
         </select>
       </div>
 
-      {/* การ์ดยอดรวม */}
-      <div className="row g-2 justify-content-center mb-3">
+      {/* การ์ดยอดรวมจาก Booking */}
+      <h5 className="fw-bold text-center mb-2 text-primary">📦 รายรับจากการจอง</h5>
+      <div className="row g-2 justify-content-center mb-4">
         <div className="col-6 col-md-2">
-          <RevenueCard title="ค่าเช่า" amount={totalRent} color="#0077b6" />
+          <RevenueCard title="ค่าเช่า (Booking)" amount={totalRentBooking} color="#0077b6" />
         </div>
         <div className="col-6 col-md-2">
-          <RevenueCard title="ค่ามัดจำ" amount={totalDeposit} color="#8338ec" />
+          <RevenueCard title="ค่ามัดจำ" amount={totalDepositBooking} color="#8338ec" />
         </div>
         <div className="col-6 col-md-2">
-          <RevenueCard title="ค่าจอง" amount={totalBooking} color="#ffb703" />
+          <RevenueCard title="ค่าจอง" amount={totalBookingFee} color="#ffb703" />
+        </div>
+      </div>
+
+      {/* การ์ดยอดรวมจาก Bill */}
+      <h5 className="fw-bold text-center mb-2 text-success">📄 รายรับจากบิล (ชำระแล้ว)</h5>
+      <div className="row g-2 justify-content-center mb-4">
+        <div className="col-6 col-md-2">
+          <RevenueCard title="ค่าเช่าห้อง" amount={totalRentBill} color="#0077b6" />
         </div>
         <div className="col-6 col-md-2">
-          <RevenueCard title="รายรับบิล" amount={totalAll} color="#00b4d8" />
+          <RevenueCard title="ค่าน้ำ" amount={totalWaterBill} color="#48cae4" />
+        </div>
+        <div className="col-6 col-md-2">
+          <RevenueCard title="ค่าไฟ" amount={totalElectricBill} color="#ffb703" />
+        </div>
+        <div className="col-6 col-md-2">
+          <RevenueCard title="รายรับรวม" amount={totalAllBill} color="#00b4d8" />
         </div>
       </div>
 

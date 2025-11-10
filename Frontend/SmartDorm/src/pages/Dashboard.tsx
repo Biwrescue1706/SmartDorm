@@ -42,7 +42,6 @@ export default function Dashboard() {
 
   return (
     <div className="d-flex flex-column min-vh-100 bg-light">
-      
       <Nav
         message={message}
         onLogout={handleLogout}
@@ -63,7 +62,8 @@ export default function Dashboard() {
             pendingCheckouts={pendingCheckouts}
           />
 
-          <DashboardRevenue bills={bills} bookings={bookings} />
+          {/* ✅ แก้ตรงนี้ */}
+          <DashboardRevenue bills={bills} />
         </div>
       </main>
     </div>

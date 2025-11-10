@@ -1,61 +1,111 @@
+// src/utils/lineFlex.ts
+
 import axios from "axios";
 
+// 🧩 Interface
+export interface FlexButton {
+  label: string;
+  url: string;
+  style?: "primary" | "secondary" | "link";
+  color?: string;
+}
+
 /**
- * ส่ง Flex Message แบบ SmartDorm (ใช้ Messaging API)
+ * ส่ง Flex Message แบบ SmartDorm Branding
+ *
+ * @param userId LINE user ID ของผู้รับ
+ * @param title หัวข้อหลักของข้อความ
+ * @param fields ข้อมูลแต่ละบรรทัดในกล่อง body [{ label, value, color? }]
+ * @param buttons ปุ่มใน footer [{ label, url, style?, color? }]
+ * @param iconUrl (optional) URL รูป icon ที่ต้องการใช้แทนโลโก้ SmartDorm
  */
 export async function sendFlexMessage(
   userId: string,
   title: string,
   fields: { label: string; value: string; color?: string }[],
-  buttonLabel: string,
-  buttonUrl: string
+  buttons: FlexButton[],
+  iconUrl?: string
 ) {
   if (!userId || !process.env.LINE_CHANNEL_TOKEN) {
     console.error("❌ Missing userId or LINE_CHANNEL_TOKEN");
     return;
   }
 
+  // 🧱 Body Contents
   const bodyContents = [
     {
       type: "text",
       text: title,
       weight: "bold",
       size: "lg",
-      color: "#20c997",
+      color: "#000000ff",
       wrap: true,
     },
     { type: "separator", margin: "md" },
-    ...fields.map((f) => {
-      const textContent = `${f.label}: ${f.value}`;
-      return {
-        type: "box",
-        layout: "horizontal",
-        margin: "md",
-        contents: [
-          {
-            type: "text",
-            text: f.label,
-            flex: 2,
-            size: "sm",
-            color: "#555555",
-          },
-          {
-            type: "text",
-            text: f.value,
-            flex: 3,
-            size: "sm",
-            align: "start",
-            color: f.color || "#111111",
-            wrap: true,
-          },
-        ],
-      };
-    }),
+    ...fields.map((f) => ({
+      type: "box",
+      layout: "horizontal",
+      margin: "md",
+      contents: [
+        {
+          type: "text",
+          text: f.label,
+          flex: 2,
+          size: "sm",
+          color: "#000000ff",
+        },
+        {
+          type: "text",
+          text: f.value,
+          flex: 3,
+          size: "sm",
+          align: "start",
+          color: f.color || "#000000ff",
+          wrap: true,
+        },
+      ],
+    })),
   ];
 
+  // 🔘 Footer Buttons
+  const footerContents = [
+    ...(buttons?.length
+      ? buttons.map((btn) => ({
+          type: "button",
+          style: btn.style || "primary",
+          color: btn.color || "#20c997",
+          height: "sm",
+          action: {
+            type: "uri",
+            label: btn.label,
+            uri: btn.url,
+          },
+        }))
+      : []),
+    {
+      type: "text",
+      text: "ขอบคุณที่ใช้บริการ 🏫 SmartDorm 🎉",
+      align: "center",
+      size: "sm",
+      color: "#000000ff",
+      weight: "bold",
+      margin: "md",
+      wrap: true,
+    },
+    {
+      type: "text",
+      text: "SmartDorm © 2025",
+      align: "center",
+      size: "xs",
+      color: "#000000ff",
+      margin: "sm",
+    },
+  ];
+
+  // 💬 Flex Message Structure
   const flex = {
     type: "flex",
-    altText: title,
+    altText: title.length > 390 ? title.slice(0, 390) + "..." : title,
     contents: {
       type: "bubble",
       hero: {
@@ -65,23 +115,28 @@ export async function sendFlexMessage(
         contents: [
           {
             type: "image",
-            url: "https://smartdorm-admin.biwbong.shop/assets/SmartDorm.png", // โลโก้ SmartDorm
-            size: "xs",
+            url:
+              iconUrl ||
+              "https://smartdorm-admin.biwbong.shop/assets/SmartDorm.png",
+            size: "xxs",
             aspectMode: "fit",
             align: "start",
+            margin: "sm",
           },
           {
             type: "text",
-            text: "🏫 SmartDorm 🎉",
+            text: "🏫สมาร์ทดอร์ม🎉",
             weight: "bold",
-            color: "#000000ff",
+            color: "#000000",
             size: "md",
+            align: "center",
             gravity: "center",
-            margin: "center",
             wrap: true,
+            margin: "none",
           },
         ],
-        paddingAll: "12px",
+        paddingAll: "10px",
+        spacing: "md",
       },
       body: {
         type: "box",
@@ -91,37 +146,8 @@ export async function sendFlexMessage(
       footer: {
         type: "box",
         layout: "vertical",
-        contents: [
-          {
-            type: "button",
-            style: "primary",
-            color: "#20c997",
-            height: "sm",
-            action: {
-              type: "uri",
-              label: buttonLabel,
-              uri: buttonUrl,
-            },
-          },
-          {
-            type: "text",
-            text: "ขอบคุณที่ใช้บริการ 🏫 SmartDorm 🎉",
-            align: "center",
-            size: "sm",
-            color: "#20c997",
-            weight: "bold",
-            margin: "md",
-            wrap: true,
-          },
-          {
-            type: "text",
-            text: "SmartDorm © 2025",
-            align: "center",
-            size: "xs",
-            color: "#000000ff",
-            margin: "sm",
-          },
-        ],
+        spacing: "sm",
+        contents: footerContents,
       },
       styles: {
         footer: { separator: true },
@@ -129,15 +155,21 @@ export async function sendFlexMessage(
     },
   };
 
-  await axios.post(
-    "https://api.line.me/v2/bot/message/push",
-    { to: userId, messages: [flex] },
-    {
-      headers: {
-        Authorization: `Bearer ${process.env.LINE_CHANNEL_TOKEN}`,
-        "Content-Type": "application/json",
-      },
-    }
-  );
+  // 🚀 ส่งข้อความผ่าน LINE API
+  try {
+    await axios.post(
+      "https://api.line.me/v2/bot/message/push",
+      { to: userId, messages: [flex] },
+      {
+        headers: {
+          Authorization: `Bearer ${process.env.LINE_CHANNEL_TOKEN}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
 
+    console.log(` [LINE] ส่งข้อความ Flex สำเร็จ`);
+  } catch (err: any) {
+    console.error(" [LINE Flex] Error:", err.response?.data || err.message);
+  }
 }

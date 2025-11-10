@@ -50,15 +50,15 @@ app.use(express.json());
 app.use(cookieParser());
 
 // ---------------- Routes ----------------
-import adminRouter from "./modules/Admins/adminRouter";
-import authRouter from "./modules/Auths/authRouter";
-import billRouter from "./modules/Bills/billRouter";
-import roomRouter from "./modules/Rooms/roomRouter";
-import bookingRouter from "./modules/Bookings/bookingRouter";
-import checkoutRouter from "./modules/Checkouts/checkoutRouter";
-import paymentRouter from "./modules/Payments/paymentRouter";
-import qrRouter from "./modules/QR/qrRouter";
-import userRouter from "./modules/Users/userRouter";
+import adminRouter from "./modules/admin";
+import authRouter from "./modules/auth";
+import billRouter from "./modules/bill";
+import roomRouter from "./modules/room";
+import bookingRouter from "./modules/booking";
+import checkoutRouter from "./modules/checkout";
+import paymentRouter from "./modules/payment";
+import qrRouter from "./modules/qr";
+import userRouter from "./modules/user";
 
 app.use("/auth", authRouter);
 app.use("/admin", adminRouter);

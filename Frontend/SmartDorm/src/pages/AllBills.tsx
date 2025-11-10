@@ -42,7 +42,7 @@ export default function AllBills() {
 
   // ✅ แสดงสลิป
   const handleViewSlip = (bill: Bill) => {
-    const url = bill.payment?.slipUrl || bill.slipUrl;
+    const url = bill.payment.slipUrl ||"-"
     if (!url)
       return Swal.fire("ไม่มีสลิป", "ยังไม่มีหลักฐานการชำระ", "info");
 

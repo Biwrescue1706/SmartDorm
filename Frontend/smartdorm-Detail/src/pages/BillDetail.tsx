@@ -123,22 +123,22 @@ export default function BillDetail() {
 
       {/* Bill Info */}
       <div className="border rounded p-3 bg-light mb-3">
-        <p className="mb-1"><strong>สวัสดี {bill.customer?.userName}</strong> </p>
+        <p className="mb-1"><strong>สวัสดี  {bill.customer?.userName} </strong> </p>
         <p className="mb-1">
-          <strong>ห้อง :</strong> {bill.room?.number || "-"}
+          <strong>ห้อง : </strong> {bill.room?.number || "-"}
         </p>
         <p className="mb-1">
-          <strong>ชื่อ - นามสกุล :</strong> {fullName}
+          <strong>ชื่อ - นามสกุล : </strong> {fullName}
         </p>
         <p className="mb-1">
-          <strong>เดือน :</strong>{" "}
+          <strong>เดือน : </strong>{" "}
           {new Date(bill.month).toLocaleDateString("th-TH", {
             year: "numeric",
             month: "long",
           })}
         </p>
         <p className="mb-1">
-          <strong>ครบกำหนดชำระ :</strong>{" "}
+          <strong>ครบกำหนดชำระ : </strong>{" "}
           <span className="text-danger">{formatThaiDate(bill.dueDate)}</span>
         </p>
         <p className="mb-1">

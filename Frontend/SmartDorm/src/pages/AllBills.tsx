@@ -41,22 +41,48 @@ export default function AllBills() {
   const currentBills = filtered.slice(start, start + rows);
 
   // ✅ แสดงสลิป
-  const handleViewSlip = (bill: Bill) => {
-  const url = bill.payment?.slipUrl || bill.slipUrl || null; // ✅ รองรับทั้งจาก payment และ bill
+  // ✅ แสดงและดาวน์โหลดสลิป
+const handleViewSlip = async (bill: Bill) => {
+  const url = bill.payment?.slipUrl || bill.slipUrl || null; // รองรับทั้ง Payment และ Bill
   if (!url || url === "-") {
     return Swal.fire("ไม่มีสลิป", "ยังไม่มีหลักฐานการชำระ", "info");
   }
 
-  Swal.fire({
+  // 🧩 แสดง Swal พร้อมปุ่มดาวน์โหลด
+  const result = await Swal.fire({
     title: "สลิปการชำระเงิน",
     imageUrl: url,
     imageAlt: "Slip",
     imageWidth: 400,
     background: "#f9fafb",
     showCloseButton: true,
-    confirmButtonText: "ปิด",
-    footer: `<a href="${url}" target="_blank" class="btn btn-sm btn-primary mt-2">ดาวน์โหลด</a>`,
+    confirmButtonText: "📥 ดาวน์โหลด",
+    showCancelButton: true,
+    cancelButtonText: "ปิด",
   });
+
+  // ถ้าผู้ใช้กดดาวน์โหลด
+  if (result.isConfirmed) {
+    try {
+      const response = await fetch(url);
+      const blob = await response.blob();
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+
+      // ตั้งชื่อไฟล์อัตโนมัติ เช่น slip_ห้อง101_เดือนธันวาคม.png
+      const roomNum = bill.room?.number ?? "room";
+      const monthStr = new Date(bill.month).toLocaleDateString("th-TH", {
+        month: "long",
+        year: "numeric",
+      });
+      link.download = `slip_${roomNum}_${monthStr}.png`;
+
+      link.click();
+      URL.revokeObjectURL(link.href);
+    } catch (err) {
+      Swal.fire("ดาวน์โหลดไม่สำเร็จ", "ไม่สามารถบันทึกรูปได้", "error");
+    }
+  }
 };
 
   return (

@@ -229,6 +229,7 @@ billRouter.get("/getall", async (_req, res) => {
         room: true,
         booking: true,
         customer: true,
+        payment: true,
       },
     });
     res.json(bills);
@@ -246,6 +247,7 @@ billRouter.get("/:billId", async (req, res) => {
         room: true,
         booking: true,
         customer: true,
+        payment: true,
       },
     });
     if (!bill) throw new Error("ไม่พบบิลในระบบ");
@@ -255,13 +257,12 @@ billRouter.get("/:billId", async (req, res) => {
   }
 });
 
-// ✏️ อัปเดตบิล
 billRouter.put("/:billId", authMiddleware, async (req, res) => {
   try {
     const updated = await prisma.bill.update({
       where: { billId: req.params.billId },
       data: { ...req.body, updatedBy: req.admin!.adminId },
-      include: { room: true, booking: true, customer: true },
+      include: { room: true, booking: true, customer: true, payment: true }, // ✅ เพิ่ม
     });
     res.json({ message: "อัปเดตบิลสำเร็จ", updated });
   } catch (err: any) {
@@ -269,14 +270,19 @@ billRouter.put("/:billId", authMiddleware, async (req, res) => {
   }
 });
 
-// 🗑️ ลบบิล
+//ลบ
 billRouter.delete("/:billId", authMiddleware, async (req, res) => {
   try {
-    await prisma.bill.delete({ where: { billId: req.params.billId } });
-    res.json({ message: "ลบบิลสำเร็จ" });
+    const { billId } = req.params;
+
+    // ลบ payment ก่อน (ถ้ามี)
+    await prisma.payment.deleteMany({ where: { billId } });
+
+   // 🗑️ ลบบิล
+    await prisma.bill.delete({ where: { billId } });
+
+    res.json({ message: "ลบบิลและข้อมูลการชำระสำเร็จ" });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
 });
-
-export default billRouter;

@@ -23,7 +23,7 @@ export default function GuestRoute({ children }: { children: ReactNode }) {
   if (loading)
     return (
       <div className="text-center mt-5">
-        ⏳ <b>กำลังตรวจสอบสิทธิ์...</b>
+        ⏳ <b>รอการตอบกลับ ของ Server .... ...</b>
       </div>
     );
 

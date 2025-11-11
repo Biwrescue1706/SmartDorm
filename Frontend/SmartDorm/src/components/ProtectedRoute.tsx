@@ -22,7 +22,7 @@ export default function ProtectedRoute({ children }: { children: ReactNode }) {
   if (loading)
     return (
       <div className="text-center mt-5">
-        ⏳ <b>รอการตอบกลับ .... </b>
+        ⏳ <b>รอการตอบกลับ ของ Server .... </b>
       </div>
     );
 

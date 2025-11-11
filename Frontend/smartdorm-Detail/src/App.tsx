@@ -6,6 +6,8 @@ import BillDetail from "./pages/BillDetail";
 import Home from "./pages/Home";
 import BookingViewSearch from "./pages/BookingViewSearch";
 import ReturnSearch from "./pages/ReturnSearch";
+import PaymentSearch  from "./pages/PaymentSearch";
+
 
 export default function App() {
   return (
@@ -13,7 +15,7 @@ export default function App() {
       <Route path="/" element={<Home />} />
       <Route path="/booking" element={<BookingViewSearch />} />
       <Route path="/return" element={<ReturnSearch />} />
-      {/* <Route path="/payment" element={<PaymentPage />} /> */}
+      <Route path="/bill" element={<PaymentSearch />} />
       <Route path="/booking/:bookingId" element={<BookingDetail />} />
       <Route path="/checkout/:bookingId" element={<CheckoutDetail />} />
       <Route path="/bill/:billId" element={<BillDetail />} />

@@ -30,7 +30,7 @@ export default function Home() {
         {/* ปุ่มชำระบิล */}
         <button
           className="btn btn-success fw-bold py-3 rounded-4 shadow-sm"
-          onClick={() => navigate("/payment")}
+          onClick={() => navigate("/bill")}
         >
           💰 ชำระบิล
         </button>

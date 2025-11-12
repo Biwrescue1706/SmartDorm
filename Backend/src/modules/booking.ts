@@ -110,10 +110,11 @@ bookingRouter.post("/create", upload.single("slip"), async (req, res) => {
       checkout,
     } = req.body;
 
+    //ตรวจสอบสิทธิ์ผู้จองผ่าน LINE
     const { userId, displayName } = await verifyLineToken(accessToken);
     if (!userId || !roomId || !checkin) throw new Error("ข้อมูลไม่ครบ");
 
-    // 📸 Upload Slip
+    // 📸 อัปโหลดสลิปไปยัง Supabase Storage (ถ้ามี)
     let slipUrl = "";
     if (req.file) {
       const random = Math.random().toString(36).substring(2, 8);
@@ -131,7 +132,7 @@ bookingRouter.post("/create", upload.single("slip"), async (req, res) => {
       slipUrl = data.publicUrl;
     }
 
-    // 🧾 บันทึกข้อมูล
+    // 🧾 บันทึกข้อมูลการจองลงฐานข้อมูล
     const booking = await prisma.$transaction(async (tx) => {
       let customer = await tx.customer.findFirst({ where: { userId } });
       if (!customer) {
@@ -197,7 +198,7 @@ bookingRouter.post("/create", upload.single("slip"), async (req, res) => {
             { label: "เบอร์โทร : ", value: booking.cphone ?? "-" },
           ],
           [
-            { label: "ดูสลิป", url: `${booking.slipUrl}`, style: "secondary" },
+            { label: "ดูสลิป", url: `${booking.slipUrl}`, style: "primary" },
             {
               label: "เปิดในระบบ Admin",
               url: `https://smartdorm-admin.biwbong.shop`,

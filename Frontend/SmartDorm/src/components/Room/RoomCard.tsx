@@ -25,9 +25,10 @@ export default function RoomCard({ room, role, onUpdated }: Props) {
       className="card shadow-sm border-0 mb-3"
       style={{
         borderRadius: "15px",
-        minHeight: "240px",
+        minHeight: "260px",
         backgroundColor: "#f1f3f5",
         position: "relative",
+        paddingBottom: "65px", // ⭐ เว้นที่ให้ปุ่ม ไม่ให้ชนสถานะ
       }}
     >
       <div className="card-body" style={{ padding: "20px" }}>
@@ -40,7 +41,7 @@ export default function RoomCard({ room, role, onUpdated }: Props) {
         <p className="mb-1 fs-6"><b>ผู้สร้าง : </b> {room.adminCreated?.name || "-"}</p>
         <p className="mb-1 fs-6"><b>ผู้แก้ไข : </b> {room.adminUpdated?.name || "-"}</p>
 
-        <p className="mb-4 fs-6">
+        <p className="mb-2 fs-6">
           <b>สถานะ : </b>
           <span
             className={`badge px-3 py-1 ${
@@ -50,38 +51,41 @@ export default function RoomCard({ room, role, onUpdated }: Props) {
             {room.status === 0 ? "ว่าง" : "เต็ม"}
           </span>
         </p>
-
-        {/* ⭐ ปุ่มแก้ไข + ลบ อยู่ตรงกลางล่าง ⭐ */}
-        {isSuperAdmin && (
-          <div
-            className="d-flex justify-content-center gap-3"
-            style={{
-              width: "100%",
-              position: "absolute",
-              bottom: "15px",
-              left: "50%",
-              transform: "translateX(-50%)",
-            }}
-          >
-            {/* ปุ่มแก้ไข (เอา buttonClass ออกแล้ว) */}
-            <EditRoomDialog roomId={room.roomId} onSuccess={onUpdated} />
-
-            {/* ปุ่มลบ */}
-            {room.status === 0 && (
-              <button
-                className="btn btn-sm fw-semibold text-white px-3 py-1"
-                style={{
-                  background: "linear-gradient(135deg, #ff512f, #dd2476)",
-                  border: "none",
-                }}
-                onClick={handleDelete}
-              >
-                🗑️ ลบ
-              </button>
-            )}
-          </div>
-        )}
       </div>
+
+      {/* ⭐ ปุ่มแก้ไข + ลบ อยู่ตรงกลางล่าง ไม่ชนสถานะ และไม่ติดขอบ ⭐ */}
+      {isSuperAdmin && (
+        <div
+          className="d-flex justify-content-center gap-3"
+          style={{
+            width: "100%",
+            position: "absolute",
+            bottom: "15px",
+            left: "50%",
+            transform: "translateX(-50%)",
+            padding: "0 20px", // ⭐ กันไม่ให้ปุ่มชิดซ้าย–ขวา
+          }}
+        >
+          {/* ปุ่มแก้ไข */}
+          <EditRoomDialog roomId={room.roomId} onSuccess={onUpdated} />
+
+          {/* ปุ่มลบ (ไม่มีคำว่า ลบ) */}
+          {room.status === 0 && (
+            <button
+              className="btn btn-sm fw-semibold text-white px-3 py-1"
+              style={{
+                background: "linear-gradient(135deg, #ff512f, #dd2476)",
+                border: "none",
+                width: "70px", // ⭐ ทำขนาดเท่ากับปุ่มแก้ไข
+                textAlign: "center",
+              }}
+              onClick={handleDelete}
+            >
+              🗑️
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 }

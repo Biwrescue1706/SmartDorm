@@ -29,7 +29,7 @@ export default function ProfileCard({ admin, onSave }: ProfileCardProps) {
       </div>
 
       <div className="mb-3">
-        <label className="form-label fw-bold">ชื่อ-นามสกุล</label>
+        <label className="form-label fw-bold">ชื่อ</label>
         <input
           type="text"
           className="form-control"
@@ -44,7 +44,7 @@ export default function ProfileCard({ admin, onSave }: ProfileCardProps) {
         <input
           type="text"
           className="form-control"
-          value={admin.role === 0 ? "Super Admin" : "Admin"}
+          value={admin.role === 0 ? "แอมิน" : "พนักงาน"}
           disabled
         />
       </div>

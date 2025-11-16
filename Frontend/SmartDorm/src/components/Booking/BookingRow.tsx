@@ -29,14 +29,8 @@ export default function BookingRow({
 }: Props) {
   const isSuperAdmin = role === 0;
 
-  // ================================
-  // actualCheckin ว่างไหม
-  // ================================
   const isEmpty = (v: any) => v === null || v === undefined || v === "";
 
-  // ================================
-  // format Thai date
-  // ================================
   const formatThai = (d?: string | null) =>
     d
       ? new Date(d).toLocaleDateString("th-TH", {
@@ -46,9 +40,6 @@ export default function BookingRow({
         })
       : "-";
 
-  // ================================
-  // Normalize date
-  // ================================
   const normalizeDate = (d: any) => {
     const dt = new Date(d);
     dt.setHours(0, 0, 0, 0);
@@ -58,17 +49,14 @@ export default function BookingRow({
   const checkinDate = normalizeDate(booking.checkin);
   const today = normalizeDate(new Date());
 
-  // ================================
-  // เงื่อนไขเช็คอิน
-  // ================================
   const canCheckin =
     booking.approveStatus === 1 &&
     isEmpty(booking.actualCheckin) &&
     today.getTime() >= checkinDate.getTime();
 
-  // ================================
-  // Popup ยืนยันเช็คอิน
-  // ================================
+  // --------------------------
+  // SweetAlert2 Confirm Checkin
+  // --------------------------
   const confirmCheckin = () => {
     Swal.fire({
       title: "ยืนยันการเช็คอิน?",
@@ -93,9 +81,9 @@ export default function BookingRow({
     });
   };
 
-  // ================================
-  // Status label
-  // ================================
+  // --------------------------
+  // Status
+  // --------------------------
   const statusText =
     booking.approveStatus === 1
       ? "อนุมัติแล้ว"
@@ -118,9 +106,9 @@ export default function BookingRow({
     ? "-"
     : formatThai(booking.actualCheckin);
 
-  // ================================
-  // Popup Slip
-  // ================================
+  // --------------------------
+  // Slip Popup
+  // --------------------------
   const SlipPopup = () =>
     showSlip && (
       <div
@@ -130,7 +118,11 @@ export default function BookingRow({
       >
         <div
           className="bg-white p-3 rounded-4 shadow-lg"
-          style={{ maxWidth: "90%", maxHeight: "90%", position: "relative" }}
+          style={{
+            maxWidth: "90%",
+            maxHeight: "90%",
+            position: "relative",
+          }}
           onClick={(e) => e.stopPropagation()}
         >
           <button
@@ -140,7 +132,6 @@ export default function BookingRow({
               top: "8px",
               right: "12px",
               fontSize: "20px",
-              fontWeight: "bold",
               background: "transparent",
               border: "none",
             }}
@@ -165,10 +156,7 @@ export default function BookingRow({
           />
 
           <div className="text-center mt-3">
-            <button
-              className="btn btn-secondary"
-              onClick={() => setShowSlip(false)}
-            >
+            <button className="btn btn-secondary" onClick={() => setShowSlip(false)}>
               ปิด
             </button>
           </div>
@@ -202,10 +190,7 @@ export default function BookingRow({
 
         {booking.slipUrl && (
           <>
-            <button
-              className="btn btn-primary btn-sm mt-1"
-              onClick={() => setShowSlip(true)}
-            >
+            <button className="btn btn-primary btn-sm mt-1" onClick={() => setShowSlip(true)}>
               ดูสลิป
             </button>
             <SlipPopup />
@@ -214,11 +199,7 @@ export default function BookingRow({
 
         <div className="d-flex justify-content-center gap-2 mt-3">
           {showManage && (
-            <ManageBookingDialog
-              booking={booking}
-              onApprove={onApprove}
-              onReject={onReject}
-            />
+            <ManageBookingDialog booking={booking} onApprove={onApprove} onReject={onReject} />
           )}
 
           {canCheckin && (
@@ -260,10 +241,7 @@ export default function BookingRow({
       <td>
         {booking.slipUrl ? (
           <>
-            <button
-              className="btn btn-outline-primary btn-sm"
-              onClick={() => setShowSlip(true)}
-            >
+            <button className="btn btn-outline-primary btn-sm" onClick={() => setShowSlip(true)}>
               ดู
             </button>
             <SlipPopup />
@@ -279,25 +257,16 @@ export default function BookingRow({
 
       <td className="text-center">
         {showManage && (
-          <ManageBookingDialog
-            booking={booking}
-            onApprove={onApprove}
-            onReject={onReject}
-          />
+          <ManageBookingDialog booking={booking} onApprove={onApprove} onReject={onReject} />
         )}
 
         {canCheckin && (
-          <button
-            className="btn btn-success btn-sm mt-1"
-            onClick={confirmCheckin}
-          >
+          <button className="btn btn-success btn-sm mt-1" onClick={confirmCheckin}>
             เช็คอิน
           </button>
         )}
 
-        {isSuperAdmin && (
-          <EditBookingDialog booking={booking} onSuccess={onEditSuccess} />
-        )}
+        {isSuperAdmin && <EditBookingDialog booking={booking} onSuccess={onEditSuccess} />}
       </td>
 
       <td className="text-center">

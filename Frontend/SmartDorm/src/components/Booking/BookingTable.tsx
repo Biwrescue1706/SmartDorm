@@ -7,9 +7,8 @@ interface Props {
   onReject: (id: string) => void;
   onDelete: (id: string, roomNum: string) => void;
   onEditSuccess: () => void;
-  onCheckin?: (id: string) => void;   // ⭐ ต้องเพิ่ม
+  onCheckin?: (id: string) => void;
   role?: number | null;
-  activeFilter: "pending" | "approved" | "rejected" | "checkinPending";
 }
 
 export default function BookingTable({
@@ -20,15 +19,18 @@ export default function BookingTable({
   onEditSuccess,
   onCheckin,
   role,
-  activeFilter,
 }: Props) {
+  
+  // ⭐ Card Mode: <600 = 1 card, 600–1400 = 3 cards, >1400 = table
   const useCard =
-    window.innerWidth < 600 || (window.innerWidth < 1400 && window.innerWidth >= 600);
+    window.innerWidth < 600 ||
+    (window.innerWidth < 1400 && window.innerWidth >= 600);
 
   const mode = useCard ? "card" : "table";
 
   return (
     <div className="mt-3">
+
       {mode === "table" ? (
         <table className="table table-bordered table-hover text-center">
           <thead className="table-primary">
@@ -60,7 +62,7 @@ export default function BookingTable({
                 onReject={onReject}
                 onDelete={onDelete}
                 onEditSuccess={onEditSuccess}
-                onCheckin={onCheckin}     // ⭐ ส่งลงไป
+                onCheckin={onCheckin}
               />
             ))}
           </tbody>
@@ -81,12 +83,13 @@ export default function BookingTable({
                 onReject={onReject}
                 onDelete={onDelete}
                 onEditSuccess={onEditSuccess}
-                onCheckin={onCheckin}     // ⭐ ส่งลงไป
+                onCheckin={onCheckin}
               />
             </div>
           ))}
         </div>
       )}
+
     </div>
   );
 }

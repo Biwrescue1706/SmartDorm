@@ -1,4 +1,5 @@
 import { useState } from "react";
+import Swal from "sweetalert2";
 import type { Booking } from "../../types/Booking";
 import EditBookingDialog from "./EditBookingDialog";
 import ManageBookingDialog from "./ManageBookingDialog";
@@ -28,14 +29,14 @@ export default function BookingRow({
 }: Props) {
   const isSuperAdmin = role === 0;
 
-  // -------------------------
-  // ⭐ actualCheckin ว่างไหม
-  // -------------------------
+  // ================================
+  // actualCheckin ว่างไหม
+  // ================================
   const isEmpty = (v: any) => v === null || v === undefined || v === "";
 
-  // -------------------------
-  // ⭐ format Thai date
-  // -------------------------
+  // ================================
+  // format Thai date
+  // ================================
   const formatThai = (d?: string | null) =>
     d
       ? new Date(d).toLocaleDateString("th-TH", {
@@ -45,30 +46,56 @@ export default function BookingRow({
         })
       : "-";
 
-  // -------------------------
-  // ⭐ Normalize วันที่ (ตั้งเวลาเป็น 00:00:00)
-  // -------------------------
+  // ================================
+  // Normalize date
+  // ================================
   const normalizeDate = (d: any) => {
     const dt = new Date(d);
     dt.setHours(0, 0, 0, 0);
     return dt;
   };
 
-  // ⭐ วันที่จาก backend (ISO ถูกต้องอยู่แล้ว)
   const checkinDate = normalizeDate(booking.checkin);
   const today = normalizeDate(new Date());
 
-  // -------------------------
-  // ⭐ เงื่อนไขปุ่มเช็คอิน
-  // -------------------------
+  // ================================
+  // เงื่อนไขเช็คอิน
+  // ================================
   const canCheckin =
     booking.approveStatus === 1 &&
     isEmpty(booking.actualCheckin) &&
     today.getTime() >= checkinDate.getTime();
 
-  // -------------------------
-  // ⭐ Status label
-  // -------------------------
+  // ================================
+  // Popup ยืนยันเช็คอิน
+  // ================================
+  const confirmCheckin = () => {
+    Swal.fire({
+      title: "ยืนยันการเช็คอิน?",
+      html: `คุณต้องการเช็คอินให้ <b>${booking.fullName}</b> ใช่หรือไม่?`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "ยืนยัน",
+      cancelButtonText: "ยกเลิก",
+      confirmButtonColor: "#28a745",
+      cancelButtonColor: "#d33",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        onCheckin?.(booking.bookingId);
+
+        Swal.fire({
+          icon: "success",
+          title: "เช็คอินสำเร็จ",
+          timer: 1500,
+          showConfirmButton: false,
+        });
+      }
+    });
+  };
+
+  // ================================
+  // Status label
+  // ================================
   const statusText =
     booking.approveStatus === 1
       ? "อนุมัติแล้ว"
@@ -91,9 +118,9 @@ export default function BookingRow({
     ? "-"
     : formatThai(booking.actualCheckin);
 
-  // -------------------------
-  // ⭐ Popup สลิป
-  // -------------------------
+  // ================================
+  // Popup Slip
+  // ================================
   const SlipPopup = () =>
     showSlip && (
       <div
@@ -103,11 +130,7 @@ export default function BookingRow({
       >
         <div
           className="bg-white p-3 rounded-4 shadow-lg"
-          style={{
-            maxWidth: "90%",
-            maxHeight: "90%",
-            position: "relative",
-          }}
+          style={{ maxWidth: "90%", maxHeight: "90%", position: "relative" }}
           onClick={(e) => e.stopPropagation()}
         >
           <button
@@ -120,7 +143,6 @@ export default function BookingRow({
               fontWeight: "bold",
               background: "transparent",
               border: "none",
-              cursor: "pointer",
             }}
           >
             ✖
@@ -143,7 +165,10 @@ export default function BookingRow({
           />
 
           <div className="text-center mt-3">
-            <button className="btn btn-secondary" onClick={() => setShowSlip(false)}>
+            <button
+              className="btn btn-secondary"
+              onClick={() => setShowSlip(false)}
+            >
               ปิด
             </button>
           </div>
@@ -151,13 +176,12 @@ export default function BookingRow({
       </div>
     );
 
-  // ==========================================================================
-  // ⭐ CARD MODE
-  // ==========================================================================
+  // ==========================================================
+  // CARD MODE
+  // ==========================================================
   if (mode === "card") {
     return (
       <div className="shadow-sm rounded-4 p-3 bg-light border text-center">
-
         <h5 className="fw-bold mb-2">ห้อง : {booking.room.number}</h5>
         <p>ชื่อผู้จอง : {booking.fullName}</p>
         <p>LINE : {booking.customer?.userName}</p>
@@ -166,7 +190,9 @@ export default function BookingRow({
         <p>วันที่แจ้งเข้าพัก : {formatThai(booking.checkin)}</p>
 
         {!isEmpty(booking.actualCheckin) && (
-          <p><b>วันที่เข้าพักจริง :</b> {actualCheckinStr}</p>
+          <p>
+            <b>วันที่เข้าพักจริง :</b> {actualCheckinStr}
+          </p>
         )}
 
         <p className="mt-2">
@@ -176,7 +202,10 @@ export default function BookingRow({
 
         {booking.slipUrl && (
           <>
-            <button className="btn btn-primary btn-sm mt-1" onClick={() => setShowSlip(true)}>
+            <button
+              className="btn btn-primary btn-sm mt-1"
+              onClick={() => setShowSlip(true)}
+            >
               ดูสลิป
             </button>
             <SlipPopup />
@@ -184,7 +213,6 @@ export default function BookingRow({
         )}
 
         <div className="d-flex justify-content-center gap-2 mt-3">
-
           {showManage && (
             <ManageBookingDialog
               booking={booking}
@@ -194,10 +222,7 @@ export default function BookingRow({
           )}
 
           {canCheckin && (
-            <button
-              className="btn btn-success btn-sm"
-              onClick={() => onCheckin?.(booking.bookingId)}
-            >
+            <button className="btn btn-success btn-sm" onClick={confirmCheckin}>
               เช็คอิน
             </button>
           )}
@@ -218,9 +243,9 @@ export default function BookingRow({
     );
   }
 
-  // ==========================================================================
-  // ⭐ TABLE MODE
-  // ==========================================================================
+  // ==========================================================
+  // TABLE MODE
+  // ==========================================================
   return (
     <tr>
       <td>{index}</td>
@@ -264,7 +289,7 @@ export default function BookingRow({
         {canCheckin && (
           <button
             className="btn btn-success btn-sm mt-1"
-            onClick={() => onCheckin?.(booking.bookingId)}
+            onClick={confirmCheckin}
           >
             เช็คอิน
           </button>

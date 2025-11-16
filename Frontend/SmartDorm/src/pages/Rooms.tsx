@@ -12,12 +12,11 @@ export default function Rooms() {
   const { rooms, loading, fetchRooms } = useRooms();
   const { message, handleLogout, role, adminName, adminUsername } = useAuth();
 
-  // โหลดข้อมูลห้อง
   useEffect(() => {
     fetchRooms();
   }, []);
 
-  // 1) ตรวจขนาดหน้าจอ
+  // ตรวจขนาดจอ
   const [isLargeScreen, setIsLargeScreen] = useState(window.innerWidth >= 1400);
 
   useEffect(() => {
@@ -28,7 +27,7 @@ export default function Rooms() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // 2) ฟิลเตอร์สถานะและชั้น
+  // ฟิลเตอร์
   const [filter, setFilter] = useState<"all" | "available" | "booked">("all");
   const [selectedFloor, setSelectedFloor] = useState("ทั้งหมด");
 
@@ -44,14 +43,14 @@ export default function Rooms() {
 
     if (selectedFloor !== "ทั้งหมด") {
       const floor = parseInt(selectedFloor);
-      const num = Number(r.number); // <<== แก้ตรงนี้
+      const num = Number(r.number); // แก้ string -> number
 
       return num >= floor * 100 && num < (floor + 1) * 100;
     }
     return true;
   });
 
-  // 3) Pagination
+  // Pagination
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
@@ -75,7 +74,7 @@ export default function Rooms() {
 
       <main className="main-content flex-grow-1 px-1 py-2 mt-6 mt-lg-7">
         <div className="mx-auto container-max">
-          <div className="d-flex justify-content-center align-items-center mb-3 mt-3">
+          <div className="d-flex justify-content-center mb-3 mt-3">
             <h2 className="fw-bold text-dark">🏠 จัดการห้องพัก</h2>
           </div>
 
@@ -85,6 +84,7 @@ export default function Rooms() {
             </div>
           )}
 
+          {/* เลือกชั้น */}
           <div className="text-center mb-4">
             <label className="fw-semibold me-2 fs-5 text-dark">เลือกชั้น :</label>
             <select
@@ -105,6 +105,7 @@ export default function Rooms() {
             </select>
           </div>
 
+          {/* ฟิลเตอร์ห้อง */}
           <RoomFilter
             activeFilter={filter}
             counts={counts}
@@ -114,7 +115,7 @@ export default function Rooms() {
             }}
           />
 
-          {/* แสดง Table หรือ Card */}
+          {/* โหลด */}
           {loading ? (
             <div className="text-center my-5">
               <div className="spinner-border text-success" role="status"></div>
@@ -124,6 +125,7 @@ export default function Rooms() {
             <>
               {isLargeScreen ? (
                 <>
+                  {/* Table Mode */}
                   <RoomTable
                     rooms={currentRooms}
                     startIndex={indexOfFirst}
@@ -144,14 +146,24 @@ export default function Rooms() {
                 </>
               ) : (
                 <>
-                  {currentRooms.map((room) => (
-                    <RoomCard
-                      key={room.roomId}
-                      room={room}
-                      role={role}
-                      onUpdated={handleRefresh}
-                    />
-                  ))}
+                  {/* Card Mode → 1 หรือ 2 คอลัมน์ */}
+                  <div
+                    className="d-grid"
+                    style={{
+                      gridTemplateColumns:
+                        window.innerWidth >= 600 ? "1fr 1fr" : "1fr",
+                      gap: "15px",
+                    }}
+                  >
+                    {currentRooms.map((room) => (
+                      <RoomCard
+                        key={room.roomId}
+                        room={room}
+                        role={role}
+                        onUpdated={handleRefresh}
+                      />
+                    ))}
+                  </div>
 
                   <Pagination
                     currentPage={currentPage}

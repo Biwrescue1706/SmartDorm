@@ -51,7 +51,7 @@ export default function Rooms() {
 
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
-  const [rowsPerPage, setRowsPerPage] = useState(9); // ให้หาร 3 ลงตัวใน layout ใหม่
+  const [rowsPerPage, setRowsPerPage] = useState(10); // ให้หาร 3 ลงตัวใน layout ใหม่
 
   const indexOfLast = currentPage * rowsPerPage;
   const indexOfFirst = indexOfLast - rowsPerPage;

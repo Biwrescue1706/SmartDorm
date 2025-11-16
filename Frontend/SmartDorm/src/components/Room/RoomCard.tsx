@@ -50,7 +50,7 @@ export default function RoomCard({ room, role, onUpdated }: Props) {
                 className="btn btn-danger btn-sm fw-bold"
                 onClick={handleDelete}
               >
-                🗑️ ลบ
+                🗑️
               </button>
             )}
           </div>

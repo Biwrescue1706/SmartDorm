@@ -8,7 +8,6 @@ interface Props {
   onReject: (id: string) => void;
   onDelete: (id: string, roomNum: string) => void;
   onEditSuccess: () => void;
-  onCheckin?: (id: string) => void;
   role?: number | null;
   activeFilter: "pending" | "approved" | "rejected" | "checkinPending";
 }
@@ -19,7 +18,6 @@ export default function BookingTable({
   onReject,
   onDelete,
   onEditSuccess,
-  onCheckin,
   role,
   activeFilter,
 }: Props) {
@@ -34,7 +32,6 @@ export default function BookingTable({
   const isMobile = screen < 600;
   const isDesktop = screen >= 1400;
 
-  // สี card ตาม filter (ใช้เพื่อให้ TS ไม่ error)
   const bgColor =
     activeFilter === "pending"
       ? "#fff7d6"
@@ -76,7 +73,6 @@ export default function BookingTable({
                 onReject={onReject}
                 onDelete={onDelete}
                 onEditSuccess={onEditSuccess}
-                onCheckin={onCheckin}
                 role={role}
                 mode="table"
               />
@@ -87,7 +83,7 @@ export default function BookingTable({
     );
   }
 
-  // ⭐ CARD MODE (Mobile + Tablet)
+  // ⭐ CARD MODE
   return (
     <div
       className="p-3"
@@ -112,7 +108,6 @@ export default function BookingTable({
             onReject={onReject}
             onDelete={onDelete}
             onEditSuccess={onEditSuccess}
-            onCheckin={onCheckin}
             role={role}
             mode="card"
           />

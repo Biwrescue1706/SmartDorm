@@ -28,11 +28,12 @@ export default function RoomCard({ room, role, onUpdated }: Props) {
         minHeight: "260px",
         backgroundColor: "#f1f3f5",
         position: "relative",
-        paddingBottom: "65px", // ⭐ เว้นที่ให้ปุ่ม ไม่ให้ชนสถานะ
+        paddingBottom: "70px",
+        textAlign: "center", // ⭐ จัดข้อมูลให้อยู่กลาง
       }}
     >
       <div className="card-body" style={{ padding: "20px" }}>
-        <h4 className="fw-bold mb-3 text-center">ห้อง {room.number}</h4>
+        <h4 className="fw-bold mb-3">ห้อง {room.number}</h4>
 
         <p className="mb-1 fs-6"><b>ขนาด : </b> {room.size}</p>
         <p className="mb-1 fs-6">
@@ -53,31 +54,32 @@ export default function RoomCard({ room, role, onUpdated }: Props) {
         </p>
       </div>
 
-      {/* ⭐ ปุ่มแก้ไข + ลบ อยู่ตรงกลางล่าง ไม่ชนสถานะ และไม่ติดขอบ ⭐ */}
+      {/* ⭐ ปุ่มแก้ไข + ลบเล็ก ไม่ติดขอบ ⭐ */}
       {isSuperAdmin && (
         <div
-          className="d-flex justify-content-center gap-3"
+          className="d-flex justify-content-center gap-4"
           style={{
             width: "100%",
             position: "absolute",
             bottom: "15px",
             left: "50%",
             transform: "translateX(-50%)",
-            padding: "0 20px", // ⭐ กันไม่ให้ปุ่มชิดซ้าย–ขวา
+            padding: "0 20px",
           }}
         >
-          {/* ปุ่มแก้ไข */}
           <EditRoomDialog roomId={room.roomId} onSuccess={onUpdated} />
 
-          {/* ปุ่มลบ (ไม่มีคำว่า ลบ) */}
           {room.status === 0 && (
             <button
-              className="btn btn-sm fw-semibold text-white px-3 py-1"
+              className="btn btn-sm fw-semibold text-white px-2 py-1"
               style={{
                 background: "linear-gradient(135deg, #ff512f, #dd2476)",
                 border: "none",
-                width: "70px", // ⭐ ทำขนาดเท่ากับปุ่มแก้ไข
-                textAlign: "center",
+                width: "45px",   // ⭐ ปรับขนาดปุ่มเล็กลง
+                height: "35px",  // ⭐ เท่าปุ่มแก้ไข
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
               }}
               onClick={handleDelete}
             >

@@ -22,43 +22,77 @@ export default function RoomCard({ room, role, onUpdated }: Props) {
 
   return (
     <div
-      className="card shadow-sm border-0 mb-mt-3 "
-      style={{ borderRadius: "12px", minHeight: "220px", position: "relative" }}
+      className="card shadow-sm border-0 mb-3"
+      style={{
+        borderRadius: "15px",
+        minHeight: "240px",
+        backgroundColor: "#f1f3f5",
+        position: "relative",
+      }}
     >
-      <div className="card-body">
-        <h5 className="fw-bold mb-2">ห้อง {room.number}</h5>
+      <div className="card-body" style={{ padding: "20px" }}>
+        
+        <h4 className="fw-bold mb-3 text-center">
+          ห้อง {room.number}
+        </h4>
 
-        <p className="mb-1"><b>ขนาด:</b> {room.size}</p>
-        <p className="mb-1">
-          <b>ค่าเช่า:</b> {room.rent.toLocaleString("th-TH")} บาท
+        <p className="mb-1 fs-6">
+          <b>ขนาด : </b> {room.size}
         </p>
-        <p className="mb-1"><b>ผู้สร้าง:</b> {room.adminCreated?.name || "-"}</p>
-        <p className="mb-1"><b>ผู้แก้ไข:</b> {room.adminUpdated?.name || "-"}</p>
 
-        <p className="mb-4">
-          <b>สถานะ:</b>{" "}
-          <span className={`badge px-3 py-1 ${room.status === 0 ? "bg-success" : "bg-danger"}`}>
+        <p className="mb-1 fs-6">
+          <b>ค่าเช่า : </b>{room.rent.toLocaleString("th-TH")} บาท
+        </p>
+
+        <p className="mb-1 fs-6">
+          <b>ผู้สร้าง : </b> {room.adminCreated?.name || "-"}
+        </p>
+
+        <p className="mb-1 fs-6">
+          <b>ผู้แก้ไข : </b> {room.adminUpdated?.name || "-"}
+        </p>
+
+        <p className="mb-4 fs-6">
+          <b>สถานะ : </b>
+          <span
+            className={`badge px-3 py-1 ${
+              room.status === 0 ? "bg-success" : "bg-danger"
+            }`}
+          >
             {room.status === 0 ? "ว่าง" : "เต็ม"}
           </span>
         </p>
 
-        {/* ปุ่มแก้ไข + ลบ แบบลอยที่มุมขวาล่าง */}
+        {/* ⭐ ปุ่มแก้ไข + ลบ อยู่ตรงกลางล่าง ⭐ */}
         {isSuperAdmin && (
           <div
-            className="d-flex gap-2 position-absolute"
+            className="d-flex justify-content-center gap-3"
             style={{
-              right: "15px",
+              width: "100%",
+              position: "absolute",
               bottom: "15px",
+              left: "50%",
+              transform: "translateX(-50%)",
             }}
           >
-            <EditRoomDialog roomId={room.roomId} onSuccess={onUpdated} />
+            {/* ปุ่มแก้ไข */}
+            <EditRoomDialog
+              roomId={room.roomId}
+              onSuccess={onUpdated}
+              buttonClass="btn btn-primary btn-sm fw-semibold px-3 py-1"
+            />
 
+            {/* ปุ่มลบ */}
             {room.status === 0 && (
               <button
-                className="btn btn-danger btn-sm fw-bold"
+                className="btn btn-sm fw-semibold text-white px-3 py-1"
+                style={{
+                  background: "linear-gradient(135deg, #ff512f, #dd2476)",
+                  border: "none",
+                }}
                 onClick={handleDelete}
               >
-                🗑️
+                🗑️ ลบ
               </button>
             )}
           </div>

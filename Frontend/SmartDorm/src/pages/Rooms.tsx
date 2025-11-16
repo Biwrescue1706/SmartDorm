@@ -16,7 +16,7 @@ export default function Rooms() {
     fetchRooms();
   }, []);
 
-  // ตรวจขนาดจอ
+  // ตรวจขนาดจอเพื่อดูว่าเป็น Desktop table mode
   const [isLargeScreen, setIsLargeScreen] = useState(window.innerWidth >= 1400);
 
   useEffect(() => {
@@ -43,8 +43,7 @@ export default function Rooms() {
 
     if (selectedFloor !== "ทั้งหมด") {
       const floor = parseInt(selectedFloor);
-      const num = Number(r.number); // แก้ string -> number
-
+      const num = Number(r.number);
       return num >= floor * 100 && num < (floor + 1) * 100;
     }
     return true;
@@ -52,7 +51,7 @@ export default function Rooms() {
 
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [rowsPerPage, setRowsPerPage] = useState(9); // ให้หาร 3 ลงตัวใน layout ใหม่
 
   const indexOfLast = currentPage * rowsPerPage;
   const indexOfFirst = indexOfLast - rowsPerPage;
@@ -72,8 +71,11 @@ export default function Rooms() {
         adminUsername={adminUsername}
       />
 
-      <main className="main-content flex-grow-1 px-1 py-2 mt-6 mt-lg-7">
-        <div className="mx-auto container-max">
+      <main
+        className="main-content flex-grow-1 px-2 py-2 mt-6 mt-lg-7"
+        style={{ paddingLeft: "20px", paddingRight: "20px" }} // ⭐ ห่างจากข้าง
+      >
+        <div className="mx-auto" style={{ maxWidth: "1200px" }}>
           <div className="d-flex justify-content-center mb-3 mt-3">
             <h2 className="fw-bold text-dark">🏠 จัดการห้องพัก</h2>
           </div>
@@ -89,7 +91,11 @@ export default function Rooms() {
             <label className="fw-semibold me-2 fs-5 text-dark">เลือกชั้น :</label>
             <select
               className="form-select d-inline-block text-center fw-semibold shadow-sm"
-              style={{ width: "120px", borderRadius: "10px" }}
+              style={{
+                width: "150px",
+                borderRadius: "10px",
+                padding: "6px",
+              }}
               value={selectedFloor}
               onChange={(e) => {
                 setSelectedFloor(e.target.value);
@@ -105,7 +111,7 @@ export default function Rooms() {
             </select>
           </div>
 
-          {/* ฟิลเตอร์ห้อง */}
+          {/* ฟิลเตอร์ */}
           <RoomFilter
             activeFilter={filter}
             counts={counts}
@@ -146,13 +152,15 @@ export default function Rooms() {
                 </>
               ) : (
                 <>
-                  {/* Card Mode → 1 หรือ 2 คอลัมน์ */}
+                  {/* ⭐ Card Mode – มือถือ 1 คอลัมน์ / Tablet 600+ = 3 คอลัมน์ */}
                   <div
                     className="d-grid"
                     style={{
                       gridTemplateColumns:
-                        window.innerWidth >= 600 ? "1fr 1fr" : "1fr",
-                      gap: "15px",
+                        window.innerWidth >= 600 ? "1fr 1fr 1fr" : "1fr",
+                      gap: "20px",
+                      paddingLeft: "10px",
+                      paddingRight: "10px",
                     }}
                   >
                     {currentRooms.map((room) => (

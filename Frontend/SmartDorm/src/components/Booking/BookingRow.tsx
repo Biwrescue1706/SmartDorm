@@ -1,122 +1,137 @@
-import { useState, useEffect } from "react";
-import BookingRow from "./BookingRow";
+import { createPortal } from "react-dom";
 import type { Booking } from "../../types/Booking";
+import EditBookingDialog from "./EditBookingDialog";
+import ManageBookingDialog from "./ManageBookingDialog";
+import Swal from "sweetalert2";
 
 interface Props {
-  bookings?: Booking[];
+  booking: Booking;
   onApprove: (id: string) => void;
   onReject: (id: string) => void;
   onDelete: (id: string, roomNum: string) => void;
   onEditSuccess: () => void;
   onCheckin?: (id: string) => void;
   role?: number | null;
-  activeFilter: "pending" | "approved" | "rejected" | "checkinPending";
+  index: number;
+  mode?: "table" | "card";
 }
 
-export default function BookingTable({
-  bookings = [],
+export default function BookingRow({
+  booking,
   onApprove,
   onReject,
   onDelete,
   onEditSuccess,
   onCheckin,
   role,
-  activeFilter,
+  index,
+  mode = "table",
 }: Props) {
-  const [width, setWidth] = useState(window.innerWidth);
+  const isSuperAdmin = role === 0;
 
-  useEffect(() => {
-    const handleResize = () => setWidth(window.innerWidth);
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
+  const formatThai = (d?: string | null) =>
+    d
+      ? new Date(d).toLocaleDateString("th-TH", {
+          year: "numeric",
+          month: "short",
+          day: "numeric",
+        })
+      : "-";
 
-  const isMobile = width < 600;
-  const isDesktop = width >= 1400;
-
-  // ---------------------------------------------------------
-  // ⭐ DESKTOP MODE (TABLE)
-  // ---------------------------------------------------------
-  if (isDesktop) {
+  // -------------------------------------------
+  // ⭐ Card Mode
+  // -------------------------------------------
+  if (mode === "card") {
     return (
-      <div className="mx-auto" style={{ maxWidth: "1500px", padding: "0 20px" }}>
-        <div className="table-responsive shadow-sm rounded-3">
-          <table className="table table-striped table-bordered text-center align-middle">
-            <thead className="table-dark">
-              <tr>
-                <th>#</th>
-                <th>ห้อง</th>
-                <th>Line</th>
-                <th>ชื่อผู้จอง</th>
-                <th>เบอร์โทร</th>
-                <th>วันจอง</th>
-                <th>วันที่แจ้งเข้าพัก</th>
-                <th>วันเข้าพักจริง</th>
-                <th>สลิป</th>
-                <th>สถานะ</th>
-                {role === 0 && <th>แก้ไข</th>}
-                {role === 0 && <th>ลบ</th>}
-              </tr>
-            </thead>
+      <div
+        className="shadow-sm rounded-4 p-3 bg-light border"
+        style={{ textAlign: "center" }}
+      >
+        <h5 className="fw-bold mb-2">ห้อง {booking.room.number}</h5>
 
-            <tbody>
-              {bookings.length ? (
-                bookings.map((b, i) => (
-                  <BookingRow
-                    key={b.bookingId}
-                    booking={b}
-                    index={i + 1}
-                    onApprove={onApprove}
-                    onReject={onReject}
-                    onDelete={onDelete}
-                    onEditSuccess={onEditSuccess}
-                    onCheckin={onCheckin}
-                    role={role}
-                    mode="table"
-                  />
-                ))
-              ) : (
-                <tr>
-                  <td colSpan={12} className="py-4 text-muted">
-                    ไม่พบข้อมูลการจอง
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+        <p className="mb-1">{booking.fullName}</p>
+        <p className="mb-1 text-muted">LINE: {booking.customer?.userName}</p>
+        <p className="mb-1">เบอร์: {booking.cphone}</p>
+        <p className="mb-1">จอง: {formatThai(booking.createdAt)}</p>
+        <p className="mb-1">เข้าพัก: {formatThai(booking.checkin)}</p>
+
+        <div className="d-flex justify-content-center gap-2 mt-3">
+          <ManageBookingDialog
+            booking={booking}
+            onApprove={onApprove}
+            onReject={onReject}
+          />
+
+          {isSuperAdmin && (
+            <>
+              <EditBookingDialog booking={booking} onSuccess={onEditSuccess} />
+              <button
+                className="btn btn-danger btn-sm"
+                onClick={() => onDelete(booking.bookingId, booking.room.number)}
+              >
+                🗑️
+              </button>
+            </>
+          )}
         </div>
       </div>
     );
   }
 
-  // ---------------------------------------------------------
-  // ⭐ CARD MODE (MOBILE + TABLET)
-  // ---------------------------------------------------------
-  const gridCols = isMobile ? "1fr" : "repeat(3, 1fr)";
-
+  // -------------------------------------------
+  // ⭐ Table Mode (Desktop)
+  // -------------------------------------------
   return (
-    <div
-      style={{
-        display: "grid",
-        gridTemplateColumns: gridCols,
-        gap: "20px",
-        padding: "10px 20px",
-      }}
-    >
-      {bookings.map((b, i) => (
-        <BookingRow
-          key={b.bookingId}
-          booking={b}
-          index={i + 1}
-          onApprove={onApprove}
-          onReject={onReject}
-          onDelete={onDelete}
-          onEditSuccess={onEditSuccess}
-          onCheckin={onCheckin}
-          role={role}
-          mode="card"
-        />
-      ))}
-    </div>
+    <tr>
+      <td>{index}</td>
+      <td>{booking.room.number}</td>
+      <td>{booking.customer?.userName}</td>
+      <td>{booking.fullName}</td>
+      <td>{booking.cphone}</td>
+      <td>{formatThai(booking.createdAt)}</td>
+      <td>{formatThai(booking.checkin)}</td>
+      <td>{formatThai(booking.actualCheckin)}</td>
+
+      {/* สลิป */}
+      <td>
+        {booking.slipUrl ? (
+          <button
+            className="btn btn-outline-primary btn-sm"
+            onClick={() => window.open(booking.slipUrl!, "_blank")}
+          >
+            ดู
+          </button>
+        ) : (
+          "-"
+        )}
+      </td>
+
+      {/* สถานะ */}
+      <td>
+        {booking.approveStatus === 1 ? (
+          <span className="text-success fw-bold">อนุมัติ</span>
+        ) : booking.approveStatus === 2 ? (
+          <span className="text-danger fw-bold">ไม่อนุมัติ</span>
+        ) : (
+          <span className="text-warning fw-bold">รอ</span>
+        )}
+      </td>
+
+      {isSuperAdmin && (
+        <>
+          <td>
+            <EditBookingDialog booking={booking} onSuccess={onEditSuccess} />
+          </td>
+          <td>
+            <button
+              className="btn btn-danger btn-sm"
+              onClick={() => onDelete(booking.bookingId, booking.room.number)}
+            >
+              🗑️
+            </button>
+          </td>
+        </>
+      )}
+    </tr>
   );
 }

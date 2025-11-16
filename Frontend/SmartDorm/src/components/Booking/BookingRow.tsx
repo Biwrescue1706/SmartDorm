@@ -28,48 +28,14 @@ export default function BookingRow({
 }: Props) {
   const isSuperAdmin = role === 0;
 
-  // -------------------------
-  // ⭐ ฟังก์ชันแปลงวันที่ไทย → Date()
-  // -------------------------
-  function parseThaiDate(d: any) {
-    if (!d) return null;
+  // -----------------------------------------------------
+  // ⭐ actualCheckin ว่างหรือไม่
+  // -----------------------------------------------------
+  const isEmpty = (v: any) => !v;
 
-    if (d instanceof Date) return d; // กันค่า Date อยู่แล้ว
-
-    try {
-      const dt = new Date(d);
-      if (!isNaN(dt.getTime())) return dt;
-    } catch {}
-
-    const parts = String(d).split(" ");
-    if (parts.length < 3) return null;
-
-    const day = parseInt(parts[0]);
-    const monthTh = parts[1];
-    const yearTh = parseInt(parts[2]);
-
-    const monthMap: any = {
-      "ม.ค.": 0, "ก.พ.": 1, "มี.ค.": 2, "เม.ย.": 3,
-      "พ.ค.": 4, "มิ.ย.": 5, "ก.ค.": 6, "ส.ค.": 7,
-      "ก.ย.": 8, "ต.ค.": 9, "พ.ย.": 10, "ธ.ค.": 11,
-    };
-
-    const m = monthMap[monthTh];
-    if (m === undefined) return null;
-
-    return new Date(yearTh - 543, m, day);
-  }
-
-  // -------------------------
-  // ⭐ เช็คค่าว่าง actualCheckin
-  // -------------------------
-  function isEmpty(v: any) {
-    return v === null || v === undefined || v === "" || v === "null" || v === "undefined";
-  }
-
-  // -------------------------
-  // ⭐ ฟอร์แมตวันที่โชว์
-  // -------------------------
+  // -----------------------------------------------------
+  // ⭐ แสดงวันที่ไทย
+  // -----------------------------------------------------
   const formatThai = (d?: string | null) =>
     d
       ? new Date(d).toLocaleDateString("th-TH", {
@@ -79,18 +45,23 @@ export default function BookingRow({
         })
       : "-";
 
-  const checkinDate = parseThaiDate(booking.checkin);
+  // -----------------------------------------------------
+  // ⭐ ใช้วันที่ ISO จาก backend โดยตรง
+  // -----------------------------------------------------
+  const checkinDate = new Date(booking.checkin);
   const today = new Date();
 
-  // -------------------------
-  // ⭐ เงื่อนไขปุ่มเช็คอิน
-  // -------------------------
+  // -----------------------------------------------------
+  // ⭐ เงื่อนไขแสดงปุ่มเช็คอิน
+  // -----------------------------------------------------
   const canCheckin =
     booking.approveStatus === 1 &&
     isEmpty(booking.actualCheckin) &&
-    checkinDate &&
     today.getTime() >= checkinDate.getTime();
 
+  // -----------------------------------------------------
+  // ⭐ สถานะ
+  // -----------------------------------------------------
   const statusText =
     booking.approveStatus === 1
       ? "อนุมัติแล้ว"
@@ -108,25 +79,31 @@ export default function BookingRow({
   const showManage = booking.approveStatus === 0;
 
   const [showSlip, setShowSlip] = useState(false);
-  const actualCheckinStr = formatThai(booking.actualCheckin);
 
-  // -------------------------
-  // ⭐ Popup สลิป
-  // -------------------------
+  const actualCheckinStr = isEmpty(booking.actualCheckin)
+    ? "-"
+    : formatThai(booking.actualCheckin);
+
+  // -----------------------------------------------------
+  // ⭐ Popup ดูสลิป
+  // -----------------------------------------------------
   const SlipPopup = () =>
     showSlip && (
       <div
         className="position-fixed top-0 start-0 w-100 h-100 bg-dark bg-opacity-75 d-flex justify-content-center align-items-center"
         style={{ zIndex: 9999 }}
+        onClick={() => setShowSlip(false)}
       >
         <div
           className="bg-white p-3 rounded-4 shadow-lg"
           style={{
-            maxWidth: "95%",
-            maxHeight: "95%",
+            maxWidth: "90%",
+            maxHeight: "90%",
             position: "relative",
           }}
+          onClick={(e) => e.stopPropagation()}
         >
+          {/* ปุ่มปิด */}
           <button
             onClick={() => setShowSlip(false)}
             style={{
@@ -137,19 +114,22 @@ export default function BookingRow({
               fontWeight: "bold",
               background: "transparent",
               border: "none",
+              cursor: "pointer",
             }}
           >
             ✖
           </button>
 
+          {/* หัวข้อ */}
           <h5 className="text-center fw-bold mb-3">
             สลิปการโอน — ห้อง {booking.room.number}
           </h5>
 
+          {/* รูปสลิป */}
           <img
             src={booking.slipUrl!}
             style={{
-              maxWidth: "90vw",
+              maxWidth: "100%",
               maxHeight: "70vh",
               objectFit: "contain",
               borderRadius: "10px",
@@ -167,12 +147,13 @@ export default function BookingRow({
       </div>
     );
 
-  // ============================================================================
+  // ==========================================================================
   // ⭐ CARD MODE
-  // ============================================================================
+  // ==========================================================================
   if (mode === "card") {
     return (
       <div className="shadow-sm rounded-4 p-3 bg-light border text-center">
+
         <h5 className="fw-bold mb-2">ห้อง : {booking.room.number}</h5>
         <p>ชื่อผู้จอง : {booking.fullName}</p>
         <p>LINE : {booking.customer?.userName}</p>
@@ -181,9 +162,7 @@ export default function BookingRow({
         <p>วันที่แจ้งเข้าพัก : {formatThai(booking.checkin)}</p>
 
         {!isEmpty(booking.actualCheckin) && (
-          <p>
-            <b>วันที่เข้าพักจริง :</b> {actualCheckinStr}
-          </p>
+          <p><b>วันที่เข้าพักจริง :</b> {actualCheckinStr}</p>
         )}
 
         <p className="mt-2">
@@ -191,6 +170,7 @@ export default function BookingRow({
           <span className={statusClass}>{statusText}</span>
         </p>
 
+        {/* ปุ่มดูสลิป */}
         {booking.slipUrl && (
           <>
             <button className="btn btn-primary btn-sm mt-1" onClick={() => setShowSlip(true)}>
@@ -201,6 +181,7 @@ export default function BookingRow({
         )}
 
         <div className="d-flex justify-content-center gap-2 mt-3">
+
           {showManage && (
             <ManageBookingDialog
               booking={booking}
@@ -234,9 +215,9 @@ export default function BookingRow({
     );
   }
 
-  // ============================================================================
+  // ==========================================================================
   // ⭐ TABLE MODE
-  // ============================================================================
+  // ==========================================================================
   return (
     <tr>
       <td>{index}</td>
@@ -246,12 +227,15 @@ export default function BookingRow({
       <td>{booking.cphone}</td>
       <td>{formatThai(booking.createdAt)}</td>
       <td>{formatThai(booking.checkin)}</td>
-      <td>{!isEmpty(booking.actualCheckin) ? actualCheckinStr : "-"}</td>
+      <td>{actualCheckinStr}</td>
 
       <td>
         {booking.slipUrl ? (
           <>
-            <button className="btn btn-outline-primary btn-sm" onClick={() => setShowSlip(true)}>
+            <button
+              className="btn btn-outline-primary btn-sm"
+              onClick={() => setShowSlip(true)}
+            >
               ดู
             </button>
             <SlipPopup />

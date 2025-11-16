@@ -22,7 +22,7 @@ export default function RoomCard({ room, role, onUpdated }: Props) {
 
   return (
     <div
-      className="card shadow-sm border-0"
+      className="card shadow-sm border-0 mb-mt-3 "
       style={{ borderRadius: "12px", minHeight: "220px", position: "relative" }}
     >
       <div className="card-body">

@@ -29,21 +29,27 @@ export default function RoomCard({ room, role, onUpdated }: Props) {
         backgroundColor: "#f1f3f5",
         position: "relative",
         paddingBottom: "70px",
-        textAlign: "center", // ⭐ จัดข้อมูลให้อยู่กลาง
+        textAlign: "center", // ⭐ จัดข้อความอยู่กลาง
       }}
     >
       <div className="card-body" style={{ padding: "20px" }}>
-        <h4 className="fw-bold mb-3">ห้อง {room.number}</h4>
 
-        <p className="mb-1 fs-6"><b>ขนาด : </b> {room.size}</p>
-        <p className="mb-1 fs-6">
-          <b>ค่าเช่า : </b>{room.rent.toLocaleString("th-TH")} บาท
+        {/* 🏷️ ชื่อห้องใหญ่ขึ้น (fs-4) */}
+        <h4 className="fw-bold mb-3 fs-4">ห้อง {room.number}</h4>
+
+        {/* ⭐ ข้อมูลใหญ่ขึ้น → fs-5 */}
+        <p className="mb-1 fs-5"><b>ขนาด :</b> {room.size}</p>
+
+        <p className="mb-1 fs-5">
+          <b>ค่าเช่า :</b> {room.rent.toLocaleString("th-TH")} บาท
         </p>
-        <p className="mb-1 fs-6"><b>ผู้สร้าง : </b> {room.adminCreated?.name || "-"}</p>
-        <p className="mb-1 fs-6"><b>ผู้แก้ไข : </b> {room.adminUpdated?.name || "-"}</p>
 
-        <p className="mb-2 fs-6">
-          <b>สถานะ : </b>
+        <p className="mb-1 fs-5"><b>ผู้สร้าง :</b> {room.adminCreated?.name || "-"}</p>
+
+        <p className="mb-1 fs-5"><b>ผู้แก้ไข :</b> {room.adminUpdated?.name || "-"}</p>
+
+        <p className="mb-2 fs-5">
+          <b>สถานะ :</b>{" "}
           <span
             className={`badge px-3 py-1 ${
               room.status === 0 ? "bg-success" : "bg-danger"
@@ -54,7 +60,7 @@ export default function RoomCard({ room, role, onUpdated }: Props) {
         </p>
       </div>
 
-      {/* ⭐ ปุ่มแก้ไข + ลบเล็ก ไม่ติดขอบ ⭐ */}
+      {/* ⭐ ปุ่มแก้ไข + ลบ */}
       {isSuperAdmin && (
         <div
           className="d-flex justify-content-center gap-4"
@@ -71,15 +77,10 @@ export default function RoomCard({ room, role, onUpdated }: Props) {
 
           {room.status === 0 && (
             <button
-              className="btn btn-sm fw-semibold text-white px-2 py-1"
+              className="btn btn-sm fw-semibold text-white px-2 mx-2 my-2 py-1"
               style={{
                 background: "linear-gradient(135deg, #ff512f, #dd2476)",
                 border: "none",
-                width: "45px",   // ⭐ ปรับขนาดปุ่มเล็กลง
-                height: "35px",  // ⭐ เท่าปุ่มแก้ไข
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
               }}
               onClick={handleDelete}
             >

@@ -7,7 +7,7 @@ export default function GuestRoute({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [isAuth, setIsAuth] = useState(false);
 
-  const text = "กำลังรอการตอบกลับจาก Server.";
+    const text = "รอการตอบกลับจาก Server ...";
   const [displayText, setDisplayText] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
   const [index, setIndex] = useState(0);

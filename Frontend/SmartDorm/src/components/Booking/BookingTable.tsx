@@ -1,7 +1,7 @@
+import { useState, useEffect } from "react";
+import Pagination from "../Pagination";
 import BookingRow from "./BookingRow";
 import type { Booking } from "../../types/Booking";
-import Pagination from "../Pagination";
-import { useEffect, useState } from "react";
 
 interface Props {
   bookings?: Booking[];
@@ -24,118 +24,104 @@ export default function BookingTable({
   role,
   activeFilter,
 }: Props) {
-  const [currentPage, setCurrentPage] = useState(1);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [width, setWidth] = useState(window.innerWidth);
 
-  const filteredRooms = bookings;
-  const totalPages = Math.ceil(filteredRooms.length / rowsPerPage);
-  const indexOfLast = currentPage * rowsPerPage;
-  const indexOfFirst = indexOfLast - rowsPerPage;
-  bookings = filteredRooms.slice(indexOfFirst, indexOfLast);
-
+  // ตรวจขนาดจอ
   useEffect(() => {
-    if (currentPage > totalPages && totalPages > 0) {
-      setCurrentPage(1);
-    }
-  }, [currentPage, totalPages]);
+    const handleResize = () => setWidth(window.innerWidth);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  const isMobile = width < 600;
+  const isTablet = width >= 600 && width < 1400;
+  const isDesktop = width >= 1400;
+
+  // ==========================
+  //  🖥 DESKTOP: TABLE MODE
+  // ==========================
+  if (isDesktop) {
+    return (
+      <div className="mx-auto" style={{ maxWidth: "1500px", padding: "0 20px" }}>
+        <div className="table-responsive shadow-sm rounded-3">
+          <table className="table table-striped table-bordered text-center align-middle">
+            <thead className="table-dark">
+              <tr>
+                <th>#</th>
+                <th>ห้อง</th>
+                <th>Line</th>
+                <th>ชื่อผู้จอง</th>
+                <th>เบอร์โทร</th>
+                <th>วันจอง</th>
+                <th>วันที่แจ้งเข้าพัก</th>
+                <th>วันเข้าพักจริง</th>
+                <th>สลิป</th>
+                <th>สถานะ</th>
+                {role === 0 && <th>แก้ไข</th>}
+                {role === 0 && <th>ลบ</th>}
+              </tr>
+            </thead>
+
+            <tbody>
+              {bookings.length ? (
+                bookings.map((b, i) => (
+                  <BookingRow
+                    key={b.bookingId}
+                    booking={b}
+                    index={i + 1}
+                    onApprove={onApprove}
+                    onReject={onReject}
+                    onDelete={onDelete}
+                    onEditSuccess={onEditSuccess}
+                    onCheckin={onCheckin}
+                    role={role}
+                    activeFilter={activeFilter}
+                    mode="table"
+                  />
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={12} className="py-4 text-muted">
+                    ไม่พบข้อมูลการจอง
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    );
+  }
+
+  // ==========================
+  //  📱 MOBILE/TABLET: CARD MODE
+  // ==========================
+  const gridCols = isMobile ? "1fr" : "repeat(3, 1fr)";
 
   return (
-    <div className="booking-table-container mx-3">
-      <div className="responsive-table" style={{ overflowX: "auto" }}>
-        <table
-          className="table table-sm table-striped align-middle text-center"
-          style={{ tableLayout: "fixed", width: "100%" }}
-        >
-          <thead className="table-dark">
-            <tr>
-              <th scope="col" style={{ width: "50%" }}>
-                #
-              </th>
-              <th scope="col" style={{ width: "80%" }}>
-                ห้อง
-              </th>
-              <th scope="col" style={{ width: "120%" }}>
-                Line
-              </th>
-              <th scope="col" style={{ width: "120%" }}>
-                ชื่อผู้จอง
-              </th>
-              <th scope="col" style={{ width: "120%" }}>
-                เบอร์โทร
-              </th>
-              <th scope="col" style={{ width: "120%" }}>
-                วันจอง
-              </th>
-              <th scope="col" style={{ width: "120%" }}>
-                วันที่แจ้งเข้าพัก
-              </th>
-
-              <th scope="col" style={{ width: "120%" }}>
-                วันเข้าพักจริง
-              </th>
-              <th scope="col" style={{ width: "120%" }}>
-                สลิป
-              </th>
-              <th scope="col" style={{ width: "120%" }}>
-                สถานะ
-              </th>
-              {role === 0 && (
-                <th scope="col" style={{ width: "120%" }}>
-                  แก้ไข
-                </th>
-              )}
-              {role === 0 && (
-                <th scope="col" style={{ width: "120%" }}>
-                  ลบ
-                </th>
-              )}
-            </tr>
-          </thead>
-          <tbody>
-            {bookings.length > 0 ? (
-              bookings.map((b, i) => (
-                <BookingRow
-                  key={b.bookingId}
-                  booking={b}
-                  index={i + 1}
-                  onApprove={onApprove}
-                  onReject={onReject}
-                  onDelete={onDelete}
-                  onEditSuccess={onEditSuccess}
-                  onCheckin={onCheckin}
-                  role={role}
-                  activeFilter={activeFilter} // Pass down
-                />
-              ))
-            ) : (
-              <tr>
-                <td
-                  colSpan={
-                    10 +
-                    (role === 0 ? 2 : 0)
-                  }
-                  className="text-center py-4 text-muted"
-                >
-                  ไม่พบข้อมูลการจอง
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
-
-      <div className="mt-5 mx-5">
-        <Pagination
-          totalItems={filteredRooms.length}
-          rowsPerPage={rowsPerPage}
-          currentPage={currentPage}
-          onPageChange={(page) => setCurrentPage(page)}
-          onRowsPerPageChange={(rows) => {
-            setRowsPerPage(rows);
-            setCurrentPage(1);
-          }}
+    <div
+      style={{
+        display: "grid",
+        gridTemplateColumns: gridCols,
+        gap: "20px",
+        padding: "10px 20px",
+      }}
+    >
+      {bookings.map((b, i) => (
+        <BookingRow
+          key={b.bookingId}
+          booking={b}
+          index={i + 1}
+          onApprove={onApprove}
+          onReject={onReject}
+          onDelete={onDelete}
+          onEditSuccess={onEditSuccess}
+          onCheckin={onCheckin}
+          role={role}
+          activeFilter={activeFilter}
+          mode="card"
         />
-      </div>
+      ))}
     </div>
   );
 }

@@ -1,5 +1,3 @@
-// ⭐⭐ BookingRow.tsx — เวอร์ชันแก้ครบทั้ง 3 ปัญหา ⭐⭐
-
 import { useState } from "react";
 import type { Booking } from "../../types/Booking";
 import EditBookingDialog from "./EditBookingDialog";
@@ -42,7 +40,7 @@ export default function BookingRow({
   const checkinDate = new Date(booking.checkin as any);
   const today = new Date();
 
-  // ⭐ เช็คอินได้ = วันนี้ >= วันเช็คอิน และยังไม่เช็คอินจริง
+  // ⭐ เช็คอินได้ถ้า (อนุมัติแล้ว) + (ยังไม่ actualCheckin) + (วันนี้ >= วันเช็คอิน)
   const canCheckin =
     booking.approveStatus === 1 &&
     !booking.actualCheckin &&
@@ -62,15 +60,12 @@ export default function BookingRow({
       ? "text-danger fw-bold"
       : "text-warning fw-bold";
 
-  const showManage = booking.approveStatus === 0;
-  const showEditDelete = true;
+  const showManage = booking.approveStatus === 0; // เฉพาะรออนุมัติ
 
   const [showSlip, setShowSlip] = useState(false);
   const actualCheckinStr = formatThai(booking.actualCheckin);
 
-  // ============================================================================
   // ⭐ Popup ดูสลิป
-  // ============================================================================
   const SlipPopup = () =>
     showSlip && (
       <div
@@ -80,19 +75,18 @@ export default function BookingRow({
         <div
           className="bg-white p-3 rounded-4 shadow-lg"
           style={{
-            maxWidth: "90%",
-            maxHeight: "90%",
+            maxWidth: "95%",
+            maxHeight: "95%",
             position: "relative",
           }}
         >
-          {/* ปิด */}
           <button
             onClick={() => setShowSlip(false)}
             style={{
               position: "absolute",
               top: "8px",
               right: "12px",
-              fontSize: "22px",
+              fontSize: "20px",
               fontWeight: "bold",
               background: "transparent",
               border: "none",
@@ -101,23 +95,20 @@ export default function BookingRow({
             ✖
           </button>
 
-          {/* หัวข้อ */}
           <h5 className="text-center fw-bold mb-3">
             สลิปการโอน — ห้อง {booking.room.number}
           </h5>
 
-          {/* รูป */}
           <img
             src={booking.slipUrl!}
             style={{
               maxWidth: "100%",
-              maxHeight: "60vh",
+              maxHeight: "75vh",
               objectFit: "contain",
               borderRadius: "10px",
             }}
           />
 
-          {/* ปุ่มปิด */}
           <div className="text-center mt-3">
             <button className="btn btn-secondary" onClick={() => setShowSlip(false)}>
               ปิด
@@ -127,13 +118,12 @@ export default function BookingRow({
       </div>
     );
 
-  // ============================================================================
+  // ========================================================================
   // ⭐ CARD MODE
-  // ============================================================================
+  // ========================================================================
   if (mode === "card") {
     return (
       <div className="shadow-sm rounded-4 p-3 bg-light border text-center">
-
         <h5 className="fw-bold mb-2">ห้อง : {booking.room.number}</h5>
         <p>ชื่อผู้จอง : {booking.fullName}</p>
         <p>LINE : {booking.customer?.userName}</p>
@@ -143,21 +133,19 @@ export default function BookingRow({
 
         {actualCheckinStr && (
           <p>
-            <b>วันที่เข้าพักจริง : </b>
-            {actualCheckinStr}
+            <b>วันที่เข้าพักจริง :</b> {actualCheckinStr}
           </p>
         )}
 
         <p className="mt-2">
-          <b>สถานะการจอง : </b>
+          <b>สถานะ : </b>
           <span className={statusClass}>{statusText}</span>
         </p>
 
-        {/* ดูสลิป */}
         {booking.slipUrl && (
           <>
             <button
-              className="btn btn-primary btn-sm"
+              className="btn btn-primary btn-sm mt-1"
               onClick={() => setShowSlip(true)}
             >
               ดูสลิป
@@ -188,7 +176,6 @@ export default function BookingRow({
           {isSuperAdmin && (
             <>
               <EditBookingDialog booking={booking} onSuccess={onEditSuccess} />
-
               <button
                 className="btn btn-danger btn-sm"
                 onClick={() => onDelete(booking.bookingId, booking.room.number)}
@@ -202,9 +189,9 @@ export default function BookingRow({
     );
   }
 
-  // ============================================================================
+  // ========================================================================
   // ⭐ TABLE MODE
-  // ============================================================================
+  // ========================================================================
   return (
     <tr>
       <td>{index}</td>
@@ -216,7 +203,6 @@ export default function BookingRow({
       <td>{formatThai(booking.checkin)}</td>
       <td>{actualCheckinStr || "-"}</td>
 
-      {/* ดูสลิป */}
       <td>
         {booking.slipUrl ? (
           <>
@@ -255,7 +241,9 @@ export default function BookingRow({
           </button>
         )}
 
-        {isSuperAdmin && <EditBookingDialog booking={booking} onSuccess={onEditSuccess} />}
+        {isSuperAdmin && (
+          <EditBookingDialog booking={booking} onSuccess={onEditSuccess} />
+        )}
       </td>
 
       <td>

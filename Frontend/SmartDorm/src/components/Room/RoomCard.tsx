@@ -31,26 +31,14 @@ export default function RoomCard({ room, role, onUpdated }: Props) {
       }}
     >
       <div className="card-body" style={{ padding: "20px" }}>
-        
-        <h4 className="fw-bold mb-3 text-center">
-          ห้อง {room.number}
-        </h4>
+        <h4 className="fw-bold mb-3 text-center">ห้อง {room.number}</h4>
 
-        <p className="mb-1 fs-6">
-          <b>ขนาด : </b> {room.size}
-        </p>
-
+        <p className="mb-1 fs-6"><b>ขนาด : </b> {room.size}</p>
         <p className="mb-1 fs-6">
           <b>ค่าเช่า : </b>{room.rent.toLocaleString("th-TH")} บาท
         </p>
-
-        <p className="mb-1 fs-6">
-          <b>ผู้สร้าง : </b> {room.adminCreated?.name || "-"}
-        </p>
-
-        <p className="mb-1 fs-6">
-          <b>ผู้แก้ไข : </b> {room.adminUpdated?.name || "-"}
-        </p>
+        <p className="mb-1 fs-6"><b>ผู้สร้าง : </b> {room.adminCreated?.name || "-"}</p>
+        <p className="mb-1 fs-6"><b>ผู้แก้ไข : </b> {room.adminUpdated?.name || "-"}</p>
 
         <p className="mb-4 fs-6">
           <b>สถานะ : </b>
@@ -75,12 +63,8 @@ export default function RoomCard({ room, role, onUpdated }: Props) {
               transform: "translateX(-50%)",
             }}
           >
-            {/* ปุ่มแก้ไข */}
-            <EditRoomDialog
-              roomId={room.roomId}
-              onSuccess={onUpdated}
-              buttonClass="btn btn-primary btn-sm fw-semibold px-3 py-1"
-            />
+            {/* ปุ่มแก้ไข (เอา buttonClass ออกแล้ว) */}
+            <EditRoomDialog roomId={room.roomId} onSuccess={onUpdated} />
 
             {/* ปุ่มลบ */}
             {room.status === 0 && (

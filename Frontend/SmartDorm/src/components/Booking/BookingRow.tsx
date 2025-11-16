@@ -1,8 +1,6 @@
-import { createPortal } from "react-dom";
 import type { Booking } from "../../types/Booking";
 import EditBookingDialog from "./EditBookingDialog";
 import ManageBookingDialog from "./ManageBookingDialog";
-import Swal from "sweetalert2";
 
 interface Props {
   booking: Booking;
@@ -10,7 +8,6 @@ interface Props {
   onReject: (id: string) => void;
   onDelete: (id: string, roomNum: string) => void;
   onEditSuccess: () => void;
-  onCheckin?: (id: string) => void;
   role?: number | null;
   index: number;
   mode?: "table" | "card";
@@ -22,7 +19,6 @@ export default function BookingRow({
   onReject,
   onDelete,
   onEditSuccess,
-  onCheckin,
   role,
   index,
   mode = "table",
@@ -38,17 +34,11 @@ export default function BookingRow({
         })
       : "-";
 
-  // -------------------------------------------
-  // ⭐ Card Mode
-  // -------------------------------------------
+  // ⭐ CARD MODE
   if (mode === "card") {
     return (
-      <div
-        className="shadow-sm rounded-4 p-3 bg-light border"
-        style={{ textAlign: "center" }}
-      >
+      <div className="shadow-sm rounded-4 p-3 bg-light border text-center">
         <h5 className="fw-bold mb-2">ห้อง {booking.room.number}</h5>
-
         <p className="mb-1">{booking.fullName}</p>
         <p className="mb-1 text-muted">LINE: {booking.customer?.userName}</p>
         <p className="mb-1">เบอร์: {booking.cphone}</p>
@@ -78,9 +68,7 @@ export default function BookingRow({
     );
   }
 
-  // -------------------------------------------
-  // ⭐ Table Mode (Desktop)
-  // -------------------------------------------
+  // ⭐ TABLE MODE
   return (
     <tr>
       <td>{index}</td>
@@ -92,7 +80,6 @@ export default function BookingRow({
       <td>{formatThai(booking.checkin)}</td>
       <td>{formatThai(booking.actualCheckin)}</td>
 
-      {/* สลิป */}
       <td>
         {booking.slipUrl ? (
           <button
@@ -106,7 +93,6 @@ export default function BookingRow({
         )}
       </td>
 
-      {/* สถานะ */}
       <td>
         {booking.approveStatus === 1 ? (
           <span className="text-success fw-bold">อนุมัติ</span>

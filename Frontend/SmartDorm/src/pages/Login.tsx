@@ -6,12 +6,13 @@ export default function Login() {
 
   return (
     <div
-      className="d-flex justify-content-center align-items-center vh-100"
-      style={{
-        background: "linear-gradient(135deg, #eef2ff, #f8f9fa)",
-      }}
-    >
-      <LoginForm onSuccess={() => navigate("/dashboard")} />
-    </div>
+  className="d-flex justify-content-center pt-4"
+  style={{
+    minHeight: "100vh",
+    background: "linear-gradient(135deg, #eef2ff, #f8f9fa)",
+  }}
+>
+  <LoginForm onSuccess={() => navigate("/dashboard")} />
+</div>
   );
 }

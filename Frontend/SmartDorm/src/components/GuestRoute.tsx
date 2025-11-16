@@ -3,13 +3,27 @@ import { useEffect, useState, type ReactNode } from "react";
 import { Navigate } from "react-router-dom";
 import { verifyAuth } from "../hooks/useAuth";
 
-/**
- * 🧭 ใช้กับหน้า Login / Register
- * ถ้ามี token แล้ว → redirect ไป Dashboard
- */
 export default function GuestRoute({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [isAuth, setIsAuth] = useState(false);
+
+  const text = "กำลังรอการตอบกลับจาก Server.";
+  const [displayText, setDisplayText] = useState("");
+
+  useEffect(() => {
+    let index = 0;
+
+    const interval = setInterval(() => {
+      setDisplayText(text.slice(0, index));
+      index++;
+
+      if (index > text.length) {
+        clearInterval(interval);
+      }
+    }, 50); // ความเร็วการพิมพ์
+
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     const check = async () => {
@@ -22,8 +36,18 @@ export default function GuestRoute({ children }: { children: ReactNode }) {
 
   if (loading)
     return (
-      <div className="text-center mt-5">
-        ⏳ <b>รอการตอบกลับ ของ Server .... ...</b>
+      <div
+        style={{
+          height: "100vh",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          fontSize: "28px",
+          fontWeight: "bold",
+          whiteSpace: "pre",
+        }}
+      >
+        {displayText}
       </div>
     );
 

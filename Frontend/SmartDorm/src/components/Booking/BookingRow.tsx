@@ -28,14 +28,14 @@ export default function BookingRow({
 }: Props) {
   const isSuperAdmin = role === 0;
 
-  // -----------------------------------------------------
-  // ⭐ actualCheckin ว่างหรือไม่
-  // -----------------------------------------------------
-  const isEmpty = (v: any) => !v;
+  // -------------------------
+  // ⭐ actualCheckin ว่างไหม
+  // -------------------------
+  const isEmpty = (v: any) => v === null || v === undefined || v === "";
 
-  // -----------------------------------------------------
-  // ⭐ แสดงวันที่ไทย
-  // -----------------------------------------------------
+  // -------------------------
+  // ⭐ format Thai date
+  // -------------------------
   const formatThai = (d?: string | null) =>
     d
       ? new Date(d).toLocaleDateString("th-TH", {
@@ -45,23 +45,30 @@ export default function BookingRow({
         })
       : "-";
 
-  // -----------------------------------------------------
-  // ⭐ ใช้วันที่ ISO จาก backend โดยตรง
-  // -----------------------------------------------------
-  const checkinDate = new Date(booking.checkin);
-  const today = new Date();
+  // -------------------------
+  // ⭐ Normalize วันที่ (ตั้งเวลาเป็น 00:00:00)
+  // -------------------------
+  const normalizeDate = (d: any) => {
+    const dt = new Date(d);
+    dt.setHours(0, 0, 0, 0);
+    return dt;
+  };
 
-  // -----------------------------------------------------
-  // ⭐ เงื่อนไขแสดงปุ่มเช็คอิน
-  // -----------------------------------------------------
+  // ⭐ วันที่จาก backend (ISO ถูกต้องอยู่แล้ว)
+  const checkinDate = normalizeDate(booking.checkin);
+  const today = normalizeDate(new Date());
+
+  // -------------------------
+  // ⭐ เงื่อนไขปุ่มเช็คอิน
+  // -------------------------
   const canCheckin =
     booking.approveStatus === 1 &&
     isEmpty(booking.actualCheckin) &&
     today.getTime() >= checkinDate.getTime();
 
-  // -----------------------------------------------------
-  // ⭐ สถานะ
-  // -----------------------------------------------------
+  // -------------------------
+  // ⭐ Status label
+  // -------------------------
   const statusText =
     booking.approveStatus === 1
       ? "อนุมัติแล้ว"
@@ -84,9 +91,9 @@ export default function BookingRow({
     ? "-"
     : formatThai(booking.actualCheckin);
 
-  // -----------------------------------------------------
-  // ⭐ Popup ดูสลิป
-  // -----------------------------------------------------
+  // -------------------------
+  // ⭐ Popup สลิป
+  // -------------------------
   const SlipPopup = () =>
     showSlip && (
       <div
@@ -103,7 +110,6 @@ export default function BookingRow({
           }}
           onClick={(e) => e.stopPropagation()}
         >
-          {/* ปุ่มปิด */}
           <button
             onClick={() => setShowSlip(false)}
             style={{
@@ -120,12 +126,10 @@ export default function BookingRow({
             ✖
           </button>
 
-          {/* หัวข้อ */}
           <h5 className="text-center fw-bold mb-3">
             สลิปการโอน — ห้อง {booking.room.number}
           </h5>
 
-          {/* รูปสลิป */}
           <img
             src={booking.slipUrl!}
             style={{
@@ -170,7 +174,6 @@ export default function BookingRow({
           <span className={statusClass}>{statusText}</span>
         </p>
 
-        {/* ปุ่มดูสลิป */}
         {booking.slipUrl && (
           <>
             <button className="btn btn-primary btn-sm mt-1" onClick={() => setShowSlip(true)}>

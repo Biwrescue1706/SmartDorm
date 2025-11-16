@@ -1,4 +1,3 @@
-import { useState, useEffect } from "react";
 import BookingRow from "./BookingRow";
 import type { Booking } from "../../types/Booking";
 
@@ -8,6 +7,7 @@ interface Props {
   onReject: (id: string) => void;
   onDelete: (id: string, roomNum: string) => void;
   onEditSuccess: () => void;
+  onCheckin?: (id: string) => void;   // ⭐ ต้องเพิ่ม
   role?: number | null;
   activeFilter: "pending" | "approved" | "rejected" | "checkinPending";
 }
@@ -18,48 +18,33 @@ export default function BookingTable({
   onReject,
   onDelete,
   onEditSuccess,
+  onCheckin,
   role,
   activeFilter,
 }: Props) {
-  const [screen, setScreen] = useState(window.innerWidth);
+  const useCard =
+    window.innerWidth < 600 || (window.innerWidth < 1400 && window.innerWidth >= 600);
 
-  useEffect(() => {
-    const resize = () => setScreen(window.innerWidth);
-    window.addEventListener("resize", resize);
-    return () => window.removeEventListener("resize", resize);
-  }, []);
+  const mode = useCard ? "card" : "table";
 
-  const isMobile = screen < 600;
-  const isDesktop = screen >= 1400;
-
-  const bgColor =
-    activeFilter === "pending"
-      ? "#fff7d6"
-      : activeFilter === "approved"
-      ? "#e5ffe5"
-      : activeFilter === "rejected"
-      ? "#ffe5e5"
-      : "#e5f4ff";
-
-  // ⭐ DESKTOP MODE
-  if (isDesktop) {
-    return (
-      <div className="table-responsive shadow rounded p-2">
-        <table className="table table-striped text-center align-middle">
-          <thead className="table-dark">
+  return (
+    <div className="mt-3">
+      {mode === "table" ? (
+        <table className="table table-bordered table-hover text-center">
+          <thead className="table-primary">
             <tr>
               <th>#</th>
               <th>ห้อง</th>
               <th>LINE</th>
               <th>ชื่อ</th>
               <th>เบอร์</th>
-              <th>จอง</th>
+              <th>วันที่จอง</th>
               <th>แจ้งเข้าพัก</th>
-              <th>เข้าจริง</th>
+              <th>เข้าพักจริง</th>
               <th>สลิป</th>
               <th>สถานะ</th>
-              {role === 0 && <th>แก้ไข</th>}
-              {role === 0 && <th>ลบ</th>}
+              <th>จัดการ</th>
+              <th>ลบ</th>
             </tr>
           </thead>
 
@@ -69,50 +54,39 @@ export default function BookingTable({
                 key={b.bookingId}
                 booking={b}
                 index={i + 1}
+                role={role}
+                mode="table"
                 onApprove={onApprove}
                 onReject={onReject}
                 onDelete={onDelete}
                 onEditSuccess={onEditSuccess}
-                role={role}
-                mode="table"
+                onCheckin={onCheckin}     // ⭐ ส่งลงไป
               />
             ))}
           </tbody>
         </table>
-      </div>
-    );
-  }
-
-  // ⭐ CARD MODE
-  return (
-    <div
-      className="p-3"
-      style={{
-        display: "grid",
-        gap: "15px",
-        gridTemplateColumns: isMobile ? "1fr" : "repeat(3, 1fr)",
-      }}
-    >
-      {bookings.map((b, i) => (
-        <div
-          key={b.bookingId}
-          style={{
-            background: bgColor,
-            borderRadius: "12px",
-          }}
-        >
-          <BookingRow
-            booking={b}
-            index={i + 1}
-            onApprove={onApprove}
-            onReject={onReject}
-            onDelete={onDelete}
-            onEditSuccess={onEditSuccess}
-            role={role}
-            mode="card"
-          />
+      ) : (
+        <div className="row g-3">
+          {bookings.map((b, i) => (
+            <div
+              key={b.bookingId}
+              className="col-12 col-md-4"
+            >
+              <BookingRow
+                booking={b}
+                index={i + 1}
+                role={role}
+                mode="card"
+                onApprove={onApprove}
+                onReject={onReject}
+                onDelete={onDelete}
+                onEditSuccess={onEditSuccess}
+                onCheckin={onCheckin}     // ⭐ ส่งลงไป
+              />
+            </div>
+          ))}
         </div>
-      ))}
+      )}
     </div>
   );
 }

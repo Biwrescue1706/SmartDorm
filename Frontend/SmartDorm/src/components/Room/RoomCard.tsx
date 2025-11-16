@@ -21,7 +21,10 @@ export default function RoomCard({ room, role, onUpdated }: Props) {
   };
 
   return (
-    <div className="card shadow-sm mb-3 border-0" style={{ borderRadius: "12px" }}>
+    <div
+      className="card shadow-sm border-0"
+      style={{ borderRadius: "12px", minHeight: "220px", position: "relative" }}
+    >
       <div className="card-body">
         <h5 className="fw-bold mb-2">ห้อง {room.number}</h5>
 
@@ -32,19 +35,24 @@ export default function RoomCard({ room, role, onUpdated }: Props) {
         <p className="mb-1"><b>ผู้สร้าง:</b> {room.adminCreated?.name || "-"}</p>
         <p className="mb-1"><b>ผู้แก้ไข:</b> {room.adminUpdated?.name || "-"}</p>
 
-        <p className="mb-2">
+        <p className="mb-4">
           <b>สถานะ:</b>{" "}
           <span className={`badge px-3 py-1 ${room.status === 0 ? "bg-success" : "bg-danger"}`}>
             {room.status === 0 ? "ว่าง" : "เต็ม"}
           </span>
         </p>
 
+        {/* ปุ่มแก้ไข + ลบ แบบลอยที่มุมขวาล่าง */}
         {isSuperAdmin && (
-          <div className="d-flex justify-content-end gap-2">
-            {/* ปุ่มแก้ไข */}
+          <div
+            className="d-flex gap-2 position-absolute"
+            style={{
+              right: "15px",
+              bottom: "15px",
+            }}
+          >
             <EditRoomDialog roomId={room.roomId} onSuccess={onUpdated} />
 
-            {/* ปุ่มลบ */}
             {room.status === 0 && (
               <button
                 className="btn btn-danger btn-sm fw-bold"

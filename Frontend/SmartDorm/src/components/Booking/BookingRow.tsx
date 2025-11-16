@@ -28,6 +28,48 @@ export default function BookingRow({
 }: Props) {
   const isSuperAdmin = role === 0;
 
+  // -------------------------
+  // ⭐ ฟังก์ชันแปลงวันที่ไทย → Date()
+  // -------------------------
+  function parseThaiDate(d: any) {
+    if (!d) return null;
+
+    if (d instanceof Date) return d; // กันค่า Date อยู่แล้ว
+
+    try {
+      const dt = new Date(d);
+      if (!isNaN(dt.getTime())) return dt;
+    } catch {}
+
+    const parts = String(d).split(" ");
+    if (parts.length < 3) return null;
+
+    const day = parseInt(parts[0]);
+    const monthTh = parts[1];
+    const yearTh = parseInt(parts[2]);
+
+    const monthMap: any = {
+      "ม.ค.": 0, "ก.พ.": 1, "มี.ค.": 2, "เม.ย.": 3,
+      "พ.ค.": 4, "มิ.ย.": 5, "ก.ค.": 6, "ส.ค.": 7,
+      "ก.ย.": 8, "ต.ค.": 9, "พ.ย.": 10, "ธ.ค.": 11,
+    };
+
+    const m = monthMap[monthTh];
+    if (m === undefined) return null;
+
+    return new Date(yearTh - 543, m, day);
+  }
+
+  // -------------------------
+  // ⭐ เช็คค่าว่าง actualCheckin
+  // -------------------------
+  function isEmpty(v: any) {
+    return v === null || v === undefined || v === "" || v === "null" || v === "undefined";
+  }
+
+  // -------------------------
+  // ⭐ ฟอร์แมตวันที่โชว์
+  // -------------------------
   const formatThai = (d?: string | null) =>
     d
       ? new Date(d).toLocaleDateString("th-TH", {
@@ -35,15 +77,18 @@ export default function BookingRow({
           month: "short",
           day: "numeric",
         })
-      : null;
+      : "-";
 
-  const checkinDate = new Date(booking.checkin as any);
+  const checkinDate = parseThaiDate(booking.checkin);
   const today = new Date();
 
-  // ⭐ เช็คอินได้ถ้า (อนุมัติแล้ว) + (ยังไม่ actualCheckin) + (วันนี้ >= วันเช็คอิน)
+  // -------------------------
+  // ⭐ เงื่อนไขปุ่มเช็คอิน
+  // -------------------------
   const canCheckin =
     booking.approveStatus === 1 &&
-    !booking.actualCheckin &&
+    isEmpty(booking.actualCheckin) &&
+    checkinDate &&
     today.getTime() >= checkinDate.getTime();
 
   const statusText =
@@ -60,12 +105,14 @@ export default function BookingRow({
       ? "text-danger fw-bold"
       : "text-warning fw-bold";
 
-  const showManage = booking.approveStatus === 0; // เฉพาะรออนุมัติ
+  const showManage = booking.approveStatus === 0;
 
   const [showSlip, setShowSlip] = useState(false);
   const actualCheckinStr = formatThai(booking.actualCheckin);
 
-  // ⭐ Popup ดูสลิป
+  // -------------------------
+  // ⭐ Popup สลิป
+  // -------------------------
   const SlipPopup = () =>
     showSlip && (
       <div
@@ -102,10 +149,12 @@ export default function BookingRow({
           <img
             src={booking.slipUrl!}
             style={{
-              maxWidth: "100%",
-              maxHeight: "75vh",
+              maxWidth: "90vw",
+              maxHeight: "70vh",
               objectFit: "contain",
               borderRadius: "10px",
+              display: "block",
+              margin: "0 auto",
             }}
           />
 
@@ -118,9 +167,9 @@ export default function BookingRow({
       </div>
     );
 
-  // ========================================================================
+  // ============================================================================
   // ⭐ CARD MODE
-  // ========================================================================
+  // ============================================================================
   if (mode === "card") {
     return (
       <div className="shadow-sm rounded-4 p-3 bg-light border text-center">
@@ -131,7 +180,7 @@ export default function BookingRow({
         <p>วันจอง : {formatThai(booking.createdAt)}</p>
         <p>วันที่แจ้งเข้าพัก : {formatThai(booking.checkin)}</p>
 
-        {actualCheckinStr && (
+        {!isEmpty(booking.actualCheckin) && (
           <p>
             <b>วันที่เข้าพักจริง :</b> {actualCheckinStr}
           </p>
@@ -144,10 +193,7 @@ export default function BookingRow({
 
         {booking.slipUrl && (
           <>
-            <button
-              className="btn btn-primary btn-sm mt-1"
-              onClick={() => setShowSlip(true)}
-            >
+            <button className="btn btn-primary btn-sm mt-1" onClick={() => setShowSlip(true)}>
               ดูสลิป
             </button>
             <SlipPopup />
@@ -155,7 +201,6 @@ export default function BookingRow({
         )}
 
         <div className="d-flex justify-content-center gap-2 mt-3">
-
           {showManage && (
             <ManageBookingDialog
               booking={booking}
@@ -189,9 +234,9 @@ export default function BookingRow({
     );
   }
 
-  // ========================================================================
+  // ============================================================================
   // ⭐ TABLE MODE
-  // ========================================================================
+  // ============================================================================
   return (
     <tr>
       <td>{index}</td>
@@ -201,15 +246,12 @@ export default function BookingRow({
       <td>{booking.cphone}</td>
       <td>{formatThai(booking.createdAt)}</td>
       <td>{formatThai(booking.checkin)}</td>
-      <td>{actualCheckinStr || "-"}</td>
+      <td>{!isEmpty(booking.actualCheckin) ? actualCheckinStr : "-"}</td>
 
       <td>
         {booking.slipUrl ? (
           <>
-            <button
-              className="btn btn-outline-primary btn-sm"
-              onClick={() => setShowSlip(true)}
-            >
+            <button className="btn btn-outline-primary btn-sm" onClick={() => setShowSlip(true)}>
               ดู
             </button>
             <SlipPopup />
@@ -223,7 +265,7 @@ export default function BookingRow({
         <span className={statusClass}>{statusText}</span>
       </td>
 
-      <td>
+      <td className="text-center">
         {showManage && (
           <ManageBookingDialog
             booking={booking}
@@ -246,7 +288,7 @@ export default function BookingRow({
         )}
       </td>
 
-      <td>
+      <td className="text-center">
         {isSuperAdmin && (
           <button
             className="btn btn-danger btn-sm"

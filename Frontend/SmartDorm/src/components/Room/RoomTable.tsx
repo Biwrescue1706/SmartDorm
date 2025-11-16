@@ -29,39 +29,18 @@ export default function RoomTable({
       >
         <thead className="table-dark">
           <tr>
-            <th scope="col" style={{ width: "20%" }}>
-              #
-            </th>
-            <th scope="col" style={{ width: "35%" }}>
-              ห้อง
-            </th>
-            <th scope="col" style={{ width: "80%" }}>
-              ขนาด
-            </th>
-            <th scope="col" style={{ width: "45%" }}>
-              ค่าเช่า
-            </th>
-            <th scope="col" style={{ width: "45%" }}>
-              ผู้สร้าง
-            </th>
-            <th scope="col" style={{ width: "45%" }}>
-              ผู้แก้ไข
-            </th>
-            <th scope="col" style={{ width: "45%" }}>
-              สถานะ
-            </th>
-            {isSuperAdmin && (
-              <th scope="col" style={{ width: "45%" }}>
-                แก้ไข
-              </th>
-            )}
-            {isSuperAdmin && (
-              <th scope="col" style={{ width: "45%" }}>
-                ลบ
-              </th>
-            )}
+            <th scope="col" style={{ width: "20%" }}>#</th>
+            <th scope="col" style={{ width: "35%" }}>ห้อง</th>
+            <th scope="col" style={{ width: "80%" }}>ขนาด</th>
+            <th scope="col" style={{ width: "45%" }}>ค่าเช่า</th>
+            <th scope="col" style={{ width: "45%" }}>ผู้สร้าง</th>
+            <th scope="col" style={{ width: "45%" }}>ผู้แก้ไข</th>
+            <th scope="col" style={{ width: "45%" }}>สถานะ</th>
+            {isSuperAdmin && <th style={{ width: "45%" }}>แก้ไข</th>}
+            {isSuperAdmin && <th style={{ width: "45%" }}>ลบ</th>}
           </tr>
         </thead>
+
         <tbody>
           {rooms.length === 0 ? (
             <tr>

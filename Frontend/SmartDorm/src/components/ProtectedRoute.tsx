@@ -7,23 +7,41 @@ export default function ProtectedRoute({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [isAuth, setIsAuth] = useState(false);
 
-  // 🔠 ข้อความ typewriter
   const text = "กำลังรอการตอบกลับจาก Server.";
   const [displayText, setDisplayText] = useState("");
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [index, setIndex] = useState(0);
 
-  // ⌨️ effect ให้พิมพ์ทีละตัว
+  // 🔁 Typewriter loop
   useEffect(() => {
-    let index = 0;
+    if (!loading) return; // ถ้าโหลดเสร็จแล้ว หยุด animation
 
-    const interval = setInterval(() => {
-      setDisplayText(text.slice(0, index));
-      index++;
+    const speed = isDeleting ? 30 : 60;
 
-      if (index > text.length) clearInterval(interval);
-    }, 50); // ความเร็วการพิมพ์
+    const timeout = setTimeout(() => {
+      if (!isDeleting) {
+        // พิมพ์เพิ่ม
+        setDisplayText(text.slice(0, index + 1));
+        setIndex(prev => prev + 1);
 
-    return () => clearInterval(interval);
-  }, []);
+        // ถ้าพิมพ์ครบแล้ว → เริ่มลบ
+        if (index + 1 === text.length) {
+          setTimeout(() => setIsDeleting(true), 500);
+        }
+      } else {
+        // ลบทีละตัว
+        setDisplayText(text.slice(0, index - 1));
+        setIndex(prev => prev - 1);
+
+        // ถ้าลบหมดแล้ว → เริ่มพิมพ์ใหม่
+        if (index - 1 === 0) {
+          setIsDeleting(false);
+        }
+      }
+    }, speed);
+
+    return () => clearTimeout(timeout);
+  }, [index, isDeleting, loading]);
 
   useEffect(() => {
     const check = async () => {

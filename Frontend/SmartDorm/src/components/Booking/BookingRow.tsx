@@ -36,14 +36,17 @@ export default function BookingRow({
         })
       : "-";
 
-  // ⭐ เช็คปุ่มเช็คอิน
+  // ⭐ Checkin date parse
+  const checkinDate = new Date(booking.checkin as any);
+  const today = new Date();
+
   const canCheckin =
     booking.approveStatus === 1 &&
     !booking.actualCheckin &&
-    new Date().toDateString() ===
-      new Date(booking.checkin).toDateString();
+    checkinDate.getFullYear() === today.getFullYear() &&
+    checkinDate.getMonth() === today.getMonth() &&
+    checkinDate.getDate() === today.getDate();
 
-  // ⭐ ข้อความสถานะ
   const statusText =
     booking.approveStatus === 1
       ? "อนุมัติแล้ว"
@@ -58,36 +61,41 @@ export default function BookingRow({
       ? "text-danger fw-bold"
       : "text-warning fw-bold";
 
-  // -------------------------------------------
-  // ⭐ CARD MODE
-  // -------------------------------------------
+  const showManage = booking.approveStatus === 0;
+  const showEditDelete = booking.approveStatus !== 1;
+
+  // ⭐ CARD MODE (Mobile)
   if (mode === "card") {
     return (
       <div className="shadow-sm rounded-4 p-3 bg-light border text-center">
-        <h5 className="fw-bold mb-2">ห้อง {booking.room.number}</h5>
 
-        <p className="mb-1">{booking.fullName}</p>
-        <p className="mb-1 text-muted">LINE: {booking.customer?.userName}</p>
-        <p className="mb-1">เบอร์: {booking.cphone}</p>
+        <h5 className="fw-bold mb-2">ห้อง : {booking.room.number}</h5>
+        <p>ชื่อผู้จอง : {booking.fullName}</p>
+        <p>LINE : {booking.customer?.userName}</p>
+        <p>เบอร์ : {booking.cphone}</p>
+        <p>วันจอง : {formatThai(booking.createdAt)}</p>
+        <p>วันที่แจ้งเข้าพัก : {formatThai(booking.checkin)}</p>
+        <p><b>วันที่เข้าพักจริง :</b> {formatThai(booking.actualCheckin)}</p>
 
-        <p className="mb-1">
-          <b>จอง:</b> {formatThai(booking.createdAt)}
-        </p>
-        <p className="mb-1">
-          <b>เข้าพัก:</b> {formatThai(booking.checkin)}
-        </p>
-
-        {/* ⭐ แสดงสถานะ */}
         <p className="mt-2">
-          <b>สถานะ : </b>
+          <b>สถานะการจอง : </b>
           <span className={statusClass}>{statusText}</span>
         </p>
 
-        {/* ⭐ ปุ่มต่าง ๆ */}
+        {/* ⭐ ปุ่มดูสลิป */}
+        {booking.slipUrl && (
+          <button
+            className="btn btn-primary btn-sm mt-1"
+            onClick={() => window.open(booking.slipUrl!, "_blank")}
+          >
+            ดูสลิป
+          </button>
+        )}
+
         <div className="d-flex justify-content-center gap-2 mt-3">
 
-          {/* ปุ่มจัดการ (เฉพาะรออนุมัติ) */}
-          {booking.approveStatus === 0 && (
+          {/* 🟡 รออนุมัติ */}
+          {showManage && (
             <ManageBookingDialog
               booking={booking}
               onApprove={onApprove}
@@ -95,20 +103,21 @@ export default function BookingRow({
             />
           )}
 
-          {/* ปุ่มเช็คอิน เฉพาะวันที่ตรงกัน */}
-          {canCheckin && onCheckin && (
+          {/* 🟢 เช็คอิน */}
+          {canCheckin && (
             <button
               className="btn btn-success btn-sm"
-              onClick={() => onCheckin(booking.bookingId)}
+              onClick={() => onCheckin?.(booking.bookingId)}
             >
               เช็คอิน
             </button>
           )}
 
-          {/* ปุ่มแก้ไข / ลบ เฉพาะ super admin + ต้องไม่ใช่ไม่อนุมัติ */}
-          {isSuperAdmin && booking.approveStatus !== 2 && (
+          {/* 🔵 แก้ไข + ลบ (ไม่อนุมัติ/รออนุมัติ เท่านั้น) */}
+          {isSuperAdmin && showEditDelete && (
             <>
               <EditBookingDialog booking={booking} onSuccess={onEditSuccess} />
+
               <button
                 className="btn btn-danger btn-sm"
                 onClick={() => onDelete(booking.bookingId, booking.room.number)}
@@ -122,9 +131,7 @@ export default function BookingRow({
     );
   }
 
-  // -------------------------------------------
-  // ⭐ TABLE MODE
-  // -------------------------------------------
+  // ⭐ TABLE MODE (Desktop)
   return (
     <tr>
       <td>{index}</td>
@@ -136,7 +143,7 @@ export default function BookingRow({
       <td>{formatThai(booking.checkin)}</td>
       <td>{formatThai(booking.actualCheckin)}</td>
 
-      {/* สลิป */}
+      {/* ปุ่มดูสลิป */}
       <td>
         {booking.slipUrl ? (
           <button
@@ -150,17 +157,15 @@ export default function BookingRow({
         )}
       </td>
 
-      {/* ⭐ สถานะ */}
       <td>
         <span className={statusClass}>{statusText}</span>
       </td>
 
-      {/* ⭐ ปุ่มใน Desktop */}
+      {/* ปุ่ม Desktop */}
       {isSuperAdmin && (
         <>
           <td>
-            {/* เฉพาะรออนุมัติ */}
-            {booking.approveStatus === 0 && (
+            {showManage && (
               <ManageBookingDialog
                 booking={booking}
                 onApprove={onApprove}
@@ -168,25 +173,22 @@ export default function BookingRow({
               />
             )}
 
-            {/* เช็คอิน */}
-            {canCheckin && onCheckin && (
+            {canCheckin && (
               <button
                 className="btn btn-success btn-sm mt-1"
-                onClick={() => onCheckin(booking.bookingId)}
+                onClick={() => onCheckin?.(booking.bookingId)}
               >
                 เช็คอิน
               </button>
             )}
 
-            {/* แก้ไข */}
-            {booking.approveStatus !== 2 && (
+            {showEditDelete && (
               <EditBookingDialog booking={booking} onSuccess={onEditSuccess} />
             )}
           </td>
 
-          {/* ลบ */}
           <td>
-            {booking.approveStatus !== 2 && (
+            {showEditDelete && (
               <button
                 className="btn btn-danger btn-sm"
                 onClick={() => onDelete(booking.bookingId, booking.room.number)}

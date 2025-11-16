@@ -6,8 +6,8 @@ import Nav from "../components/Nav";
 import { useAuth } from "../hooks/useAuth";
 
 export default function Booking() {
-
   const { message, handleLogout, role, adminName, adminUsername } = useAuth();
+
   const {
     bookings,
     loading,
@@ -15,6 +15,7 @@ export default function Booking() {
     approveBooking,
     rejectBooking,
     deleteBooking,
+    checkinBooking,
   } = useBookings();
 
   const [filtered, setFiltered] = useState<typeof bookings>([]);
@@ -22,18 +23,32 @@ export default function Booking() {
     "pending" | "approved" | "rejected" | "checkinPending"
   >("pending");
 
-  // กรองข้อมูล
+  // ⭐ กรองข้อมูลตามเงื่อนไขใหม่
   useEffect(() => {
-    if (active === "pending")
+    if (active === "pending") {
+      // รออนุมัติ
       setFiltered(bookings.filter((b) => b.approveStatus === 0));
-    else if (active === "approved")
-      setFiltered(bookings.filter((b) => b.approveStatus === 1));
-    else if (active === "rejected")
-      setFiltered(bookings.filter((b) => b.approveStatus === 2));
-    else if (active === "checkinPending")
+
+    } else if (active === "approved") {
+      // ⭐ อนุมัติแล้ว แต่ต้องมี actualCheckin ด้วย
       setFiltered(
-        bookings.filter((b) => b.approveStatus === 1 && !b.actualCheckin)
+        bookings.filter(
+          (b) => b.approveStatus === 1 && b.actualCheckin != null
+        )
       );
+
+    } else if (active === "rejected") {
+      // ไม่อนุมัติ
+      setFiltered(bookings.filter((b) => b.approveStatus === 2));
+
+    } else if (active === "checkinPending") {
+      // ⭐ รอเข้าพัก — อนุมัติแล้ว แต่ยังไม่มี actualCheckin
+      setFiltered(
+        bookings.filter(
+          (b) => b.approveStatus === 1 && b.actualCheckin == null
+        )
+      );
+    }
   }, [bookings, active]);
 
   const handleFilter = (
@@ -56,6 +71,7 @@ export default function Booking() {
         <div className="mx-auto container-max">
           <h2 className="py-1 text-center text-while mb-3">จัดการการจอง</h2>
 
+          {/* ปุ่มรีเฟรช */}
           <div className="text-center mb-3">
             <button
               className="btn btn-sm btn-outline-primary"
@@ -66,6 +82,7 @@ export default function Booking() {
             </button>
           </div>
 
+          {/* ฟิลเตอร์ */}
           <div className="py-1 text-center text-while mb-3">
             <BookingFilter
               active={active}
@@ -74,6 +91,7 @@ export default function Booking() {
             />
           </div>
 
+          {/* ตาราง */}
           {loading ? (
             <p className="text-center text-muted mt-3">กำลังโหลดข้อมูล...</p>
           ) : (
@@ -83,6 +101,7 @@ export default function Booking() {
               onReject={rejectBooking}
               onDelete={deleteBooking}
               onEditSuccess={() => fetchBookings()}
+              onCheckin={checkinBooking}
               role={role}
               activeFilter={active}
             />

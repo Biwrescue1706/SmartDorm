@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
-import Swal from "sweetalert2";
 import RoomTable from "../components/Room/RoomTable";
-import RoomCard from "../components/Room/RoomCard"; // <-- เพิ่มใหม่
+import RoomCard from "../components/Room/RoomCard";
 import AddRoomDialog from "../components/Room/AddRoomDialog";
 import Pagination from "../components/Pagination";
 import Nav from "../components/Nav";
@@ -18,9 +17,7 @@ export default function Rooms() {
     fetchRooms();
   }, []);
 
-  // -----------------------------
-  // 1) ระบบตรวจขนาดหน้าจอ
-  // -----------------------------
+  // 1) ตรวจขนาดหน้าจอ
   const [isLargeScreen, setIsLargeScreen] = useState(window.innerWidth >= 1400);
 
   useEffect(() => {
@@ -31,9 +28,7 @@ export default function Rooms() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // -----------------------------
-  // 2) ระบบฟิลเตอร์สถานะ / ชั้น
-  // -----------------------------
+  // 2) ฟิลเตอร์สถานะและชั้น
   const [filter, setFilter] = useState<"all" | "available" | "booked">("all");
   const [selectedFloor, setSelectedFloor] = useState("ทั้งหมด");
 
@@ -49,14 +44,14 @@ export default function Rooms() {
 
     if (selectedFloor !== "ทั้งหมด") {
       const floor = parseInt(selectedFloor);
-      return r.number >= floor * 100 && r.number < (floor + 1) * 100;
+      const num = Number(r.number); // <<== แก้ตรงนี้
+
+      return num >= floor * 100 && num < (floor + 1) * 100;
     }
     return true;
   });
 
-  // -----------------------------
   // 3) Pagination
-  // -----------------------------
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
@@ -68,12 +63,8 @@ export default function Rooms() {
     await fetchRooms();
   };
 
-  // -----------------------------
-  // 4) UI หลัก
-  // -----------------------------
   return (
     <div className="d-flex min-vh-100 bg-white">
-      {/* Sidebar */}
       <Nav
         message={message}
         onLogout={handleLogout}
@@ -123,11 +114,7 @@ export default function Rooms() {
             }}
           />
 
-          {/* ---------------------------
-                🔥 โหมดแสดงผลห้อง 
-                - ถ้าจอใหญ่ → Table 
-                - ถ้าจอเล็ก → Card
-          ---------------------------- */}
+          {/* แสดง Table หรือ Card */}
           {loading ? (
             <div className="text-center my-5">
               <div className="spinner-border text-success" role="status"></div>

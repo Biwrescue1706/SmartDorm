@@ -7,13 +7,21 @@ export default function ProtectedRoute({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [isAuth, setIsAuth] = useState(false);
 
-  // 🔄 Animation ... ... ...
-  const [dots, setDots] = useState("");
+  // 🔠 ข้อความ typewriter
+  const text = "กำลังรอการตอบกลับจาก Server.";
+  const [displayText, setDisplayText] = useState("");
 
+  // ⌨️ effect ให้พิมพ์ทีละตัว
   useEffect(() => {
+    let index = 0;
+
     const interval = setInterval(() => {
-      setDots(prev => (prev.length >= 3 ? "" : prev + "."));
-    }, 300);
+      setDisplayText(text.slice(0, index));
+      index++;
+
+      if (index > text.length) clearInterval(interval);
+    }, 50); // ความเร็วการพิมพ์
+
     return () => clearInterval(interval);
   }, []);
 
@@ -34,12 +42,12 @@ export default function ProtectedRoute({ children }: { children: ReactNode }) {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          fontSize: "32px",
+          fontSize: "28px",
           fontWeight: "bold",
-          textAlign: "center",
+          whiteSpace: "pre",
         }}
       >
-        ⏳ กำลังโหลด{dots}
+        {displayText}
       </div>
     );
 

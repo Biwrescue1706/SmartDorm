@@ -15,7 +15,6 @@ export default function Booking() {
     approveBooking,
     rejectBooking,
     deleteBooking,
-    checkinBooking,
   } = useBookings();
 
   const [filtered, setFiltered] = useState<typeof bookings>([]);

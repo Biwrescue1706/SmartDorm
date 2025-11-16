@@ -17,7 +17,7 @@ export default function ChangePassword() {
 
       <div
         className="container d-flex justify-content-center align-items-center"
-        style={{ minHeight: "100vh", paddingTop: "80px" }}
+        style={{ minHeight: "100vh", paddingTop: "75px" }}
       >
         <div
           className="card shadow-sm border-0 p-4 w-100"

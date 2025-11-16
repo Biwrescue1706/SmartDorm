@@ -44,7 +44,7 @@ export default function ProfileCard({ admin, onSave }: ProfileCardProps) {
         <input
           type="text"
           className="form-control"
-          value={admin.role === 0 ? "แอมิน" : "พนักงาน"}
+          value={admin.role === 0 ? "แอดมิน" : "พนักงาน"}
           disabled
         />
       </div>

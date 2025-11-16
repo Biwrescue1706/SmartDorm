@@ -23,7 +23,7 @@ export default function Booking() {
     "pending" | "approved" | "rejected" | "checkinPending"
   >("pending");
 
-  // กรองข้อมูลเมื่อ bookings หรือ active เปลี่ยน
+  // กรองข้อมูล
   useEffect(() => {
     if (active === "pending")
       setFiltered(bookings.filter((b) => b.approveStatus === 0));
@@ -37,7 +37,6 @@ export default function Booking() {
       );
   }, [bookings, active]);
 
-  // เปลี่ยนสถานะการกรอง
   const handleFilter = (
     status: "pending" | "approved" | "rejected" | "checkinPending"
   ) => {
@@ -57,6 +56,7 @@ export default function Booking() {
       <main className="main-content flex-grow-1 px-1 py-2 mt-6 mt-lg-7">
         <div className="mx-auto container-max">
           <h2 className="py-1 text-center text-while mb-3">จัดการการจอง</h2>
+
           <div className="text-center mb-3">
             <button
               className="btn btn-sm btn-outline-primary"
@@ -66,11 +66,12 @@ export default function Booking() {
               {loading ? "กำลังโหลด..." : "รีเฟรชข้อมูล"}
             </button>
           </div>
+
           <div className="py-1 text-center text-while mb-3">
             <BookingFilter
               active={active}
               onChange={handleFilter}
-              bookings={bookings} //  ส่งข้อมูลทั้งหมดมาเพื่อคำนวณจำนวน
+              bookings={bookings}
             />
           </div>
 
@@ -83,9 +84,8 @@ export default function Booking() {
               onReject={rejectBooking}
               onDelete={deleteBooking}
               onEditSuccess={() => fetchBookings()}
-              onCheckin={checkinBooking}
               role={role}
-              activeFilter={active} // Pass active filter state
+              activeFilter={active}
             />
           )}
         </div>

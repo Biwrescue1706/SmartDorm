@@ -1,150 +1,110 @@
-// ❌ useState ไม่ได้ใช้ → ลบออก
-import { createPortal } from "react-dom";
+import { useState, useEffect } from "react";
+import BookingRow from "./BookingRow";
 import type { Booking } from "../../types/Booking";
-import EditBookingDialog from "./EditBookingDialog";
-import ManageBookingDialog from "./ManageBookingDialog";
-import Swal from "sweetalert2";
 
 interface Props {
-  booking: Booking;
+  bookings: Booking[];
   onApprove: (id: string) => void;
   onReject: (id: string) => void;
   onDelete: (id: string, roomNum: string) => void;
   onEditSuccess: () => void;
+  onCheckin?: (id: string) => void;
   role?: number | null;
-  index: number;
-  mode?: "table" | "card";
+  activeFilter: "pending" | "approved" | "rejected" | "checkinPending";
 }
 
-export default function BookingRow({
-  booking,
+export default function BookingTable({
+  bookings,
   onApprove,
   onReject,
   onDelete,
   onEditSuccess,
+  onCheckin,
   role,
-  index,
-  mode = "table",
+  activeFilter,
 }: Props) {
-  const isSuperAdmin = role === 0;
+  const [screen, setScreen] = useState(window.innerWidth);
 
-  const formatThaiDate = (d?: string | null) => {
-    if (!d) return "-";
-    return new Date(d).toLocaleDateString("th-TH", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
-  };
+  useEffect(() => {
+    const resize = () => setScreen(window.innerWidth);
+    window.addEventListener("resize", resize);
+    return () => window.removeEventListener("resize", resize);
+  }, []);
 
-  // ---------------------------------------------------------
-  // ⭐ CARD MODE (mobile + tablet)
-  // ---------------------------------------------------------
-  if (mode === "card") {
+  const isMobile = screen < 600;
+  const isDesktop = screen >= 1400;
+
+  // ------------------------------------------
+  // ⭐ TABLE MODE (Desktop)
+  // ------------------------------------------
+  if (isDesktop) {
     return (
-      <div
-        className="shadow-sm rounded-4 p-3 bg-light border"
-        style={{ textAlign: "center" }}
-      >
-        <h5 className="fw-bold mb-2">ห้อง {booking.room.number}</h5>
+      <div className="table-responsive shadow rounded p-2">
+        <table className="table table-striped text-center align-middle">
+          <thead className="table-dark">
+            <tr>
+              <th>#</th>
+              <th>ห้อง</th>
+              <th>LINE</th>
+              <th>ชื่อ</th>
+              <th>เบอร์</th>
+              <th>จอง</th>
+              <th>แจ้งเข้าพัก</th>
+              <th>เข้าจริง</th>
+              <th>สลิป</th>
+              <th>สถานะ</th>
+              {role === 0 && <th>แก้ไข</th>}
+              {role === 0 && <th>ลบ</th>}
+            </tr>
+          </thead>
 
-        <p className="mb-1">{booking.fullName}</p>
-        <p className="mb-1 text-muted">LINE: {booking.customer?.userName}</p>
-        <p className="mb-1">เบอร์: {booking.cphone}</p>
-        <p className="mb-1">จองวันที่: {formatThaiDate(booking.createdAt)}</p>
-        <p className="mb-1">แจ้งเข้าพัก: {formatThaiDate(booking.checkin)}</p>
-
-        {/* ปุ่มจัดการ */}
-        <div className="d-flex justify-content-center gap-2 mt-3">
-          <ManageBookingDialog
-            booking={booking}
-            onApprove={onApprove}
-            onReject={onReject}
-            triggerClassName="btn btn-warning btn-sm"
-            triggerLabel="จัดการ"
-          />
-
-          {isSuperAdmin && (
-            <>
-              <EditBookingDialog booking={booking} onSuccess={onEditSuccess} />
-
-              <button
-                className="btn btn-danger btn-sm"
-                onClick={() => onDelete(booking.bookingId, booking.room.number)}
-              >
-                🗑️
-              </button>
-            </>
-          )}
-        </div>
+          <tbody>
+            {bookings.map((b, i) => (
+              <BookingRow
+                key={b.bookingId}
+                booking={b}
+                index={i + 1}
+                onApprove={onApprove}
+                onReject={onReject}
+                onDelete={onDelete}
+                onEditSuccess={onEditSuccess}
+                onCheckin={onCheckin}
+                role={role}
+                mode="table"
+              />
+            ))}
+          </tbody>
+        </table>
       </div>
     );
   }
 
-  // ---------------------------------------------------------
-  // ⭐ TABLE MODE (desktop)
-  // ---------------------------------------------------------
+  // ------------------------------------------
+  // ⭐ CARD MODE (Mobile + Tablet)
+  // ------------------------------------------
   return (
-    <>
-      <tr>
-        <td>{index}</td>
-        <td>{booking.room?.number}</td>
-        <td>{booking.customer?.userName || "-"}</td>
-        <td>{booking.fullName}</td>
-        <td>{booking.cphone}</td>
-        <td>{formatThaiDate(booking.createdAt)}</td>
-        <td>{formatThaiDate(booking.checkin)}</td>
-
-        <td>
-          {booking.actualCheckin ? (
-            <span className="text-success fw-semibold">
-              {formatThaiDate(booking.actualCheckin)}
-            </span>
-          ) : (
-            <span className="text-muted">-</span>
-          )}
-        </td>
-
-        <td>
-          {booking.slipUrl ? (
-            <button
-              type="button"
-              className="btn btn-sm btn-outline-primary"
-              onClick={() => window.open(booking.slipUrl!, "_blank")}
-            >
-              ดูสลิป
-            </button>
-          ) : (
-            <span className="text-muted">-</span>
-          )}
-        </td>
-
-        <td>
-          {booking.approveStatus === 1 ? (
-            <span className="text-success fw-semibold">อนุมัติแล้ว</span>
-          ) : booking.approveStatus === 2 ? (
-            <span className="text-danger fw-semibold">ไม่อนุมัติ</span>
-          ) : (
-            <span className="text-warning fw-semibold">รออนุมัติ</span>
-          )}
-        </td>
-
-        {isSuperAdmin && (
-          <>
-            <td>
-              <EditBookingDialog booking={booking} onSuccess={onEditSuccess} />
-            </td>
-            <td>
-              <button
-                className="btn btn-danger btn-sm"
-                onClick={() => onDelete(booking.bookingId, booking.room.number)}
-              >
-                🗑️
-              </button>
-            </td>
-          </>
-        )}
-      </tr>
-    </>
+    <div
+      className="p-3"
+      style={{
+        display: "grid",
+        gap: "15px",
+        gridTemplateColumns: isMobile ? "1fr" : "repeat(3, 1fr)",
+      }}
+    >
+      {bookings.map((b, i) => (
+        <BookingRow
+          key={b.bookingId}
+          booking={b}
+          index={i + 1}
+          onApprove={onApprove}
+          onReject={onReject}
+          onDelete={onDelete}
+          onEditSuccess={onEditSuccess}
+          onCheckin={onCheckin}
+          role={role}
+          mode="card"
+        />
+      ))}
+    </div>
   );
 }

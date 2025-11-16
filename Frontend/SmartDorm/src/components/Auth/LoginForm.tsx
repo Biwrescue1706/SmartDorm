@@ -24,7 +24,7 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
 
   return (
     <div
-      className="card shadow-lg border-0 p-5 text-center"
+      className="card shadow-lg border-0 p-4 text-center"
       style={{
         maxWidth: "500px",
         width: "90%",

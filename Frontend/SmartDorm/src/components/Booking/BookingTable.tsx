@@ -34,9 +34,17 @@ export default function BookingTable({
   const isMobile = screen < 600;
   const isDesktop = screen >= 1400;
 
-  // ------------------------------------------
-  // ⭐ TABLE MODE (Desktop)
-  // ------------------------------------------
+  // สี card ตาม filter (ใช้เพื่อให้ TS ไม่ error)
+  const bgColor =
+    activeFilter === "pending"
+      ? "#fff7d6"
+      : activeFilter === "approved"
+      ? "#e5ffe5"
+      : activeFilter === "rejected"
+      ? "#ffe5e5"
+      : "#e5f4ff";
+
+  // ⭐ DESKTOP MODE
   if (isDesktop) {
     return (
       <div className="table-responsive shadow rounded p-2">
@@ -79,9 +87,7 @@ export default function BookingTable({
     );
   }
 
-  // ------------------------------------------
   // ⭐ CARD MODE (Mobile + Tablet)
-  // ------------------------------------------
   return (
     <div
       className="p-3"
@@ -92,18 +98,25 @@ export default function BookingTable({
       }}
     >
       {bookings.map((b, i) => (
-        <BookingRow
+        <div
           key={b.bookingId}
-          booking={b}
-          index={i + 1}
-          onApprove={onApprove}
-          onReject={onReject}
-          onDelete={onDelete}
-          onEditSuccess={onEditSuccess}
-          onCheckin={onCheckin}
-          role={role}
-          mode="card"
-        />
+          style={{
+            background: bgColor,
+            borderRadius: "12px",
+          }}
+        >
+          <BookingRow
+            booking={b}
+            index={i + 1}
+            onApprove={onApprove}
+            onReject={onReject}
+            onDelete={onDelete}
+            onEditSuccess={onEditSuccess}
+            onCheckin={onCheckin}
+            role={role}
+            mode="card"
+          />
+        </div>
       ))}
     </div>
   );

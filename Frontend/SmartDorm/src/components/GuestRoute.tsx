@@ -9,22 +9,41 @@ export default function GuestRoute({ children }: { children: ReactNode }) {
 
   const text = "กำลังรอการตอบกลับจาก Server.";
   const [displayText, setDisplayText] = useState("");
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [index, setIndex] = useState(0);
 
+  // 🔁 Typewriter Loop (พิมพ์-ลบ-พิมพ์)
   useEffect(() => {
-    let index = 0;
+    if (!loading) return; // server ตอบแล้ว หยุดอนิเมชัน
 
-    const interval = setInterval(() => {
-      setDisplayText(text.slice(0, index));
-      index++;
+    const speed = isDeleting ? 30 : 60; // ลบเร็วกว่า
 
-      if (index > text.length) {
-        clearInterval(interval);
+    const timeout = setTimeout(() => {
+      if (!isDeleting) {
+        // พิมพ์เพิ่มทีละตัว
+        setDisplayText(text.slice(0, index + 1));
+        setIndex(prev => prev + 1);
+
+        // พิมพ์ครบแล้ว → เริ่มลบ
+        if (index + 1 === text.length) {
+          setTimeout(() => setIsDeleting(true), 500); // หน่วงนิดนึงก่อนลบ
+        }
+      } else {
+        // ลบทีละตัว
+        setDisplayText(text.slice(0, index - 1));
+        setIndex(prev => prev - 1);
+
+        // ถ้าลบหมดแล้ว → เริ่มพิมพ์ใหม่
+        if (index - 1 === 0) {
+          setIsDeleting(false);
+        }
       }
-    }, 50); // ความเร็วการพิมพ์
+    }, speed);
 
-    return () => clearInterval(interval);
-  }, []);
+    return () => clearTimeout(timeout);
+  }, [index, isDeleting, loading]);
 
+  // 🔐 ตรวจสอบ token
   useEffect(() => {
     const check = async () => {
       const valid = await verifyAuth();

@@ -1,3 +1,4 @@
+import { useState } from "react";
 import type { Booking } from "../../types/Booking";
 import EditBookingDialog from "./EditBookingDialog";
 import ManageBookingDialog from "./ManageBookingDialog";
@@ -34,9 +35,9 @@ export default function BookingRow({
           month: "short",
           day: "numeric",
         })
-      : "-";
+      : null;
 
-  // ⭐ Checkin date parse
+  // ⭐ Checkin logic
   const checkinDate = new Date(booking.checkin as any);
   const today = new Date();
 
@@ -61,10 +62,21 @@ export default function BookingRow({
       ? "text-danger fw-bold"
       : "text-warning fw-bold";
 
+  // ⭐ ปุ่ม "จัดการ (อนุมัติ/ไม่อนุมัติ)" โชว์เฉพาะ "รออนุมัติ"
   const showManage = booking.approveStatus === 0;
+
+  // ⭐ แก้ไข/ลบ ต้องเห็นทุก filter ยกเว้น "อนุมัติแล้ว"
   const showEditDelete = booking.approveStatus !== 1;
 
+  // ⭐ Modal slip viewer
+  const [showSlip, setShowSlip] = useState(false);
+
+  // ⭐ Actual Checkin: ถ้า null/0 ให้ไม่แสดงแทบนี้
+  const actualCheckinStr = formatThai(booking.actualCheckin);
+
+  // =========================================================================================
   // ⭐ CARD MODE (Mobile)
+  // =========================================================================================
   if (mode === "card") {
     return (
       <div className="shadow-sm rounded-4 p-3 bg-light border text-center">
@@ -75,21 +87,47 @@ export default function BookingRow({
         <p>เบอร์ : {booking.cphone}</p>
         <p>วันจอง : {formatThai(booking.createdAt)}</p>
         <p>วันที่แจ้งเข้าพัก : {formatThai(booking.checkin)}</p>
-        <p><b>วันที่เข้าพักจริง :</b> {formatThai(booking.actualCheckin)}</p>
+
+        {actualCheckinStr && (
+          <p>
+            <b>วันที่เข้าพักจริง :</b> {actualCheckinStr}
+          </p>
+        )}
 
         <p className="mt-2">
           <b>สถานะการจอง : </b>
           <span className={statusClass}>{statusText}</span>
         </p>
 
-        {/* ⭐ ปุ่มดูสลิป */}
+        {/* ⭐ ปุ่มดูสลิป Popup */}
         {booking.slipUrl && (
-          <button
-            className="btn btn-primary btn-sm mt-1"
-            onClick={() => window.open(booking.slipUrl!, "_blank")}
-          >
-            ดูสลิป
-          </button>
+          <>
+            <button
+              className="btn btn-primary btn-sm mt-1"
+              onClick={() => setShowSlip(true)}
+            >
+              ดูสลิป
+            </button>
+
+            {showSlip && (
+              <div
+                className="position-fixed top-0 start-0 w-100 h-100 bg-dark bg-opacity-75 d-flex justify-content-center align-items-center"
+                style={{ zIndex: 9999 }}
+                onClick={() => setShowSlip(false)}
+              >
+                <img
+                  src={booking.slipUrl}
+                  alt="slip"
+                  style={{
+                    maxWidth: "90%",
+                    maxHeight: "90%",
+                    borderRadius: "10px",
+                    boxShadow: "0 0 10px #000",
+                  }}
+                />
+              </div>
+            )}
+          </>
         )}
 
         <div className="d-flex justify-content-center gap-2 mt-3">
@@ -103,7 +141,7 @@ export default function BookingRow({
             />
           )}
 
-          {/* 🟢 เช็คอิน */}
+          {/* 🟢 เช็คอิน (เฉพาะรอเข้าพัก และวันตรงวันนี้) */}
           {canCheckin && (
             <button
               className="btn btn-success btn-sm"
@@ -113,7 +151,7 @@ export default function BookingRow({
             </button>
           )}
 
-          {/* 🔵 แก้ไข + ลบ (ไม่อนุมัติ/รออนุมัติ เท่านั้น) */}
+          {/* 🔵 แก้ไข + ลบ (ทุก filter ยกเว้น “อนุมัติแล้ว”) */}
           {isSuperAdmin && showEditDelete && (
             <>
               <EditBookingDialog booking={booking} onSuccess={onEditSuccess} />
@@ -131,7 +169,9 @@ export default function BookingRow({
     );
   }
 
+  // =========================================================================================
   // ⭐ TABLE MODE (Desktop)
+  // =========================================================================================
   return (
     <tr>
       <td>{index}</td>
@@ -141,17 +181,37 @@ export default function BookingRow({
       <td>{booking.cphone}</td>
       <td>{formatThai(booking.createdAt)}</td>
       <td>{formatThai(booking.checkin)}</td>
-      <td>{formatThai(booking.actualCheckin)}</td>
+      <td>{actualCheckinStr || "-"}</td>
 
-      {/* ปุ่มดูสลิป */}
+      {/* ⭐ ดูสลิป Popup */}
       <td>
         {booking.slipUrl ? (
-          <button
-            className="btn btn-outline-primary btn-sm"
-            onClick={() => window.open(booking.slipUrl!, "_blank")}
-          >
-            ดู
-          </button>
+          <>
+            <button
+              className="btn btn-outline-primary btn-sm"
+              onClick={() => setShowSlip(true)}
+            >
+              ดู
+            </button>
+
+            {showSlip && (
+              <div
+                className="position-fixed top-0 start-0 w-100 h-100 bg-dark bg-opacity-75 d-flex justify-content-center align-items-center"
+                style={{ zIndex: 9999 }}
+                onClick={() => setShowSlip(false)}
+              >
+                <img
+                  src={booking.slipUrl}
+                  alt="slip"
+                  style={{
+                    maxWidth: "90%",
+                    maxHeight: "90%",
+                    borderRadius: "10px",
+                  }}
+                />
+              </div>
+            )}
+          </>
         ) : (
           "-"
         )}
@@ -161,7 +221,6 @@ export default function BookingRow({
         <span className={statusClass}>{statusText}</span>
       </td>
 
-      {/* ปุ่ม Desktop */}
       {isSuperAdmin && (
         <>
           <td>
@@ -191,7 +250,9 @@ export default function BookingRow({
             {showEditDelete && (
               <button
                 className="btn btn-danger btn-sm"
-                onClick={() => onDelete(booking.bookingId, booking.room.number)}
+                onClick={() =>
+                  onDelete(booking.bookingId, booking.room.number)
+                }
               >
                 🗑️
               </button>

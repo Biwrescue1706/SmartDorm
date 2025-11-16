@@ -26,11 +26,11 @@ export default function Booking() {
   // ⭐ กรองข้อมูลตามเงื่อนไขใหม่
   useEffect(() => {
     if (active === "pending") {
-      // รออนุมัติ
+      // → รออนุมัติ
       setFiltered(bookings.filter((b) => b.approveStatus === 0));
 
     } else if (active === "approved") {
-      // ⭐ อนุมัติแล้ว แต่ต้องมี actualCheckin ด้วย
+      // → อนุมัติแล้ว และต้องมี actualCheckin แล้ว
       setFiltered(
         bookings.filter(
           (b) => b.approveStatus === 1 && b.actualCheckin != null
@@ -38,11 +38,11 @@ export default function Booking() {
       );
 
     } else if (active === "rejected") {
-      // ไม่อนุมัติ
+      // → ไม่อนุมัติ
       setFiltered(bookings.filter((b) => b.approveStatus === 2));
 
     } else if (active === "checkinPending") {
-      // ⭐ รอเข้าพัก — อนุมัติแล้ว แต่ยังไม่มี actualCheckin
+      // → รอเข้าพัก = อนุมัติแล้ว & ยังไม่เช็คอิน
       setFiltered(
         bookings.filter(
           (b) => b.approveStatus === 1 && b.actualCheckin == null
@@ -69,7 +69,10 @@ export default function Booking() {
 
       <main className="main-content flex-grow-1 px-1 py-2 mt-6 mt-lg-7">
         <div className="mx-auto container-max">
-          <h2 className="py-1 text-center text-while mb-3">จัดการการจอง</h2>
+
+          <h2 className="py-1 text-center text-while mb-3">
+            จัดการการจอง
+          </h2>
 
           {/* ปุ่มรีเฟรช */}
           <div className="text-center mb-3">
@@ -91,9 +94,11 @@ export default function Booking() {
             />
           </div>
 
-          {/* ตาราง */}
+          {/* ตาราง / การ์ด */}
           {loading ? (
-            <p className="text-center text-muted mt-3">กำลังโหลดข้อมูล...</p>
+            <p className="text-center text-muted mt-3">
+              กำลังโหลดข้อมูล...
+            </p>
           ) : (
             <BookingTable
               bookings={filtered}
@@ -103,9 +108,9 @@ export default function Booking() {
               onEditSuccess={() => fetchBookings()}
               onCheckin={checkinBooking}
               role={role}
-              activeFilter={active}
             />
           )}
+
         </div>
       </main>
     </div>

@@ -16,9 +16,7 @@ export default function Rooms() {
     fetchRooms();
   }, []);
 
-  // ตรวจขนาดจอเพื่อดูว่าเป็น Desktop table mode
   const [isLargeScreen, setIsLargeScreen] = useState(window.innerWidth >= 1400);
-
   useEffect(() => {
     const handleResize = () => {
       setIsLargeScreen(window.innerWidth >= 1400);
@@ -27,7 +25,23 @@ export default function Rooms() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // ฟิลเตอร์
+  // แก้ type ให้ถูกต้อง
+  const getFloor = (roomNumber: string | number): number | null => {
+    const num = Number(roomNumber);
+    if (isNaN(num)) return null;
+    return Math.floor(num / 100);
+  };
+
+  // แก้ null ให้หาย ก่อน sort
+  const allFloors: number[] = Array.from(
+    new Set(
+      rooms
+        .map((r) => getFloor(r.number))
+        .filter((f): f is number => f !== null && f > 0)
+    )
+  ).sort((a, b) => a - b);
+
+  // แก้ type ฟิลเตอร์ให้ชัดเจน
   const [filter, setFilter] = useState<"all" | "available" | "booked">("all");
   const [selectedFloor, setSelectedFloor] = useState("ทั้งหมด");
 
@@ -49,9 +63,8 @@ export default function Rooms() {
     return true;
   });
 
-  // Pagination
   const [currentPage, setCurrentPage] = useState(1);
-  const [rowsPerPage, setRowsPerPage] = useState(10); // ให้หาร 3 ลงตัวใน layout ใหม่
+  const [rowsPerPage, setRowsPerPage] = useState(10);
 
   const indexOfLast = currentPage * rowsPerPage;
   const indexOfFirst = indexOfLast - rowsPerPage;
@@ -73,11 +86,11 @@ export default function Rooms() {
 
       <main
         className="main-content flex-grow-1 px-2 py-2 mt-6 mt-lg-7"
-        style={{ paddingLeft: "20px", paddingRight: "20px" }} // ⭐ ห่างจากข้าง
+        style={{ paddingLeft: "20px", paddingRight: "20px" }}
       >
         <div className="mx-auto" style={{ maxWidth: "1200px" }}>
           <div className="d-flex justify-content-center mb-3 mt-3">
-            <h2 className="fw-bold text-dark">🏠 จัดการห้องพัก</h2>
+            <h2 className="fw-bold text-dark">จัดการห้องพัก</h2>
           </div>
 
           {role === 0 && (
@@ -86,9 +99,11 @@ export default function Rooms() {
             </div>
           )}
 
-          {/* เลือกชั้น */}
+          {/* Dropdown เลือกชั้น */}
           <div className="text-center mb-4">
-            <label className="fw-semibold me-2 fs-5 text-dark">เลือกชั้น :</label>
+            <label className="fw-semibold me-2 fs-5 text-dark">
+              เลือกชั้น :
+            </label>
             <select
               className="form-select d-inline-block text-center fw-semibold shadow-sm"
               style={{
@@ -103,7 +118,8 @@ export default function Rooms() {
               }}
             >
               <option value="ทั้งหมด">ทั้งหมด</option>
-              {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].map((f) => (
+
+              {allFloors.map((f) => (
                 <option key={f} value={f.toString()}>
                   ชั้น {f}
                 </option>
@@ -111,17 +127,15 @@ export default function Rooms() {
             </select>
           </div>
 
-          {/* ฟิลเตอร์ */}
           <RoomFilter
             activeFilter={filter}
             counts={counts}
             onFilterChange={(f) => {
-              setFilter(f);
+              setFilter(f as "all" | "available" | "booked");
               setCurrentPage(1);
             }}
           />
 
-          {/* โหลด */}
           {loading ? (
             <div className="text-center my-5">
               <div className="spinner-border text-success" role="status"></div>
@@ -131,7 +145,6 @@ export default function Rooms() {
             <>
               {isLargeScreen ? (
                 <>
-                  {/* Table Mode */}
                   <RoomTable
                     rooms={currentRooms}
                     startIndex={indexOfFirst}
@@ -152,7 +165,6 @@ export default function Rooms() {
                 </>
               ) : (
                 <>
-                  {/* ⭐ Card Mode – มือถือ 1 คอลัมน์ / Tablet 600+ = 3 คอลัมน์ */}
                   <div
                     className="d-grid"
                     style={{

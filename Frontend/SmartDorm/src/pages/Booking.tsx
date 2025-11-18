@@ -1,3 +1,4 @@
+//src/pages/Booking.tsx
 import { useState, useEffect } from "react";
 import BookingFilter from "../components/Booking/BookingFilter";
 import BookingTable from "../components/Booking/BookingTable";
@@ -23,32 +24,32 @@ export default function Booking() {
     "pending" | "approved" | "rejected" | "checkinPending"
   >("pending");
 
+  // ⭐ Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+
   // ⭐ กรองข้อมูลตามเงื่อนไขใหม่
   useEffect(() => {
     if (active === "pending") {
       // → รออนุมัติ
       setFiltered(bookings.filter((b) => b.approveStatus === 0));
-
     } else if (active === "approved") {
       // → อนุมัติแล้ว และต้องมี actualCheckin แล้ว
       setFiltered(
-        bookings.filter(
-          (b) => b.approveStatus === 1 && b.actualCheckin != null
-        )
+        bookings.filter((b) => b.approveStatus === 1 && b.actualCheckin != null)
       );
-
     } else if (active === "rejected") {
       // → ไม่อนุมัติ
       setFiltered(bookings.filter((b) => b.approveStatus === 2));
-
     } else if (active === "checkinPending") {
       // → รอเข้าพัก = อนุมัติแล้ว & ยังไม่เช็คอิน
       setFiltered(
-        bookings.filter(
-          (b) => b.approveStatus === 1 && b.actualCheckin == null
-        )
+        bookings.filter((b) => b.approveStatus === 1 && b.actualCheckin == null)
       );
     }
+
+    // เปลี่ยน filter หรือข้อมูล เปลี่ยนหน้าให้กลับไปหน้า 1
+    setCurrentPage(1);
   }, [bookings, active]);
 
   const handleFilter = (
@@ -69,10 +70,7 @@ export default function Booking() {
 
       <main className="main-content flex-grow-1 px-1 py-2 mt-6 mt-lg-7">
         <div className="mx-auto container-max">
-
-          <h2 className="py-1 text-center text-while mb-3">
-            จัดการการจอง
-          </h2>
+          <h2 className="py-1 text-center text-while mt-3 mb-3">จัดการการจอง</h2>
 
           {/* ปุ่มรีเฟรช */}
           <div className="text-center mb-3">
@@ -96,9 +94,7 @@ export default function Booking() {
 
           {/* ตาราง / การ์ด */}
           {loading ? (
-            <p className="text-center text-muted mt-3">
-              กำลังโหลดข้อมูล...
-            </p>
+            <p className="text-center text-muted mt-3">กำลังโหลดข้อมูล...</p>
           ) : (
             <BookingTable
               bookings={filtered}
@@ -108,9 +104,20 @@ export default function Booking() {
               onEditSuccess={() => fetchBookings()}
               onCheckin={checkinBooking}
               role={role}
+              // แสดงคอลัมน์ "เข้าพักจริง" เฉพาะ 2 แท็บนี้
+              showActualColumn={
+                active === "approved" || active === "checkinPending"
+              }
+              // Pagination
+              currentPage={currentPage}
+              rowsPerPage={rowsPerPage}
+              onPageChange={(page) => setCurrentPage(page)}
+              onRowsPerPageChange={(rows) => {
+                setRowsPerPage(rows);
+                setCurrentPage(1);
+              }}
             />
           )}
-
         </div>
       </main>
     </div>

@@ -74,7 +74,7 @@ export default function EditBookingDialog({ booking, onSuccess }: Props) {
         <button
           className="btn btn-sm fw-semibold text-white ms-2 mt-1 mx-2 my-1 "
           style={{
-            background: "linear-gradient(135deg, #2575fc, #6a11cb)",
+            background: "linear-gradient(135deg, #005effff, #33ff00ff)",
             border: "none",
             padding: "4px 8px",
           }}
@@ -104,18 +104,18 @@ export default function EditBookingDialog({ booking, onSuccess }: Props) {
         >
           {/*  เพิ่ม Title & Description เพื่อแก้ Warning */}
           <Dialog.Title asChild>
-            <h5
+            <h3
               className="text-center text-white fw-bold py-2 mb-3 rounded-top-4"
               style={{
                 background: "linear-gradient(135deg, #6a11cb, #2575fc)",
-                fontSize: "1rem",
                 position: "sticky",
                 top: 0,
                 zIndex: 5,
               }}
             >
               แก้ไขข้อมูลผู้จอง
-            </h5>
+            </h3>
+          
           </Dialog.Title>
 
           <Dialog.Description asChild>

@@ -14,7 +14,7 @@ export default function ManageBookingDialog({
   booking,
   onApprove,
   onReject,
-  triggerClassName = "btn btn-sm btn-warning shadow-sm fw-semibold",
+  triggerClassName = "btn btn-sm btn-warning shadow-sm fw-semibold ms-2 mt-1 mx-2 my-1",
   triggerLabel = "จัดการ",
 }: ManageBookingDialogProps) {
   const [open, setOpen] = useState(false);

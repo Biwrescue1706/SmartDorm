@@ -6,11 +6,11 @@ interface BookingFilterProps {
   onChange: (
     status: "pending" | "approved" | "rejected" | "checkinPending"
   ) => void;
-  bookings: Booking[]; // ✅ รับ bookings เพื่อคำนวณจำนวนแต่ละสถานะ
+  bookings: Booking[]; //  รับ bookings เพื่อคำนวณจำนวนแต่ละสถานะ
 }
 
 export default function BookingFilter({ active, onChange, bookings }: BookingFilterProps) {
-  // ✅ คำนวณจำนวนแต่ละสถานะ
+  //  คำนวณจำนวนแต่ละสถานะ
   const counts = {
     pending: bookings.filter((b) => b.approveStatus === 0).length,
     approved: bookings.filter((b) => b.approveStatus === 1).length,
@@ -20,10 +20,10 @@ export default function BookingFilter({ active, onChange, bookings }: BookingFil
     ).length,
   };
 
-  // ✅ รายการการ์ดแต่ละประเภท
+  //  รายการการ์ดแต่ละประเภท
   const cards = [
     { key: "pending", label: "รออนุมัติ", color: "#ffc107" },
-    { key: "approved", label: "อนุมัติแล้ว", color: "#28a745" },
+    { key: "approved", label: "อนุมัติ", color: "#28a745" },
     { key: "rejected", label: "ไม่อนุมัติ", color: "#dc3545" },
     { key: "checkinPending", label: "รอเข้าพัก", color: "#0dcaf0" },
   ] as const;

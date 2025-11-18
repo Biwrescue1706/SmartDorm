@@ -34,7 +34,7 @@ export default function AddRoomDialog({ onSuccess }: AddRoomDialogProps) {
     const data = await fetchRooms();
     const existing = data.map((r) => r.number);
 
-    const allRooms = Array.from({ length: 7 * 20 }, (_, i) => {
+    const allRooms = Array.from({ length: 11 * 20 }, (_, i) => {
       const floor = Math.floor(i / 20) + 1;
       const num = (i % 20) + 1;
       return `${floor}${num.toString().padStart(2, "0")}`;

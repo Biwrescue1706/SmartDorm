@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import Swal from "sweetalert2";
 import { useRooms } from "../../hooks/useRooms";
 import type { Room } from "../../types/Room";
+import { createPortal } from "react-dom";
 
 interface Props {
   roomId: string;
@@ -11,23 +12,18 @@ interface Props {
 export default function EditRoomDialog({ roomId, onSuccess }: Props) {
   const [show, setShow] = useState(false);
 
-  // ดึงข้อมูลจาก hook
   const { room, loading, loadRoom, updateRoom } = useRooms(roomId);
 
-  // สถานะฟอร์มภายในคอมโพเนนต์ (แยกจาก room ใน hook)
   const [form, setForm] = useState<Room | null>(null);
 
-  // เมื่อเปิด modal ให้โหลดข้อมูลห้อง
   useEffect(() => {
     if (show) loadRoom();
   }, [show]);
 
-  // เมื่อ room จาก hook เปลี่ยน ให้อัปเดตแบบฟอร์มภายใน
   useEffect(() => {
     if (room) setForm(room);
   }, [room]);
 
-  // บันทึก
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form) return;
@@ -48,7 +44,6 @@ export default function EditRoomDialog({ roomId, onSuccess }: Props) {
         status: form.status,
       });
 
-      // หมายเหตุ: ถ้าใน hook มี Swal success แล้ว อาจไม่ต้องแสดงซ้ำที่นี่
       Swal.fire({
         icon: "success",
         title: "แก้ไขห้องเรียบร้อยแล้ว",
@@ -91,151 +86,178 @@ export default function EditRoomDialog({ roomId, onSuccess }: Props) {
         ✏️
       </button>
 
-      {/* Modal */}
-      {show && form && (
-        <div className="modal show d-block" tabIndex={-1}>
+      {/* Modal แก้ไข แล้วลอยออกจากการ์ดด้วย createPortal */}
+      {show &&
+        form &&
+        createPortal(
           <div
-            className="modal-dialog modal-dialog-centered"
-            style={{ maxWidth: "500px" }}
+            className="modal show d-block"
+            style={{
+              backgroundColor: "rgba(0,0,0,0.45)",
+              zIndex: 2000,
+            }}
           >
-            <div className="modal-content shadow-lg rounded-4 border-0">
-              <form onSubmit={handleSubmit}>
-                {/* Header */}
-                <div
-                  className="modal-header bg-teal-gradient justify-content-center"
-                  style={{
-                    background: "linear-gradient(135deg, #11998e, #38ef7d)",
-                    borderTopLeftRadius: "1rem",
-                    borderTopRightRadius: "1rem",
-                  }}
-                >
-                  <h5 className="modal-title fw-bold">แก้ไขข้อมูลห้อง</h5>
-                </div>
-
-                {/* Body */}
-                <div className="modal-body p-4">
-                  {/* หมายเลขห้อง */}
-                  <div className="mb-3">
-                    <label className="form-label fw-semibold">หมายเลขห้อง</label>
-                    <input
-                      className="form-control text-center"
-                      value={form.number}
-                      onChange={(e) =>
-                        setForm((prev) => prev ? { ...prev, number: e.target.value } : prev)
-                      }
-                      required
-                    />
-                  </div>
-
-                  {/* ขนาด */}
-                  <div className="mb-3">
-                    <label className="form-label fw-semibold">ขนาด</label>
-                    <input
-                      className="form-control text-center"
-                      value={form.size}
-                      onChange={(e) =>
-                        setForm((prev) => prev ? { ...prev, size: e.target.value } : prev)
-                      }
-                      required
-                    />
-                  </div>
-
-                  {/* ค่าเช่า */}
-                  <div className="mb-3">
-                    <label className="form-label fw-semibold">ค่าเช่า (บาท)</label>
-                    <input
-                      type="number"
-                      className="form-control text-center"
-                      value={form.rent}
-                      onChange={(e) =>
-                        setForm((prev) =>
-                          prev ? { ...prev, rent: Number(e.target.value) } : prev
-                        )
-                      }
-                      required
-                    />
-                  </div>
-
-                  {/* เงินมัดจำ */}
-                  <div className="mb-3">
-                    <label className="form-label fw-semibold">เงินมัดจำ</label>
-                    <input
-                      type="number"
-                      className="form-control text-center"
-                      value={form.deposit}
-                      onChange={(e) =>
-                        setForm((prev) =>
-                          prev ? { ...prev, deposit: Number(e.target.value) } : prev
-                        )
-                      }
-                      required
-                    />
-                  </div>
-
-                  {/* ค่าจอง */}
-                  <div className="mb-3">
-                    <label className="form-label fw-semibold">ค่าจอง</label>
-                    <input
-                      type="number"
-                      className="form-control text-center"
-                      value={form.bookingFee}
-                      onChange={(e) =>
-                        setForm((prev) =>
-                          prev ? { ...prev, bookingFee: Number(e.target.value) } : prev
-                        )
-                      }
-                      required
-                    />
-                  </div>
-
-                  {/* สถานะ */}
-                  <div className="mb-3">
-                    <label className="form-label fw-semibold">สถานะ</label>
-                    <select
-                      className="form-select text-center"
-                      value={form.status}
-                      onChange={(e) =>
-                        setForm((prev) =>
-                          prev ? { ...prev, status: Number(e.target.value) } : prev
-                        )
-                      }
-                    >
-                      <option value={0}>ว่าง</option>
-                      <option value={1}>ไม่ว่าง</option>
-                    </select>
-                  </div>
-                </div>
-
-                {/* Footer */}
-                <div className="modal-footer d-flex justify-content-between px-4 pb-3">
-                  <button
-                    type="button"
-                    className="btn fw-semibold text-white px-4"
-                    style={{
-                      background: "linear-gradient(135deg, #ff512f, #dd2476)",
-                      border: "none",
-                    }}
-                    onClick={() => setShow(false)}
-                  >
-                    ยกเลิก
-                  </button>
-
-                  <button
-                    type="submit"
-                    className="btn fw-semibold text-white px-4"
+            <div
+              className="modal-dialog modal-dialog-centered"
+              style={{ maxWidth: "500px" }}
+            >
+              <div className="modal-content shadow-lg rounded-4 border-0">
+                <form onSubmit={handleSubmit}>
+                  {/* Header */}
+                  <div
+                    className="modal-header justify-content-center"
                     style={{
                       background: "linear-gradient(135deg, #11998e, #38ef7d)",
-                      border: "none",
+                      borderTopLeftRadius: "1rem",
+                      borderTopRightRadius: "1rem",
                     }}
                   >
-                    บันทึก
-                  </button>
-                </div>
-              </form>
+                    <h5 className="modal-title fw-bold text-white">
+                      แก้ไขข้อมูลห้อง
+                    </h5>
+                  </div>
+
+                  {/* Body */}
+                  <div className="modal-body p-4">
+                    {/* หมายเลขห้อง */}
+                    <div className="mb-3">
+                      <label className="form-label fw-semibold">
+                        หมายเลขห้อง
+                      </label>
+                      <input
+                        className="form-control text-center"
+                        value={form.number}
+                        onChange={(e) =>
+                          setForm((prev) =>
+                            prev ? { ...prev, number: e.target.value } : prev
+                          )
+                        }
+                        required
+                      />
+                    </div>
+
+                    {/* ขนาด */}
+                    <div className="mb-3">
+                      <label className="form-label fw-semibold">ขนาด</label>
+                      <input
+                        className="form-control text-center"
+                        value={form.size}
+                        onChange={(e) =>
+                          setForm((prev) =>
+                            prev ? { ...prev, size: e.target.value } : prev
+                          )
+                        }
+                        required
+                      />
+                    </div>
+
+                    {/* ค่าเช่า */}
+                    <div className="mb-3">
+                      <label className="form-label fw-semibold">
+                        ค่าเช่า (บาท)
+                      </label>
+                      <input
+                        type="number"
+                        className="form-control text-center"
+                        value={form.rent}
+                        onChange={(e) =>
+                          setForm((prev) =>
+                            prev
+                              ? { ...prev, rent: Number(e.target.value) }
+                              : prev
+                          )
+                        }
+                        required
+                      />
+                    </div>
+
+                    {/* เงินมัดจำ */}
+                    <div className="mb-3">
+                      <label className="form-label fw-semibold">
+                        เงินมัดจำ
+                      </label>
+                      <input
+                        type="number"
+                        className="form-control text-center"
+                        value={form.deposit}
+                        onChange={(e) =>
+                          setForm((prev) =>
+                            prev
+                              ? { ...prev, deposit: Number(e.target.value) }
+                              : prev
+                          )
+                        }
+                        required
+                      />
+                    </div>
+
+                    {/* ค่าจอง */}
+                    <div className="mb-3">
+                      <label className="form-label fw-semibold">ค่าจอง</label>
+                      <input
+                        type="number"
+                        className="form-control text-center"
+                        value={form.bookingFee}
+                        onChange={(e) =>
+                          setForm((prev) =>
+                            prev
+                              ? { ...prev, bookingFee: Number(e.target.value) }
+                              : prev
+                          )
+                        }
+                        required
+                      />
+                    </div>
+
+                    {/* สถานะ */}
+                    <div className="mb-3">
+                      <label className="form-label fw-semibold">สถานะ</label>
+                      <select
+                        className="form-select text-center"
+                        value={form.status}
+                        onChange={(e) =>
+                          setForm((prev) =>
+                            prev
+                              ? { ...prev, status: Number(e.target.value) }
+                              : prev
+                          )
+                        }
+                      >
+                        <option value={0}>ว่าง</option>
+                        <option value={1}>ไม่ว่าง</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Footer */}
+                  <div className="modal-footer d-flex justify-content-between px-4 pb-3">
+                    <button
+                      type="button"
+                      className="btn fw-semibold text-white px-4"
+                      style={{
+                        background: "linear-gradient(135deg, #ff512f, #dd2476)",
+                      }}
+                      onClick={() => setShow(false)}
+                    >
+                      ยกเลิก
+                    </button>
+
+                    <button
+                      type="submit"
+                      className="btn fw-semibold text-white px-4"
+                      style={{
+                        background: "linear-gradient(135deg, #11998e, #38ef7d)",
+                      }}
+                    >
+                      บันทึก
+                    </button>
+                  </div>
+                </form>
+              </div>
             </div>
-          </div>
-        </div>
-      )}
+          </div>,
+          document.body
+        )}
     </>
   );
 }

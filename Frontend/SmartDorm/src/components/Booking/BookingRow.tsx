@@ -1,3 +1,4 @@
+//src/components/Booking/BookingRow.tsx
 import { useState } from "react";
 import Swal from "sweetalert2";
 import type { Booking } from "../../types/Booking";
@@ -13,7 +14,8 @@ interface Props {
   onCheckin?: (id: string) => void;
   role?: number | null;
   index: number;
-  mode?: "table" | "card";
+  mode: "table" | "card";
+  showActualCheckinColumn: boolean;
 }
 
 export default function BookingRow({
@@ -25,7 +27,8 @@ export default function BookingRow({
   onCheckin,
   role,
   index,
-  mode = "table",
+  mode,
+  showActualCheckinColumn,
 }: Props) {
   const isSuperAdmin = role === 0;
 
@@ -46,44 +49,37 @@ export default function BookingRow({
     return dt;
   };
 
-  const checkinDate = normalizeDate(booking.checkin);
   const today = normalizeDate(new Date());
+  const checkinDate = booking.checkin ? normalizeDate(booking.checkin) : today;
 
   const canCheckin =
     booking.approveStatus === 1 &&
     isEmpty(booking.actualCheckin) &&
     today.getTime() >= checkinDate.getTime();
 
-  // --------------------------
-  // SweetAlert2 Confirm Checkin
-  // --------------------------
+  const [showSlip, setShowSlip] = useState(false);
+
   const confirmCheckin = () => {
     Swal.fire({
       title: "ยืนยันการเช็คอิน?",
-      html: `คุณต้องการเช็คอินให้ <b>${booking.fullName}</b> ใช่หรือไม่?`,
+      html: `เช็คอินให้ <b>${booking.fullName}</b>?`,
       icon: "warning",
       showCancelButton: true,
       confirmButtonText: "ยืนยัน",
       cancelButtonText: "ยกเลิก",
-      confirmButtonColor: "#28a745",
-      cancelButtonColor: "#d33",
-    }).then((result) => {
-      if (result.isConfirmed) {
+    }).then((r) => {
+      if (r.isConfirmed) {
         onCheckin?.(booking.bookingId);
-
         Swal.fire({
           icon: "success",
           title: "เช็คอินสำเร็จ",
-          timer: 1500,
+          timer: 1200,
           showConfirmButton: false,
         });
       }
     });
   };
 
-  // --------------------------
-  // Status
-  // --------------------------
   const statusText =
     booking.approveStatus === 1
       ? "อนุมัติแล้ว"
@@ -98,17 +94,6 @@ export default function BookingRow({
       ? "text-danger fw-bold"
       : "text-warning fw-bold";
 
-  const showManage = booking.approveStatus === 0;
-
-  const [showSlip, setShowSlip] = useState(false);
-
-  const actualCheckinStr = isEmpty(booking.actualCheckin)
-    ? "-"
-    : formatThai(booking.actualCheckin);
-
-  // --------------------------
-  // Slip Popup
-  // --------------------------
   const SlipPopup = () =>
     showSlip && (
       <div
@@ -118,45 +103,28 @@ export default function BookingRow({
       >
         <div
           className="bg-white p-3 rounded-4 shadow-lg"
-          style={{
-            maxWidth: "90%",
-            maxHeight: "90%",
-            position: "relative",
-          }}
+          style={{ maxWidth: "100%", maxHeight: "100%", position: "relative" }}
           onClick={(e) => e.stopPropagation()}
         >
-          <button
-            onClick={() => setShowSlip(false)}
-            style={{
-              position: "absolute",
-              top: "8px",
-              right: "12px",
-              fontSize: "20px",
-              background: "transparent",
-              border: "none",
-            }}
-          >
-            ✖
-          </button>
-
-          <h5 className="text-center fw-bold mb-3">
-            สลิปการโอน — ห้อง {booking.room.number}
-          </h5>
+          <h1 className="text-center fw-bold mb-3">
+            สลิปห้อง {booking.room.number}
+          </h1>
 
           <img
             src={booking.slipUrl!}
             style={{
-              maxWidth: "100%",
-              maxHeight: "70vh",
+              maxWidth: "70%",
+              maxHeight: "50vh",
               objectFit: "contain",
               borderRadius: "10px",
-              display: "block",
-              margin: "0 auto",
             }}
           />
 
           <div className="text-center mt-3">
-            <button className="btn btn-secondary" onClick={() => setShowSlip(false)}>
+            <button
+              className="btn btn-secondary "
+              onClick={() => setShowSlip(false)}
+            >
               ปิด
             </button>
           </div>
@@ -164,33 +132,44 @@ export default function BookingRow({
       </div>
     );
 
-  // ==========================================================
-  // CARD MODE
-  // ==========================================================
+  // ------------------------------ CARD MODE ------------------------------
   if (mode === "card") {
     return (
-      <div className="shadow-sm rounded-4 p-3 bg-light border text-center">
-        <h5 className="fw-bold mb-2">ห้อง : {booking.room.number}</h5>
-        <p>ชื่อผู้จอง : {booking.fullName}</p>
-        <p>LINE : {booking.customer?.userName}</p>
-        <p>เบอร์ : {booking.cphone}</p>
-        <p>วันจอง : {formatThai(booking.createdAt)}</p>
-        <p>วันที่แจ้งเข้าพัก : {formatThai(booking.checkin)}</p>
+      <div className="shadow-sm rounded-4 p-3 bg-light border text-center mb-2">
+        <h5 className="fw-bold">ห้อง {booking.room.number}</h5>
 
-        {!isEmpty(booking.actualCheckin) && (
-          <p>
-            <b>วันที่เข้าพักจริง :</b> {actualCheckinStr}
+        <p className="mt-2 mb-1">
+          <b>LINE :</b> {booking.customer?.userName}
+        </p>
+        <p className="mb-1">
+          <b>ผู้จอง :</b> {booking.fullName}
+        </p>
+        <p className="mb-1">
+          <b>เบอร์ :</b> {booking.cphone}
+        </p>
+        <p className="mb-1">
+          <b>วันจอง :</b> {formatThai(booking.createdAt)}
+        </p>
+        <p className="mb-1">
+          <b>แจ้งเข้าพัก :</b> {formatThai(booking.checkin)}
+        </p>
+
+        {showActualCheckinColumn && booking.actualCheckin !== null && (
+          <p className="mb-1">
+            <b>เข้าพักจริง :</b> {formatThai(booking.actualCheckin)}
           </p>
         )}
 
         <p className="mt-2">
-          <b>สถานะ : </b>
-          <span className={statusClass}>{statusText}</span>
+          <b>สถานะ : </b> <span className={statusClass}>{statusText}</span>
         </p>
 
         {booking.slipUrl && (
           <>
-            <button className="btn btn-primary btn-sm mt-1" onClick={() => setShowSlip(true)}>
+            <button
+              className="btn btn-primary btn-sm"
+              onClick={() => setShowSlip(true)}
+            >
               ดูสลิป
             </button>
             <SlipPopup />
@@ -198,35 +177,46 @@ export default function BookingRow({
         )}
 
         <div className="d-flex justify-content-center gap-2 mt-3">
-          {showManage && (
-            <ManageBookingDialog booking={booking} onApprove={onApprove} onReject={onReject} />
+          {booking.approveStatus === 0 && (
+            <ManageBookingDialog
+              booking={booking}
+              onApprove={onApprove}
+              onReject={onReject}
+            />
           )}
 
           {canCheckin && (
-            <button className="btn btn-success btn-sm" onClick={confirmCheckin}>
+            <button
+              className="btn btn-success btn-sm ms-2 mt-1 mx-2 my-1"
+              onClick={confirmCheckin}
+            >
               เช็คอิน
             </button>
           )}
 
           {isSuperAdmin && (
-            <>
-              <EditBookingDialog booking={booking} onSuccess={onEditSuccess} />
-              <button
-                className="btn btn-danger btn-sm"
-                onClick={() => onDelete(booking.bookingId, booking.room.number)}
-              >
-                🗑️
-              </button>
-            </>
+            <EditBookingDialog booking={booking} onSuccess={onEditSuccess} />
+          )}
+
+          {isSuperAdmin && (
+            <button
+              className="btn btn-sm fw-semibold text-white ms-2 mt-1 mx-2 my-1"
+              style={{
+                background: "linear-gradient(135deg, #fc2525ff, #eac913ff)",
+                border: "none",
+                padding: "4px 8px",
+              }}
+              onClick={() => onDelete(booking.bookingId, booking.room.number)}
+            >
+              🗑️
+            </button>
           )}
         </div>
       </div>
     );
   }
 
-  // ==========================================================
-  // TABLE MODE
-  // ==========================================================
+  // ------------------------------ TABLE MODE ------------------------------
   return (
     <tr>
       <td>{index}</td>
@@ -236,13 +226,37 @@ export default function BookingRow({
       <td>{booking.cphone}</td>
       <td>{formatThai(booking.createdAt)}</td>
       <td>{formatThai(booking.checkin)}</td>
-      <td>{actualCheckinStr}</td>
 
-      <td>
+      {showActualCheckinColumn && (
+        <td className="text-center">
+          {!isEmpty(booking.actualCheckin) && (
+            <span>{formatThai(booking.actualCheckin)}</span>
+          )}
+
+          {isEmpty(booking.actualCheckin) && canCheckin && (
+            <button
+              className="btn btn-sm fw-semibold text-black ms-2 mt-1 mx-2 my-1"
+              style={{
+                background: "linear-gradient(135deg, #3fe64dff, #f0cd09ff)",
+                border: "none",
+                padding: "4px 8px",
+              }}
+              onClick={confirmCheckin}
+            >
+              เช็คอิน
+            </button>
+          )}
+        </td>
+      )}
+
+      <td className="text-center">
         {booking.slipUrl ? (
           <>
-            <button className="btn btn-outline-primary btn-sm" onClick={() => setShowSlip(true)}>
-              ดู
+            <button
+              className="btn btn-outline-primary btn-sm fw-semibold text-whlie ms-2 mt-1 mx-2 my-1"
+              onClick={() => setShowSlip(true)}
+            >
+              ดูสลิป
             </button>
             <SlipPopup />
           </>
@@ -251,34 +265,41 @@ export default function BookingRow({
         )}
       </td>
 
-      <td>
-        <span className={statusClass}>{statusText}</span>
-      </td>
-
       <td className="text-center">
-        {showManage && (
-          <ManageBookingDialog booking={booking} onApprove={onApprove} onReject={onReject} />
+        {booking.approveStatus !== 0 && (
+          <span className={statusClass}>{statusText}</span>
         )}
 
-        {canCheckin && (
-          <button className="btn btn-success btn-sm mt-1" onClick={confirmCheckin}>
-            เช็คอิน
-          </button>
+        {booking.approveStatus === 0 && (
+          <ManageBookingDialog
+            booking={booking}
+            onApprove={onApprove}
+            onReject={onReject}
+          />
         )}
-
-        {isSuperAdmin && <EditBookingDialog booking={booking} onSuccess={onEditSuccess} />}
       </td>
 
-      <td className="text-center">
-        {isSuperAdmin && (
+      {isSuperAdmin && (
+        <td className="text-center">
+          <EditBookingDialog booking={booking} onSuccess={onEditSuccess} />
+        </td>
+      )}
+
+      {isSuperAdmin && (
+        <td className="text-center">
           <button
-            className="btn btn-danger btn-sm"
+            className="btn btn-sm fw-semibold text-white ms-2 mt-1 mx-2 my-1"
+            style={{
+              background: "linear-gradient(135deg, #fc2525ff, #eac913ff)",
+              border: "none",
+              padding: "4px 8px",
+            }}
             onClick={() => onDelete(booking.bookingId, booking.room.number)}
           >
             🗑️
           </button>
-        )}
-      </td>
+        </td>
+      )}
     </tr>
   );
 }

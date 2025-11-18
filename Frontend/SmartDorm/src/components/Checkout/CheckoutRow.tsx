@@ -87,13 +87,13 @@ export default function CheckoutRow({
           className="btn btn-outline-primary btn-sm me-1"
           onClick={() => onEdit(booking)}
         >
-          แก้ไข
+          ✏️
         </button>
         <button
           className="btn btn-outline-danger btn-sm"
           onClick={() => onDelete(booking.bookingId, booking.room.number)}
         >
-          ลบ
+          🗑️
         </button>
       </td>
     </tr>

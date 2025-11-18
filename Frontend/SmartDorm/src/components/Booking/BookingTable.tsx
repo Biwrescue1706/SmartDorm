@@ -1,4 +1,6 @@
+//src/components/Booking/BookingTable.tsx
 import BookingRow from "./BookingRow";
+import Pagination from "../Pagination";
 import type { Booking } from "../../types/Booking";
 
 interface Props {
@@ -9,6 +11,13 @@ interface Props {
   onEditSuccess: () => void;
   onCheckin?: (id: string) => void;
   role?: number | null;
+  showActualColumn?: boolean;
+
+  // Pagination
+  currentPage: number;
+  rowsPerPage: number;
+  onPageChange: (page: number) => void;
+  onRowsPerPageChange: (rows: number) => void;
 }
 
 export default function BookingTable({
@@ -19,77 +28,115 @@ export default function BookingTable({
   onEditSuccess,
   onCheckin,
   role,
+  showActualColumn,
+  currentPage,
+  rowsPerPage,
+  onPageChange,
+  onRowsPerPageChange,
 }: Props) {
-  
-  // ⭐ Card Mode: <600 = 1 card, 600–1400 = 3 cards, >1400 = table
   const useCard =
     window.innerWidth < 600 ||
     (window.innerWidth < 1400 && window.innerWidth >= 600);
 
   const mode = useCard ? "card" : "table";
 
+  const showActualCheckinColumn = !!showActualColumn;
+
+  // ตัดข้อมูลตาม pagination
+  const startIndex = (currentPage - 1) * rowsPerPage;
+  const endIndex = startIndex + rowsPerPage;
+  const paginatedBookings = bookings.slice(startIndex, endIndex);
+
   return (
-    <div className="mt-3">
-
+    <div
+      className="container mt-3"
+      style={{ paddingLeft: "10px", paddingRight: "10px" }}
+    >
       {mode === "table" ? (
-        <table className="table table-bordered table-hover text-center">
-          <thead className="table-primary">
-            <tr>
-              <th>#</th>
-              <th>ห้อง</th>
-              <th>LINE</th>
-              <th>ชื่อ</th>
-              <th>เบอร์</th>
-              <th>วันที่จอง</th>
-              <th>แจ้งเข้าพัก</th>
-              <th>เข้าพักจริง</th>
-              <th>สลิป</th>
-              <th>สถานะ</th>
-              <th>จัดการ</th>
-              <th>ลบ</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {bookings.map((b, i) => (
-              <BookingRow
-                key={b.bookingId}
-                booking={b}
-                index={i + 1}
-                role={role}
-                mode="table"
-                onApprove={onApprove}
-                onReject={onReject}
-                onDelete={onDelete}
-                onEditSuccess={onEditSuccess}
-                onCheckin={onCheckin}
-              />
-            ))}
-          </tbody>
-        </table>
-      ) : (
-        <div className="row g-3">
-          {bookings.map((b, i) => (
-            <div
-              key={b.bookingId}
-              className="col-12 col-md-4"
+        <>
+          <div className="responsive-table" style={{ overflowX: "auto" }}>
+            <table
+              className="table table-sm table-striped align-middle text-center"
+              style={{ tableLayout: "fixed", width: "100%" }}
             >
-              <BookingRow
-                booking={b}
-                index={i + 1}
-                role={role}
-                mode="card"
-                onApprove={onApprove}
-                onReject={onReject}
-                onDelete={onDelete}
-                onEditSuccess={onEditSuccess}
-                onCheckin={onCheckin}
-              />
-            </div>
-          ))}
-        </div>
-      )}
+              <thead className="table-dark">
+                <tr>
+                  <th>#</th>
+                  <th>ห้อง</th>
+                  <th>LINE</th>
+                  <th>ชื่อ</th>
+                  <th>เบอร์</th>
+                  <th>วันที่จอง</th>
+                  <th>แจ้งเข้าพัก</th>
 
+                  {showActualCheckinColumn && <th>เข้าพักจริง</th>}
+
+                  <th>สลิป</th>
+                  <th>สถานะ</th>
+
+                  {role === 0 && <th>แก้ไข</th>}
+                  {role === 0 && <th>ลบ</th>}
+                </tr>
+              </thead>
+
+              <tbody>
+                {paginatedBookings.map((b, i) => (
+                  <BookingRow
+                    key={b.bookingId}
+                    booking={b}
+                    index={startIndex + i + 1}
+                    role={role}
+                    mode="table"
+                    showActualCheckinColumn={showActualCheckinColumn}
+                    onApprove={onApprove}
+                    onReject={onReject}
+                    onDelete={onDelete}
+                    onEditSuccess={onEditSuccess}
+                    onCheckin={onCheckin}
+                  />
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          <Pagination
+            currentPage={currentPage}
+            totalItems={bookings.length}
+            rowsPerPage={rowsPerPage}
+            onPageChange={onPageChange}
+            onRowsPerPageChange={onRowsPerPageChange}
+          />
+        </>
+      ) : (
+        <>
+          <div className="row g-3">
+            {paginatedBookings.map((b, i) => (
+              <div key={b.bookingId} className="col-12 col-md-4">
+                <BookingRow
+                  booking={b}
+                  index={startIndex + i + 1}
+                  role={role}
+                  mode="card"
+                  showActualCheckinColumn={true}
+                  onApprove={onApprove}
+                  onReject={onReject}
+                  onDelete={onDelete}
+                  onEditSuccess={onEditSuccess}
+                  onCheckin={onCheckin}
+                />
+              </div>
+            ))}
+          </div>
+
+          <Pagination
+            currentPage={currentPage}
+            totalItems={bookings.length}
+            rowsPerPage={rowsPerPage}
+            onPageChange={onPageChange}
+            onRowsPerPageChange={onRowsPerPageChange}
+          />
+        </>
+      )}
     </div>
   );
 }

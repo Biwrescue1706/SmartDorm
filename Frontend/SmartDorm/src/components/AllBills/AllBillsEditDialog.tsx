@@ -37,14 +37,14 @@ export default function AllBillsEditDialog({ bill, onSave, onClose }: Props) {
         <div className="modal-content shadow-lg rounded-4 border-0">
           {/* Header */}
           <div
-            className="modal-header text-white"
+            className="modal-header text-white text-center px-4"
             style={{
               background: "linear-gradient(135deg, #4facfe, #00f2fe)",
               borderTopLeftRadius: "1rem",
               borderTopRightRadius: "1rem",
             }}
           >
-            <h5 className="modal-title fw-bold">
+            <h5 className="modal-title fw-bold text-center">
               แก้ไขบิลห้อง {bill.room.number}
             </h5>
             <button type="button" className="btn-close btn-close-white" onClick={onClose}></button>
@@ -55,7 +55,7 @@ export default function AllBillsEditDialog({ bill, onSave, onClose }: Props) {
             <div className="modal-body p-4">
               <div className="row g-3">
                 {/* หน่วยน้ำ */}
-                <div className="col-md-6 text-center">
+                <div className="col-12 text-center">
                   <label className="form-label fw-semibold">หน่วยน้ำก่อน</label>
                   <input
                     type="number"
@@ -67,7 +67,7 @@ export default function AllBillsEditDialog({ bill, onSave, onClose }: Props) {
                     required
                   />
                 </div>
-                <div className="col-md-6 text-center">
+                <div className="col-12 text-center">
                   <label className="form-label fw-semibold">หน่วยน้ำหลัง</label>
                   <input
                     type="number"
@@ -81,7 +81,7 @@ export default function AllBillsEditDialog({ bill, onSave, onClose }: Props) {
                 </div>
 
                 {/* หน่วยไฟ */}
-                <div className="col-md-6 text-center">
+                <div className="col-12 text-center">
                   <label className="form-label fw-semibold">หน่วยไฟก่อน</label>
                   <input
                     type="number"
@@ -93,7 +93,7 @@ export default function AllBillsEditDialog({ bill, onSave, onClose }: Props) {
                     required
                   />
                 </div>
-                <div className="col-md-6 text-center">
+                <div className="col-12 text-center">
                   <label className="form-label fw-semibold">หน่วยไฟหลัง</label>
                   <input
                     type="number"

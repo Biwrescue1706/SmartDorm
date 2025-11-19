@@ -22,32 +22,29 @@ export default function Login() {
   const isFormValid = username.trim() !== "" && password.trim() !== "";
 
   return (
-    <div
-      className="d-flex justify-content-center pt-4"
-      style={{
-        minHeight: "100vh",
-        background: "linear-gradient(135deg, #eef2ff, #f8f9fa)",
-      }}
-    >
+    <div className="d-flex justify-content-center pt-4">
       <div
         className="card shadow-lg border-0 p-4 text-center"
         style={{
-          maxWidth: "500px",
-          width: "90%",
+          maxWidth: "480px",
+          width: "80%",
           borderRadius: "20px",
           background: "linear-gradient(180deg, #ffffff, #f8f9fa)",
         }}
       >
-        <h2 className="fw-bold text-black mb-3">
-          เข้าสู่ระบบเพื่อจัดการหอพัก <br /> SmartDorm Admin
-        </h2>
+        <h3 className="fw-bold text-black mb-3">
+          เข้าสู่ระบบเพื่อ
+          <br />
+          จัดการหอพัก <br /> SmartDorm Admin
+        </h3>
 
         {/* ฟอร์ม */}
         <form onSubmit={handleSubmit} className="text-start">
-
           {/* ชื่อผู้ใช้ */}
           <div className="mb-4 mt-3">
-            <label className="form-label fw-semibold text-dark">ชื่อผู้ใช้</label>
+            <p className="form-label fw-semibold text-dark text-center">
+              ชื่อผู้ใช้
+            </p>
             <input
               id="username"
               type="text"
@@ -68,7 +65,9 @@ export default function Login() {
 
           {/* รหัสผ่าน */}
           <div className="mb-4 position-relative">
-            <label className="form-label fw-semibold text-dark">รหัสผ่าน</label>
+            <p className="form-label fw-semibold text-dark text-center">
+              รหัสผ่าน
+            </p>
             <input
               id="password"
               type={showPassword ? "text" : "password"}

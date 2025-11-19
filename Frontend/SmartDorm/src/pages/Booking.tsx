@@ -57,7 +57,6 @@ export default function Booking() {
   ) => {
     setActive(status);
   };
-
   return (
     <div className="d-flex min-vh-50 bg-white">
       <Nav

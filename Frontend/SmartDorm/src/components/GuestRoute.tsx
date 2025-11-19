@@ -61,7 +61,7 @@ export default function GuestRoute({ children }: { children: ReactNode }) {
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
-          fontSize: "28px",
+          fontSize: "15px",
           fontWeight: "bold",
           whiteSpace: "pre",
         }}

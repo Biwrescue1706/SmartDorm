@@ -132,6 +132,8 @@ export default function BookingRow({
       </div>
     );
 
+    
+
   // ------------------------------ CARD MODE ------------------------------
   if (mode === "card") {
     return (
@@ -141,33 +143,33 @@ export default function BookingRow({
         <p className="mt-2 mb-1">
           <b>LINE :</b> {booking.customer?.userName}
         </p>
-        <p className="mb-1">
+        <p className="mt-2 mb-1">
           <b>ผู้จอง :</b> {booking.fullName}
         </p>
-        <p className="mb-1">
+        <p className="mt-2 mb-1">
           <b>เบอร์ :</b> {booking.cphone}
         </p>
-        <p className="mb-1">
+        <p className="mt-2 mb-1">
           <b>วันจอง :</b> {formatThai(booking.createdAt)}
         </p>
-        <p className="mb-1">
-          <b>แจ้งเข้าพัก :</b> {formatThai(booking.checkin)}
+        <p className="mt-2 mb-1">
+          <b>วันแจ้งเข้าพัก :</b> {formatThai(booking.checkin)}
         </p>
 
         {showActualCheckinColumn && booking.actualCheckin !== null && (
-          <p className="mb-1">
-            <b>เข้าพักจริง :</b> {formatThai(booking.actualCheckin)}
+          <p className="mt-2 mb-1">
+            <b>วันเข้าพักจริง :</b> {formatThai(booking.actualCheckin)}
           </p>
         )}
 
-        <p className="mt-2">
+        <p className="mt-2 mb-1">
           <b>สถานะ : </b> <span className={statusClass}>{statusText}</span>
         </p>
 
         {booking.slipUrl && (
           <>
             <button
-              className="btn btn-primary btn-sm"
+              className="btn btn-primary btn-sm mt-3"
               onClick={() => setShowSlip(true)}
             >
               ดูสลิป
@@ -176,7 +178,7 @@ export default function BookingRow({
           </>
         )}
 
-        <div className="d-flex justify-content-center gap-2 mt-3">
+        <div className="d-flex justify-content-center gap-2 mt-2">
           {booking.approveStatus === 0 && (
             <ManageBookingDialog
               booking={booking}

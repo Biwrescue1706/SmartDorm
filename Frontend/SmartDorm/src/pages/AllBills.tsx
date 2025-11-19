@@ -1,38 +1,61 @@
+// src/pages/AllBills.tsx
 import { useState, useEffect } from "react";
 import Nav from "../components/Nav";
 import { useAuth } from "../hooks/useAuth";
 import { useBills } from "../hooks/useBills";
-import AllBillsTable from "../components/AllBills/AllBillsTable";
-import BillFilterBar from "../components/AllBills/BillFilterBar";
-import AllBillsEditDialog from "../components/AllBills/AllBillsEditDialog";
+import AllBillsCard from "../components/AllBills/AllBillsCard";
 import Pagination from "../components/Pagination";
 import Swal from "sweetalert2";
+import AllBillsEditDialog from "../components/AllBills/AllBillsEditDialog";
 import type { Bill } from "../types/Bill";
+import BillStatusCardFilter from "../components/AllBills/BillStatusCardFilter";
 
 export default function AllBills() {
   const { message, handleLogout, role, adminName, adminUsername } = useAuth();
   const { bills, loading, updateBill, deleteBill } = useBills();
 
-  const [filterStatus, setFilterStatus] = useState("all");
+  // ค่าเริ่มต้น = ค้างชำระ
+  const [filterStatus, setFilterStatus] = useState("0");
   const [filterMonth, setFilterMonth] = useState("");
   const [filterRoom, setFilterRoom] = useState("");
+
   const [filtered, setFiltered] = useState<Bill[]>([]);
   const [editingBill, setEditingBill] = useState<Bill | null>(null);
 
-  const [page, setPage] = useState(1);
-  const [rows, setRows] = useState(10);
+  // นับจำนวนบิล
+  const unpaidCount = bills.filter((b) => b.status === 0).length;
+  const paidCount = bills.filter((b) => b.status === 1).length;
 
-  // ✅ ฟิลเตอร์ข้อมูล
+  const [page, setPage] = useState(1);
+  const [rows, setRows] = useState(12);
+
+  const [width, setWidth] = useState(window.innerWidth);
+  useEffect(() => {
+    const h = () => setWidth(window.innerWidth);
+    window.addEventListener("resize", h);
+    return () => window.removeEventListener("resize", h);
+  }, []);
+
+  // ฟิลเตอร์ข้อมูล
   useEffect(() => {
     let result = bills;
-    if (filterStatus !== "all")
+
+    if (filterStatus !== "") {
       result = result.filter((b) => b.status === Number(filterStatus));
-    if (filterMonth)
+    }
+
+    if (filterMonth) {
       result = result.filter(
         (b) => new Date(b.month).toISOString().slice(0, 7) === filterMonth
       );
-    if (filterRoom)
-      result = result.filter((b) => b.room.number.includes(filterRoom));
+    }
+
+    if (filterRoom) {
+      result = result.filter((b) =>
+        b.room.number.toString().includes(filterRoom)
+      );
+    }
+
     setFiltered(result);
     setPage(1);
   }, [bills, filterStatus, filterMonth, filterRoom]);
@@ -40,55 +63,28 @@ export default function AllBills() {
   const start = (page - 1) * rows;
   const currentBills = filtered.slice(start, start + rows);
 
-  // ✅ แสดงสลิป
-  // ✅ แสดงและดาวน์โหลดสลิป
-const handleViewSlip = async (bill: Bill) => {
-  const url = bill.payment?.slipUrl || bill.slipUrl || null; // รองรับทั้ง Payment และ Bill
-  if (!url || url === "-") {
-    return Swal.fire("ไม่มีสลิป", "ยังไม่มีหลักฐานการชำระ", "info");
-  }
+  // ดูสลิป (ไม่มีโหลด)
+  const handleViewSlip = async (bill: Bill) => {
+    const url = bill.payment?.slipUrl || bill.slipUrl;
 
-  // 🧩 แสดง Swal พร้อมปุ่มดาวน์โหลด
-  const result = await Swal.fire({
-    title: "สลิปการชำระเงิน",
-    imageUrl: url,
-    imageAlt: "Slip",
-    imageWidth: 400,
-    background: "#f9fafb",
-    showCloseButton: true,
-    confirmButtonText: "📥 ดาวน์โหลด",
-    showCancelButton: true,
-    cancelButtonText: "ปิด",
-  });
-
-  // ถ้าผู้ใช้กดดาวน์โหลด
-  if (result.isConfirmed) {
-    try {
-      const response = await fetch(url);
-      const blob = await response.blob();
-      const link = document.createElement("a");
-      link.href = URL.createObjectURL(blob);
-
-      // ตั้งชื่อไฟล์อัตโนมัติ เช่น slip_ห้อง101_เดือนธันวาคม.png
-      const roomNum = bill.room?.number ?? "room";
-      const monthStr = new Date(bill.month).toLocaleDateString("th-TH", {
-        month: "long",
-        year: "numeric",
-      });
-      link.download = `slip_${roomNum}_${monthStr}.png`;
-
-      link.click();
-      URL.revokeObjectURL(link.href);
-    } catch (err) {
-      Swal.fire("ดาวน์โหลดไม่สำเร็จ", "ไม่สามารถบันทึกรูปได้", "error");
+    if (!url) {
+      return Swal.fire("ไม่มีสลิป", "ยังไม่มีหลักฐานการชำระ", "info");
     }
-  }
-};
+
+    Swal.fire({
+      title: `สลิปห้อง ${bill.room.number}`,
+      imageUrl: url,
+      imageWidth: 400,
+      showCloseButton: true,
+      showCancelButton: false,
+      showConfirmButton: false,
+    });
+  };
 
   return (
     <div
       className="d-flex flex-column"
-      style={{ backgroundColor: "#fcfcfc", minHeight: "100vh" }}
+      style={{ backgroundColor: "#fafafa", minHeight: "100vh" }}
     >
       <Nav
         message={message}
@@ -98,50 +94,77 @@ const handleViewSlip = async (bill: Bill) => {
         adminUsername={adminUsername}
       />
 
-      <main className="main-content flex-grow-1 px-2 mx-my-3 py-2 mt-6 mt-lg-7">
-        <div className="mx-auto container-max">
-          <h2 className="text-center mb-3 fw-bold">📋 รายการบิลทั้งหมด</h2>
+      <main className="main-content flex-grow-1 px-2 py-2 mt-6 mt-lg-7">
+        <div className="mx-auto" style={{ maxWidth: "1300px" }}>
+          <h2 className="text-center fw-bold mb-3">📋 รายการบิลทั้งหมด</h2>
 
-          {/* 🎚 ฟิลเตอร์ */}
-          <BillFilterBar
+          {/* ฟิลเตอร์ (ไม่มีปุ่ม ALL แล้ว) */}
+          <BillStatusCardFilter
             filterStatus={filterStatus}
-            filterMonth={filterMonth}
-            filterRoom={filterRoom}
             setFilterStatus={setFilterStatus}
-            setFilterMonth={setFilterMonth}
-            setFilterRoom={setFilterRoom}
+            unpaidCount={unpaidCount}
+            paidCount={paidCount}
           />
 
-          {/* 📄 ตาราง */}
+          {/* 🟦 ฟิลเตอร์เดือน + ค้นหาห้อง */}
+          <div className="d-flex flex-wrap gap-2 mb-3 mt-2">
+            <input
+              type="month"
+              className="form-control"
+              style={{ width: "160px" }}
+              value={filterMonth}
+              onChange={(e) => setFilterMonth(e.target.value)}
+            />
+
+            <input
+              type="text"
+              className="form-control"
+              placeholder="ค้นหาห้อง..."
+              style={{ width: "180px" }}
+              value={filterRoom}
+              onChange={(e) => setFilterRoom(e.target.value)}
+            />
+          </div>
+
           {loading ? (
-            <p className="text-center text-muted">⏳ กำลังโหลด...</p>
+            <p className="text-center mt-3">⏳ กำลังโหลด...</p>
           ) : (
             <>
-              <AllBillsTable
-                bills={currentBills}
-                onEdit={(bill) => setEditingBill(bill)}
-                onDelete={deleteBill}
-                onViewSlip={(bill) => handleViewSlip(bill)} // ✅ ส่งทั้ง bill
-              />
+              <div
+                className="d-grid"
+                style={{
+                  gridTemplateColumns: width < 600 ? "1fr" : "repeat(3, 1fr)",
+                  gap: "16px",
+                }}
+              >
+                {currentBills.map((bill) => (
+                  <AllBillsCard
+                    key={bill.billId}
+                    bill={bill}
+                    role={role}
+                    onViewSlip={handleViewSlip}
+                    onDelete={deleteBill}
+                    onEdit={setEditingBill}
+                  />
+                ))}
+              </div>
 
-              {filtered.length > 0 && (
-                <Pagination
-                  currentPage={page}
-                  totalItems={filtered.length}
-                  rowsPerPage={rows}
-                  onPageChange={setPage}
-                  onRowsPerPageChange={(r) => {
-                    setRows(r);
-                    setPage(1);
-                  }}
-                />
-              )}
+              <Pagination
+                currentPage={page}
+                totalItems={filtered.length}
+                rowsPerPage={rows}
+                onPageChange={setPage}
+                onRowsPerPageChange={(r) => {
+                  setRows(r);
+                  setPage(1);
+                }}
+              />
             </>
           )}
         </div>
       </main>
 
-      {/* ✏️ Dialog แก้ไขบิล */}
+      {/* Dialog แก้ไขบิล */}
       {editingBill && (
         <AllBillsEditDialog
           bill={editingBill}

@@ -42,10 +42,25 @@ export default function BookingTable({
 
   const showActualCheckinColumn = !!showActualColumn;
 
-  // ตัดข้อมูลตาม pagination
+  // --------------------------------------------------
+  // ✅ เรียงข้อมูลก่อน: 1) ตามหมายเลขห้อง 2) ตามวันที่สร้าง
+  // --------------------------------------------------
+  const sortedBookings = bookings.slice().sort((a, b) => {
+    const roomA = Number(a.room.number);
+    const roomB = Number(b.room.number);
+
+    if (roomA !== roomB) return roomA - roomB;
+
+    return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+  });
+
+  // --------------------------------------------------
+  // ✅ Pagination ทำจาก sortedBookings
+  // --------------------------------------------------
   const startIndex = (currentPage - 1) * rowsPerPage;
   const endIndex = startIndex + rowsPerPage;
-  const paginatedBookings = bookings.slice(startIndex, endIndex);
+  const paginatedBookings = sortedBookings.slice(startIndex, endIndex);
+  // --------------------------------------------------
 
   return (
     <div
@@ -67,9 +82,9 @@ export default function BookingTable({
                   <th>ชื่อ</th>
                   <th>เบอร์</th>
                   <th>วันที่จอง</th>
-                  <th>แจ้งเข้าพัก</th>
+                  <th>วันแจ้งเข้าพัก</th>
 
-                  {showActualCheckinColumn && <th>เข้าพักจริง</th>}
+                  {showActualCheckinColumn && <th>วันเข้าพักจริง</th>}
 
                   <th>สลิป</th>
                   <th>สถานะ</th>
@@ -101,7 +116,7 @@ export default function BookingTable({
 
           <Pagination
             currentPage={currentPage}
-            totalItems={bookings.length}
+            totalItems={sortedBookings.length}
             rowsPerPage={rowsPerPage}
             onPageChange={onPageChange}
             onRowsPerPageChange={onRowsPerPageChange}
@@ -130,7 +145,7 @@ export default function BookingTable({
 
           <Pagination
             currentPage={currentPage}
-            totalItems={bookings.length}
+            totalItems={sortedBookings.length}
             rowsPerPage={rowsPerPage}
             onPageChange={onPageChange}
             onRowsPerPageChange={onRowsPerPageChange}

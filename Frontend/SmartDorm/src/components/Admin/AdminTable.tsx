@@ -1,3 +1,4 @@
+// src/components/Admin/AdminTable.tsx
 import Swal from "sweetalert2";
 import { type Admin } from "../../types/admin";
 import { API_BASE } from "../../config";
@@ -8,6 +9,7 @@ interface Props {
   rowsPerPage: number;
   onEdit: (admin: Admin) => void;
   refresh: () => void;
+  oldestAdminId: string | null;   // ⭐ เพิ่มตรงนี้
 }
 
 export default function AdminTable({
@@ -16,21 +18,11 @@ export default function AdminTable({
   rowsPerPage,
   onEdit,
   refresh,
+  oldestAdminId,
 }: Props) {
   const indexOfFirst = (currentPage - 1) * rowsPerPage;
 
-  const handleDelete = async (admin: Admin, index: number) => {
-    // ❌ ป้องกันลบแอดมินหลักคนแรกใน database
-    if (admin.role === 0 && index === 0) {
-      Swal.fire({
-        icon: "warning",
-        title: "ไม่สามารถลบได้",
-        text: "ห้ามลบแอดมินหลักคนแรกของระบบ",
-        confirmButtonText: "ตกลง",
-      });
-      return;
-    }
-
+  const handleDelete = async (admin: Admin) => {
     const confirm = await Swal.fire({
       title: "ยืนยันการลบ",
       html: `คุณแน่ใจหรือไม่ที่จะลบ <b>${admin.username}</b>?`,
@@ -38,58 +30,38 @@ export default function AdminTable({
       showCancelButton: true,
       confirmButtonText: "ลบเลย",
       cancelButtonText: "ยกเลิก",
-      confirmButtonColor: "#d33",
-      cancelButtonColor: "#6c757d",
     });
 
     if (!confirm.isConfirmed) return;
 
-    try {
-      const res = await fetch(`${API_BASE}/admin/${admin.adminId}`, {
-        method: "DELETE",
-        credentials: "include",
-      });
+    const res = await fetch(`${API_BASE}/admin/${admin.adminId}`, {
+      method: "DELETE",
+      credentials: "include",
+    });
 
-      if (!res.ok) {
-        Swal.fire("ลบไม่สำเร็จ", "ไม่สามารถลบผู้ดูแลระบบนี้ได้", "error");
-        return;
-      }
-
-      Swal.fire("ลบสำเร็จ!", `ผู้ใช้ "${admin.username}" ถูกลบแล้ว`, "success");
-      refresh();
-    } catch {
-      Swal.fire("เกิดข้อผิดพลาด", "ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้", "error");
+    if (!res.ok) {
+      Swal.fire("ลบไม่สำเร็จ", "เซิร์ฟเวอร์ปฏิเสธคำสั่ง", "error");
+      return;
     }
+
+    Swal.fire("สำเร็จ!", `ลบผู้ใช้ "${admin.username}" แล้ว`, "success");
+    refresh();
   };
 
   return (
     <div className="responsive-table" style={{ overflowX: "auto" }}>
-      <table
-        className="table table-sm table-striped align-middle text-center"
-        style={{ tableLayout: "fixed", width: "100%" }}
-      >
+      <table className="table table-sm table-striped align-middle text-center">
         <thead className="table-dark">
           <tr>
-            <th scope="col" style={{ width: "10%" }}>
-              #
-            </th>
-            <th scope="col" style={{ width: "25%" }}>
-              ชื่อผู้ใช้
-            </th>
-            <th scope="col" style={{ width: "25%" }}>
-              ชื่อจริง
-            </th>
-            <th scope="col" style={{ width: "25%" }}>
-              สิทธิ์
-            </th>
-            <th scope="col" style={{ width: "25%" }}>
-              แก้ไข
-            </th>
-            <th scope="col" style={{ width: "25%" }}>
-              ลบ
-            </th>
+            <th>#</th>
+            <th>ชื่อผู้ใช้</th>
+            <th>ชื่อจริง</th>
+            <th>สิทธิ์</th>
+            <th>แก้ไข</th>
+            <th>ลบ</th>
           </tr>
         </thead>
+
         <tbody>
           {admins.map((admin, i) => (
             <tr key={admin.adminId}>
@@ -98,7 +70,6 @@ export default function AdminTable({
               <td>{admin.name}</td>
               <td>{admin.role === 0 ? "แอดมินหลัก" : "พนักงาน"}</td>
 
-              {/* ปุ่มแก้ไข */}
               <td>
                 <button
                   className="btn btn-sm btn-warning text-white"
@@ -108,14 +79,13 @@ export default function AdminTable({
                 </button>
               </td>
 
-              {/* ✅ เงื่อนไขห้ามลบแอดมินหลักคนแรก */}
               <td>
-                {admin.role === 0 && i === 0 ? (
+                {admin.adminId === oldestAdminId ? (
                   <span className="text-muted">—</span>
                 ) : (
                   <button
                     className="btn btn-sm btn-danger"
-                    onClick={() => handleDelete(admin, i)}
+                    onClick={() => handleDelete(admin)}
                   >
                     🗑️
                   </button>

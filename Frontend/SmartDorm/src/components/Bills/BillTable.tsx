@@ -1,3 +1,4 @@
+// src/components/Bills/BillTable.tsx
 import type { Room } from "../../types/Room";
 import type { Booking } from "../../types/Booking";
 import BillRow from "./BillRows";

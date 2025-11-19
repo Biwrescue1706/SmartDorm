@@ -26,8 +26,8 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
     <div
       className="card shadow-lg border-0 p-4 text-center"
       style={{
-        maxWidth: "500px",
-        width: "90%",
+        maxWidth: "480px",
+        width: "80%",
         borderRadius: "20px",
         background: "linear-gradient(180deg, #ffffff, #f8f9fa)",
       }}

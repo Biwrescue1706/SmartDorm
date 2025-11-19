@@ -33,22 +33,27 @@ export default function RoomCard({ room, role, onUpdated }: Props) {
       }}
     >
       <div className="card-body" style={{ padding: "20px" }}>
-
         {/* 🏷️ ชื่อห้องใหญ่ขึ้น (fs-4) */}
         <h4 className="fw-bold mb-3 fs-4">ห้อง {room.number}</h4>
 
         {/* ⭐ ข้อมูลใหญ่ขึ้น → fs-5 */}
-        <p className="mb-1 fs-5"><b>ขนาด :</b> {room.size}</p>
-
-        <p className="mb-1 fs-5">
-          <b>ค่าเช่า :</b> {room.rent.toLocaleString("th-TH")} บาท
+        <p className="mt-2 mb-1 fs-5">
+          <b>ขนาด : </b> {room.size}
         </p>
 
-        <p className="mb-1 fs-5"><b>ผู้สร้าง :</b> {room.adminCreated?.name || "-"}</p>
+        <p className="mt-2 mb-1 fs-5">
+          <b>ค่าเช่า :</b> {room.rent.toLocaleString("th-TH")}
+        </p>
 
-        <p className="mb-1 fs-5"><b>ผู้แก้ไข :</b> {room.adminUpdated?.name || "-"}</p>
+        <p className="mt-2 mb-1 fs-5">
+          <b>ผู้สร้าง :</b> {room.adminCreated?.name || "-"}
+        </p>
 
-        <p className="mb-2 fs-5">
+        <p className="mt-2 mb-1 fs-5">
+          <b>ผู้แก้ไข :</b> {room.adminUpdated?.name || "-"}
+        </p>
+
+        <p className="mt-2 mb-1 fs-5">
           <b>สถานะ :</b>{" "}
           <span
             className={`badge px-3 py-1 ${

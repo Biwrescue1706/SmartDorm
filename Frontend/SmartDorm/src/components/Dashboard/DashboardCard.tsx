@@ -21,8 +21,8 @@ export default function DashboardCard({
       style={{
         background: color,
         color: "white",
-        borderRadius: "10px",
-        height: "90px", // การ์ดเตี้ยลง
+        borderRadius: "20px",
+        height: "85px", // การ์ดเตี้ยลง
         cursor: "pointer",
         transition: "transform 0.15s, box-shadow 0.15s",
       }}
@@ -34,10 +34,10 @@ export default function DashboardCard({
         className="d-flex flex-column justify-content-center align-items-center h-100"
         style={{ lineHeight: 1 }}
       >
-        <div className="fw-semibold" style={{ fontSize: "1rem" }}>
+        <div className="fw-semibold mb-2" style={{ fontSize: "1.25rem" }}>
           {title}
         </div>
-        <div className="fw-bold" style={{ fontSize: "1rem" }}>
+        <div className="fw-bold" style={{ fontSize: "1.25rem" }}>
           {count}
         </div>
       </div>

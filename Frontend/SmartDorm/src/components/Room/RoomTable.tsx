@@ -15,6 +15,7 @@ export default function RoomTable({
   role,
 }: Props) {
   const isSuperAdmin = role === 0;
+  
   return (
     <div className="responsive-table" style={{ overflowX: "auto" }}>
       <table

@@ -60,7 +60,7 @@ export default function ProtectedRoute({ children }: { children: ReactNode }) {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          fontSize: "28px",
+          fontSize: "15px",
           fontWeight: "bold",
           whiteSpace: "pre",
         }}

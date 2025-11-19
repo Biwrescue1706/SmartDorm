@@ -30,9 +30,15 @@ export default function AllBillsCard({
     >
       <h5 className="fw-bold mb-2">ห้อง {bill.room.number}</h5>
 
-      <p className="mb-1"><b>ผู้เช่า:</b> {bill.booking?.fullName || "-"}</p>
-      <p className="mb-1"><b>LINE:</b> {bill.customer?.userName || "-"}</p>
-      <p className="mb-1"><b>เบอร์:</b> {bill.booking?.cphone || "-"}</p>
+      <p className="mb-1">
+        <b>ผู้เช่า:</b> {bill.booking?.fullName || "-"}
+      </p>
+      <p className="mb-1">
+        <b>LINE:</b> {bill.customer?.userName || "-"}
+      </p>
+      <p className="mb-1">
+        <b>เบอร์:</b> {bill.booking?.cphone || "-"}
+      </p>
 
       <p className="mb-1">
         <b>เดือน:</b>{" "}
@@ -42,7 +48,20 @@ export default function AllBillsCard({
         })}
       </p>
 
-      <p className="mb-2"><b>ยอดรวม:</b> {bill.total?.toLocaleString()} บาท</p>
+      {bill.status === 0 && (
+        <p className="mb-1">
+          <b>กำหนดชำระ:</b>{" "}
+          {new Date(bill.dueDate).toLocaleDateString("th-TH", {
+            day: "2-digit",
+            month: "long",
+            year: "numeric",
+          })}
+        </p>
+      )}
+
+      <p className="mb-2">
+        <b>ยอดรวม:</b> {bill.total?.toLocaleString()} บาท
+      </p>
 
       <div className="mb-3">
         {isPaid ? (

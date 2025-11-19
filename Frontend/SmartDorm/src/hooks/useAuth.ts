@@ -41,8 +41,10 @@ export function useAuth() {
 
       if (res.ok) {
         Swal.fire({
+          toast: true,
+          position: "top-end",
           icon: "success",
-          title: "สมัครสมาชิกสำเร็จ",
+          title: "เพิ่มสมาชิกสำเร็จ",
           text: "ระบบได้บันทึกข้อมูลของคุณแล้ว",
           timer: 1500,
           showConfirmButton: false,
@@ -50,9 +52,11 @@ export function useAuth() {
         return true;
       } else {
         Swal.fire({
+          toast: true,
+          position: "top-end",
           icon: "error",
-          title: "ล้มเหลว",
-          text: result.error || "สมัครสมาชิกไม่สำเร็จ",
+          title: "เพิ่มสมาชิกไม่สำเร็จ",
+          text: result.error,
           timer: 1500,
           showConfirmButton: false,
         });
@@ -77,6 +81,8 @@ export function useAuth() {
 
       if (!res) {
         Swal.fire({
+          toast: true,
+          position: "top-end",
           icon: "error",
           title: "ข้อผิดพลาด",
           text: "ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้",

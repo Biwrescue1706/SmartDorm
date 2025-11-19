@@ -2,13 +2,13 @@
 import { useState, useEffect } from "react";
 import { useAdmins } from "../hooks/useAdmins";
 import { useAuth } from "../hooks/useAuth";
-import AdminAddDialog from "../components/Admin/AdminAddDialog";
-import AdminEditDialog from "../components/Admin/AdminEditDialog";
-import AdminTable from "../components/Admin/AdminTable";
-import AdminCard from "../components/Admin/AdminCard";
 import Nav from "../components/Nav";
 import Pagination from "../components/Pagination";
-import { type Admin } from "../types/admin";
+
+import AdminAddDialog from "../components/Admin/AdminAddDialog";
+import AdminEditDialog from "../components/Admin/AdminEditDialog";
+import AdminTableCard from "../components/Admin/AdminTableCard";
+import type { Admin } from "../types/admin";
 
 export default function AdminManagement() {
   const { admins, loading, fetchAdmins } = useAdmins();
@@ -18,51 +18,46 @@ export default function AdminManagement() {
   const [openEdit, setOpenEdit] = useState(false);
   const [selectedAdmin, setSelectedAdmin] = useState<Admin | null>(null);
 
-  // ฟิลเตอร์บทบาท
-  const [filterRole, setFilterRole] =
-    useState<"all" | "admin" | "staff">("all");
+  const [filterRole, setFilterRole] = useState("all");
 
-  // Pagination
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
-  // ตรวจขนาดหน้าจอ
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+
+  // Resize listener
   useEffect(() => {
-    const resizeHandler = () => setWindowWidth(window.innerWidth);
-    window.addEventListener("resize", resizeHandler);
-    return () => window.removeEventListener("resize", resizeHandler);
+    const resize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener("resize", resize);
+    return () => window.removeEventListener("resize", resize);
   }, []);
 
-  // หาแอดมินที่สร้างขึ้นคนแรก (ห้ามลบ)
+  // 🔥 หา admin ที่เก่าสุด (ห้ามลบ)
   const oldestAdminId =
     admins.length > 0
       ? [...admins].sort(
           (a, b) =>
-            new Date(a.createdAt).getTime() -
-            new Date(b.createdAt).getTime()
+            new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
         )[0].adminId
       : null;
 
-  // ฟิลเตอร์แอดมิน
+  // 🔍 ฟิลเตอร์
   const filteredAdmins =
-    filterRole === "all"
-      ? admins
-      : filterRole === "admin"
+    filterRole === "admin"
       ? admins.filter((a) => a.role === 0)
-      : admins.filter((a) => a.role === 1);
+      : filterRole === "staff"
+      ? admins.filter((a) => a.role === 1)
+      : admins;
 
-  // Pagination logic
+  // 📄 Pagination
   const totalItems = filteredAdmins.length;
-  const indexOfLast = currentPage * rowsPerPage;
-  const indexOfFirst = indexOfLast - rowsPerPage;
-  const currentAdmins = filteredAdmins.slice(indexOfFirst, indexOfLast);
+  const currentAdmins = filteredAdmins.slice(
+    (currentPage - 1) * rowsPerPage,
+    currentPage * rowsPerPage
+  );
 
   return (
-    <div
-      className="d-flex flex-column"
-      style={{ backgroundColor: "#f4f7fb", minHeight: "100vh" }}
-    >
+    <div style={{ backgroundColor: "#f4f7fb", minHeight: "100vh" }}>
       <Nav
         message={message}
         onLogout={handleLogout}
@@ -72,103 +67,86 @@ export default function AdminManagement() {
       />
 
       <main className="main-content flex-grow-1 px-1 py-2 mt-6 mt-lg-7">
-        <div className="mx-auto container-max" style={{ maxWidth: "1200px" }}>
-          <h2 className="py-1 text-center fw-bold mb-3 text-dark">
+        <div className="mx-auto container-max">
+          <h2 className="py-1 text-center text-while mt-3 mb-3">
             จัดการผู้ดูแลระบบ
           </h2>
 
-          {/* ปุ่มเพิ่ม Admin */}
-          <div className="text-center">
+          <div className="text-center mb-4">
             <button
-              className="btn fw-bold text-white px-5 py-2 mb-4"
-              style={{
-                background: "linear-gradient(135deg,#6a11cb,#2575fc)",
-                borderRadius: "10px",
-              }}
+              className="btn text-white fw-bold px-5 py-2"
+              style={{ background: "linear-gradient(135deg,#6a11cb,#2575fc)" }}
               onClick={() => setOpenAdd(true)}
             >
               ➕ เพิ่มสมาชิก
             </button>
           </div>
 
-          {/* ฟิลเตอร์ Admin */}
-          <div className="d-flex justify-content-center gap-3 flex-wrap mb-4 mt-2">
+          {/* ฟิลเตอร์ */}
+          <div className="d-flex justify-content-center gap-3 flex-wrap mb-4">
             <div
-              className={`card shadow-sm px-4 py-2 fw-bold border-0 ${
-                filterRole === "all" ? "bg-primary text-white" : "bg-white"
+              className={`card px-4 py-2 fw-bold shadow-sm ${
+                filterRole === "all" ? "bg-primary text-white" : ""
               }`}
-              style={{ cursor: "pointer", minWidth: "140px" }}
+              style={{ cursor: "pointer" }}
               onClick={() => setFilterRole("all")}
             >
               ทั้งหมด ({admins.length})
             </div>
 
             <div
-              className={`card shadow-sm px-4 py-2 fw-bold border-0 ${
-                filterRole === "admin" ? "bg-warning text-dark" : "bg-white"
+              className={`card px-4 py-2 fw-bold shadow-sm ${
+                filterRole === "admin" ? "bg-warning" : ""
               }`}
-              style={{ cursor: "pointer", minWidth: "160px" }}
+              style={{ cursor: "pointer" }}
               onClick={() => setFilterRole("admin")}
             >
               แอดมินหลัก ({admins.filter((a) => a.role === 0).length})
             </div>
 
             <div
-              className={`card shadow-sm px-4 py-2 fw-bold border-0 ${
-                filterRole === "staff" ? "bg-success text-white" : "bg-white"
+              className={`card px-4 py-2 fw-bold shadow-sm ${
+                filterRole === "staff" ? "bg-success text-white" : ""
               }`}
-              style={{ cursor: "pointer", minWidth: "160px" }}
+              style={{ cursor: "pointer" }}
               onClick={() => setFilterRole("staff")}
             >
               พนักงาน ({admins.filter((a) => a.role === 1).length})
             </div>
           </div>
-
-          {/* Loading */}
-          {loading ? (
-            <p className="text-center mt-4">กำลังโหลดข้อมูล...</p>
-          ) : (
-            <>
-              {/* โหมดการแสดงผล (ตาราง / การ์ด) */}
-              {windowWidth >= 1400 ? (
-                <AdminTable
-                  admins={currentAdmins}
-                  currentPage={currentPage}
-                  rowsPerPage={rowsPerPage}
-                  onEdit={(a) => {
-                    setSelectedAdmin(a);
-                    setOpenEdit(true);
-                  }}
-                  refresh={fetchAdmins}
-                  oldestAdminId={oldestAdminId}
-                />
-              ) : (
-                <AdminCard
-                  admins={currentAdmins}
-                  cols={windowWidth < 600 ? 1 : 3}
-                  onEdit={(a) => {
-                    setSelectedAdmin(a);
-                    setOpenEdit(true);
-                  }}
-                  refresh={fetchAdmins}
-                  oldestAdminId={oldestAdminId}
-                />
-              )}
-
-              {/* Pagination */}
-              <Pagination
-                currentPage={currentPage}
-                totalItems={totalItems}
-                rowsPerPage={rowsPerPage}
-                onPageChange={setCurrentPage}
-                onRowsPerPageChange={(rows) => {
-                  setRowsPerPage(rows);
-                  setCurrentPage(1);
-                }}
-              />
-            </>
-          )}
         </div>
+
+        {/* Table & Card */}
+        {loading ? (
+          <p className="text-center">กำลังโหลดข้อมูล...</p>
+        ) : (
+          <>
+            <AdminTableCard
+              admins={currentAdmins}
+              windowWidth={windowWidth}
+              cols={windowWidth < 600 ? 1 : 3}
+              onEdit={(admin) => {
+                setSelectedAdmin(admin);
+                setOpenEdit(true);
+              }}
+              refresh={fetchAdmins}
+              oldestAdminId={oldestAdminId}
+              currentPage={currentPage}
+              rowsPerPage={rowsPerPage}
+            />
+
+            <Pagination
+              currentPage={currentPage}
+              totalItems={totalItems}
+              rowsPerPage={rowsPerPage}
+              onPageChange={setCurrentPage}
+              onRowsPerPageChange={(r) => {
+                setRowsPerPage(r);
+                setCurrentPage(1);
+              }}
+            />
+          </>
+        )}
       </main>
 
       {/* Dialogs */}
@@ -177,10 +155,11 @@ export default function AdminManagement() {
         onClose={() => setOpenAdd(false)}
         refresh={fetchAdmins}
       />
+
       <AdminEditDialog
         open={openEdit}
-        onClose={() => setOpenEdit(false)}
         admin={selectedAdmin}
+        onClose={() => setOpenEdit(false)}
         refresh={fetchAdmins}
       />
     </div>

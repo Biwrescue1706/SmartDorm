@@ -26,7 +26,7 @@ export default function Bills() {
   // ฟิลเตอร์สถานะบิล
   const [statusFilter, setStatusFilter] = useState<
     "billed" | "notBilled"
-  >("notBilled"); // ⭐ default = notBilled
+  >("notBilled"); // default = notBilled
 
   const [canCreateBill, setCanCreateBill] = useState(false);
   const [todayStr, setTodayStr] = useState("");
@@ -78,9 +78,7 @@ export default function Bills() {
     setOpenDialog(true);
   };
 
-  //---------------------------------------
   // ⭐ กรองห้อง: ต้องมี booking และ approveStatus !== 0
-  //---------------------------------------
   const filteredRooms = rooms.filter((room) => {
     const booking = bookings.find((b) => b.room.number === room.number);
 
@@ -111,9 +109,7 @@ export default function Bills() {
     }
   }, [totalItems, rowsPerPage, currentPage]);
 
-  //---------------------------------------
   // จำนวนห้องที่ออกบิลแล้ว / ยัง
-  //---------------------------------------
   const billedCount = filteredRooms.filter((r) =>
     existingBills.includes(r.roomId)
   ).length;

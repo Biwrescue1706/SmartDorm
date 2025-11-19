@@ -3,6 +3,7 @@ import * as Dialog from "@radix-ui/react-dialog";
 import { useState, useEffect } from "react";
 import type { Room } from "../../types/Room";
 import { API_BASE } from "../../config";
+import Swal from "sweetalert2";
 
 interface BillDialogProps {
   open: boolean;
@@ -68,14 +69,79 @@ export default function BillDialog({
     });
   };
 
-  //  ฟังก์ชันกดยืนยันสร้างบิล
   const handleSubmit = async () => {
     if (!room) return;
+
+    // ❗ ต้องเลือกเดือน
+    if (!form.month) {
+      Swal.fire({
+        toast: true,
+        position: "top-end",
+        icon: "error",
+        title: "แจ้งเตือน",
+        text: "กรุณาเลือกเดือนที่ออกบิล",
+        timer: 1500,
+        showConfirmButton: false,
+      });
+      return;
+    }
+
+    // ❗ ห้ามกรอก 0
+    if (form.wAfter === 0) {
+      Swal.fire({
+        toast: true,
+        position: "top-end",
+        icon: "error",
+        title: "หน่วยน้ำปัจจุบันต้องมากกว่า  0",
+        timer: 1500,
+        showConfirmButton: false,
+      });
+      return;
+    }
+
+    if (form.eAfter === 0) {
+      Swal.fire({
+        toast: true,
+        position: "top-end",
+        icon: "error",
+        title: "หน่วยไฟปัจจุบันต้องมากกว่า 0",
+        timer: 1500,
+        showConfirmButton: false,
+      });
+      return;
+    }
+
+    // ❗ ห้ามน้อยกว่า wBefore / eBefore
+    if (form.wAfter < form.wBefore) {
+      Swal.fire({
+        toast: true,
+        position: "top-end",
+        icon: "error",
+        title: "หน่วยน้ำปัจจุบันต้องมากกว่าหรือเท่ากับหน่วยก่อนหน้า",
+        timer: 1500,
+        showConfirmButton: false,
+      });
+      return;
+    }
+
+    if (form.eAfter < form.eBefore) {
+      Swal.fire({
+        toast: true,
+        position: "top-end",
+        icon: "error",
+        title: "หน่วยไฟปัจจุบันต้องมากกว่าหรือเท่ากับหน่วยก่อนหน้า",
+        timer: 1500,
+        showConfirmButton: false,
+      });
+      return;
+    }
+
     setLoading(true);
+
     try {
       const payload = {
         ...form,
-        month: form.month ? new Date(form.month).toISOString() : null,
+        month: new Date(form.month).toISOString(),
       };
 
       const res = await fetch(
@@ -91,14 +157,52 @@ export default function BillDialog({
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "ไม่สามารถสร้างบิลได้");
 
-      alert(" สร้างบิลสำเร็จ");
+      // ⭐ เคลียร์ช่อง input
+      setForm((prev) => ({
+        ...prev,
+        month: "",
+        wAfter: 0,
+        eAfter: 0,
+      }));
+
       await reloadExistingBills();
+
+      // ⭐ ปิด Dialog ก่อนแล้วค่อยแจ้งเตือน
       onClose();
+
+      await Swal.fire({
+        toast: true,
+        position: "top-end",
+        icon: "success",
+        title: "สำเร็จ!",
+        text: "สร้างบิลสำเร็จแล้ว",
+        timer: 1500,
+        showConfirmButton: false,
+      });
     } catch (err: any) {
-      alert("❌ " + err.message);
+      onClose();
+      Swal.fire({
+        toast: true,
+        position: "top-end",
+        icon: "error",
+        title: "สร้างบิลไม่สำเร็จ",
+        text: err.message || "สร้างบิลไม่สำเร็จ",
+        timer: 1500,
+        showConfirmButton: false,
+      });
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleClose = () => {
+    setForm((prev) => ({
+      ...prev,
+      month: "",
+      wAfter: 0,
+      eAfter: 0,
+    }));
+    onClose(); // ปิด dialog
   };
 
   return (
@@ -221,6 +325,8 @@ export default function BillDialog({
                   background: "linear-gradient(135deg, #ff512f, #dd2476)",
                   border: "none",
                 }}
+                type="button"
+                onClick={handleClose}
               >
                 ยกเลิก
               </button>

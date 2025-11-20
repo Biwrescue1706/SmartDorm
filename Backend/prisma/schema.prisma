@@ -93,7 +93,7 @@ model Bill {
   month  DateTime
 
   rent         Int
-  service      Int      @default(20)
+  service      Int      @default(50)
   wBefore      Int
   wAfter       Int
   wUnits       Int

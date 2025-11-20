@@ -17,6 +17,21 @@ export default function AdminManagement() {
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
 
+  // Logo SmartDorm
+  const smartDormIcon = "https://smartdorm-admin.biwbong.shop/assets/SmartDorm.png";
+
+  // SweetAlert Toast
+  const Toast = Swal.mixin({
+    toast: true,
+    position: "top-end",
+    showConfirmButton: false,
+    timer: 2600,
+    timerProgressBar: true,
+    background: "#ffffff",
+    color: "#333",
+    iconColor: "#6a11cb",
+  });
+
   // Responsive resize
   useEffect(() => {
     const resize = () => setWindowWidth(window.innerWidth);
@@ -49,117 +64,148 @@ export default function AdminManagement() {
   );
 
   /* ===========================================================
-     🔥 ADD ADMIN POPUP
+     🔥 ADD ADMIN POPUP — Bootstrap Style ✔ ไม่มี Error
   =========================================================== */
   const openAddDialog = async () => {
-  const { value: formValues } = await Swal.fire({
-    title: `<h3 class="fw-bold">เพิ่มผู้ดูแลระบบใหม่</h3>`,
-    html: `
-      <div class="container" style="max-width: 100%; padding: 0;">
+    const result = await Swal.fire({
+      title: `<h3 class="fw-bold">เพิ่มผู้ดูแลระบบใหม่</h3>`,
+      html: `
+        <div class="container" style="max-width: 100%; padding: 0;">
+          <div class="mb-3 text-start">
+            <label class="form-label fw-bold">ชื่อผู้ใช้</label>
+            <input id="add-username" class="form-control" placeholder="ชื่อผู้ใช้">
+          </div>
 
-        <div class="mb-3 text-start">
-          <label class="form-label fw-bold">ชื่อผู้ใช้</label>
-          <input id="add-username" class="form-control" placeholder="ชื่อผู้ใช้">
+          <div class="mb-3 text-start">
+            <label class="form-label fw-bold">ชื่อจริง</label>
+            <input id="add-name" class="form-control" placeholder="ชื่อจริง">
+          </div>
+
+          <div class="mb-3 text-start">
+            <label class="form-label fw-bold">รหัสผ่าน (ขั้นต่ำ 6 ตัว)</label>
+            <input id="add-password" type="password" class="form-control" placeholder="รหัสผ่าน">
+          </div>
+
+          <div class="mb-2 text-start">
+            <label class="form-label fw-bold">สิทธิ์</label>
+            <select id="add-role" class="form-select">
+              <option value="0">แอดมินหลัก</option>
+              <option value="1" selected>พนักงาน</option>
+            </select>
+          </div>
         </div>
+      `,
+      width: "95%",
+      padding: "1rem",
+      background: "#fff",
+      showCancelButton: true,
+      confirmButtonText: "บันทึก",
+      cancelButtonText: "ยกเลิก",
+      didRender: () => {
+        const confirmBtn = Swal.getConfirmButton();
+        const cancelBtn = Swal.getCancelButton();
 
-        <div class="mb-3 text-start">
-          <label class="form-label fw-bold">ชื่อจริง</label>
-          <input id="add-name" class="form-control" placeholder="ชื่อจริง">
-        </div>
-
-        <div class="mb-3 text-start">
-          <label class="form-label fw-bold">รหัสผ่าน (ขั้นต่ำ 6 ตัว)</label>
-          <input id="add-password" type="password" class="form-control" placeholder="รหัสผ่าน">
-        </div>
-
-        <div class="mb-2 text-start">
-          <label class="form-label fw-bold">สิทธิ์</label>
-          <select id="add-role" class="form-select">
-            <option value="0">แอดมินหลัก</option>
-            <option value="1" selected>พนักงาน</option>
-          </select>
-        </div>
-
-      </div>
-    `,
-    width: "95%",                 // ❗ สวยมากสำหรับมือถือ
-    padding: "1rem",
-    background: "#fff",
-    showCancelButton: true,
-    confirmButtonText: `<button class="btn btn-primary w-100 py-2 fw-bold">บันทึก</button>`,
-    cancelButtonText: `<button class="btn btn-secondary w-100 py-2 fw-bold">ยกเลิก</button>`,
-    didRender: () => {
-      // ให้ปุ่มสวย เหมือน bootstrap
-      const confirmBtn = Swal.getConfirmButton();
-      confirmBtn.classList.remove("swal2-confirm");
-      confirmBtn.style.padding = "0";
-      confirmBtn.style.margin = "0";
-
-      const cancelBtn = Swal.getCancelButton();
-      cancelBtn.classList.remove("swal2-cancel");
-      cancelBtn.style.padding = "0";
-      cancelBtn.style.margin = "0";
-    },
-    preConfirm: () => {
-      return {
-        username: (document.getElementById("add-username") as HTMLInputElement).value,
-        name: (document.getElementById("add-name") as HTMLInputElement).value,
-        password: (document.getElementById("add-password") as HTMLInputElement).value,
-        role: parseInt((document.getElementById("add-role") as HTMLSelectElement).value),
-      };
-    },
-  });
-
-  if (!formValues) return;
-
-  if (formValues.password.length < 6) {
-    Toast.fire({ icon: "warning", title: "รหัสผ่านต้องมีอย่างน้อย 6 ตัว" });
-    return;
-  }
-
-  try {
-    const res = await fetch(`${API_BASE}/auth/register`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify(formValues),
+        if (confirmBtn) {
+          confirmBtn.classList.add("btn", "btn-primary", "w-100", "py-2", "fw-bold");
+        }
+        if (cancelBtn) {
+          cancelBtn.classList.add("btn", "btn-secondary", "w-100", "py-2", "fw-bold");
+        }
+      },
+      preConfirm: () => {
+        return {
+          username: (document.getElementById("add-username") as HTMLInputElement)?.value,
+          name: (document.getElementById("add-name") as HTMLInputElement)?.value,
+          password: (document.getElementById("add-password") as HTMLInputElement)?.value,
+          role: parseInt(
+            (document.getElementById("add-role") as HTMLSelectElement)?.value
+          ),
+        };
+      },
     });
 
-    if (!res.ok) throw new Error("เพิ่มผู้ดูแลไม่สำเร็จ");
+    const formValues = result?.value;
+    if (!formValues) return;
 
-    await fetchAdmins();
+    if (formValues.password.length < 6) {
+      Toast.fire({ icon: "warning", title: "รหัสผ่านต้องมีอย่างน้อย 6 ตัว" });
+      return;
+    }
 
-    Toast.fire({
-      iconHtml: `<img src="${smartDormIcon}" style="width:28px;height:28px;border-radius:50%">`,
-      title: `เพิ่มสมาชิกสำเร็จ<br><b>เพิ่ม ${formValues.name} แล้ว</b>`,
-    });
-  } catch (err: any) {
-    Toast.fire({ icon: "error", title: err.message });
-  }
-};
+    try {
+      const res = await fetch(`${API_BASE}/auth/register`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(formValues),
+      });
+
+      if (!res.ok) throw new Error("เพิ่มผู้ดูแลไม่สำเร็จ");
+
+      await fetchAdmins();
+
+      Toast.fire({
+        iconHtml: `<img src="${smartDormIcon}" style="width:28px;height:28px;border-radius:50%">`,
+        title: `เพิ่มสมาชิกสำเร็จ<br><b>เพิ่ม ${formValues.name} แล้ว</b>`,
+      });
+    } catch (err: any) {
+      Toast.fire({ icon: "error", title: err.message });
+    }
+  };
 
   /* ===========================================================
-     🔥 EDIT ADMIN POPUP
+     🔥 EDIT ADMIN POPUP 
   =========================================================== */
   const openEditDialog = async (admin: Admin) => {
-    const { value: formValues } = await Swal.fire({
+    const result = await Swal.fire({
       title: `แก้ไขข้อมูล (${admin.username})`,
       html: `
-        <input id="edit-name" class="swal2-input" placeholder="ชื่อ" value="${admin.name}">
-        <input id="edit-pass" class="swal2-input" type="password" placeholder="รหัสผ่านใหม่ (ไม่บังคับ)">
-        <select id="edit-role" class="swal2-input">
-          <option value="0" ${admin.role === 0 ? "selected" : ""}>แอดมินหลัก</option>
-          <option value="1" ${admin.role === 1 ? "selected" : ""}>พนักงาน</option>
-        </select>
+        <div class="container" style="max-width: 100%; padding: 0;">
+          <div class="mb-3 text-start">
+            <label class="form-label fw-bold">ชื่อจริง</label>
+            <input id="edit-name" class="form-control" value="${admin.name}">
+          </div>
+
+          <div class="mb-3 text-start">
+            <label class="form-label fw-bold">รหัสผ่านใหม่ (ไม่บังคับ)</label>
+            <input id="edit-pass" type="password" class="form-control" placeholder="รหัสผ่านใหม่">
+          </div>
+
+          <div class="mb-2 text-start">
+            <label class="form-label fw-bold">สิทธิ์</label>
+            <select id="edit-role" class="form-select">
+              <option value="0" ${admin.role === 0 ? "selected" : ""}>แอดมินหลัก</option>
+              <option value="1" ${admin.role === 1 ? "selected" : ""}>พนักงาน</option>
+            </select>
+          </div>
+        </div>
       `,
       showCancelButton: true,
       confirmButtonText: "บันทึก",
+      cancelButtonText: "ยกเลิก",
+      didRender: () => {
+        const confirmBtn = Swal.getConfirmButton();
+        const cancelBtn = Swal.getCancelButton();
+
+        if (confirmBtn) confirmBtn.classList.add("btn", "btn-primary", "w-100", "fw-bold");
+        if (cancelBtn) cancelBtn.classList.add("btn", "btn-secondary", "w-100", "fw-bold");
+      },
+      preConfirm: () => {
+        return {
+          name: (document.getElementById("edit-name") as HTMLInputElement)?.value,
+          password: (document.getElementById("edit-pass") as HTMLInputElement)?.value,
+          role: parseInt(
+            (document.getElementById("edit-role") as HTMLSelectElement)?.value
+          ),
+        };
+      },
     });
 
+    const formValues = result?.value;
     if (!formValues) return;
 
     if (formValues.password && formValues.password.length < 6) {
-      Swal.fire("ผิดพลาด", "รหัสผ่านต้องมากกว่า 6 ตัว", "warning");
+      Toast.fire({ icon: "warning", title: "รหัสผ่านต้องมากกว่า 6 ตัว" });
       return;
     }
 
@@ -173,10 +219,14 @@ export default function AdminManagement() {
 
       if (!res.ok) throw new Error("บันทึกไม่สำเร็จ");
 
-      Swal.fire("สำเร็จ!", "แก้ไขข้อมูลเรียบร้อย", "success");
-      fetchAdmins();
+      await fetchAdmins();
+
+      Toast.fire({
+        iconHtml: `<img src="${smartDormIcon}" style="width:28px;height:28px;border-radius:50%">`,
+        title: `แก้ไขข้อมูลสำเร็จ`,
+      });
     } catch (err: any) {
-      Swal.fire("เกิดข้อผิดพลาด", err.message, "error");
+      Toast.fire({ icon: "error", title: err.message });
     }
   };
 
@@ -185,7 +235,10 @@ export default function AdminManagement() {
   =========================================================== */
   const handleDelete = async (adminId: string) => {
     if (adminId === oldestAdminId) {
-      Swal.fire("ห้ามลบ!", "คุณไม่สามารถลบแอดมินคนแรกได้", "warning");
+      Toast.fire({
+        icon: "warning",
+        title: "ห้ามลบแอดมินคนแรก",
+      });
       return;
     }
 
@@ -195,6 +248,7 @@ export default function AdminManagement() {
       icon: "warning",
       showCancelButton: true,
       confirmButtonText: "ลบ",
+      cancelButtonText: "ยกเลิก",
     });
 
     if (!confirm.isConfirmed) return;
@@ -207,10 +261,14 @@ export default function AdminManagement() {
 
       if (!res.ok) throw new Error("ลบไม่สำเร็จ");
 
-      Swal.fire("สำเร็จ!", "ลบผู้ดูแลระบบเรียบร้อย", "success");
-      fetchAdmins();
+      await fetchAdmins();
+
+      Toast.fire({
+        iconHtml: `<img src="${smartDormIcon}" style="width:28px;height:28px;border-radius:50%">`,
+        title: `ลบผู้ดูแลระบบเรียบร้อย`,
+      });
     } catch (err: any) {
-      Swal.fire("เกิดข้อผิดพลาด", err.message, "error");
+      Toast.fire({ icon: "error", title: err.message });
     }
   };
 
@@ -228,7 +286,7 @@ export default function AdminManagement() {
         <div className="container">
           <h2 className="text-center mt-3 mb-4 fw-bold">จัดการผู้ดูแลระบบ</h2>
 
-          {/* เพิ่มสมาชิก */}
+          {/* ปุ่มเพิ่มสมาชิก */}
           <div className="text-center mb-4">
             <button
               className="btn text-white fw-bold px-5 py-2"
@@ -342,7 +400,6 @@ export default function AdminManagement() {
             </table>
           )}
 
-          {/* pagination */}
           <Pagination
             currentPage={currentPage}
             totalItems={totalItems}

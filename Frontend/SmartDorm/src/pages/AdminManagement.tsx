@@ -12,24 +12,19 @@ export default function AdminManagement() {
   const { admins, loading, fetchAdmins } = useAdmins();
   const { message, handleLogout, role, adminName, adminUsername } = useAuth();
 
-  const [openAdd, setOpenAdd] = useState(false);
-  const [openEdit, setOpenEdit] = useState(false);
-  const [selectedAdmin, setSelectedAdmin] = useState<Admin | null>(null);
-
   const [filterRole, setFilterRole] = useState("all");
-
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
 
-  // Resize listener
+  // Responsive resize
   useEffect(() => {
     const resize = () => setWindowWidth(window.innerWidth);
     window.addEventListener("resize", resize);
     return () => window.removeEventListener("resize", resize);
   }, []);
 
-  // หา admin ที่เก่าสุด (ห้ามลบ)
+  // หาผู้ดูแลที่เก่าสุด → ห้ามลบ
   const oldestAdminId =
     admins.length > 0
       ? [...admins].sort(
@@ -38,7 +33,7 @@ export default function AdminManagement() {
         )[0].adminId
       : null;
 
-  // ฟิลเตอร์
+  // ฟิลเตอร์ role
   const filteredAdmins =
     filterRole === "admin"
       ? admins.filter((a) => a.role === 0)
@@ -54,7 +49,7 @@ export default function AdminManagement() {
   );
 
   /* ===========================================================
-     🔥 ADD DIALOG (รวมในไฟล์)
+     🔥 ADD ADMIN POPUP
   =========================================================== */
   const openAddDialog = async () => {
     const { value: formValues } = await Swal.fire({
@@ -106,7 +101,7 @@ export default function AdminManagement() {
   };
 
   /* ===========================================================
-     🔥 EDIT DIALOG (รวมในไฟล์)
+     🔥 EDIT ADMIN POPUP
   =========================================================== */
   const openEditDialog = async (admin: Admin) => {
     const { value: formValues } = await Swal.fire({
@@ -148,7 +143,7 @@ export default function AdminManagement() {
   };
 
   /* ===========================================================
-     🔥 DELETE (รวมในไฟล์ + แก้ให้ใช้ API_BASE)
+     🔥 DELETE ADMIN
   =========================================================== */
   const handleDelete = async (adminId: string) => {
     if (adminId === oldestAdminId) {
@@ -195,6 +190,7 @@ export default function AdminManagement() {
         <div className="container">
           <h2 className="text-center mt-3 mb-4 fw-bold">จัดการผู้ดูแลระบบ</h2>
 
+          {/* เพิ่มสมาชิก */}
           <div className="text-center mb-4">
             <button
               className="btn text-white fw-bold px-5 py-2"
@@ -238,17 +234,18 @@ export default function AdminManagement() {
             </div>
           </div>
 
-          {/* ตาราง / การ์ด */}
+          {/* ตาราง + การ์ด */}
           {loading ? (
             <p className="text-center">กำลังโหลดข้อมูล...</p>
           ) : windowWidth < 900 ? (
+            /* ================= MOBILE CARD ================= */
             <div className="row g-3">
               {currentAdmins.map((a) => (
                 <div key={a.adminId} className="col-12">
                   <div className="card shadow-sm p-3">
                     <h5 className="fw-bold">{a.username}</h5>
-                    <p><strong>ชื่อ:</strong> {a.name}</p>
-                    <p><strong>สิทธิ์:</strong> {a.role === 0 ? "แอดมินหลัก" : "พนักงาน"}</p>
+                    <p><b>ชื่อ:</b> {a.name}</p>
+                    <p><b>สิทธิ์:</b> {a.role === 0 ? "แอดมินหลัก" : "พนักงาน"}</p>
 
                     <div className="d-flex justify-content-between mt-2">
                       <button className="btn btn-primary btn-sm" onClick={() => openEditDialog(a)}>
@@ -266,6 +263,7 @@ export default function AdminManagement() {
               ))}
             </div>
           ) : (
+            /* ================= DESKTOP TABLE ================= */
             <table className="table table-striped table-bordered text-center">
               <thead className="table-dark">
                 <tr>
@@ -306,6 +304,7 @@ export default function AdminManagement() {
             </table>
           )}
 
+          {/* pagination */}
           <Pagination
             currentPage={currentPage}
             totalItems={totalItems}

@@ -1,16 +1,17 @@
 // src/modules/user.ts
 
-
 // 🚚 Imports
-
 import { Router } from "express";
 import prisma from "../prisma";
 import { verifyLineToken } from "../utils/verifyLineToken";
-import { deleteSlip } from "../modules/booking";
+import { deleteSlip } from "../modules/booking"; // ⭐ ใช้งานได้แล้ว
 
 // 🌐 Router
 const userRouter = Router();
-// 📋 ดึงลูกค้าทั้งหมด
+
+/* ===========================================================
+   📋 ดึงลูกค้าทั้งหมด
+=========================================================== */
 userRouter.get("/getall", async (_req, res) => {
   try {
     const users = await prisma.customer.findMany({
@@ -19,6 +20,7 @@ userRouter.get("/getall", async (_req, res) => {
       },
       orderBy: { createdAt: "desc" },
     });
+
     res.json({
       message: "ดึงข้อมูลลูกค้าทั้งหมดสำเร็จ",
       count: users.length,
@@ -29,13 +31,16 @@ userRouter.get("/getall", async (_req, res) => {
   }
 });
 
-// 🧍‍♂️ สมัครหรือลงทะเบียน (LINE Login)
+/* ===========================================================
+   🧍‍♂️ สมัครหรือลงทะเบียน (จาก LINE Login)
+=========================================================== */
 userRouter.post("/register", async (req, res) => {
   try {
     const { accessToken } = req.body;
     const { userId, displayName } = await verifyLineToken(accessToken);
 
     let customer = await prisma.customer.findFirst({ where: { userId } });
+
     if (customer) {
       customer = await prisma.customer.update({
         where: { customerId: customer.customerId },
@@ -53,7 +58,9 @@ userRouter.post("/register", async (req, res) => {
   }
 });
 
-// 👤 ดึงข้อมูลโปรไฟล์
+/* ===========================================================
+   👤 ดึงข้อมูลโปรไฟล์
+=========================================================== */
 userRouter.post("/me", async (req, res) => {
   try {
     const { accessToken } = req.body;
@@ -72,11 +79,14 @@ userRouter.post("/me", async (req, res) => {
   }
 });
 
-// 💸 ดึงบิลที่ชำระแล้ว
+/* ===========================================================
+   💸 ดึงบิลที่ชำระแล้ว
+=========================================================== */
 userRouter.post("/payments", async (req, res) => {
   try {
     const { accessToken } = req.body;
     const { userId } = await verifyLineToken(accessToken);
+
     const customer = await prisma.customer.findFirst({ where: { userId } });
     if (!customer) throw new Error("ไม่พบลูกค้า");
 
@@ -104,11 +114,14 @@ userRouter.post("/payments", async (req, res) => {
   }
 });
 
-// 💰 ดึงบิลที่ยังไม่ชำระ
+/* ===========================================================
+   💰 ดึงบิลที่ยังไม่ชำระ
+=========================================================== */
 userRouter.post("/bills/unpaid", async (req, res) => {
   try {
     const { accessToken } = req.body;
     const { userId } = await verifyLineToken(accessToken);
+
     const customer = await prisma.customer.findFirst({ where: { userId } });
     if (!customer) throw new Error("ไม่พบลูกค้า");
 
@@ -123,16 +136,19 @@ userRouter.post("/bills/unpaid", async (req, res) => {
       count: bills.length,
       bills,
     });
-  } catch (err: any) {
+  } catch {
     res.status(400).json({ error: "Token ไม่ถูกต้องหรือหมดอายุ" });
   }
 });
 
-// 🚪 ดึงรายการที่สามารถคืนห้องได้
+/* ===========================================================
+   🚪 ดึงรายการที่สามารถคืนห้องได้
+=========================================================== */
 userRouter.post("/bookings/returnable", async (req, res) => {
   try {
     const { accessToken } = req.body;
     const { userId } = await verifyLineToken(accessToken);
+
     const customer = await prisma.customer.findFirst({ where: { userId } });
     if (!customer) throw new Error("ไม่พบลูกค้า");
 
@@ -157,15 +173,14 @@ userRouter.post("/bookings/returnable", async (req, res) => {
   }
 });
 
-// 🔍 ค้นหาลูกค้า
+/* ===========================================================
+   🔍 ค้นหาลูกค้า
+=========================================================== */
 userRouter.get("/search", async (req, res) => {
   try {
     const keyword = req.query.keyword?.toString().trim() || "";
     if (!keyword) {
-      return res.json({
-        message: "ไม่พบคำค้นหา",
-        users: [],
-      });
+      return res.json({ message: "ไม่พบคำค้นหา", users: [] });
     }
 
     const users = await prisma.customer.findMany({
@@ -201,19 +216,22 @@ userRouter.get("/search", async (req, res) => {
   }
 });
 
-// ❌ ลบลูกค้า (พร้อมลบ booking และตั้งห้องว่าง)
+/* ===========================================================
+   ❌ ลบลูกค้า (ลบ booking + ห้องว่าง + ลบ slip)
+=========================================================== */
 userRouter.delete("/:customerId", async (req, res) => {
   try {
     const { customerId } = req.params;
     if (!customerId) throw new Error("customerId is required");
 
     await prisma.$transaction(async (tx) => {
+      // 1) ดึง booking ทั้งหมดของลูกค้า
       const bookings = await tx.booking.findMany({
         where: { customerId },
         select: { slipUrl: true, roomId: true },
       });
 
-      // ตั้งห้องเป็นว่าง
+      // 2) ปลดห้องเป็นว่าง
       const roomIds = bookings.map((b) => b.roomId).filter(Boolean);
       if (roomIds.length > 0) {
         await tx.room.updateMany({
@@ -222,12 +240,12 @@ userRouter.delete("/:customerId", async (req, res) => {
         });
       }
 
-      // ลบสลิป
+      // 3) ลบสลิปจาก Supabase
       for (const booking of bookings) {
         if (booking.slipUrl) await deleteSlip(booking.slipUrl);
       }
 
-      // ลบ booking และ customer
+      // 4) ลบ booking และ customer
       await tx.booking.deleteMany({ where: { customerId } });
       await tx.customer.delete({ where: { customerId } });
     });

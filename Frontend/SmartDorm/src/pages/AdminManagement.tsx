@@ -52,53 +52,91 @@ export default function AdminManagement() {
      🔥 ADD ADMIN POPUP
   =========================================================== */
   const openAddDialog = async () => {
-    const { value: formValues } = await Swal.fire({
-      title: "เพิ่มผู้ดูแลระบบใหม่",
-      html: `
-        <input id="add-username" class="swal2-input" placeholder="ชื่อผู้ใช้">
-        <input id="add-name" class="swal2-input" placeholder="ชื่อจริง">
-        <input id="add-password" class="swal2-input" type="password" placeholder="รหัสผ่าน (ขั้นต่ำ 6 ตัว)">
-        <select id="add-role" class="swal2-input">
-          <option value="0">แอดมินหลัก</option>
-          <option value="1" selected>พนักงาน</option>
-        </select>
-      `,
-      showCancelButton: true,
-      confirmButtonText: "บันทึก",
-      cancelButtonText: "ยกเลิก",
-      preConfirm: () => {
-        return {
-          username: (document.getElementById("add-username") as HTMLInputElement).value,
-          name: (document.getElementById("add-name") as HTMLInputElement).value,
-          password: (document.getElementById("add-password") as HTMLInputElement).value,
-          role: parseInt((document.getElementById("add-role") as HTMLSelectElement).value),
-        };
-      },
+  const { value: formValues } = await Swal.fire({
+    title: `<h3 class="fw-bold">เพิ่มผู้ดูแลระบบใหม่</h3>`,
+    html: `
+      <div class="container" style="max-width: 100%; padding: 0;">
+
+        <div class="mb-3 text-start">
+          <label class="form-label fw-bold">ชื่อผู้ใช้</label>
+          <input id="add-username" class="form-control" placeholder="ชื่อผู้ใช้">
+        </div>
+
+        <div class="mb-3 text-start">
+          <label class="form-label fw-bold">ชื่อจริง</label>
+          <input id="add-name" class="form-control" placeholder="ชื่อจริง">
+        </div>
+
+        <div class="mb-3 text-start">
+          <label class="form-label fw-bold">รหัสผ่าน (ขั้นต่ำ 6 ตัว)</label>
+          <input id="add-password" type="password" class="form-control" placeholder="รหัสผ่าน">
+        </div>
+
+        <div class="mb-2 text-start">
+          <label class="form-label fw-bold">สิทธิ์</label>
+          <select id="add-role" class="form-select">
+            <option value="0">แอดมินหลัก</option>
+            <option value="1" selected>พนักงาน</option>
+          </select>
+        </div>
+
+      </div>
+    `,
+    width: "95%",                 // ❗ สวยมากสำหรับมือถือ
+    padding: "1rem",
+    background: "#fff",
+    showCancelButton: true,
+    confirmButtonText: `<button class="btn btn-primary w-100 py-2 fw-bold">บันทึก</button>`,
+    cancelButtonText: `<button class="btn btn-secondary w-100 py-2 fw-bold">ยกเลิก</button>`,
+    didRender: () => {
+      // ให้ปุ่มสวย เหมือน bootstrap
+      const confirmBtn = Swal.getConfirmButton();
+      confirmBtn.classList.remove("swal2-confirm");
+      confirmBtn.style.padding = "0";
+      confirmBtn.style.margin = "0";
+
+      const cancelBtn = Swal.getCancelButton();
+      cancelBtn.classList.remove("swal2-cancel");
+      cancelBtn.style.padding = "0";
+      cancelBtn.style.margin = "0";
+    },
+    preConfirm: () => {
+      return {
+        username: (document.getElementById("add-username") as HTMLInputElement).value,
+        name: (document.getElementById("add-name") as HTMLInputElement).value,
+        password: (document.getElementById("add-password") as HTMLInputElement).value,
+        role: parseInt((document.getElementById("add-role") as HTMLSelectElement).value),
+      };
+    },
+  });
+
+  if (!formValues) return;
+
+  if (formValues.password.length < 6) {
+    Toast.fire({ icon: "warning", title: "รหัสผ่านต้องมีอย่างน้อย 6 ตัว" });
+    return;
+  }
+
+  try {
+    const res = await fetch(`${API_BASE}/auth/register`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify(formValues),
     });
 
-    if (!formValues) return;
+    if (!res.ok) throw new Error("เพิ่มผู้ดูแลไม่สำเร็จ");
 
-    if (formValues.password.length < 6) {
-      Swal.fire("ผิดพลาด", "รหัสผ่านต้องมีอย่างน้อย 6 ตัว", "warning");
-      return;
-    }
+    await fetchAdmins();
 
-    try {
-      const res = await fetch(`${API_BASE}/auth/register`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify(formValues),
-      });
-
-      if (!res.ok) throw new Error("เพิ่มผู้ดูแลไม่สำเร็จ");
-
-      Swal.fire("สำเร็จ!", "เพิ่มผู้ดูแลระบบเรียบร้อย", "success");
-      fetchAdmins();
-    } catch (err: any) {
-      Swal.fire("เกิดข้อผิดพลาด", err.message, "error");
-    }
-  };
+    Toast.fire({
+      iconHtml: `<img src="${smartDormIcon}" style="width:28px;height:28px;border-radius:50%">`,
+      title: `เพิ่มสมาชิกสำเร็จ<br><b>เพิ่ม ${formValues.name} แล้ว</b>`,
+    });
+  } catch (err: any) {
+    Toast.fire({ icon: "error", title: err.message });
+  }
+};
 
   /* ===========================================================
      🔥 EDIT ADMIN POPUP

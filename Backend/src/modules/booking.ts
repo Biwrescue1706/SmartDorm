@@ -7,6 +7,9 @@ import { createClient } from "@supabase/supabase-js";
 import { verifyLineToken } from "../utils/verifyLineToken";
 import { sendFlexMessage } from "../utils/lineFlex";
 
+// ===========================================================
+// Supabase
+// ===========================================================
 const supabase = createClient(
   process.env.SUPABASE_URL!,
   process.env.SUPABASE_KEY!
@@ -17,6 +20,9 @@ const bookingRouter = Router();
 
 const LOCK_MINUTES = 15;
 
+// ===========================================================
+// FORMAT DATE THAI
+// ===========================================================
 const formatThai = (d?: string | Date | null) =>
   d
     ? new Date(d).toLocaleDateString("th-TH", {
@@ -27,8 +33,7 @@ const formatThai = (d?: string | Date | null) =>
     : "-";
 
 /* ===========================================================
-   ⭐ ล็อคห้อง (Lock Room)
-   User A เลือก → user B เลือกไม่ได้
+   ⭐ ล็อคห้อง (เฉพาะตอน “เลือกกำลังจะจอง”)
    =========================================================== */
 bookingRouter.post("/lock", async (req, res) => {
   try {
@@ -36,10 +41,14 @@ bookingRouter.post("/lock", async (req, res) => {
 
     const room = await prisma.room.findUnique({ where: { roomId } });
 
-    // ถ้าห้องติดล็อค และยังไม่หมดเวลา → ห้ามล็อคซ้ำ
-    if (room?.lockedUntil && room.lockedUntil > new Date()) {
+    // ห้องถูกล็อคโดยคนอื่น + ยังไม่หมดเวลา → ห้ามเลือก
+    if (
+      room?.lockedUntil &&
+      room.lockedUntil > new Date() &&
+      room.lockedBy !== userId
+    ) {
       return res.status(400).json({
-        error: "ห้องนี้กำลังถูกเลือกอยู่",
+        error: "ห้องนี้กำลังถูกเลือกโดยผู้ใช้อื่นอยู่",
         lockedUntil: room.lockedUntil,
       });
     }
@@ -62,7 +71,7 @@ bookingRouter.post("/lock", async (req, res) => {
 });
 
 /* ===========================================================
-   ⭐ ปลดล็อคห้อง (Unlock Room)
+   ⭐ ปลดล็อค (เฉพาะตอนออกจากหน้า / Cancel)
    =========================================================== */
 bookingRouter.post("/unlock", async (req, res) => {
   try {
@@ -83,7 +92,7 @@ bookingRouter.post("/unlock", async (req, res) => {
 });
 
 /* ===========================================================
-   GET ALL BOOKINGS
+   GET ALL
    =========================================================== */
 bookingRouter.get("/getall", async (_req, res) => {
   try {
@@ -108,6 +117,7 @@ bookingRouter.get("/:bookingId", async (req, res) => {
     });
 
     if (!booking) throw new Error("ไม่พบข้อมูลการจอง");
+
     res.json(booking);
   } catch (err: any) {
     res.status(400).json({ error: err.message });
@@ -115,10 +125,9 @@ bookingRouter.get("/:bookingId", async (req, res) => {
 });
 
 /* ===========================================================
-   ⭐ CREATE BOOKING
-   - สร้างการจองจริง
-   - ปลดล็อคห้องทันที
-   - เปลี่ยนสถานะห้องเป็นไม่ว่าง
+   ⭐ CREATE BOOKING (จองจริง)
+   - ปลดล็อคทันที
+   - เปลี่ยนห้องเป็นไม่ว่าง
    =========================================================== */
 bookingRouter.post("/create", upload.single("slip"), async (req, res) => {
   try {
@@ -136,14 +145,19 @@ bookingRouter.post("/create", upload.single("slip"), async (req, res) => {
 
     const { userId, displayName } = await verifyLineToken(accessToken);
 
+    // --------------------------
+    // Upload slip
+    // --------------------------
     let slipUrl = "";
     if (req.file) {
       const name = `slips/${Date.now()}_${req.file.originalname}`;
+
       const { error } = await supabase.storage
         .from(process.env.SUPABASE_BUCKET!)
         .upload(name, req.file.buffer, {
           contentType: req.file.mimetype,
         });
+
       if (error) throw new Error("อัปโหลดสลิปไม่สำเร็จ");
 
       const { data } = supabase.storage
@@ -153,7 +167,7 @@ bookingRouter.post("/create", upload.single("slip"), async (req, res) => {
       slipUrl = data.publicUrl;
     }
 
-    // ⭐ transaction: จอง + ปลดล็อค + ปิดห้อง
+    // ⭐ Transaction ( create booking + ปลดล็อค + ปิดห้อง )
     const booking = await prisma.$transaction(async (tx) => {
       let customer = await tx.customer.findFirst({ where: { userId } });
 
@@ -166,7 +180,7 @@ bookingRouter.post("/create", upload.single("slip"), async (req, res) => {
         });
       }
 
-      // ปลดล็อคห้อง + ปิดห้องให้ไม่ว่าง
+      // ปลดล็อค + ปิดห้อง (status=1)
       await tx.room.update({
         where: { roomId },
         data: {
@@ -202,7 +216,45 @@ bookingRouter.post("/create", upload.single("slip"), async (req, res) => {
 });
 
 /* ===========================================================
-   REJECT BOOKING → คืนห้อง + ปลดล็อค
+   APPROVE BOOKING
+   =========================================================== */
+bookingRouter.put("/:bookingId/approve", async (req, res) => {
+  try {
+    const updated = await prisma.booking.update({
+      where: { bookingId: req.params.bookingId },
+      data: { approveStatus: 1 },
+      include: { room: true, customer: true },
+    });
+
+    // ส่งข้อความ
+    try {
+      await sendFlexMessage(
+        updated.customer?.userId ?? "",
+        "✔️ SmartDorm อนุมัติการจอง",
+        [
+          { label: "รหัส", value: updated.bookingId },
+          { label: "ชื่อ", value: updated.fullName ?? "-" },
+          { label: "ห้อง", value: updated.room.number },
+          { label: "วันที่เข้าพัก", value: formatThai(updated.checkin) },
+        ],
+        [
+          {
+            label: "รายละเอียด",
+            url: `https://smartdorm-detail.biwbong.shop/booking/${updated.bookingId}`,
+            style: "primary",
+          },
+        ]
+      );
+    } catch {}
+
+    res.json({ message: "อนุมัติสำเร็จ", booking: updated });
+  } catch (err: any) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+/* ===========================================================
+   REJECT BOOKING → คืนห้อง (แต่ไม่แตะ lock)
    =========================================================== */
 bookingRouter.put("/:bookingId/reject", async (req, res) => {
   try {
@@ -211,14 +263,10 @@ bookingRouter.put("/:bookingId/reject", async (req, res) => {
       data: { approveStatus: 2 },
     });
 
-    // คืนห้อง
+    // คืนห้อง (status = 0)
     await prisma.room.update({
       where: { roomId: updated.roomId },
-      data: {
-        status: 0,
-        lockedBy: null,
-        lockedUntil: null,
-      },
+      data: { status: 0 },
     });
 
     res.json({ message: "ปฏิเสธสำเร็จ" });
@@ -228,7 +276,89 @@ bookingRouter.put("/:bookingId/reject", async (req, res) => {
 });
 
 /* ===========================================================
-   DELETE BOOKING → คืนห้อง + ปลดล็อค
+   CHECKIN (ไม่ต้องแตะ Lock)
+   =========================================================== */
+bookingRouter.put("/:bookingId/checkin", async (req, res) => {
+  try {
+    const updated = await prisma.booking.update({
+      where: { bookingId: req.params.bookingId },
+      data: { checkinStatus: 1, actualCheckin: new Date() },
+      include: { room: true, customer: true },
+    });
+
+    // ส่ง Flex …
+    try {
+      await sendFlexMessage(
+        updated.customer?.userId ?? "",
+        "🏠 SmartDorm เช็คอินสำเร็จ",
+        [
+          { label: "รหัส", value: updated.bookingId },
+          { label: "ชื่อ", value: updated.fullName ?? "-" },
+          { label: "ห้อง", value: updated.room.number },
+          { label: "เช็คอิน", value: formatThai(updated.actualCheckin) },
+        ],
+        [
+          {
+            label: "รายละเอียด",
+            url: `https://smartdorm-detail.biwbong.shop/booking/${updated.bookingId}`,
+            style: "primary",
+          },
+        ]
+      );
+    } catch {}
+
+    res.json({ message: "เช็คอินสำเร็จ", booking: updated });
+  } catch (err: any) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+/* ===========================================================
+   CHECKOUT → ห้องกลับเป็นว่าง แต่ไม่แตะ Lock
+   =========================================================== */
+bookingRouter.put("/:bookingId/checkout", async (req, res) => {
+  try {
+    const updated = await prisma.booking.update({
+      where: { bookingId: req.params.bookingId },
+      data: { checkoutStatus: 1, actualCheckout: new Date() },
+      include: { room: true, customer: true },
+    });
+
+    // ทำห้องว่าง
+    await prisma.room.update({
+      where: { roomId: updated.roomId },
+      data: { status: 0 },
+    });
+
+    // ส่ง Flex …
+    try {
+      await sendFlexMessage(
+        updated.customer?.userId ?? "",
+        "🚪 SmartDorm เช็คเอาท์สำเร็จ",
+        [
+          { label: "รหัส", value: updated.bookingId },
+          { label: "ชื่อ", value: updated.fullName ?? "-" },
+          { label: "ห้อง", value: updated.room.number },
+          { label: "เช็คเอาท์", value: formatThai(updated.actualCheckout) },
+        ],
+        [
+          {
+            label: "รายละเอียด",
+            url: `https://smartdorm-detail.biwbong.shop/booking/${updated.bookingId}`,
+            style: "primary",
+          },
+        ]
+      );
+    } catch {}
+
+    res.json({ message: "เช็คเอาท์สำเร็จ", booking: updated });
+  } catch (err: any) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+/* ===========================================================
+   DELETE BOOKING → คืนห้อง (ไม่แตะ lock)
    =========================================================== */
 bookingRouter.delete("/:bookingId", async (req, res) => {
   try {
@@ -238,11 +368,7 @@ bookingRouter.delete("/:bookingId", async (req, res) => {
 
     await prisma.room.update({
       where: { roomId: deleted.roomId },
-      data: {
-        status: 0,
-        lockedBy: null,
-        lockedUntil: null,
-      },
+      data: { status: 0 },
     });
 
     res.json({ message: "ลบสำเร็จ" });

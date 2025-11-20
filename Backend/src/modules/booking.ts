@@ -32,6 +32,22 @@ const formatThai = (d?: string | Date | null) =>
       })
     : "-";
 
+// ===========================================================
+// deleteSlip ให้ไฟล์ user.ts ใช้
+// ===========================================================
+export const deleteSlip = async (url: string) => {
+  const bucket = process.env.SUPABASE_BUCKET!;
+  if (!url || !bucket) return;
+
+  const path = url.split(`/${bucket}/`)[1];
+  if (path) {
+    const { error } = await supabase.storage.from(bucket).remove([path]);
+    if (error) {
+      console.error("❌ Delete Slip Error:", error.message);
+    }
+  }
+};
+
 /* ===========================================================
    ⭐ ล็อคห้อง (เฉพาะตอน “เลือกกำลังจะจอง”)
    =========================================================== */

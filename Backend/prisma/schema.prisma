@@ -36,9 +36,6 @@ model Room {
   updatedAt  DateTime @updatedAt
   updatedBy  String?  @db.ObjectId //แก้ไขโดยใคร
 
-lockedUntil DateTime?
-lockedBy    String?
-
   // ความสัมพันธ์กับแอดมิน
   adminCreated Admin? @relation("RoomCreatedBy", fields: [createdBy], references: [adminId])
   adminUpdated Admin? @relation("RoomUpdatedBy", fields: [updatedBy], references: [adminId])

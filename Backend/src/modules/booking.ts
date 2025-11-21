@@ -225,7 +225,7 @@ bookingRouter.post("/create", upload.single("slip"), async (req, res) => {
           [
             {
               label: "เปิดดูรายการ",
-              url: "https://smartdorm-admin.biwbong.shop/booking",
+              url: "https://smartdorm-admin.biwbong.shop",
               style: "primary",
             },
           ]

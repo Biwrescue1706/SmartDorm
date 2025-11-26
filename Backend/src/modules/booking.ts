@@ -153,6 +153,55 @@ bookingRouter.post("/create", async (req, res) => {
       return newBooking;
     });
 
+     const detailUrl = `https://smartdorm-detail.biwbong.shop/booking/${booking.bookingId}`;
+
+    // Send to customer
+    try {
+      await sendFlexMessage(
+        booking.customer?.userId ?? "",
+        "📢 SmartDorm ยืนยันการจองห้อง",
+        [
+          { label: "รหัสการจอง", value: booking.bookingId },
+          { label: "ชื่อ", value: booking.fullName ?? "-" },
+          { label: "ห้อง", value: booking.room.number },
+          { label: "วันที่เข้าพัก", value: formatThai(booking.checkin) },
+          { label: "เบอร์โทร", value: booking.cphone ?? "-" },
+          { label: "สถานะ", value: "รออนุมัติ", color: "#f39c12" },
+        ],
+        [{ label: "ดูรายละเอียด", url: detailUrl, style: "primary" }]
+      );
+    } catch (err) {
+      console.error("❌ LINE Error (send to customer):", err);
+    }
+
+    // Send to admin
+    const adminId = process.env.ADMIN_LINE_ID;
+
+    if (adminId) {
+      try {
+        await sendFlexMessage(
+          adminId,
+          "📢 มีการจองห้องใหม่เข้ามา",
+          [
+            { label: "รหัสการจอง", value: booking.bookingId },
+            { label: "ชื่อผู้จอง", value: booking.fullName ?? "-" },
+            { label: "ห้อง", value: booking.room.number },
+            { label: "วันที่เข้าพัก", value: formatThai(booking.checkin) },
+            { label: "เบอร์โทร", value: booking.cphone ?? "-" },
+          ],
+          [
+            {
+              label: "เปิดดูรายการ",
+              url: "https://smartdorm-admin.biwbong.shop",
+              style: "primary",
+            },
+          ]
+        );
+      } catch (err) {
+        console.error("❌ LINE Error (notify admin):", err);
+      }
+    }
+
     res.json({ message: "สร้างการจองสำเร็จ", booking });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
@@ -162,56 +211,52 @@ bookingRouter.post("/create", async (req, res) => {
 // ======================================================
 // 📌 UPLOAD SLIP AFTER BOOKING CREATED
 // ======================================================
-bookingRouter.post(
-  "/:bookingId/uploadSlip",
-  upload.single("slip"),
-  async (req, res) => {
-    try {
-      const { bookingId } = req.params;
+bookingRouter.post("/:bookingId/uploadSlip", upload.single("slip"), async (req, res) => {
+  try {
+    const { bookingId } = req.params;
 
-      // 1) โหลด booking เพื่อดึง createdAt
-      const booking = await prisma.booking.findUnique({
-        where: { bookingId },
+    // 1) โหลด booking เพื่อดึง createdAt
+    const booking = await prisma.booking.findUnique({
+      where: { bookingId },
+    });
+
+    if (!booking) throw new Error("ไม่พบ booking");
+    if (!req.file) throw new Error("ไม่มีไฟล์ slip");
+
+    // 2) ตั้งชื่อไฟล์สวย ๆ
+    const created = new Date(booking.createdAt)
+      .toISOString()
+      .replace(/[:.]/g, "-");
+
+    const fileName = `Booking-slips/Booking-slip_${bookingId}_${created}`;
+
+    // 3) อัปโหลดขึ้น Supabase
+    const { error } = await supabase.storage
+      .from(process.env.SUPABASE_BUCKET!)
+      .upload(fileName, req.file.buffer, {
+        contentType: req.file.mimetype,
+        upsert: true,
       });
 
-      if (!booking) throw new Error("ไม่พบ booking");
-      if (!req.file) throw new Error("ไม่มีไฟล์ slip");
+    if (error) throw new Error("อัปโหลดสลิปไม่สำเร็จ: " + error.message);
 
-      // 2) ตั้งชื่อไฟล์สวย ๆ
-      const created = new Date(booking.createdAt)
-        .toISOString()
-        .replace(/[:.]/g, "-");
+    const { data } = supabase.storage
+      .from(process.env.SUPABASE_BUCKET!)
+      .getPublicUrl(fileName);
 
-      const fileName = `Booking-slips/Booking-slip_${bookingId}_${created}`;
+    const slipUrl = data.publicUrl;
 
-      // 3) อัปโหลดขึ้น Supabase
-      const { error } = await supabase.storage
-        .from(process.env.SUPABASE_BUCKET!)
-        .upload(fileName, req.file.buffer, {
-          contentType: req.file.mimetype,
-          upsert: true,
-        });
+    // 4) อัปเดต slipUrl ใน DB
+    await prisma.booking.update({
+      where: { bookingId },
+      data: { slipUrl },
+    });
 
-      if (error) throw new Error("อัปโหลดสลิปไม่สำเร็จ: " + error.message);
-
-      const { data } = supabase.storage
-        .from(process.env.SUPABASE_BUCKET!)
-        .getPublicUrl(fileName);
-
-      const slipUrl = data.publicUrl;
-
-      // 4) อัปเดต slipUrl ใน DB
-      await prisma.booking.update({
-        where: { bookingId },
-        data: { slipUrl },
-      });
-
-      res.json({ message: "อัปโหลดสลิปสำเร็จ", slipUrl });
-    } catch (err: any) {
-      res.status(400).json({ error: err.message });
-    }
+    res.json({ message: "อัปโหลดสลิปสำเร็จ", slipUrl });
+  } catch (err: any) {
+    res.status(400).json({ error: err.message });
   }
-);
+});
 
 // APPROVE BOOKING
 

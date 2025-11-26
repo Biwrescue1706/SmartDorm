@@ -7,17 +7,14 @@ import { createClient } from "@supabase/supabase-js";
 import { verifyLineToken } from "../utils/verifyLineToken";
 import { sendFlexMessage } from "../utils/lineFlex";
 
-// ===========================================================
 // Supabase
-// ===========================================================
+
 const supabase = createClient(
   process.env.SUPABASE_URL!,
   process.env.SUPABASE_KEY!
 );
 
-// ===========================================================
 // deleteSlip ให้ user.ts ใช้
-// ===========================================================
 export const deleteSlip = async (url: string) => {
   const bucket = process.env.SUPABASE_BUCKET!;
   if (!url || !bucket) return;
@@ -41,9 +38,8 @@ const formatThai = (d?: string | Date | null) =>
       })
     : "-";
 
-// ===========================================================
 // GET ALL BOOKINGS
-// ===========================================================
+
 bookingRouter.get("/getall", async (_req, res) => {
   try {
     const bookings = await prisma.booking.findMany({
@@ -56,9 +52,8 @@ bookingRouter.get("/getall", async (_req, res) => {
   }
 });
 
-// ===========================================================
 // SEARCH
-// ===========================================================
+
 bookingRouter.get("/search", async (req, res) => {
   try {
     const keyword = (req.query.keyword as string)?.trim() || "";
@@ -84,9 +79,8 @@ bookingRouter.get("/search", async (req, res) => {
   }
 });
 
-// ===========================================================
 // GET BY ID
-// ===========================================================
+
 bookingRouter.get("/:bookingId", async (req, res) => {
   try {
     const booking = await prisma.booking.findUnique({
@@ -101,10 +95,10 @@ bookingRouter.get("/:bookingId", async (req, res) => {
   }
 });
 
-// ===========================================================
-// CREATE BOOKING
-// ===========================================================
-bookingRouter.post("/create", upload.single("slip"), async (req, res) => {
+// ======================================================
+// 📌 CREATE BOOKING BEFORE SLIP UPLOAD
+// ======================================================
+bookingRouter.post("/create", async (req, res) => {
   try {
     const {
       accessToken,
@@ -121,29 +115,7 @@ bookingRouter.post("/create", upload.single("slip"), async (req, res) => {
     const { userId, displayName } = await verifyLineToken(accessToken);
     if (!userId) throw new Error("Token LINE ไม่ถูกต้อง");
 
-    // ------------------------------------------
-    // Upload Slip
-    // ------------------------------------------
-    let slipUrl = "";
-    if (req.file) {
-      const name = `slips/${Date.now()}_${req.file.originalname}`;
-
-      const { error } = await supabase.storage
-        .from(process.env.SUPABASE_BUCKET!)
-        .upload(name, req.file.buffer, { contentType: req.file.mimetype });
-
-      if (error) throw new Error("อัปโหลดสลิปไม่สำเร็จ");
-
-      const { data } = supabase.storage
-        .from(process.env.SUPABASE_BUCKET!)
-        .getPublicUrl(name);
-
-      slipUrl = data.publicUrl ?? "";
-    }
-
-    // ------------------------------------------
-    // Transaction
-    // ------------------------------------------
+    // Create booking first (NO SLIP)
     const booking = await prisma.$transaction(async (tx) => {
       let customer = await tx.customer.findFirst({ where: { userId } });
 
@@ -163,7 +135,7 @@ bookingRouter.post("/create", upload.single("slip"), async (req, res) => {
           fullName: `${ctitle ?? ""}${cname ?? ""} ${csurname ?? ""}`.trim(),
           cphone: cphone ?? "",
           cmumId: cmumId ?? "",
-          slipUrl,
+          slipUrl: "", // ยังไม่มีสลิป
           checkin: new Date(checkin),
           checkout: checkout ? new Date(checkout) : null,
           approveStatus: 0,
@@ -173,7 +145,6 @@ bookingRouter.post("/create", upload.single("slip"), async (req, res) => {
         include: { room: true, customer: true },
       });
 
-      // Update room status → ไม่ว่าง
       await tx.room.update({
         where: { roomId },
         data: { status: 1 },
@@ -182,68 +153,68 @@ bookingRouter.post("/create", upload.single("slip"), async (req, res) => {
       return newBooking;
     });
 
-    const detailUrl = `https://smartdorm-detail.biwbong.shop/booking/${booking.bookingId}`;
-
-    // ===========================================================
-    // SEND TO CUSTOMER
-    // ===========================================================
-    try {
-      await sendFlexMessage(
-        booking.customer?.userId ?? "",
-        "📢 SmartDorm ยืนยันการจองห้อง",
-        [
-          { label: "รหัสการจอง", value: booking.bookingId },
-          { label: "ชื่อ", value: booking.fullName ?? "-" },
-          { label: "ห้อง", value: booking.room.number },
-          { label: "วันที่เข้าพัก", value: formatThai(booking.checkin) },
-          { label: "เบอร์โทร", value: booking.cphone ?? "-" },
-          { label: "สถานะ", value: "รออนุมัติ", color: "#f39c12" },
-        ],
-        [{ label: "ดูรายละเอียด", url: detailUrl, style: "primary" }]
-      );
-    } catch (err) {
-      console.error("❌ LINE Error (send to customer):", err);
-    }
-
-    // ===========================================================
-    // SEND TO ADMIN (⭐ เพิ่มใหม่)
-    // ===========================================================
-    const adminId = process.env.ADMIN_LINE_ID;
-
-    if (adminId) {
-      try {
-        await sendFlexMessage(
-          adminId,
-          "📢 มีการจองห้องใหม่เข้ามา",
-          [
-            { label: "รหัสการจอง", value: booking.bookingId },
-            { label: "ชื่อผู้จอง", value: booking.fullName ?? "-" },
-            { label: "ห้อง", value: booking.room.number },
-            { label: "วันที่เข้าพัก", value: formatThai(booking.checkin) },
-            { label: "เบอร์โทร", value: booking.cphone ?? "-" },
-          ],
-          [
-            {
-              label: "เปิดดูรายการ",
-              url: "https://smartdorm-admin.biwbong.shop",
-              style: "primary",
-            },
-          ]
-        );
-      } catch (err) {
-        console.error("❌ LINE Error (notify admin):", err);
-      }
-    }
-
-    res.json({ message: "จองสำเร็จ", booking });
+    res.json({ message: "สร้างการจองสำเร็จ", booking });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
 });
 
-// ===========================================================
+// ======================================================
+// 📌 UPLOAD SLIP AFTER BOOKING CREATED
+// ======================================================
+bookingRouter.post(
+  "/:bookingId/uploadSlip",
+  upload.single("slip"),
+  async (req, res) => {
+    try {
+      const { bookingId } = req.params;
+
+      // 1) โหลด booking เพื่อดึง createdAt
+      const booking = await prisma.booking.findUnique({
+        where: { bookingId },
+      });
+
+      if (!booking) throw new Error("ไม่พบ booking");
+      if (!req.file) throw new Error("ไม่มีไฟล์ slip");
+
+      // 2) ตั้งชื่อไฟล์สวย ๆ
+      const created = new Date(booking.createdAt)
+        .toISOString()
+        .replace(/[:.]/g, "-");
+
+      const fileName = `Booking-slips/Booking-slip_${bookingId}_${created}`;
+
+      // 3) อัปโหลดขึ้น Supabase
+      const { error } = await supabase.storage
+        .from(process.env.SUPABASE_BUCKET!)
+        .upload(fileName, req.file.buffer, {
+          contentType: req.file.mimetype,
+          upsert: true,
+        });
+
+      if (error) throw new Error("อัปโหลดสลิปไม่สำเร็จ: " + error.message);
+
+      const { data } = supabase.storage
+        .from(process.env.SUPABASE_BUCKET!)
+        .getPublicUrl(fileName);
+
+      const slipUrl = data.publicUrl;
+
+      // 4) อัปเดต slipUrl ใน DB
+      await prisma.booking.update({
+        where: { bookingId },
+        data: { slipUrl },
+      });
+
+      res.json({ message: "อัปโหลดสลิปสำเร็จ", slipUrl });
+    } catch (err: any) {
+      res.status(400).json({ error: err.message });
+    }
+  }
+);
+
 // APPROVE BOOKING
-// ===========================================================
+
 bookingRouter.put("/:bookingId/approve", async (req, res) => {
   try {
     const updated = await prisma.booking.update({
@@ -280,9 +251,8 @@ bookingRouter.put("/:bookingId/approve", async (req, res) => {
   }
 });
 
-// ===========================================================
 // REJECT
-// ===========================================================
+
 bookingRouter.put("/:bookingId/reject", async (req, res) => {
   try {
     const updated = await prisma.booking.update({
@@ -324,9 +294,8 @@ bookingRouter.put("/:bookingId/reject", async (req, res) => {
   }
 });
 
-// ===========================================================
 // CHECKIN
-// ===========================================================
+
 bookingRouter.put("/:bookingId/checkin", async (req, res) => {
   try {
     const updated = await prisma.booking.update({
@@ -366,9 +335,8 @@ bookingRouter.put("/:bookingId/checkin", async (req, res) => {
   }
 });
 
-// ===========================================================
 // CHECKOUT
-// ===========================================================
+
 bookingRouter.put("/:bookingId/checkout", async (req, res) => {
   try {
     const updated = await prisma.booking.update({
@@ -413,15 +381,27 @@ bookingRouter.put("/:bookingId/checkout", async (req, res) => {
   }
 });
 
-// ===========================================================
-// DELETE BOOKING
-// ===========================================================
+// DELETE BOOKING (✔️ ลบ Slip Supabase แล้ว)
 bookingRouter.delete("/:bookingId", async (req, res) => {
   try {
+    // 1) ดึง booking ก่อนลบ เพื่ออ่าน slipUrl
+    const existing = await prisma.booking.findUnique({
+      where: { bookingId: req.params.bookingId },
+    });
+
+    if (!existing) throw new Error("ไม่พบข้อมูลการจอง");
+
+    // 2) ถ้ามี Slip → ลบทิ้งใน Supabase
+    if (existing.slipUrl) {
+      await deleteSlip(existing.slipUrl);
+    }
+
+    // 3) ลบ booking
     const booking = await prisma.booking.delete({
       where: { bookingId: req.params.bookingId },
     });
 
+    // 4) Reset สถานะห้อง
     await prisma.room.update({
       where: { roomId: booking.roomId },
       data: { status: 0 },
@@ -432,5 +412,4 @@ bookingRouter.delete("/:bookingId", async (req, res) => {
     res.status(400).json({ error: err.message });
   }
 });
-
 export default bookingRouter;

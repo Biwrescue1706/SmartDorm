@@ -18,7 +18,8 @@ export default function AdminManagement() {
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
 
   // Logo SmartDorm
-  const smartDormIcon = "https://smartdorm-admin.biwbong.shop/assets/SmartDorm.png";
+  const smartDormIcon =
+    "https://smartdorm-admin.biwbong.shop/assets/SmartDorm.png";
 
   // SweetAlert Toast
   const Toast = Swal.mixin({
@@ -106,17 +107,34 @@ export default function AdminManagement() {
         const cancelBtn = Swal.getCancelButton();
 
         if (confirmBtn) {
-          confirmBtn.classList.add("btn", "btn-primary", "w-100", "py-2", "fw-bold");
+          confirmBtn.classList.add(
+            "btn",
+            "btn-primary",
+            "w-100",
+            "py-2",
+            "fw-bold"
+          );
         }
         if (cancelBtn) {
-          cancelBtn.classList.add("btn", "btn-secondary", "w-100", "py-2", "fw-bold");
+          cancelBtn.classList.add(
+            "btn",
+            "btn-secondary",
+            "w-100",
+            "py-2",
+            "fw-bold"
+          );
         }
       },
       preConfirm: () => {
         return {
-          username: (document.getElementById("add-username") as HTMLInputElement)?.value,
-          name: (document.getElementById("add-name") as HTMLInputElement)?.value,
-          password: (document.getElementById("add-password") as HTMLInputElement)?.value,
+          username: (
+            document.getElementById("add-username") as HTMLInputElement
+          )?.value,
+          name: (document.getElementById("add-name") as HTMLInputElement)
+            ?.value,
+          password: (
+            document.getElementById("add-password") as HTMLInputElement
+          )?.value,
           role: parseInt(
             (document.getElementById("add-role") as HTMLSelectElement)?.value
           ),
@@ -174,8 +192,12 @@ export default function AdminManagement() {
           <div class="mb-2 text-start">
             <label class="form-label fw-bold">สิทธิ์</label>
             <select id="edit-role" class="form-select">
-              <option value="0" ${admin.role === 0 ? "selected" : ""}>แอดมินหลัก</option>
-              <option value="1" ${admin.role === 1 ? "selected" : ""}>พนักงาน</option>
+              <option value="0" ${
+                admin.role === 0 ? "selected" : ""
+              }>แอดมินหลัก</option>
+              <option value="1" ${
+                admin.role === 1 ? "selected" : ""
+              }>พนักงาน</option>
             </select>
           </div>
         </div>
@@ -187,13 +209,17 @@ export default function AdminManagement() {
         const confirmBtn = Swal.getConfirmButton();
         const cancelBtn = Swal.getCancelButton();
 
-        if (confirmBtn) confirmBtn.classList.add("btn", "btn-primary", "w-100", "fw-bold");
-        if (cancelBtn) cancelBtn.classList.add("btn", "btn-secondary", "w-100", "fw-bold");
+        if (confirmBtn)
+          confirmBtn.classList.add("btn", "btn-primary", "w-100", "fw-bold");
+        if (cancelBtn)
+          cancelBtn.classList.add("btn", "btn-secondary", "w-100", "fw-bold");
       },
       preConfirm: () => {
         return {
-          name: (document.getElementById("edit-name") as HTMLInputElement)?.value,
-          password: (document.getElementById("edit-pass") as HTMLInputElement)?.value,
+          name: (document.getElementById("edit-name") as HTMLInputElement)
+            ?.value,
+          password: (document.getElementById("edit-pass") as HTMLInputElement)
+            ?.value,
           role: parseInt(
             (document.getElementById("edit-role") as HTMLSelectElement)?.value
           ),
@@ -333,56 +359,26 @@ export default function AdminManagement() {
           {/* ตาราง + การ์ด */}
           {loading ? (
             <p className="text-center">กำลังโหลดข้อมูล...</p>
-          ) : windowWidth < 900 ? (
-            /* ================= MOBILE CARD ================= */
+          ) : windowWidth < 600 ? (
+            /* ================= MOBILE: 1 การ์ด ================= */
             <div className="row g-3">
               {currentAdmins.map((a) => (
                 <div key={a.adminId} className="col-12">
                   <div className="card shadow-sm p-3">
                     <h5 className="fw-bold">{a.username}</h5>
-                    <p><b>ชื่อ:</b> {a.name}</p>
-                    <p><b>สิทธิ์:</b> {a.role === 0 ? "แอดมินหลัก" : "พนักงาน"}</p>
+                    <p>
+                      <b>ชื่อ :</b> {a.name}
+                    </p>
+                    <p>
+                      <b>สิทธิ์ :</b> {a.role === 0 ? "แอดมินหลัก" : "พนักงาน"}
+                    </p>
 
                     <div className="d-flex justify-content-between mt-2">
-                      <button className="btn btn-primary btn-sm" onClick={() => openEditDialog(a)}>
-                        แก้ไข
-                      </button>
-
-                      {a.adminId !== oldestAdminId && (
-                        <button className="btn btn-danger btn-sm" onClick={() => handleDelete(a.adminId)}>
-                          ลบ
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            /* ================= DESKTOP TABLE ================= */
-            <table className="table table-striped table-bordered text-center">
-              <thead className="table-dark">
-                <tr>
-                  <th>#</th>
-                  <th>ชื่อผู้ใช้</th>
-                  <th>ชื่อ</th>
-                  <th>สิทธิ์</th>
-                  <th>จัดการ</th>
-                </tr>
-              </thead>
-              <tbody>
-                {currentAdmins.map((a, index) => (
-                  <tr key={a.adminId}>
-                    <td>{(currentPage - 1) * rowsPerPage + index + 1}</td>
-                    <td>{a.username}</td>
-                    <td>{a.name}</td>
-                    <td>{a.role === 0 ? "แอดมินหลัก" : "พนักงาน"}</td>
-                    <td>
                       <button
-                        className="btn btn-primary btn-sm me-2"
+                        className="btn btn-primary btn-sm"
                         onClick={() => openEditDialog(a)}
                       >
-                        แก้ไข
+                        ✏️
                       </button>
 
                       {a.adminId !== oldestAdminId && (
@@ -393,11 +389,93 @@ export default function AdminManagement() {
                           ลบ
                         </button>
                       )}
-                    </td>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : windowWidth < 1400 ? (
+            /* ================= TABLET: 3 การ์ด ================= */
+            <div className="row g-3">
+              {currentAdmins.map((a) => (
+                <div key={a.adminId} className="col-12 col-sm-6 col-lg-4">
+                  <div className="card shadow-sm p-3">
+                    <h5 className="fw-bold">{a.username}</h5>
+                    <p>
+                      <b>ชื่อ :</b> {a.name}
+                    </p>
+                    <p>
+                      <b>สิทธิ์ :</b> {a.role === 0 ? "แอดมินหลัก" : "พนักงาน"}
+                    </p>
+
+                    <div className="d-flex justify-content-between mt-2">
+                      <button
+                        className="btn btn-primary btn-sm"
+                        onClick={() => openEditDialog(a)}
+                      >
+                        ✏️
+                      </button>
+
+                      {a.adminId !== oldestAdminId && (
+                        <button
+                          className="btn btn-danger btn-sm"
+                          onClick={() => handleDelete(a.adminId)}
+                        >
+                          ลบ
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            /* ================= DESKTOP TABLE ================= */
+            <div className="responsive-table" style={{ overflowX: "auto" }}>
+              <table
+                className="table table-sm table-striped align-middle text-center"
+                style={{ tableLayout: "fixed", width: "100%" }}
+              >
+                <thead className="table-dark">
+                  <tr>
+                    <th>#</th>
+                    <th>ชื่อผู้ใช้</th>
+                    <th>ชื่อ</th>
+                    <th>สิทธิ์</th>
+                    <th>แก้ไข</th>
+                    <th>ลบ</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {currentAdmins.map((a, index) => (
+                    <tr key={a.adminId}>
+                      <td>{(currentPage - 1) * rowsPerPage + index + 1}</td>
+                      <td>{a.username}</td>
+                      <td>{a.name}</td>
+                      <td>{a.role === 0 ? "แอดมินหลัก" : "พนักงาน"}</td>
+                      <td>
+                        <button
+                          className="btn btn-primary btn-sm me-2"
+                          onClick={() => openEditDialog(a)}
+                        >
+                          ✏️
+                        </button>
+                      </td>
+                      <td>
+                        {a.adminId !== oldestAdminId && (
+                          <button
+                            className="btn btn-danger btn-sm"
+                            onClick={() => handleDelete(a.adminId)}
+                          >
+                            ลบ
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
 
           <Pagination

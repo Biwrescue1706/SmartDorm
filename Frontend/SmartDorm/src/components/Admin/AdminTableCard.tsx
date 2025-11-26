@@ -82,7 +82,7 @@ export default function AdminTableCard({
                   className="btn btn-primary btn-sm"
                   onClick={() => onEdit(a)}
                 >
-                  แก้ไข
+                  ✏️
                 </button>
 
                 {a.adminId !== oldestAdminId && (
@@ -105,7 +105,7 @@ export default function AdminTableCard({
   // 💻 แสดงแบบ Table
   // --------------------------
   return (
-    <table className="table table-striped table-bordered text-center">
+    <table className="table  table-striped table-bordered text-center">
       <thead className="table-dark">
         <tr>
           <th>#</th>
@@ -127,7 +127,7 @@ export default function AdminTableCard({
                 className="btn btn-primary btn-sm me-2"
                 onClick={() => onEdit(a)}
               >
-                แก้ไข
+                ✏️
               </button>
 
               {a.adminId !== oldestAdminId && (

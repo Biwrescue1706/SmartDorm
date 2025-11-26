@@ -1,7 +1,7 @@
 // src/pages/Users.tsx
 import { useEffect, useState } from "react";
 import axios from "axios";
-import Swal from "sweetalert2";
+// import Swal from "sweetalert2";
 import { API_BASE } from "../config";
 import Nav from "../components/Nav";
 import { useAuth } from "../hooks/useAuth";
@@ -105,37 +105,37 @@ export default function Users() {
   };
 
   // ❌ ลบลูกค้า
-  const handleDeleteCustomer = async () => {
-    if (!selectedUser) return;
-    const { customerId, userName } = selectedUser;
-    const result = await Swal.fire({
-      title: `ยืนยันการลบลูกค้า`,
-      text: `คุณต้องการลบลูกค้า '${userName}' ใช่หรือไม่? การกระทำนี้จะลบข้อมูลทั้งหมดของลูกค้าและไม่สามารถย้อนกลับได้`,
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonText: "ใช่, ลบเลย",
-      cancelButtonText: "ยกเลิก",
-      confirmButtonColor: "#e74c3c",
-    });
-    if (!result.isConfirmed) return;
-    try {
-      await axios.delete(`${API_BASE}/user/${customerId}`);
-      await Swal.fire({
-        title: "สำเร็จ",
-        text: `ลบลูกค้า ${userName} เรียบร้อยแล้ว`,
-        icon: "success",
-        timer: 1500,
-        showConfirmButton: false,
-      });
-      setUsers((prevUsers) =>
-        prevUsers.filter((u) => u.customerId !== customerId)
-      );
-      setShowDialog(false);
-    } catch (err) {
-      console.error(`❌ ลบลูกค้า ${userName} ไม่สำเร็จ:`, err);
-      Swal.fire("เกิดข้อผิดพลาด", "ไม่สามารถลบลูกค้าได้", "error");
-    }
-  };
+  // const handleDeleteCustomer = async () => {
+  //   if (!selectedUser) return;
+  //   const { customerId, userName } = selectedUser;
+  //   const result = await Swal.fire({
+  //     title: `ยืนยันการลบลูกค้า`,
+  //     text: `คุณต้องการลบลูกค้า '${userName}' ใช่หรือไม่? การกระทำนี้จะลบข้อมูลทั้งหมดของลูกค้าและไม่สามารถย้อนกลับได้`,
+  //     icon: "warning",
+  //     showCancelButton: true,
+  //     confirmButtonText: "ใช่, ลบเลย",
+  //     cancelButtonText: "ยกเลิก",
+  //     confirmButtonColor: "#e74c3c",
+  //   });
+  //   if (!result.isConfirmed) return;
+  //   try {
+  //     await axios.delete(`${API_BASE}/user/${customerId}`);
+  //     await Swal.fire({
+  //       title: "สำเร็จ",
+  //       text: `ลบลูกค้า ${userName} เรียบร้อยแล้ว`,
+  //       icon: "success",
+  //       timer: 1500,
+  //       showConfirmButton: false,
+  //     });
+  //     setUsers((prevUsers) =>
+  //       prevUsers.filter((u) => u.customerId !== customerId)
+  //     );
+  //     setShowDialog(false);
+  //   } catch (err) {
+  //     console.error(`❌ ลบลูกค้า ${userName} ไม่สำเร็จ:`, err);
+  //     Swal.fire("เกิดข้อผิดพลาด", "ไม่สามารถลบลูกค้าได้", "error");
+  //   }
+  // };
 
   if (loading)
     return (
@@ -199,7 +199,7 @@ export default function Users() {
                   <th>#</th>
                   <th>LINE</th>
                   <th>ดูประวัติ</th>
-                  <th>ลบ</th>
+                  {/* <th>ลบ</th> */}
                 </tr>
               </thead>
               <tbody>
@@ -219,7 +219,7 @@ export default function Users() {
                           ดูประวัติ
                         </button>
                       </td>
-                      <td>
+                      {/* <td>
                         {role === 0 && (
                           <button
                             className="btn btn-sm btn-danger"
@@ -228,7 +228,7 @@ export default function Users() {
                             🗑️
                           </button>
                         )}
-                      </td>
+                      </td> */}
                     </tr>
                   ))
                 ) : (
@@ -275,16 +275,16 @@ export default function Users() {
             <Dialog.Description className="text-muted text-center mb-3">
               ดูข้อมูลลูกค้าและประวัติการจองห้องพัก
             </Dialog.Description>
-            <p className="text-start mx-3 text-primary mb-3">
+            {/* <p className="text-start mx-3 text-primary mb-3">
               {formatThaiDate(selectedUser?.createdAt)}
-            </p>
+            </p> */}
             {selectedUser?.bookings?.length ? (
               <div className="d-flex flex-column gap-3">
                 {[...selectedUser.bookings]
                   .sort(
                     (a, b) =>
-                      new Date(b.createdAt || "").getTime() -
-                      new Date(a.createdAt || "").getTime()
+                      new Date(a.createdAt || "").getTime() -
+                      new Date(b.createdAt || "").getTime()
                   )
                   .map((b) => (
                     <div

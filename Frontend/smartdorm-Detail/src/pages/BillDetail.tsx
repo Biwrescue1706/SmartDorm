@@ -87,7 +87,9 @@ export default function BillDetail() {
 
   // ✅ สถานะบิล
   const statusText =
-    bill.status === 1
+    bill.status === 2
+      ? "รอการตรวจสอบ"
+      : bill.status === 1
       ? "✅ ชำระแล้ว"
       : bill.status === 0
       ? "⌛ รอชำระ"
@@ -110,31 +112,33 @@ export default function BillDetail() {
       }}
     >
       {/* Header */}
-    {/* Header */}
-<div className="text-center mb-4">
-  <div
-    className="d-flex justify-content-center align-items-center gap-2 flex-wrap"
-    style={{ columnGap: "10px" }}
-  >
-    <div>
-      <h4 className="mt-2 fw-bold text-success mb-0">🏫 SmartDorm 🎉</h4>
-      <h5 className="fw-bold text-secondary">บิลค่าเช่าห้อง</h5>
-    </div>
-    <img
-      src="https://smartdorm-admin.biwbong.shop/assets/SmartDorm.png"
-      alt="SmartDorm Logo"
-      style={{
-        width: "70px",
-        height: "70px",
-        marginLeft: "10px",
-      }}
-    />
-  </div>
-</div>
+      {/* Header */}
+      <div className="text-center mb-4">
+        <div
+          className="d-flex justify-content-center align-items-center gap-2 flex-wrap"
+          style={{ columnGap: "10px" }}
+        >
+          <div>
+            <h4 className="mt-2 fw-bold text-success mb-0">🏫 SmartDorm 🎉</h4>
+            <h5 className="fw-bold text-secondary">บิลค่าเช่าห้อง</h5>
+          </div>
+          <img
+            src="https://smartdorm-admin.biwbong.shop/assets/SmartDorm.png"
+            alt="SmartDorm Logo"
+            style={{
+              width: "70px",
+              height: "70px",
+              marginLeft: "10px",
+            }}
+          />
+        </div>
+      </div>
 
       {/* Bill Info */}
       <div className="border rounded p-3 bg-light mb-3">
-        <p className="mb-1"><strong>สวัสดี  {bill.customer?.userName} </strong> </p>
+        <p className="mb-1">
+          <strong>สวัสดี {bill.customer?.userName} </strong>{" "}
+        </p>
         <p className="mb-1">
           <strong>ห้อง : </strong> {bill.room?.number || "-"}
         </p>
@@ -148,11 +152,12 @@ export default function BillDetail() {
             month: "long",
           })}
         </p>
-{bill.status === 0 && (
-        <p className="mb-1">
-          <strong>ครบกำหนดชำระ : </strong>{" "}
-          <span className="text-danger">{formatThaiDate(bill.dueDate)}</span>
-        </p> )}
+        {bill.status === 0 && (
+          <p className="mb-1">
+            <strong>ครบกำหนดชำระ : </strong>{" "}
+            <span className="text-danger">{formatThaiDate(bill.dueDate)}</span>
+          </p>
+        )}
         <p className="mb-1">
           <strong>สถานะ : </strong>{" "}
           <span className={`badge bg-${statusColor}`}>{statusText}</span>
@@ -217,28 +222,27 @@ export default function BillDetail() {
             </tr>
           </tbody>
         </table>
-        
-{/* ปุ่มชำระเงินจะแสดงเฉพาะเมื่อสถานะบิล = 0 (รอชำระ) */}
-{bill.status === 0 && (
-  <div className="text-center mt-4">
-    <p className="mb-2 text-muted">
-      คุณสามารถกดปุ่มด้านล่างเพื่อไปยังหน้าชำระเงินผ่าน LIFF ได้ทันที
-    </p>
-    <a
-      href={`https://liff.line.me/2008099518-RGPO9wep?billId=${bill.billId}`}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="btn btn-success px-4 py-2 fw-bold shadow-sm"
-      style={{
-        borderRadius: "10px",
-        fontSize: "1.1rem",
-      }}
-    >
-      ไปหน้าชำระเงินผ่าน LINE
-    </a>
-  </div>
-)}
 
+        {/* ปุ่มชำระเงินจะแสดงเฉพาะเมื่อสถานะบิล = 0 (รอชำระ) */}
+        {bill.status === 0 && (
+          <div className="text-center mt-4">
+            <p className="mb-2 text-muted">
+              คุณสามารถกดปุ่มด้านล่างเพื่อไปยังหน้าชำระเงินผ่าน LIFF ได้ทันที
+            </p>
+            <a
+              href={`https://liff.line.me/2008099518-RGPO9wep?billId=${bill.billId}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn btn-success px-4 py-2 fw-bold shadow-sm"
+              style={{
+                borderRadius: "10px",
+                fontSize: "1.1rem",
+              }}
+            >
+              ไปหน้าชำระเงินผ่าน LINE
+            </a>
+          </div>
+        )}
       </div>
     </div>
   );

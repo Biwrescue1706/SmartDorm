@@ -1,73 +1,56 @@
+// src/components/AllBills/AllBillsRow.tsx
 import type { Bill } from "../../types/Bill";
 
 interface Props {
   index: number;
   bill: Bill;
+  role?: number | null;
   onEdit: (bill: Bill) => void;
   onDelete: (billId: string, room: string) => void;
-  onViewSlip: (bill: Bill) => void; // ✅
+  onViewSlip: (bill: Bill) => void;
+  onManage: (bill: Bill) => void; // ⭐ เพิ่ม
 }
 
 export default function AllBillsRow({
   index,
   bill,
+  role,
   onEdit,
   onDelete,
   onViewSlip,
+  onManage
 }: Props) {
-  // ✅ แสดง badge สถานะ
-  const renderStatus = (status: number) => {
-    switch (status) {
-      case 0:
-        return <span className="badge bg-warning text-dark">ค้างชำระ</span>;
-      case 1:
-        return <span className="badge bg-success">ชำระแล้ว</span>;
-      default:
-        return <span className="badge bg-secondary">ไม่ทราบ</span>;
-    }
-  };
-
-  const rowBg =
-    bill.status === 1
-      ? "table-success-subtle"
-      : bill.status === 0
-      ? "table-warning-subtle"
-      : "";
+  const status = bill.status;
 
   return (
-    <tr className={rowBg}>
+    <tr>
       <td>{index + 1}</td>
-      <td>{bill?.room?.number ?? "-"}</td>
-      <td>{bill.customer?.userName || "-"}</td>
-      <td>{bill.booking?.fullName || "-"}</td>
-      <td>{bill.booking?.cphone || "-"}</td>
-      <td>
-        {bill.month
-          ? new Date(bill.month).toLocaleDateString("th-TH", {
-              year: "numeric",
-              month: "long",
-            })
-          : "-"}
-      </td>
-      <td>{bill.total?.toLocaleString() || 0}</td>
-      <td>
-        {bill.dueDate
-          ? new Date(bill.dueDate).toLocaleDateString("th-TH", {
-              year: "numeric",
-              month: "long",
-              day: "numeric",
-            })
-          : "-"}
-      </td>
-      <td>{renderStatus(bill.status)}</td>
+      <td>{bill.room?.number}</td>
+      <td>{bill.customer?.userName}</td>
+      <td>{bill.booking?.fullName}</td>
+      <td>{bill.booking?.cphone}</td>
 
-      {/* ✅ ปุ่มดูสลิป */}
       <td>
-        {bill.status === 1 ? (
-          <button
-            className="btn btn-outline-primary btn-sm"
-            onClick={() => onViewSlip(bill)} // ✅ ส่ง bill
-          >
+        {new Date(bill.month).toLocaleDateString("th-TH", {
+          year: "numeric",
+          month: "long",
+        })}
+      </td>
+
+      <td>{bill.total.toLocaleString()}</td>
+
+      <td>
+        {status === 0 && <span className="badge bg-danger">ค้างชำระ</span>}
+        {status === 1 && <span className="badge bg-success">ชำระแล้ว</span>}
+        {status === 2 && (
+          <span className="badge bg-warning text-dark">รอตรวจสอบ</span>
+        )}
+      </td>
+
+      {/* สลิป */}
+      <td>
+        {status === 1 ? (
+          <button className="btn btn-outline-primary btn-sm" onClick={() => onViewSlip(bill)}>
             ดูสลิป
           </button>
         ) : (
@@ -75,34 +58,36 @@ export default function AllBillsRow({
         )}
       </td>
 
-      {/* ✏️ แก้ไข */}
+      {/* จัดการ */}
       <td>
-        <button
-          className="btn btn-sm fw-semibold text-white px-2 py-1"
-          style={{
-            background: "linear-gradient(100deg, #26ff05, #f9d849)",
-            border: "none",
-            opacity: bill.status === 1 ? 0.4 : 1,
-          }}
-          onClick={() => onEdit(bill)}
-        >
-          ✏️
-        </button>
+        {status === 2 ? (
+          <button
+            className="btn btn-info btn-sm text-white"
+            onClick={() => onManage(bill)}
+          >
+            จัดการ
+          </button>
+        ) : status === 0 ? (
+          <button className="btn btn-warning btn-sm" onClick={() => onEdit(bill)}>
+            ✏️
+          </button>
+        ) : (
+          <span className="text-muted small">—</span>
+        )}
       </td>
 
-      {/* 🗑️ ลบ */}
+      {/* ลบเฉพาะ ADMIN */}
       <td>
-        <button
-          className="btn btn-sm fw-semibold text-white px-2 py-1"
-          style={{
-            background: "linear-gradient(100deg, #ff0505, #f645c4)",
-            border: "none",
-            opacity: bill.status === 1 ? 0.4 : 1,
-          }}
-          onClick={() => onDelete(bill.billId, bill.room?.number || "-")}
-        >
-          🗑️
-        </button>
+        {role === 0 && status === 0 ? (
+          <button
+            className="btn btn-danger btn-sm"
+            onClick={() => onDelete(bill.billId, bill.room.number)}
+          >
+            🗑️
+          </button>
+        ) : (
+          <span className="text-muted small">—</span>
+        )}
       </td>
     </tr>
   );

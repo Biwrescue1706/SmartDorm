@@ -6,7 +6,6 @@ import { createClient } from "@supabase/supabase-js";
 import { verifyLineToken } from "../utils/verifyLineToken";
 import { sendFlexMessage } from "../utils/lineFlex";
 
-
 const paymentRouter = Router();
 const upload = multer({ storage: multer.memoryStorage() });
 
@@ -56,7 +55,7 @@ paymentRouter.post("/create", upload.single("slip"), async (req, res) => {
 
     if (!bill) throw new Error("ไม่พบบิลนี้");
     if (bill.status === 1) throw new Error("บิลนี้ชำระแล้ว");
-    if (bill.status === 2 ) throw new Error("บิลนี้รอการตรวจสอบสลิปอยู่");
+    if (bill.status === 2) throw new Error("บิลนี้รอการตรวจสอบสลิปอยู่");
 
     // --------------------------
     // 4) ตั้งชื่อไฟล์ใหม่ตามรูปแบบที่ต้องการ
@@ -94,7 +93,10 @@ paymentRouter.post("/create", upload.single("slip"), async (req, res) => {
       }),
       prisma.bill.update({
         where: { billId },
-        data: { status: 2 },
+        data: {
+          status: 2,
+          slipUrl, // ให้ Bill ใช้ slip เดียวกับ Payment
+        },
       }),
     ]);
 
@@ -114,7 +116,11 @@ paymentRouter.post("/create", upload.single("slip"), async (req, res) => {
             { label: "🏠 ห้อง", value: bill.room?.number ?? "-" },
             { label: "ยอดชำระ", value: `${bill.total.toLocaleString()} บาท` },
             { label: "วันที่ชำระ", value: formatThaiDate(payment.createdAt) },
-            { label: "สถานะ", value: "ชำระเงินแล้ว", color: "#27ae60" },
+            {
+              label: "สถานะ",
+              value: "รอตรวจสอบการชำระเงิน",
+              color: "#fff204ff",
+            },
           ],
           [
             {

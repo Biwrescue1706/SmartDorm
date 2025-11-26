@@ -44,7 +44,6 @@ const formatThai = (d?: string | Date | null) =>
     : "-";
 
 // GET ALL BOOKINGS
-
 bookingRouter.get("/getall", async (_req, res) => {
   try {
     const bookings = await prisma.booking.findMany({
@@ -58,7 +57,6 @@ bookingRouter.get("/getall", async (_req, res) => {
 });
 
 // SEARCH
-
 bookingRouter.get("/search", async (req, res) => {
   try {
     const keyword = (req.query.keyword as string)?.trim() || "";
@@ -85,7 +83,6 @@ bookingRouter.get("/search", async (req, res) => {
 });
 
 // GET BY ID
-
 bookingRouter.get("/:bookingId", async (req, res) => {
   try {
     const booking = await prisma.booking.findUnique({
@@ -100,9 +97,7 @@ bookingRouter.get("/:bookingId", async (req, res) => {
   }
 });
 
-// ======================================================
 // 📌 CREATE BOOKING BEFORE SLIP UPLOAD
-// ======================================================
 bookingRouter.post("/create", async (req, res) => {
   try {
     const {
@@ -169,7 +164,8 @@ bookingRouter.post("/create", async (req, res) => {
           { label: "รหัสการจอง", value: booking.bookingId },
           { label: "ชื่อ", value: booking.fullName ?? "-" },
           { label: "ห้อง", value: booking.room.number },
-          { label: "วันที่เข้าพัก", value: formatThai(booking.checkin) },
+          { label: "วันจอง", value: formatThai(booking.createdAt) },
+          { label: "วันที่แจ้งเข้าพัก", value: formatThai(booking.checkin) },
           { label: "เบอร์โทร", value: booking.cphone ?? "-" },
           { label: "สถานะ", value: "รออนุมัติ", color: "#f39c12" },
         ],
@@ -191,7 +187,8 @@ bookingRouter.post("/create", async (req, res) => {
             { label: "รหัสการจอง", value: booking.bookingId },
             { label: "ชื่อผู้จอง", value: booking.fullName ?? "-" },
             { label: "ห้อง", value: booking.room.number },
-            { label: "วันที่เข้าพัก", value: formatThai(booking.checkin) },
+            { label: "วันจอง", value: formatThai(booking.createdAt) },
+            { label: "วันที่แจ้งเข้าพัก", value: formatThai(booking.checkin) },
             { label: "เบอร์โทร", value: booking.cphone ?? "-" },
           ],
           [
@@ -213,9 +210,7 @@ bookingRouter.post("/create", async (req, res) => {
   }
 });
 
-// ======================================================
 // 📌 UPLOAD SLIP AFTER BOOKING CREATED
-// ======================================================
 bookingRouter.post("/:bookingId/uploadSlip", upload.single("slip"), async (req, res) => {
   try {
     const { bookingId } = req.params;
@@ -264,7 +259,6 @@ bookingRouter.post("/:bookingId/uploadSlip", upload.single("slip"), async (req, 
 });
 
 // APPROVE BOOKING
-
 bookingRouter.put("/:bookingId/approve", async (req, res) => {
   try {
     const updated = await prisma.booking.update({
@@ -281,7 +275,11 @@ bookingRouter.put("/:bookingId/approve", async (req, res) => {
           { label: "รหัส", value: updated.bookingId },
           { label: "ชื่อ", value: updated.fullName ?? "-" },
           { label: "ห้อง", value: updated.room.number },
-          { label: "วันที่เข้าพัก", value: formatThai(updated.checkin) },
+          { label: "วันจอง", value: formatThai(updated.createdAt) },
+          { label: "วันที่แจ้งเข้าพัก", value: formatThai(updated.checkin) },
+          { label: "วันที่อนุมัติ", value: formatThai(new Date()) },
+          { label: "สถานะ", value: "อนุมัติแล้ว", color: "#27ae60" },
+          { label: "หมายเหตุ", value: "กรุณมาเช็คอินในวันที่แจ้งเข้าพัก" },
         ],
         [
           {
@@ -301,8 +299,7 @@ bookingRouter.put("/:bookingId/approve", async (req, res) => {
   }
 });
 
-// REJECT
-
+// REJECT BOOKING
 bookingRouter.put("/:bookingId/reject", async (req, res) => {
   try {
     const updated = await prisma.booking.update({
@@ -324,7 +321,9 @@ bookingRouter.put("/:bookingId/reject", async (req, res) => {
           { label: "รหัส", value: updated.bookingId },
           { label: "ชื่อ", value: updated.fullName ?? "-" },
           { label: "ห้อง", value: updated.room.number },
-          { label: "วันที่เข้าพัก", value: formatThai(updated.checkin) },
+          { label: "วันที่แจ้งเข้าพัก", value: formatThai(updated.checkin) },
+          { label: "วันที่ไม่อนุมัติ", value: formatThai(new Date()) },
+          { label: "เหตุผล", value: "กรุณาติดต่อแอดมินเพื่อสอบถามเพิ่มเติม" }
         ],
         [
           {
@@ -345,7 +344,6 @@ bookingRouter.put("/:bookingId/reject", async (req, res) => {
 });
 
 // CHECKIN
-
 bookingRouter.put("/:bookingId/checkin", async (req, res) => {
   try {
     const updated = await prisma.booking.update({
@@ -386,7 +384,6 @@ bookingRouter.put("/:bookingId/checkin", async (req, res) => {
 });
 
 // CHECKOUT
-
 bookingRouter.put("/:bookingId/checkout", async (req, res) => {
   try {
     const updated = await prisma.booking.update({

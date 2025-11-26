@@ -1,3 +1,4 @@
+// src/components/AllBills/AllBillsEditDialog.tsx
 import { useState } from "react";
 import Swal from "sweetalert2";
 import type { Bill } from "../../types/Bill";
@@ -9,17 +10,17 @@ interface Props {
 }
 
 export default function AllBillsEditDialog({ bill, onSave, onClose }: Props) {
-  const [form, setForm] = useState({
-    wBefore: bill?.wBefore ?? 0,
-    wAfter: bill?.wAfter ?? 0,
-    eBefore: bill?.eBefore ?? 0,
-    eAfter: bill?.eAfter ?? 0,
-    status: bill?.status ?? 0,
-  });
-
   if (!bill) return null;
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const [form, setForm] = useState({
+    wBefore: bill.wBefore ?? 0,
+    wAfter: bill.wAfter ?? 0,
+    eBefore: bill.eBefore ?? 0,
+    eAfter: bill.eAfter ?? 0,
+    status: bill.status ?? 0,
+  });
+
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (form.wAfter < form.wBefore || form.eAfter < form.eBefore) {
@@ -32,95 +33,93 @@ export default function AllBillsEditDialog({ bill, onSave, onClose }: Props) {
   };
 
   return (
-    <div className="modal show d-block" tabIndex={-1}>
-      <div className="modal-dialog modal-dialog-centered" style={{ maxWidth: "600px" }}>
+    <div
+      className="modal show d-block"
+      style={{ backgroundColor: "#00000080" }}
+    >
+      <div
+        className="modal-dialog modal-dialog-centered"
+        style={{ maxWidth: 600 }}
+      >
         <div className="modal-content shadow-lg rounded-4 border-0">
           {/* Header */}
           <div
-            className="modal-header text-white text-center px-4"
+            className="modal-header text-white"
             style={{
               background: "linear-gradient(135deg, #4facfe, #00f2fe)",
               borderTopLeftRadius: "1rem",
               borderTopRightRadius: "1rem",
             }}
           >
-            <h5 className="modal-title fw-bold text-center">
+            <h5 className="modal-title fw-bold">
               แก้ไขบิลห้อง {bill.room.number}
             </h5>
-            <button type="button" className="btn-close btn-close-white" onClick={onClose}></button>
+            <button
+              className="btn-close btn-close-white"
+              onClick={onClose}
+            ></button>
           </div>
 
-          {/* Body */}
-          <form onSubmit={handleSubmit}>
+          {/* Form */}
+          <form onSubmit={submit}>
             <div className="modal-body p-4">
-              <div className="row g-3">
-                {/* หน่วยน้ำ */}
-                <div className="col-12 text-center">
-                  <label className="form-label fw-semibold">หน่วยน้ำก่อน</label>
-                  <input
-                    type="number"
-                    className="form-control text-center"
-                    value={form.wBefore}
-                    onChange={(e) =>
-                      setForm({ ...form, wBefore: Number(e.target.value) })
-                    }
-                    required
-                  />
-                </div>
-                <div className="col-12 text-center">
-                  <label className="form-label fw-semibold">หน่วยน้ำหลัง</label>
-                  <input
-                    type="number"
-                    className="form-control text-center"
-                    value={form.wAfter}
-                    onChange={(e) =>
-                      setForm({ ...form, wAfter: Number(e.target.value) })
-                    }
-                    required
-                  />
-                </div>
+              {/* น้ำ */}
+              <label className="form-label fw-semibold">หน่วยน้ำก่อน</label>
+              <input
+                type="number"
+                className="form-control text-center"
+                value={form.wBefore}
+                onChange={(e) =>
+                  setForm({ ...form, wBefore: Number(e.target.value) })
+                }
+              />
 
-                {/* หน่วยไฟ */}
-                <div className="col-12 text-center">
-                  <label className="form-label fw-semibold">หน่วยไฟก่อน</label>
-                  <input
-                    type="number"
-                    className="form-control text-center"
-                    value={form.eBefore}
-                    onChange={(e) =>
-                      setForm({ ...form, eBefore: Number(e.target.value) })
-                    }
-                    required
-                  />
-                </div>
-                <div className="col-12 text-center">
-                  <label className="form-label fw-semibold">หน่วยไฟหลัง</label>
-                  <input
-                    type="number"
-                    className="form-control text-center"
-                    value={form.eAfter}
-                    onChange={(e) =>
-                      setForm({ ...form, eAfter: Number(e.target.value) })
-                    }
-                    required
-                  />
-                </div>
+              <label className="form-label fw-semibold mt-2">
+                หน่วยน้ำหลัง
+              </label>
+              <input
+                type="number"
+                className="form-control text-center"
+                value={form.wAfter}
+                onChange={(e) =>
+                  setForm({ ...form, wAfter: Number(e.target.value) })
+                }
+              />
 
-                {/* สถานะ */}
-                <div className="col-12 text-center">
-                  <label className="form-label fw-semibold">สถานะ</label>
-                  <select
-                    className="form-select text-center"
-                    value={form.status}
-                    onChange={(e) =>
-                      setForm({ ...form, status: Number(e.target.value) })
-                    }
-                  >
-                    <option value={0}>ยังไม่ชำระ</option>
-                    <option value={1}>ชำระแล้ว</option>
-                  </select>
-                </div>
-              </div>
+              {/* ไฟ */}
+              <label className="form-label fw-semibold mt-3">หน่วยไฟก่อน</label>
+              <input
+                type="number"
+                className="form-control text-center"
+                value={form.eBefore}
+                onChange={(e) =>
+                  setForm({ ...form, eBefore: Number(e.target.value) })
+                }
+              />
+
+              <label className="form-label fw-semibold mt-2">หน่วยไฟหลัง</label>
+              <input
+                type="number"
+                className="form-control text-center"
+                value={form.eAfter}
+                onChange={(e) =>
+                  setForm({ ...form, eAfter: Number(e.target.value) })
+                }
+              />
+
+              {/* สถานะบิล */}
+              <label className="form-label fw-semibold mt-3">สถานะบิล</label>
+              <select
+                className="form-select text-center"
+                value={form.status}
+                onChange={(e) =>
+                  setForm({ ...form, status: Number(e.target.value) })
+                }
+              >
+                <option value={0}>ยังไม่ชำระ</option>
+                <option value={2}>รอตรวจสอบ</option>
+                <option value={1}>ชำระแล้ว</option>
+              </select>
             </div>
 
             {/* Footer */}

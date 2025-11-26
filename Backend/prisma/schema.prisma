@@ -104,11 +104,11 @@ model Bill {
   eUnits       Int
   ePrice       Int      @default(7)
   electricCost Int      @default(0)
-  slipUrl      String   @default("") // ✅ เพิ่ม default ค่าว่าง
+  slipUrl      String? // ✅ เพิ่ม default ค่าว่าง
   fine         Int      @default(0)
   overdueDays  Int      @default(0)
   total        Int      @default(0)
-  status       Int      @default(0)
+  status       Int       @default(0) // 0 ค้างชำระ, 1 ชำระแล้ว, 2 รอตรวจสอบ
   dueDate      DateTime
 
   createdAt DateTime @default(now())

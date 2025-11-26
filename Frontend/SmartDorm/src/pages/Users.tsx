@@ -233,7 +233,7 @@ export default function Users() {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={4} className="text-center text-muted py-4">
+                    <td colSpan={3} className="text-center text-muted py-4">
                       ไม่พบข้อมูลลูกค้า
                     </td>
                   </tr>

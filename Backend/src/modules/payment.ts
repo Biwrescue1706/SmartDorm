@@ -6,10 +6,11 @@ import { createClient } from "@supabase/supabase-js";
 import { verifyLineToken } from "../utils/verifyLineToken";
 import { sendFlexMessage } from "../utils/lineFlex";
 
+
 const paymentRouter = Router();
 const upload = multer({ storage: multer.memoryStorage() });
 
-// ⚙️ ตั้งค่า Supabase
+// ⚙️ Supabase
 const supabase = createClient(
   process.env.SUPABASE_URL!,
   process.env.SUPABASE_KEY!
@@ -26,7 +27,11 @@ const formatThaiDate = (d?: string | Date | null) =>
       })
     : "-";
 
-// 💸 สร้าง Payment + ส่งสลิป
+/* ========================================================
+   📌 CREATE PAYMENT + UPLOAD SLIP
+   โครงสร้างสลิปใหม่:
+   Payment-slips/Payment-slip_<billId>_<bill.createdAt>
+======================================================== */
 paymentRouter.post("/create", upload.single("slip"), async (req, res) => {
   try {
     const { billId, accessToken } = req.body;
@@ -36,28 +41,33 @@ paymentRouter.post("/create", upload.single("slip"), async (req, res) => {
     if (!accessToken) throw new Error("ไม่มี accessToken จาก LINE LIFF");
     if (!slip) throw new Error("ต้องแนบสลิปการชำระเงิน");
 
-    //  ตรวจสอบ token จาก LINE
+    // 1) ตรวจสอบ token LINE
     const { userId } = await verifyLineToken(accessToken);
 
-    //  ดึงข้อมูลลูกค้า
+    // 2) หา customer
     const customer = await prisma.customer.findFirst({ where: { userId } });
     if (!customer) throw new Error("ไม่พบข้อมูลลูกค้าในระบบ");
 
-    //  ดึงข้อมูลบิล
+    // 3) ดึงข้อมูลบิล
     const bill = await prisma.bill.findUnique({
       where: { billId },
-      include: {
-        room: true,
-        booking: true,
-        customer: true,
-      },
+      include: { room: true, booking: true, customer: true },
     });
 
     if (!bill) throw new Error("ไม่พบบิลนี้");
     if (bill.status === 1) throw new Error("บิลนี้ชำระแล้ว");
+    if (bill.status === 2 ) throw new Error("บิลนี้รอการตรวจสอบสลิปอยู่");
 
-    //  อัปโหลดสลิปขึ้น Supabase
-    const filename = `slip_${Date.now()}_${slip.originalname}`;
+    // --------------------------
+    // 4) ตั้งชื่อไฟล์ใหม่ตามรูปแบบที่ต้องการ
+    // --------------------------
+    const created = new Date(bill.createdAt)
+      .toISOString()
+      .replace(/[:.]/g, "-");
+
+    const filename = `Payment-slips/Payment-slip_${bill.billId}_${created}`;
+
+    // 5) อัปโหลด Slip ไป Supabase
     const { error } = await supabase.storage
       .from(process.env.SUPABASE_BUCKET!)
       .upload(filename, slip.buffer, {
@@ -65,7 +75,7 @@ paymentRouter.post("/create", upload.single("slip"), async (req, res) => {
         upsert: true,
       });
 
-    if (error) throw new Error("อัปโหลดสลิปไม่สำเร็จ");
+    if (error) throw new Error("อัปโหลดสลิปไม่สำเร็จ: " + error.message);
 
     const { data } = supabase.storage
       .from(process.env.SUPABASE_BUCKET!)
@@ -73,7 +83,7 @@ paymentRouter.post("/create", upload.single("slip"), async (req, res) => {
 
     const slipUrl = data.publicUrl;
 
-    //  บันทึกลงฐานข้อมูล (transaction)
+    // 6) บันทึกลง DB (Transaction)
     const [payment, updatedBill] = await prisma.$transaction([
       prisma.payment.create({
         data: {
@@ -84,14 +94,15 @@ paymentRouter.post("/create", upload.single("slip"), async (req, res) => {
       }),
       prisma.bill.update({
         where: { billId },
-        data: { status: 1 },
+        data: { status: 2 },
       }),
     ]);
 
     const customerUrl = `https://smartdorm-detail.biwbong.shop/bill/${bill.billId}`;
-    const adminUrl = `https://smartdorm-admin.biwbong.shop`;
 
-    // 🔹 แจ้งลูกค้า
+    // ============================
+    // 🔔 LINE Notify ผู้เช่า
+    // ============================
     try {
       if (bill.customer?.userId) {
         await sendFlexMessage(
@@ -103,7 +114,7 @@ paymentRouter.post("/create", upload.single("slip"), async (req, res) => {
             { label: "🏠 ห้อง", value: bill.room?.number ?? "-" },
             { label: "ยอดชำระ", value: `${bill.total.toLocaleString()} บาท` },
             { label: "วันที่ชำระ", value: formatThaiDate(payment.createdAt) },
-            { label: "สถานะ", value: " ชำระเงินแล้ว", color: "#27ae60" },
+            { label: "สถานะ", value: "ชำระเงินแล้ว", color: "#27ae60" },
           ],
           [
             {
@@ -114,12 +125,13 @@ paymentRouter.post("/create", upload.single("slip"), async (req, res) => {
           ]
         );
       }
-      
     } catch (err: any) {
       console.warn("⚠️ แจ้งเตือนลูกค้าไม่สำเร็จ:", err.message);
     }
 
-    // 🔹 แจ้งแอดมิน
+    // ============================
+    // 🔔 LINE Notify แอดมิน
+    // ============================
     try {
       if (process.env.ADMIN_LINE_ID) {
         await sendFlexMessage(
@@ -129,28 +141,27 @@ paymentRouter.post("/create", upload.single("slip"), async (req, res) => {
             { label: "รหัสบิล", value: bill.billId },
             { label: "ชื่อผู้เช่า", value: bill.booking?.fullName ?? "-" },
             { label: "🏠 ห้อง", value: bill.room?.number ?? "-" },
-            { label: "เบอร์โทร", value: bill.booking?.cphone ?? "-" },
             { label: "ยอดชำระ", value: `${bill.total.toLocaleString()} บาท` },
+            { label: "เบอร์โทร", value: bill.booking?.cphone ?? "-" },
             { label: "วันที่ชำระ", value: formatThaiDate(payment.createdAt) },
           ],
           [
-            { label: "ดูสลิป", url: `${bill.slipUrl}`, style: "secondary" },
             {
               label: "เปิดในระบบ Admin",
-              url: `https://smartdorm-admin.biwbong.shop`,
-              style: "secondary",
+              url: "https://smartdorm-admin.biwbong.shop",
+              style: "primary",
             },
           ]
         );
       }
-       console.log(
-      `[${logTime()}] ส่งแจ้งเตือนไลน์  รหัสบิล ${bill.billId} สำเร็จแล้ว`
-    );
+
+      console.log(
+        `[${logTime()}] แจ้งเตือนการชำระเงิน รหัสบิล ${bill.billId} สำเร็จ`
+      );
     } catch (err: any) {
       console.warn("⚠️ แจ้งเตือนแอดมินไม่สำเร็จ:", err.message);
     }
 
-    //  ส่ง Response กลับ
     res.json({
       message: "ส่งสลิปสำเร็จ",
       payment,

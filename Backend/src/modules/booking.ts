@@ -19,11 +19,16 @@ export const deleteSlip = async (url: string) => {
   const bucket = process.env.SUPABASE_BUCKET!;
   if (!url || !bucket) return;
 
-  const path = url.split(`/${bucket}/`)[1];
-  if (path) {
-    const { error } = await supabase.storage.from(bucket).remove([path]);
-    if (error) console.error("❌ Delete Slip Error:", error.message);
-  }
+  // URL ตัวจริง: /object/public/<bucket>/<path>
+  const marker = `/object/public/${bucket}/`;
+  const idx = url.indexOf(marker);
+  if (idx === -1) return;
+
+  const path = url.substring(idx + marker.length);
+
+  const { error } = await supabase.storage.from(bucket).remove([path]);
+  if (error) console.error("❌ Delete Slip Error:", error.message);
+  else console.log("🗑️ ลบสลิป :", path , "นี้แล้ว");
 };
 
 const upload = multer({ storage: multer.memoryStorage() });

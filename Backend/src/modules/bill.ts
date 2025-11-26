@@ -3,6 +3,7 @@ import { Router } from "express";
 import prisma from "../prisma";
 import { authMiddleware } from "../middleware/authMiddleware";
 import { sendFlexMessage } from "../utils/lineFlex";
+import { createClient } from "@supabase/supabase-js";
 
 // ⚙️ Helper
 const formatThaiDate = (dateInput?: string | Date | null) => {
@@ -13,6 +14,26 @@ const formatThaiDate = (dateInput?: string | Date | null) => {
     month: "long",
     day: "numeric",
   });
+};
+
+const supabase = createClient(
+  process.env.SUPABASE_URL!,
+  process.env.SUPABASE_KEY!
+);
+
+const deleteSlip = async (url: string) => {
+  const bucket = process.env.SUPABASE_BUCKET!;
+  if (!url || !bucket) return;
+
+  const marker = `/object/public/${bucket}/`;
+  const idx = url.indexOf(marker);
+  if (idx === -1) return;
+
+  const path = url.substring(idx + marker.length);
+
+  const { error } = await supabase.storage.from(bucket).remove([path]);
+  if (error) console.error("❌ Delete Slip Error:", error.message);
+  else console.log("🗑️ ลบสลิปแล้ว:", path);
 };
 
 // 🌐 Router
@@ -257,6 +278,53 @@ billRouter.get("/:billId", async (req, res) => {
   }
 });
 
+// อนุมัติบิล (Admin)
+billRouter.put("/:billId/approve", authMiddleware, async (req, res) => {
+  try {
+    const bill = await prisma.bill.findUnique({
+      where: { billId: req.params.billId },
+      select: { status: true },
+    });
+
+    if (!bill) throw new Error("ไม่พบบิลในระบบ");
+    if (bill.status === 1) throw new Error("บิลนี้ชำระแล้ว ไม่สามารถอนุมัติซ้ำได้");
+    if (bill.status === 0) throw new Error("บิลนี้ถูกปฏิเสธแล้ว กรุณาชำระบิลใหม่");
+
+    const updated = await prisma.bill.update({
+      where: { billId: req.params.billId },
+      data: { status: 1 },
+    });
+
+    res.json({ message: "อนุมัติบิลสำเร็จ", updated });
+  } catch (err: any) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+// ปฏิเสธบิล (Admin)
+billRouter.put("/:billId/reject", authMiddleware, async (req, res) => {
+  try {
+    const bill = await prisma.bill.findUnique({
+      where: { billId: req.params.billId },
+      select: { status: true },
+    });
+
+    if (!bill) throw new Error("ไม่พบบิลในระบบ");
+    if (bill.status === 1) throw new Error("บิลนี้ชำระแล้ว ไม่สามารถปฏิเสธได้");
+
+    // กลับไป 0
+    const updated = await prisma.bill.update({
+      where: { billId: req.params.billId },
+      data: { status: 0 },
+    });
+
+    res.json({ message: "ปฏิเสธบิลสำเร็จ (กลับไปสถานะ 0)", updated });
+  } catch (err: any) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+// แก้ไขบิล
 billRouter.put("/:billId", authMiddleware, async (req, res) => {
   try {
     const updated = await prisma.bill.update({
@@ -275,13 +343,39 @@ billRouter.delete("/:billId", authMiddleware, async (req, res) => {
   try {
     const { billId } = req.params;
 
-    // ลบ payment ก่อน (ถ้ามี)
+    // ตรวจสอบบิลก่อนลบ
+    const bill = await prisma.bill.findUnique({
+      where: { billId },
+      select: { status: true }, // 0 = ยังไม่ชำระ, 1 = ชำระแล้ว
+    });
+
+    if (!bill) throw new Error("ไม่พบบิลนี้ในระบบ");
+
+    // ❌ ถ้าชำระแล้ว ห้ามลบ
+    if (bill.status === 1) {
+      return res
+        .status(400)
+        .json({ error: "บิลนี้ถูกชำระแล้ว ไม่สามารถลบได้" });
+    }
+
+    // 1) ดึง payment เพื่อรู้ slipUrl
+    const payments = await prisma.payment.findMany({
+      where: { billId },
+      select: { slipUrl: true },
+    });
+
+    // 2) ลบไฟล์ใน Supabase ทุก payment ที่มี slip
+    for (const pm of payments) {
+      if (pm.slipUrl) await deleteSlip(pm.slipUrl);
+    }
+
+    // 3) ลบ payment
     await prisma.payment.deleteMany({ where: { billId } });
 
-   // 🗑️ ลบบิล
+    // 4) ลบบิล
     await prisma.bill.delete({ where: { billId } });
 
-    res.json({ message: "ลบบิลและข้อมูลการชำระสำเร็จ" });
+    res.json({ message: "ลบบิล + ลบสลิป Supabase สำเร็จ" });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }

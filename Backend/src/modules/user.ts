@@ -1,10 +1,8 @@
 // src/modules/user.ts
 
-
 // 🚚 Imports
-
 import { Router } from "express";
-import prisma from "../prisma";
+import { prisma } from "../prisma";
 import { verifyLineToken } from "../utils/verifyLineToken";
 import { deleteSlip } from "../modules/booking";
 

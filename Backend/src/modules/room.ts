@@ -2,7 +2,7 @@
 
 // 🚚 Imports
 import { Router } from "express";
-import prisma from "../prisma";
+import { prisma } from "../prisma";
 import { authMiddleware, roleMiddleware } from "../middleware/authMiddleware";
 
 // 🌐 Router

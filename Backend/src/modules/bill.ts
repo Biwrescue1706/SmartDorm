@@ -1,6 +1,6 @@
 // src/modules/Bills/bill.ts
 import { Router } from "express";
-import prisma from "../prisma";
+import { prisma } from "../prisma";
 import { authMiddleware } from "../middleware/authMiddleware";
 import { sendFlexMessage } from "../utils/lineFlex";
 import { createClient } from "@supabase/supabase-js";

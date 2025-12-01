@@ -1,7 +1,7 @@
 // src/modules/payment.ts
 import { Router } from "express";
 import multer from "multer";
-import prisma from "../prisma";
+import { prisma } from "../prisma";
 import { createClient } from "@supabase/supabase-js";
 import { verifyLineToken } from "../utils/verifyLineToken";
 import { sendFlexMessage } from "../utils/lineFlex";

@@ -1,13 +1,12 @@
 // src/modules/booking.ts
 import { Router } from "express";
 import multer from "multer";
-import { prisma } from "../prisma";
+import prisma  from "../prisma";
 import { createClient } from "@supabase/supabase-js";
 import { verifyLineToken } from "../utils/verifyLineToken";
 import { sendFlexMessage } from "../utils/lineFlex";
 
 // Supabase
-
 const supabase = createClient(
   process.env.SUPABASE_URL!,
   process.env.SUPABASE_KEY!
@@ -114,20 +113,19 @@ bookingRouter.post("/create", async (req, res) => {
     const { userId, displayName } = await verifyLineToken(accessToken);
     if (!userId) throw new Error("Token LINE ไม่ถูกต้อง");
 
-    // Create booking first (NO SLIP)
+    // ✅ ทุกครั้งที่จอง ให้สร้าง customer ใหม่เสมอ (ไม่ใช้ findFirst แล้ว)
     const booking = await prisma.$transaction(async (tx) => {
-      let customer = await tx.customer.findFirst({ where: { userId } });
-
-      if (!customer) {
-        customer = await tx.customer.create({
-          data: { userId, userName: displayName ?? "-" },
-        });
-      }
+      const customer = await tx.customer.create({
+        data: {
+          userId,                  // ยังผูกกับ LINE userId ได้
+          userName: displayName ?? "-",
+        },
+      });
 
       const newBooking = await tx.booking.create({
         data: {
           roomId,
-          customerId: customer.customerId,
+          customerId: customer.customerId, // ใช้ customer ที่เพิ่งสร้างใหม่ทุกครั้ง
           ctitle: ctitle ?? "",
           cname: cname ?? "",
           csurname: csurname ?? "",
@@ -152,9 +150,9 @@ bookingRouter.post("/create", async (req, res) => {
       return newBooking;
     });
 
-     const detailUrl = `https://smartdorm-detail.biwbong.shop/booking/${booking.bookingId}`;
+    const detailUrl = `https://smartdorm-detail.biwbong.shop/booking/${booking.bookingId}`;
 
-    // Send to customer
+    // ===== ส่ง LINE เหมือนเดิมด้านล่าง ไม่ต้องแก้ =====
     try {
       await sendFlexMessage(
         booking.customer?.userId ?? "",
@@ -174,7 +172,6 @@ bookingRouter.post("/create", async (req, res) => {
       console.error("❌ LINE Error (send to customer):", err);
     }
 
-    // Send to admin
     const adminId = process.env.ADMIN_LINE_ID;
 
     if (adminId) {
@@ -208,6 +205,7 @@ bookingRouter.post("/create", async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
 
 // 📌 UPLOAD SLIP AFTER BOOKING CREATED
 bookingRouter.post("/:bookingId/uploadSlip", upload.single("slip"), async (req, res) => {

@@ -3,8 +3,7 @@ import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
 import cookieParser from "cookie-parser";
-import { prisma } from "./prisma";
-
+import prisma from "./prisma";
 
 dotenv.config();
 
@@ -76,7 +75,7 @@ app.use("/user", userRouter);
 app.use("/qr", qrRouter);
 
 // ---------------- Health Check ----------------
-app.get("/", (_req, res) => res.send("🚀 SmartDorm Backend is running"));
+app.get("/", (_req, res) => res.send("🚀 SmartDorm Backend is running \nSmartDorm Backend กำลังทำงาน"));
 app.get("/health", (_req, res) => {
   res.status(200).json({ status: "ok", uptime: process.uptime() });
 });
@@ -92,17 +91,16 @@ const PORT = process.env.PORT || 3000;
 
 async function startServer() {
   try {
-    console.log("🟡 Starting Prisma connection...");
+    console.log("🟡 กำลังเริ่มการเชื่อมต่อ Prisma...");
     await prisma.$connect();
-    console.log("✅ Connected to MongoDB via Prisma");
+    console.log("✅ เชื่อมต่อกับ MongoDB ผ่าน Prisma สำเร็จ");
 
     app.listen(PORT, () => {
       const env = process.env.NODE_ENV || "development";
-      console.log(`🚀 Server running in ${env} mode`);
-      console.log(`📡 Listening on port ${PORT}`);
+      console.log(`🚀 เซิร์ฟเวอร์กำลังทำงานในโหมด ${env} `);
     });
   } catch (err) {
-    console.error("❌ Failed to start server:", err);
+    console.error("❌ ไม่สามารถเริ่มเซิร์ฟเวอร์ได้ : ", err);
     process.exit(1);
   }
 }

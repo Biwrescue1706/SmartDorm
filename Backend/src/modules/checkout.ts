@@ -1,6 +1,6 @@
 // src/modules/checkout.ts
 import { Router } from "express";
-import { prisma } from "../prisma";
+import prisma from "../prisma";
 import { authMiddleware } from "../middleware/authMiddleware";
 import { verifyLineToken } from "../utils/verifyLineToken";
 import { sendFlexMessage } from "../utils/lineFlex";

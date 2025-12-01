@@ -10,6 +10,6 @@
     "types": ["node", "express"],
     "typeRoots": ["./src/types", "./node_modules/@types"]
   },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist", "prisma.config.ts"]
+  "include": ["src/**/*", "prisma.config.js"],
+  "exclude": ["node_modules", "dist"]
 }

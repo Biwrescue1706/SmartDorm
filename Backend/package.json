@@ -2,7 +2,7 @@
   "name": "backend",
   "version": "1.0.0",
   "description": "SmartDorm backend service for dormitory management system",
-  "main": "dist/src/index.js",
+  "main": "dist/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "prisma:generate": "prisma generate",

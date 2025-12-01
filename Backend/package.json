@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "nodemon src/index.ts",
     "build": "tsc",
-    "start": "node dist/index.js",
+    "start": "prisma generate && node dist/index.js",
     "prisma:generate": "prisma generate",
     "prisma:push": "prisma db push"
   },
@@ -21,7 +21,7 @@
     "url": "https://github.com/Biwrescue1706/SmartDorm/issues"
   },
   "homepage": "https://github.com/Biwrescue1706/SmartDorm#readme",
-  "dependencies": {
+   "dependencies": {
     "@asteasolutions/zod-to-openapi": "^7.1.2",
     "@line/bot-sdk": "^10.2.0",
     "@prisma/client": "^6.19.0",
@@ -32,7 +32,6 @@
     "cors": "^2.8.5",
     "dotenv": "^17.2.2",
     "envalid": "^8.1.0",
-    "eslint": "^9.11.1",
     "express": "^5.1.0",
     "express-rate-limit": "^7.4.0",
     "helmet": "^8.1.0",
@@ -40,20 +39,16 @@
     "jsonwebtoken": "^9.0.2",
     "mongodb": "^6.19.0",
     "mongoose": "^8.18.1",
-    "morgan": "^1.10.0",
     "multer": "^2.0.2",
     "node-fetch": "^3.3.2",
     "nodemon": "^3.1.10",
     "object-hash": "^3.0.0",
     "pino": "^9.4.0",
-    "prettier": "^3.3.3",
     "prisma": "^6.19.0",
     "prisma-pagination": "^0.2.3",
     "qrcode": "^1.5.4",
     "redis": "^4.7.0",
-    "supertest": "^7.0.0",
     "swagger-ui-express": "^5.0.1",
-    "tsx": "^4.19.1",
     "typescript": "^5.9.2",
     "zod": "^3.23.8"
   },

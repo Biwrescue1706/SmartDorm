@@ -71,10 +71,12 @@ userRouter.post("/me", async (req, res) => {
 });
 
 // 💸 ดึงบิลที่ชำระแล้ว
+// 💸 ดึงบิลที่ชำระแล้ว (ส่งรูปแบบเดียวกับ unpaid)
 userRouter.post("/payments", async (req, res) => {
   try {
     const { accessToken } = req.body;
     const { userId } = await verifyLineToken(accessToken);
+
     const customer = await prisma.customer.findFirst({ where: { userId } });
     if (!customer) throw new Error("ไม่พบลูกค้า");
 
@@ -85,9 +87,11 @@ userRouter.post("/payments", async (req, res) => {
     });
 
     const formatted = bills.map((b) => ({
-      billCode: b.billId.slice(-6).toUpperCase(),
-      roomNumber: b.room.number,
+      billId: b.billId,          // 👈 จำเป็นมาก (frontend ใช้)
+      month: b.month,            // 👈 ใช้แสดงเดือน + sort
       total: b.total,
+      status: 1,                 // 👈 ทำให้ filter ถูกต้อง
+      room: { number: b.room.number },   // 👈 ให้เหมือน unpaid
       slipUrl: b.payment?.slipUrl,
       paidAt: b.payment?.createdAt,
     }));

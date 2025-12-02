@@ -75,7 +75,7 @@ app.use("/user", userRouter);
 app.use("/qr", qrRouter);
 
 // ---------------- Health Check ----------------
-app.get("/", (_req, res) => res.send("🚀 SmartDorm Backend is running \nSmartDorm Backend กำลังทำงาน"));
+app.get("/", (_req, res) => res.send("🚀 SmartDorm Backend กำลังทำงาน"));
 app.get("/health", (_req, res) => {
   res.status(200).json({ status: "ok", uptime: process.uptime() });
 });

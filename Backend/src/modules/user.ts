@@ -71,27 +71,28 @@ userRouter.post("/me", async (req, res) => {
 });
 
 // 💸 ดึงบิลที่ชำระแล้ว
-// 💸 ดึงบิลที่ชำระแล้ว (ส่งรูปแบบเดียวกับ unpaid)
 userRouter.post("/payments", async (req, res) => {
   try {
     const { accessToken } = req.body;
     const { userId } = await verifyLineToken(accessToken);
 
-    const customer = await prisma.customer.findFirst({ where: { userId } });
-    if (!customer) throw new Error("ไม่พบลูกค้า");
-
     const bills = await prisma.bill.findMany({
-      where: { customerId: customer.customerId, status: 1 },
+      where: {
+        status: 1,
+        customer: {
+          userId: userId,
+        },
+      },
       orderBy: { createdAt: "desc" },
       include: { room: true, payment: true },
     });
 
     const formatted = bills.map((b) => ({
-      billId: b.billId,          // 👈 จำเป็นมาก (frontend ใช้)
-      month: b.month,            // 👈 ใช้แสดงเดือน + sort
+      billId: b.billId,
+      month: b.month,
       total: b.total,
-      status: 1,                 // 👈 ทำให้ filter ถูกต้อง
-      room: { number: b.room.number },   // 👈 ให้เหมือน unpaid
+      status: 1,
+      room: { number: b.room.number },
       slipUrl: b.payment?.slipUrl,
       paidAt: b.payment?.createdAt,
     }));
@@ -111,11 +112,14 @@ userRouter.post("/bills/unpaid", async (req, res) => {
   try {
     const { accessToken } = req.body;
     const { userId } = await verifyLineToken(accessToken);
-    const customer = await prisma.customer.findFirst({ where: { userId } });
-    if (!customer) throw new Error("ไม่พบลูกค้า");
 
     const bills = await prisma.bill.findMany({
-      where: { customerId: customer.customerId, status: 0 },
+      where: {
+        status: 0,
+        customer: {
+          userId: userId,
+        },
+      },
       orderBy: { createdAt: "desc" },
       include: { room: true },
     });

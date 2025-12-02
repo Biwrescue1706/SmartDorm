@@ -21,7 +21,7 @@ export default function PaymentSearch() {
     try {
       const res = await axios.get(`${API_BASE}/bill/${billId.trim()}`);
       if (res.data) {
-        navigate(`/payment/${billId.trim()}`);
+        navigate(`/bill/${billId.trim()}`);
       } else {
         Swal.fire("ไม่พบข้อมูลบิล", "กรุณาตรวจสอบรหัสอีกครั้ง", "error");
       }

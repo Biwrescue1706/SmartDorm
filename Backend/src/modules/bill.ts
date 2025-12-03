@@ -1,6 +1,6 @@
 // src/modules/Bills/bill.ts
 import { Router } from "express";
-import prisma  from "../prisma";
+import prisma from "../prisma";
 import { authMiddleware } from "../middleware/authMiddleware";
 import { sendFlexMessage } from "../utils/lineFlex";
 import { createClient } from "@supabase/supabase-js";
@@ -98,10 +98,11 @@ billRouter.post("/create", authMiddleware, async (req, res) => {
     const fine = 0;
     const total = rent + service + waterCost + electricCost + fine;
 
-    const createdAt = new Date();
-    const dueDate = new Date(createdAt);
-    dueDate.setMonth(dueDate.getMonth() + 1);
-    dueDate.setDate(5);
+    // 🔁 กำหนดครบกำหนดชำระ = วันที่ 5 ของ "เดือนถัดไป" จากเดือนที่เลือก
+    const dueDate = new Date(billMonth);
+    dueDate.setMonth(dueDate.getMonth() + 1); // เดือนถัดไป
+    dueDate.setDate(5);                        // บังคับวันที่ 5
+    dueDate.setHours(0, 0, 0, 0);              // เคลียร์เวลาให้เป็นเที่ยงคืน
 
     // 💾 บันทึกลงฐานข้อมูล
     const bill = await prisma.bill.create({
@@ -330,7 +331,7 @@ billRouter.put("/:billId", authMiddleware, async (req, res) => {
     const updated = await prisma.bill.update({
       where: { billId: req.params.billId },
       data: { ...req.body, updatedBy: req.admin!.adminId },
-      include: { room: true, booking: true, customer: true, payment: true }, // ✅ เพิ่ม
+      include: { room: true, booking: true, customer: true, payment: true },
     });
     res.json({ message: "อัปเดตบิลสำเร็จ", updated });
   } catch (err: any) {
@@ -338,7 +339,7 @@ billRouter.put("/:billId", authMiddleware, async (req, res) => {
   }
 });
 
-//ลบ
+// ลบบิล
 billRouter.delete("/:billId", authMiddleware, async (req, res) => {
   try {
     const { billId } = req.params;

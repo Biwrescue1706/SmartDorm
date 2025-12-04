@@ -20,11 +20,6 @@ export default function BookingNav() {
         <div style={{ width: "70px" }} />
 
         {/* โลโก้ + ชื่อระบบ */}
-        <div
-          className="d-flex flex-column align-items-center"
-          style={{ cursor: "pointer" }}
-          onClick={() => navigate("/")}
-        >
           <span
             className="fw-bold text-white"
             style={{ fontSize: "1.2rem", lineHeight: "1" }}
@@ -37,7 +32,6 @@ export default function BookingNav() {
           >
             ระบบจัดการหอพัก
           </small>
-        </div>
 
         {/* โลโก้ฝั่งขวา */}
         <img

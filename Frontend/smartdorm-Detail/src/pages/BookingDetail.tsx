@@ -37,7 +37,7 @@ export default function BookingDetail() {
       {/* Navbar ใหม่ */}
       <BookingNav />
 
-      <div className="container my-4 text-center" style={{ paddingTop: "100px" }}>
+      <div className="container my-4 text-center mt-3">
         {/* Watermark เมื่อเช็คอินแล้ว */}
         {booking.checkinStatus === 1 && (
           <div

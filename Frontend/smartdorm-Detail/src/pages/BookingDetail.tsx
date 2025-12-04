@@ -36,7 +36,7 @@ export default function BookingDetail() {
     <>
       <BookingNav />
 
-      <div className="container text-center mt-4 mb-4">
+      <div className="container text-center mt-5 mb-4">
         {/* Watermark เมื่อเช็คอินแล้ว */}
         {booking.checkinStatus === 1 && (
           <div
@@ -59,7 +59,7 @@ export default function BookingDetail() {
 
         {/* Card รายละเอียด */}
         <div
-          className="card shadow-lg border-0 rounded-4 mx-auto mt-4"
+          className="card shadow-lg border-0 rounded-4 mx-auto mt-6"
           style={{ maxWidth: "500px" }}
         >
           <div className="card-body p-3 text-center">

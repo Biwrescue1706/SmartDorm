@@ -1,8 +1,6 @@
-import { useNavigate } from "react-router-dom";
+// Booking/src/components/BookingNav.tsx
 
 export default function BookingNav() {
-  const navigate = useNavigate();
-
   return (
     <nav
       className="navbar navbar-expand-lg shadow-sm px-3 py-2"
@@ -20,6 +18,7 @@ export default function BookingNav() {
         <div style={{ width: "70px" }} />
 
         {/* โลโก้ + ชื่อระบบ */}
+        <div className="d-flex flex-column align-items-center">
           <span
             className="fw-bold text-white"
             style={{ fontSize: "1.2rem", lineHeight: "1" }}
@@ -32,6 +31,7 @@ export default function BookingNav() {
           >
             ระบบจัดการหอพัก
           </small>
+        </div>
 
         {/* โลโก้ฝั่งขวา */}
         <img

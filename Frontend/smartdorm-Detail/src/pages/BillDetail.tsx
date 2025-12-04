@@ -157,14 +157,20 @@ export default function BillDetail() {
 <td>-</td>
 <td>{bill.service.toLocaleString()}</td>
 </tr>
-              <tr><td>ค่าปรับ</td><td>-</td><td>{bill.fine.toLocaleString()}</td></tr>
-            </tbody>
-            <tfoot className="table-success fw-bold">
               <tr>
-                <td colSpan={2} className="text-end">รวมทั้งหมด</td>
-                <td className="text-primary fs-5">{bill.total.toLocaleString()}</td>
+<td>ค่าปรับ</td>
+<td>-</td>
+<td>-</td>
+<td>-</td>
+<td>{bill.fine.toLocaleString()}</td>
+</tr>
+
+<tr>
+                <td colSpan={4} className="text-end">รวมทั้งหมด</td>
+                <td  className="text-primary fs-5">{bill.total.toLocaleString()}</td>
               </tr>
-            </tfoot>
+
+            </tbody>
           </table>
 
           {/* PAYMENT BUTTON */}

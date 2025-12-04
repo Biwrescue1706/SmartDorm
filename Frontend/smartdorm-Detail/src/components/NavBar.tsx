@@ -5,31 +5,68 @@ export default function NavBar() {
 
   return (
     <nav
-      className="navbar navbar-expand-lg shadow-sm px-2 py-2"
+      className="navbar navbar-expand-lg shadow-sm px-3 py-2"
       style={{
-        background: "linear-gradient(90deg, #0d9488 0%, #0284c7 100%)", // สีเขียวอมฟ้า
+        background: "linear-gradient(90deg, #11998e 0%, #38ef7d 100%)",
+        position: "fixed",
+        top: 0,
+        width: "100%",
+        zIndex: 999,
       }}
     >
       <div className="container-fluid d-flex align-items-center justify-content-between">
+
         {/* ปุ่มกลับ */}
         <button
           className="btn btn-light btn-sm fw-bold rounded-pill px-3 py-1"
           onClick={() => navigate(-1)}
+          style={{
+            transition: "0.25s",
+            boxShadow: "0 2px 6px rgba(0,0,0,0.15)",
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = "#e2e8f0";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = "white";
+          }}
         >
           ← กลับ
         </button>
 
-        {/* ชื่อระบบตรงกลาง */}
-        <span
-          className="fw-bold text-white"
-          style={{ fontSize: "1.2rem", cursor: "pointer" }}
+        {/* โลโก้ + ชื่อระบบ */}
+        <div
+          className="d-flex flex-column align-items-center"
+          style={{ cursor: "pointer" }}
           onClick={() => navigate("/")}
         >
-          🏫 SmartDorm 🎉
-        </span>
+          <span
+            className="fw-bold text-white"
+            style={{ fontSize: "1.2rem", lineHeight: "1" }}
+          >
+            🏫 SmartDorm
+          </span>
+          <small
+            className="text-white-50"
+            style={{ fontSize: "0.72rem", marginTop: "-3px" }}
+          >
+            ระบบจัดการหอพัก
+          </small>
+        </div>
 
-        {/* ด้านขวาเว้นว่างเพื่อบาลานซ์ layout */}
-        <div style={{ width: "70px" }} />
+        {/* โลโก้หรือช่องว่างฝั่งขวา */}
+        <img
+          src="https://smartdorm-admin.biwbong.shop/assets/SmartDorm.png"
+          alt="SmartDorm Logo"
+          style={{
+            width: "34px",
+            height: "34px",
+            borderRadius: "8px",
+            background: "white",
+            padding: "2px",
+            boxShadow: "0 2px 6px rgba(0,0,0,0.2)",
+          }}
+        />
       </div>
     </nav>
   );

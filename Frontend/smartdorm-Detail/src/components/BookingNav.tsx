@@ -14,11 +14,14 @@ export default function BookingNav() {
     >
       <div className="container-fluid d-flex align-items-center justify-content-between">
 
-        {/* ช่องว่างซ้ายแทนปุ่มกลับ เพื่อบาลานซ์ layout */}
-        <div style={{ width: "70px" }} />
+        {/* ฝั่งซ้าย เว้นไว้ให้บาลานซ์กับโลโก้ด้านขวา */}
+        <div style={{ width: "40px" }} />
 
-        {/* โลโก้ + ชื่อระบบ */}
-        <div className="d-flex flex-column align-items-center">
+        {/* ชื่อระบบ อยู่กลางจริง */}
+        <div
+          className="d-flex flex-column align-items-center flex-grow-1 text-center"
+          style={{ transform: "translateX(-20px)" }} // ดันซ้ายเล็กน้อยเพื่อบาลานซ์สายตา
+        >
           <span
             className="fw-bold text-white"
             style={{ fontSize: "1.2rem", lineHeight: "1" }}
@@ -33,7 +36,7 @@ export default function BookingNav() {
           </small>
         </div>
 
-        {/* โลโก้ฝั่งขวา */}
+        {/* โลโก้ขวา */}
         <img
           src="https://smartdorm-admin.biwbong.shop/assets/SmartDorm.png"
           alt="SmartDorm Logo"

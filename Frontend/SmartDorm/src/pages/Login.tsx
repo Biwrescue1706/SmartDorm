@@ -1,4 +1,4 @@
-// ✅ src/pages/Login.tsx
+// src/pages/Login.tsx
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import * as Separator from "@radix-ui/react-separator";
@@ -6,8 +6,6 @@ import { useAuth } from "../hooks/useAuth";
 
 export default function Login() {
   const navigate = useNavigate();
-
-  // state ต่างๆ
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -19,142 +17,204 @@ export default function Login() {
     if (success) navigate("/dashboard");
   };
 
-  const isFormValid = username.trim() !== "" && password.trim() !== "";
+  const isFormValid = username.trim() && password.trim();
 
   return (
-    <div className="d-flex justify-content-center pt-4">
+    <div
+      className="d-flex justify-content-center align-items-center"
+      style={{
+        minHeight: "100vh",
+        background:
+          "linear-gradient(135deg, #2D006B 0%, #4E2A8E 40%, #200046 100%)",
+        animation: "bgMove 10s linear infinite",
+        backgroundSize: "200% 200%",
+      }}
+    >
+      <style>
+        {`
+        @keyframes bgMove {
+          0% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+          100% { background-position: 0% 50%; }
+        }
+        @keyframes float {
+          0% { transform: translateY(0); }
+          50% { transform: translateY(-6px); }
+          100% { transform: translateY(0); }
+        }
+        @keyframes glow {
+          0% { box-shadow: 0 0 12px rgba(255,209,0,0.35); }
+          50% { box-shadow: 0 0 22px rgba(255,209,0,0.85); }
+          100% { box-shadow: 0 0 12px rgba(255,209,0,0.35); }
+        }
+        `}
+      </style>
+
       <div
-        className="card shadow-lg border-0 p-4 text-center"
+        className="p-5 text-center"
         style={{
-          maxWidth: "480px",
-          width: "80%",
-          borderRadius: "20px",
-          background: "linear-gradient(180deg, #ffffff, #f8f9fa)",
+          width: "440px",
+          borderRadius: "22px",
+          background: "rgba(255,255,255,0.08)",
+          border: "1px solid rgba(255,255,255,0.25)",
+          backdropFilter: "blur(16px)",
+          WebkitBackdropFilter: "blur(16px)",
+          boxShadow: "0 10px 45px rgba(0,0,0,0.6)",
+          animation: "float 3.5s ease-in-out infinite",
         }}
       >
-        <h3 className="fw-bold text-black mb-3">
+        <img
+          src="https://smartdorm-admin.biwbong.shop/SmartDorm.webp"
+          alt="SmartDorm Logo"
+          style={{
+            width: "95px",
+            height: "95px",
+            filter: "drop-shadow(0 3px 6px rgba(0,0,0,0.5))",
+            marginBottom: "10px",
+          }}
+        />
+
+        <h2
+          className="fw-bold"
+          style={{
+            fontSize: "30px",
+            color: "#FFFFFF",
+            letterSpacing: "0.6px",
+            textShadow: "0 3px 18px rgba(0,0,0,0.55)",
+          }}
+        >
+          SmartDorm
+        </h2>
+
+        <p
+          className="fw-semibold"
+          style={{
+            marginTop: "-6px",
+            fontSize: "15px",
+            color: "rgba(255,255,255,0.75)",
+            letterSpacing: "0.4px",
+          }}
+        >
+          ระบบจัดการหอพักสำหรับผู้ดูแล
+        </p>
+
+        <h3
+          className="fw-bold mt-2 mb-4"
+          style={{
+            color: "#FFD100",
+            fontSize: "18px",
+            lineHeight: "1.6",
+            textShadow: "0 2px 8px rgba(255,209,0,0.45)",
+          }}
+        >
           เข้าสู่ระบบเพื่อ
           <br />
-          จัดการหอพัก <br /> SmartDorm Admin
+          จัดการหอพัก
+          <br /> SmartDorm Admin
         </h3>
 
-        {/* ฟอร์ม */}
         <form onSubmit={handleSubmit} className="text-start">
-          {/* ชื่อผู้ใช้ */}
-          <div className="mb-4 mt-3">
-            <p className="form-label fw-semibold text-dark text-center">
-              ชื่อผู้ใช้
-            </p>
-            <input
-              id="username"
-              type="text"
-              className="form-control py-2 text-center border-2"
-              style={{
-                borderRadius: "10px",
-                borderColor: "#bcbcbc",
-                transition: "0.3s",
-              }}
-              placeholder="กรอกชื่อผู้ใช้"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              required
-              onFocus={(e) => (e.target.style.borderColor = "#0d6efd")}
-              onBlur={(e) => (e.target.style.borderColor = "#bcbcbc")}
-            />
-          </div>
+          <label className="fw-semibold d-block mb-1" style={{ color: "#FFD100" }}>
+            ชื่อผู้ใช้
+          </label>
+          <input
+            type="text"
+            className="form-control text-center mb-4"
+            placeholder="กรอกชื่อผู้ใช้"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            style={{
+              borderRadius: "12px",
+              border: "2px solid transparent",
+              background: "rgba(255,255,255,0.15)",
+              color: "white",
+              transition: "0.3s",
+            }}
+            onFocus={(e) => (e.target.style.borderColor = "#FFD100")}
+            onBlur={(e) => (e.target.style.borderColor = "transparent")}
+          />
 
-          {/* รหัสผ่าน */}
-          <div className="mb-4 position-relative">
-            <p className="form-label fw-semibold text-dark text-center">
-              รหัสผ่าน
-            </p>
+          <label className="fw-semibold d-block mb-1" style={{ color: "#FFD100" }}>
+            รหัสผ่าน
+          </label>
+          <div className="position-relative mb-4">
             <input
-              id="password"
               type={showPassword ? "text" : "password"}
-              className="form-control py-2 text-center border-2 pe-5"
-              style={{
-                borderRadius: "10px",
-                borderColor: "#bcbcbc",
-                transition: "0.3s",
-              }}
+              className="form-control text-center"
               placeholder="กรอกรหัสผ่าน"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              required
-              onFocus={(e) => (e.target.style.borderColor = "#0d6efd")}
-              onBlur={(e) => (e.target.style.borderColor = "#bcbcbc")}
+              style={{
+                borderRadius: "12px",
+                border: "2px solid transparent",
+                background: "rgba(255,255,255,0.15)",
+                paddingRight: "45px",
+                color: "white",
+                transition: "0.3s",
+              }}
+              onFocus={(e) => (e.target.style.borderColor = "#FFD100")}
+              onBlur={(e) => (e.target.style.borderColor = "transparent")}
             />
 
-            {/* toggle password */}
             <span
               onClick={() => setShowPassword(!showPassword)}
               style={{
                 position: "absolute",
-                right: "15px",
-                top: "70%",
+                right: "12px",
+                top: "50%",
                 transform: "translateY(-50%)",
                 cursor: "pointer",
-                color: showPassword ? "#0d6efd" : "#999",
-                userSelect: "none",
-                transition: "color 0.3s",
+                color: "#FFD100",
+                fontSize: "20px",
               }}
             >
               {showPassword ? "🙈" : "👁️"}
             </span>
           </div>
 
-          {/* ปุ่มเข้าสู่ระบบ */}
-          <div className="d-flex justify-content-center">
-            <button
-              type="submit"
-              disabled={!isFormValid || loading}
-              className="btn w-75 fw-semibold d-flex align-items-center justify-content-center py-2 text-white"
-              style={{
-                borderRadius: "12px",
-                backgroundImage: isFormValid
-                  ? "linear-gradient(135deg, #007bff, #00b4d8, #007bff)"
-                  : "none",
-                backgroundColor: !isFormValid ? "gray" : "transparent",
-                backgroundSize: "200% 200%",
-                transition: "all 0.4s ease",
-                boxShadow: isFormValid
-                  ? "0 4px 12px rgba(0,123,255,0.3)"
-                  : "none",
-                border: "none",
-                cursor: isFormValid ? "pointer" : "not-allowed",
-              }}
-            >
-              {loading ? (
-                <>
-                  <span className="spinner-border spinner-border-sm me-2"></span>
-                  กำลังเข้าสู่ระบบ...
-                </>
-              ) : (
-                "เข้าสู่ระบบ"
-              )}
-            </button>
-          </div>
+          <button
+            type="submit"
+            disabled={!isFormValid || loading}
+            className="w-100 py-2 fw-semibold"
+            style={{
+              borderRadius: "14px",
+              background: isFormValid
+                ? "linear-gradient(135deg, #FFD100, #B98A00, #FFD100)"
+                : "gray",
+              backgroundSize: "260% 260%",
+              animation: isFormValid && "glow 2.8s infinite",
+              border: "none",
+              color: "#2D006B",
+              fontWeight: "bold",
+              boxShadow: isFormValid
+                ? "0 4px 15px rgba(255,209,0,0.6)"
+                : "none",
+              cursor: isFormValid ? "pointer" : "not-allowed",
+              transition: "0.25s",
+            }}
+          >
+            {loading ? "กำลังเข้าสู่ระบบ..." : "เข้าสู่ระบบ"}
+          </button>
         </form>
 
-        {/* เส้นคั่น */}
         <Separator.Root
           decorative
           className="my-4"
-          style={{
-            backgroundColor: "#000000",
-            height: "1px",
-          }}
+          style={{ height: "1px", backgroundColor: "rgba(255,209,0,0.45)" }}
         />
 
-        {/* ลืมรหัสผ่าน */}
-        <div className="d-flex justify-content-center align-items-center gap-2 flex-column">
-          <Link
-            to="/forgot-username"
-            className="fw-semibold text-decoration-none text-black"
-          >
-            ลืมรหัสผ่าน
-          </Link>
-        </div>
+        <Link
+          to="/forgot-username"
+          className="fw-semibold text-decoration-none"
+          style={{
+            color: "#FFD100",
+            transition: "0.3s",
+          }}
+          onMouseOver={(e) => (e.currentTarget.style.opacity = "0.8")}
+          onMouseOut={(e) => (e.currentTarget.style.opacity = "1")}
+        >
+          ลืมรหัสผ่าน ?
+        </Link>
       </div>
     </div>
   );

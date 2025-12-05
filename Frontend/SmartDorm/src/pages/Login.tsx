@@ -17,164 +17,138 @@ export default function Login() {
     if (success) navigate("/dashboard");
   };
 
-  const isFormValid = username.trim() && password.trim();
+  const isFormValid = Boolean(username.trim() && password.trim());
 
   return (
     <div
-      className="d-flex justify-content-center align-items-center"
+      className="login-container d-flex justify-content-center"
       style={{
         minHeight: "100vh",
-        background:
-          "linear-gradient(135deg, #2D006B 0%, #4E2A8E 45%, #200046 100%)",
-        animation: "bgMove 10s linear infinite",
-        backgroundSize: "200% 200%",
+        background: "linear-gradient(135deg, #2D006B, #4E2A8E 45%, #200046)",
       }}
     >
       <style>{`
-        @keyframes bgMove {
-          0% { background-position: 0% 50%; }
-          50% { background-position: 100% 50%; }
-          100% { background-position: 0% 50%; }
-        }
-        @keyframes float {
-          0% { transform: translateY(0); }
-          50% { transform: translateY(-6px); }
-          100% { transform: translateY(0); }
-        }
         @keyframes glow {
-          0% { box-shadow: 0 0 12px rgba(255,209,0,0.35); }
-          50% { box-shadow: 0 0 22px rgba(255,209,0,0.85); }
-          100% { box-shadow: 0 0 12px rgba(255,209,0,0.35); }
+          0% { box-shadow: 0 0 10px rgba(255,209,0,.35); }
+          50% { box-shadow: 0 0 22px rgba(255,209,0,.85); }
+          100% { box-shadow: 0 0 10px rgba(255,209,0,.35); }
+        }
+
+        /* Desktop > 1400 */
+        @media(min-width:1400px){
+          .login-card{width:520px;padding:56px;border-radius:26px;}
+          .login-title{font-size:32px;}
+        }
+
+        /* Tablet 600 - 1399 */
+        @media(min-width:600px) and (max-width:1399px){
+          .login-card{width:440px;}
+          .login-title{font-size:27px;}
+        }
+
+        /* Mobile < 600 */
+        @media(max-width:599px){
+          .login-container{align-items:flex-start !important;padding-top:32px;}
+          .login-card{width:92%;padding:28px;border-radius:18px;}
+          .login-title{font-size:22px;}
+          .login-sub{font-size:13px;}
         }
       `}</style>
 
       <div
-        className="p-5 text-center"
+        className="login-card bg-white bg-opacity-10 backdrop-blur text-center shadow-lg p-5"
         style={{
-          width: "460px",
-          borderRadius: "22px",
-          background: "rgba(255,255,255,0.08)",
           border: "1px solid rgba(255,255,255,0.25)",
-          backdropFilter: "blur(16px)",
-          WebkitBackdropFilter: "blur(16px)",
-          boxShadow: "0 10px 45px rgba(0,0,0,0.6)",
           animation: "float 3.5s ease-in-out infinite",
         }}
       >
-        {/* HEADER ROW */}
-        <div
-          className="d-flex justify-content-center align-items-center gap-3"
-          style={{ marginBottom: "6px" }}
-        >
+        {/* HEADER */}
+        <div className="d-flex justify-content-center align-items-center gap-3 mb-2">
           <img
             src="https://smartdorm-admin.biwbong.shop/SmartDorm.webp"
+            style={{ width: 55, height: 55 }}
             alt="SmartDorm Logo"
-            style={{
-              width: "60px",
-              height: "60px",
-              objectFit: "contain",
-              filter: "drop-shadow(0 3px 6px rgba(0,0,0,0.45))",
-            }}
+            className="shadow-sm rounded"
           />
-
           <h2
-            className="fw-bold"
-            style={{
-              fontSize: "26px",
-              color: "#FFFFFF",
-              margin: 0,
-              letterSpacing: "0.6px",
-              textShadow: "0 3px 18px rgba(0,0,0,0.55)",
-            }}
+            className="fw-bold login-title text-white m-0"
+            style={{ textShadow: "0 3px 18px rgba(0,0,0,.55)", letterSpacing: ".5px" }}
           >
             SmartDorm
           </h2>
         </div>
 
-        {/* 👇 ข้อความนี้อยู่แยกด้านล่างตามคำสั่งคุณ */}
-        <h2
-          className="fw-semibold"
-          style={{
-            marginTop: "-2px",
-            marginBottom: "20px",
-            color: "rgba(255,255,255,0.75)",
-            letterSpacing: "0.4px",
-          }}
-        >
+        <p className="login-sub text-white-50 mb-4 fw-semibold">
           ระบบจัดการหอพักสำหรับผู้ดูแล
-        </h2>
+        </p>
 
         {/* FORM */}
         <form onSubmit={handleSubmit} className="text-start">
-          <label className="fw-semibold d-block mb-1" style={{ color: "#FFD100" }}>
-            ชื่อผู้ใช้
-          </label>
+
+          {/* USERNAME */}
+          <label className="fw-semibold mb-1 text-warning">ชื่อผู้ใช้</label>
           <input
             type="text"
-            className="form-control text-center mb-4"
+            className="form-control form-control-lg text-center mb-4"
             placeholder="กรอกชื่อผู้ใช้"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             style={{
+              background: "rgba(255,255,255,.18)",
               borderRadius: "12px",
               border: "2px solid transparent",
-              background: "rgba(255,255,255,0.15)",
-              color: "white",
+              color: "#fff",
             }}
-            onFocus={(e) => (e.target.style.borderColor = "#FFD100")}
-            onBlur={(e) => (e.target.style.borderColor = "transparent")}
           />
 
-          <label className="fw-semibold d-block mb-1" style={{ color: "#FFD100" }}>
-            รหัสผ่าน
-          </label>
-
+          {/* PASSWORD */}
+          <label className="fw-semibold mb-1 text-warning">รหัสผ่าน</label>
           <div className="position-relative mb-4">
             <input
               type={showPassword ? "text" : "password"}
-              className="form-control text-center"
+              className="form-control form-control-lg text-center"
               placeholder="กรอกรหัสผ่าน"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               style={{
+                background: "rgba(255,255,255,.18)",
                 borderRadius: "12px",
                 border: "2px solid transparent",
-                background: "rgba(255,255,255,0.15)",
-                paddingRight: "45px",
-                color: "white",
+                paddingRight: "46px",
+                color: "#fff",
               }}
-              onFocus={(e) => (e.target.style.borderColor = "#FFD100")}
-              onBlur={(e) => (e.target.style.borderColor = "transparent")}
             />
+
+            {/* SHOW / HIDE ICON */}
             <span
               onClick={() => setShowPassword(!showPassword)}
               style={{
                 position: "absolute",
-                right: "12px",
+                right: "14px",
                 top: "50%",
                 transform: "translateY(-50%)",
                 cursor: "pointer",
+                fontSize: "21px",
                 color: "#FFD100",
-                fontSize: "20px",
               }}
             >
               {showPassword ? "🙈" : "👁️"}
             </span>
           </div>
 
+          {/* SUBMIT BUTTON */}
           <button
             type="submit"
             disabled={!isFormValid || loading}
-            className="w-100 py-2 fw-semibold"
+            className="btn btn-lg w-100 fw-semibold"
             style={{
               borderRadius: "14px",
               background: isFormValid
                 ? "linear-gradient(135deg, #FFD100, #B98A00, #FFD100)"
                 : "gray",
-              border: "none",
               color: "#2D006B",
-              fontWeight: "bold",
               animation: isFormValid && "glow 2.8s infinite",
+              border: "none",
             }}
           >
             {loading ? "กำลังเข้าสู่ระบบ..." : "เข้าสู่ระบบ"}
@@ -184,10 +158,10 @@ export default function Login() {
         <Separator.Root
           decorative
           className="my-4"
-          style={{ height: "1px", backgroundColor: "rgba(255,209,0,0.45)" }}
+          style={{ height: 1, background: "rgba(255,209,0,.45)" }}
         />
 
-        <Link to="/forgot-username" className="fw-semibold text-decoration-none" style={{ color: "#FFD100" }}>
+        <Link className="fw-semibold text-warning text-decoration-none">
           ลืมรหัสผ่าน ?
         </Link>
       </div>

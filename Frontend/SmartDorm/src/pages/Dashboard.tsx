@@ -9,7 +9,7 @@ import DashboardSummary from "../components/Dashboard/DashboardSummary";
 import DashboardRevenue from "../components/Dashboard/DashboardRevenue";
 
 export default function Dashboard() {
-  const { message, handleLogout, role, adminName, adminUsername } = useAuth();
+  const { handleLogout, role, adminName, adminUsername } = useAuth();
   const { rooms, fetchRooms } = useRooms();
   const { bookings, fetchBookings } = useBookings();
   const { checkouts, fetchCheckouts } = useCheckouts();

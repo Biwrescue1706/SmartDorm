@@ -1,7 +1,8 @@
 import { useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 
-interface NavProps {
+export interface NavProps {
+  message?: string; 
   onLogout: () => void;
   pendingBookings?: number;
   role?: number | null;

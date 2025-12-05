@@ -16,52 +16,56 @@ export default function ForgotUsername() {
   };
 
   return (
-    <div
-      className="container-fluid min-vh-100 d-flex flex-column p-0"
-      style={{
-        background: "linear-gradient(135deg, #2D006B, #4E2A8E, #200046)",
-        backgroundSize: "200% 200%",
-        animation: "bgMove 8s infinite",
-      }}
-    >
-      {/* NAVBAR */}
-      <nav className="navbar navbar-dark px-3 py-2" style={{ background: "rgba(0,0,0,0.2)" }}>
-        <button
-          className="btn btn-outline-warning fw-semibold"
-          onClick={() => navigate("/")}
-        >
-          ⬅ เข้าสู่ระบบ
-        </button>
+    <div className="container-fluid min-vh-100 d-flex flex-column p-0 bg-dark bg-gradient">
 
-        {/* LOGO + BRAND + SUBTEXT อยู่รวมกันตรงขวา */}
-        <div className="d-flex flex-column align-items-end">
-          <div className="d-flex align-items-center gap-2">
-            <img
-              src="https://smartdorm-admin.biwbong.shop/SmartDorm.webp"
-              width="42"
-              height="42"
-              alt="logo"
-            />
-            <span className="navbar-brand mb-0 h4 fw-bold text-warning m-0">
-              SmartDorm
-            </span>
+      {/* NAVBAR (เหมือน Login) */}
+      <nav className="navbar navbar-dark bg-transparent px-3 py-2">
+        <div className="container-fluid d-flex justify-content-between align-items-center">
+
+          {/* ปุ่มย้อนกลับ ซ้ายเหมือน Login */}
+          <button
+            className="btn btn-outline-warning fw-semibold"
+            onClick={() => navigate("/")}
+          >
+            ⬅
+          </button>
+
+          {/* LOGO ตรงกลางเหมือน Login */}
+          <div className="d-flex flex-column align-items-center mx-auto">
+            <div className="d-flex align-items-center gap-2">
+              <img
+                src="https://smartdorm-admin.biwbong.shop/SmartDorm.webp"
+                alt="logo"
+                width="48"
+                height="48"
+                className="img-fluid"
+              />
+              <span className="fw-bold h4 text-warning mb-0">
+                SmartDorm
+              </span>
+            </div>
+
+            <small className="text-light opacity-75">
+              ระบบจัดการหอพักสำหรับผู้ดูแล
+            </small>
           </div>
 
-          {/* ⬇ ข้อความนี้อยู่ *ใต้ SmartDorm* ตามที่สั่ง */}
-          <small className="text-white-50 mt-1">
-            ระบบจัดการหอพักสำหรับผู้ดูแล
-          </small>
+          {/* dummy ด้านขวาให้บาลานซ์ */}
+          <div className="invisible">
+            <button className="btn btn-outline-warning">X</button>
+          </div>
         </div>
       </nav>
 
-      {/* CONTENT */}
-      <div className="d-flex justify-content-center align-items-center flex-grow-1">
+      {/* CARD FORM เหมือน Login */}
+      <div className="flex-grow-1 d-flex justify-content-center align-items-center">
         <div
-          className="card shadow-lg border-0 text-center p-4 col-11 col-sm-8 col-md-6 col-lg-4"
-          style={{ background: "rgba(255,255,255,0.12)", backdropFilter: "blur(10px)" }}
+          className="card shadow-lg border-0 text-center p-4 bg-secondary bg-opacity-25 col-11 col-sm-9 col-md-7 col-lg-5 col-xl-4"
         >
-          <h2 className="text-white fw-bold mb-3">🔑 ลืมรหัสผ่าน</h2>
-          <h3 className="text-white-50 mb-4">กรุณากรอกชื่อผู้ใช้เพื่อตรวจสอบข้อมูล</h3>
+          <h2 className="fw-bold text-white mb-3">🔑 ลืมรหัสผ่าน</h2>
+          <h3 className="text-white mb-4">
+            กรุณากรอกชื่อผู้ใช้เพื่อตรวจสอบข้อมูล
+          </h3>
 
           <form onSubmit={handleSubmit}>
             <div className="mb-3 text-start">
@@ -84,15 +88,6 @@ export default function ForgotUsername() {
           </form>
         </div>
       </div>
-
-      {/* BG ANIMATION */}
-      <style>{`
-        @keyframes bgMove {
-          0% { background-position: 0% 50%; }
-          50% { background-position: 100% 50%; }
-          100% { background-position: 0% 50%; }
-        }
-      `}</style>
     </div>
   );
 }

@@ -2,7 +2,6 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 
 export interface NavProps {
-  message?: string;
   onLogout: () => void;
   pendingBookings?: number;
   role?: number | null;
@@ -11,7 +10,6 @@ export interface NavProps {
 }
 
 export default function Nav({
-  message,
   onLogout,
   pendingBookings = 0,
   role,
@@ -99,23 +97,6 @@ export default function Nav({
           )}
         </div>
       </div>
-
-      {/* 🔔 MESSAGE BAR */}
-      {message && (
-        <div
-          className="position-fixed start-50 translate-middle-x text-center px-3 py-1 rounded shadow"
-          style={{
-            top: "70px",
-            backgroundColor: "#F7D53D",
-            color: "#4A0080",
-            fontWeight: 600,
-            zIndex: 3000,
-            minWidth: "260px",
-          }}
-        >
-          {message}
-        </div>
-      )}
 
       {/* 🟣 SIDEBAR DESKTOP (≥1400px) */}
       <div

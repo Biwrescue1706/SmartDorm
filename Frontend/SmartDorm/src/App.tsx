@@ -16,7 +16,7 @@ import Profile from "./pages/Profile";
 import ChangePassword from "./pages/ChangePassword";
 import ForgotUsername from "./pages/ForgotUsername";
 import ResetPassword from "./pages/ResetPassword";
-import LinksPage from "./pages/LinksPage";
+//import LinksPage from "./pages/LinksPage";
 
 function App() {
   return (
@@ -141,14 +141,14 @@ function App() {
         }
       />
 
-      <Route
+     /* <Route
         path="/links"
         element={
           <ProtectedRoute>
             <LinksPage />
           </ProtectedRoute>
         }
-      />
+      /> */
 
       {/*  ไม่เจอ route → ไปหน้า 404 */}
       <Route path="*" element={<NotFound />} />

@@ -9,173 +9,104 @@ interface Props {
 }
 
 export default function DashboardRevenue({ bills, bookings }: Props) {
-  const [selectedYear, setSelectedYear] = useState<string>("");
-  const [selectedMonth, setSelectedMonth] = useState<string>("");
+  const [selectedYear, setSelectedYear] = useState("");
+  const [selectedMonth, setSelectedMonth] = useState("");
   const [isWideScreen, setIsWideScreen] = useState(window.innerWidth >= 1400);
 
-  // ✅ ตรวจจับขนาดจอแบบเรียลไทม์
   useEffect(() => {
-    const handleResize = () => setIsWideScreen(window.innerWidth >= 1400);
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
+    const resizeHandler = () => setIsWideScreen(window.innerWidth >= 1400);
+    window.addEventListener("resize", resizeHandler);
+    return () => window.removeEventListener("resize", resizeHandler);
   }, []);
 
   const monthNamesTH = [
-    "มกราคม",
-    "กุมภาพันธ์",
-    "มีนาคม",
-    "เมษายน",
-    "พฤษภาคม",
-    "มิถุนายน",
-    "กรกฎาคม",
-    "สิงหาคม",
-    "กันยายน",
-    "ตุลาคม",
-    "พฤศจิกายน",
-    "ธันวาคม",
+    "มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน",
+    "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"
   ];
+
   const availableYears = Array.from({ length: 8 }, (_, i) =>
     (2568 + i).toString()
   );
 
-  const selectedMonthName =
-    selectedMonth && monthNamesTH[parseInt(selectedMonth) - 1];
-  const selectedYearTH = selectedYear || "";
-  const displayTitle =
-    selectedYear && selectedMonth
-      ? `${selectedMonthName} ${selectedYearTH}`
-      : selectedYear
-      ? `ปี ${selectedYearTH}`
-      : "ทั้งหมด";
-
-  // 🧾 กรองบิล
+  // Filter Bills
   const filteredBills = useMemo(() => {
     return bills.filter((b) => {
       const d = new Date(b.month);
-      const yearBE = d.getUTCFullYear() + 543;
-      const monthStr = String(d.getUTCMonth() + 1).padStart(2, "0");
+      const y = d.getFullYear() + 543;
+      const m = String(d.getMonth() + 1).padStart(2, "0");
       if (selectedYear && selectedMonth)
-        return yearBE.toString() === selectedYear && monthStr === selectedMonth;
-      else if (selectedYear) return yearBE.toString() === selectedYear;
+        return y.toString() === selectedYear && m === selectedMonth;
+      else if (selectedYear)
+        return y.toString() === selectedYear;
       return true;
     });
   }, [bills, selectedYear, selectedMonth]);
 
-  // 🧾 กรอง booking (ใช้ createdAt)
+  // Filter Bookings
   const filteredBookings = useMemo(() => {
     return bookings.filter((b) => {
       if (!b.createdAt) return false;
       const d = new Date(b.createdAt);
-      const yearBE = d.getUTCFullYear() + 543;
-      const monthStr = String(d.getUTCMonth() + 1).padStart(2, "0");
+      const y = d.getFullYear() + 543;
+      const m = String(d.getMonth() + 1).padStart(2, "0");
       if (selectedYear && selectedMonth)
-        return yearBE.toString() === selectedYear && monthStr === selectedMonth;
-      else if (selectedYear) return yearBE.toString() === selectedYear;
+        return y.toString() === selectedYear && m === selectedMonth;
+      else if (selectedYear)
+        return y.toString() === selectedYear;
       return true;
     });
   }, [bookings, selectedYear, selectedMonth]);
 
-  // 💵 Booking
-  const totalRentBooking = useMemo(
-    () =>
-      filteredBookings
-        .filter((b) => b.approveStatus === 1 && b.room)
-        .reduce((sum, b) => sum + (b.room?.rent || 0), 0),
-    [filteredBookings]
-  );
+  // Booking revenue
+  const totalRentBooking = filteredBookings.reduce((s, b) => s + (b.room?.rent || 0), 0);
+  const totalDepositBooking = filteredBookings.reduce((s, b) => s + (b.room?.deposit || 0), 0);
+  const totalBookingFee = filteredBookings.reduce((s, b) => s + (b.room?.bookingFee || 0), 0);
 
-  const totalDepositBooking = useMemo(
-    () =>
-      filteredBookings
-        .filter((b) => b.approveStatus === 1 && b.room)
-        .reduce((sum, b) => sum + (b.room?.deposit || 0), 0),
-    [filteredBookings]
-  );
+  // Bill revenue
+  const paidBills = filteredBills.filter((b) => b.status === 1);
+  const totalRentBill = paidBills.reduce((s, b) => s + (b.rent || 0), 0);
+  const totalWaterBill = paidBills.reduce((s, b) => s + (b.waterCost || 0), 0);
+  const totalElectricBill = paidBills.reduce((s, b) => s + (b.electricCost || 0), 0);
+  const totalAllBill = paidBills.reduce((s, b) => s + (b.total || 0), 0);
 
-  const totalBookingFee = useMemo(
-    () =>
-      filteredBookings
-        .filter((b) => b.approveStatus === 1 && b.room)
-        .reduce((sum, b) => sum + (b.room?.bookingFee || 0), 0),
-    [filteredBookings]
-  );
-
-  // 💰 Bill
-  const totalRentBill = useMemo(
-    () =>
-      filteredBills
-        .filter((b) => b.status === 1)
-        .reduce((sum, b) => sum + (b.rent || 0), 0),
-    [filteredBills]
-  );
-
-  const totalWaterBill = useMemo(
-    () =>
-      filteredBills
-        .filter((b) => b.status === 1)
-        .reduce((sum, b) => sum + (b.waterCost || 0), 0),
-    [filteredBills]
-  );
-
-  const totalElectricBill = useMemo(
-    () =>
-      filteredBills
-        .filter((b) => b.status === 1)
-        .reduce((sum, b) => sum + (b.electricCost || 0), 0),
-    [filteredBills]
-  );
-
-  const totalAllBill = useMemo(
-    () =>
-      filteredBills
-        .filter((b) => b.status === 1)
-        .reduce((sum, b) => sum + (b.total || 0), 0),
-    [filteredBills]
-  );
-
-  // 📊 รวมรายเดือน
-  const monthlyData = useMemo(() => {
-    const acc = new Map<
-      string,
-      { rent: number; water: number; electric: number; total: number }
-    >();
-    filteredBills
-      .filter((b) => b.status === 1)
-      .forEach((b) => {
-        const d = new Date(b.month);
-        const yearBE = d.getUTCFullYear() + 543;
-        const monthNum = d.getUTCMonth() + 1;
-        const key = `${yearBE}-${String(monthNum).padStart(2, "0")}`;
-        const current = acc.get(key) || {
-          rent: 0,
-          water: 0,
-          electric: 0,
-          total: 0,
-        };
-        current.rent += b.rent || 0;
-        current.water += b.waterCost || 0;
-        current.electric += b.electricCost || 0;
-        current.total += b.total || 0;
-        acc.set(key, current);
-      });
-    return Array.from(acc.entries()).map(([key, v]) => {
-      const [yearBE, mm] = key.split("-");
-      const monthName = monthNamesTH[parseInt(mm) - 1];
-      return { month: `${monthName} ${yearBE}`, ...v, sortKey: key };
-    });
-  }, [filteredBills]);
-
-  // 🧮 รวมรายรับทั้งหมด
+  // Total revenue
   const totalAllRevenue =
     totalRentBooking + totalDepositBooking + totalBookingFee + totalAllBill;
 
+  // Monthly Report
+  const monthlyData = useMemo(() => {
+    const acc = new Map<string, { rent: number; water: number; electric: number; total: number }>();
+    paidBills.forEach((b) => {
+      const d = new Date(b.month);
+      const y = d.getFullYear() + 543;
+      const m = String(d.getMonth() + 1).padStart(2, "0");
+      const key = `${y}-${m}`;
+      const current = acc.get(key) || { rent: 0, water: 0, electric: 0, total: 0 };
+      current.rent += b.rent || 0;
+      current.water += b.waterCost || 0;
+      current.electric += b.electricCost || 0;
+      current.total += b.total || 0;
+      acc.set(key, current);
+    });
+    return Array.from(acc.entries()).map(([key, v]) => {
+      const [y, m] = key.split("-");
+      return {
+        month: `${monthNamesTH[+m - 1]} ${y}`,
+        sortKey: key,
+        ...v,
+      };
+    });
+  }, [paidBills]);
+
   return (
     <div className="mt-4">
-      <h3 className="fw-bold mb-3 text-center">💰 สรุปรายรับรวม</h3>
-      <h4 className="fw-bold mb-3 text-center">( {displayTitle} )</h4>
+      {/* Title */}
+      <h3 className="fw-bold text-center" style={{ color: "#4A0080" }}>
+        💜 รายรับรวมทั้งหมด
+      </h3>
 
-      {/* ฟิลเตอร์ */}
-      <div className="d-flex flex-wrap justify-content-center gap-2 mb-4">
+      {/* Filter */}
+      <div className="d-flex justify-content-center gap-2 mb-3">
         <select
           className="form-select w-auto"
           value={selectedYear}
@@ -186,17 +117,15 @@ export default function DashboardRevenue({ bills, bookings }: Props) {
         >
           <option value="">ทุกปี</option>
           {availableYears.map((y) => (
-            <option key={y} value={y}>
-              {y}
-            </option>
+            <option key={y}>{y}</option>
           ))}
         </select>
 
         <select
           className="form-select w-auto"
+          disabled={!selectedYear}
           value={selectedMonth}
           onChange={(e) => setSelectedMonth(e.target.value)}
-          disabled={!selectedYear}
         >
           <option value="">ทุกเดือน</option>
           {monthNamesTH.map((m, i) => (
@@ -207,190 +136,71 @@ export default function DashboardRevenue({ bills, bookings }: Props) {
         </select>
       </div>
 
-      {/* การ์ดจาก Booking */}
-      <h3 className="fw-bold text-center mb-3 text-black">
-        📦 รายรับจากการจอง
-      </h3>
-      <div className="row g-2 justify-content-center mb-4 mt-3">
-        <div className="col-4 col-md-2 mx-2 col-sm-4 col-lg-2">
-          <RevenueCard
-            title="ค่าเช่า"
-            amount={totalRentBooking}
-            color="#0077b6"
-          />
-        </div>
-        <div className="col-4 col-md-2 mx-2 col-sm-4 col-lg-2">
-          <RevenueCard
-            title="ค่ามัดจำ"
-            amount={totalDepositBooking}
-            color="#8338ec"
-          />
-        </div>
-        <div className="col-4 col-md-2 mx-2 col-sm-4 col-lg-2">
-          <RevenueCard
-            title="ค่าจอง"
-            amount={totalBookingFee}
-            color="#ffb703"
-          />
-        </div>
-        <div className="col-4 col-md-2 mx-2 col-sm-4 col-lg-2">
-          <RevenueCard
-            title="รายรับรวม"
-            amount={totalRentBooking + totalDepositBooking + totalBookingFee}
-            color="#00916e"
-          />
-        </div>
-      </div>
+      {/* Overall Revenue Card */}
+      <RevenueCard
+        title="💰 รายรับทั้งหมด (Booking + Bill)"
+        amount={totalAllRevenue}
+        bg="#4A0080"
+        fg="#F7D53D"
+        height="110px"
+      />
 
-      {/* การ์ดจาก Bill */}
-      <h3 className="fw-bold text-center mb-3 text-black">
-        📄 รายรับจากบิล (ชำระแล้ว)
-      </h3>
-      <div className="row g-2 justify-content-center mb-4 mt-3">
-        <div className="col-4 col-md-2 mx-2 col-sm-4 col-lg-2">
-          {" "}
-          <RevenueCard
-            title="ค่าเช่าห้อง"
-            amount={totalRentBill}
-            color="#0077b6"
-          />
-        </div>
-        <div className="col-4 col-md-2 mx-2 col-sm-4 col-lg-2">
-          {" "}
-          <RevenueCard title="ค่าน้ำ" amount={totalWaterBill} color="#48cae4" />
-        </div>
-        <div className="col-4 col-md-2 mx-2 col-sm-4 col-lg-2">
-          {" "}
-          <RevenueCard
-            title="ค่าไฟ"
-            amount={totalElectricBill}
-            color="#ffb703"
-          />
-        </div>
-        <div className="col-4 col-md-2 mx-2 col-sm-4 col-lg-2">
-          {" "}
-          <RevenueCard
-            title="รายรับรวม"
-            amount={totalAllBill}
-            color="#00b4d8"
-          />
-        </div>
-      </div>
-
-      {/* ✅ รวมรายรับทั้งหมด */}
-      <h3 className="fw-bold text-center mb-3 text-black">
-        💵 รายรับทั้งหมด (Booking + Bill)
-      </h3>
-      <div className="row justify-content-center mb-4 mt-3">
-        <div className="col-4 col-md-2 mx-2 col-sm-4 col-lg-2">
-          {" "}
-          <RevenueCard
-            title="รายรับทั้งหมด"
-            amount={totalAllRevenue}
-            color="#28a745"
-          />
-        </div>
-      </div>
-
-      {/* ✅ ตารางหรือการ์ดรายเดือน */}
-      <h3 className="fw-bold text-center mb-2 text-black">
+      {/* Monthly Section */}
+      <h4 className="fw-bold text-center mt-4" style={{ color: "#4A0080" }}>
         📅 รายรับรายเดือนจากบิล
-      </h3>
+      </h4>
+
       {isWideScreen ? (
-        // แสดงแบบตาราง
-        <div className="responsive-table" style={{ overflowX: "auto" }}>
-          <table className="table table-sm table-striped align-middle text-center">
-            <thead className="table-dark">
+        <div style={{ overflowX: "auto" }}>
+          <table className="table table-bordered text-center align-middle mt-3">
+            <thead style={{ background: "#4A0080", color: "#F7D53D" }}>
               <tr>
                 <th>#</th>
                 <th>เดือน</th>
-                <th>ค่าเช่าห้อง</th>
+                <th>ค่าเช่า</th>
                 <th>ค่าน้ำ</th>
                 <th>ค่าไฟ</th>
-                <th>รายรับรวม</th>
+                <th>รวม</th>
               </tr>
             </thead>
             <tbody>
-              {monthlyData.length > 0 ? (
+              {monthlyData.length ? (
                 monthlyData
-                  .sort((a, b) => (a.sortKey > b.sortKey ? -1 : 1))
-                  .map((m, idx) => (
+                  .sort((a, b) => b.sortKey.localeCompare(a.sortKey))
+                  .map((m, i) => (
                     <tr key={m.sortKey}>
-                      <td className="fw-bold text-black">{idx + 1}</td>
-                      <td className="fw-bold text-black">{m.month}</td>
-                      <td className="fw-bold text-black">
-                        {m.rent.toLocaleString("th-TH")}
-                      </td>
-                      <td className="fw-bold text-black">
-                        {m.water.toLocaleString("th-TH")}
-                      </td>
-                      <td className="fw-bold text-black">
-                        {m.electric.toLocaleString("th-TH")}
-                      </td>
-                      <td className="fw-bold text-black">
+                      <td>{i + 1}</td>
+                      <td>{m.month}</td>
+                      <td>{m.rent.toLocaleString("th-TH")}</td>
+                      <td>{m.water.toLocaleString("th-TH")}</td>
+                      <td>{m.electric.toLocaleString("th-TH")}</td>
+                      <td className="fw-bold">
                         {m.total.toLocaleString("th-TH")}
                       </td>
                     </tr>
                   ))
               ) : (
                 <tr>
-                  <td colSpan={6} className="text-muted">
-                    ไม่มีข้อมูลรายรับในช่วงที่เลือก
-                  </td>
+                  <td colSpan={6}>ไม่มีข้อมูล</td>
                 </tr>
               )}
             </tbody>
           </table>
         </div>
       ) : (
-        // แสดงแบบการ์ด
-        <div className="d-flex flex-column gap-3 align-items-center mt-3">
-          {monthlyData.length > 0 ? (
-            monthlyData
-              .sort((a, b) => (a.sortKey > b.sortKey ? -1 : 1))
-              .map((m) => (
-                <div
-                  key={m.sortKey}
-                  className="card shadow-sm w-100"
-                  style={{ maxWidth: "600px", borderRadius: "12px" }}
-                >
-                  <div className="card-body">
-                    <h5 className="fw-bold text-center mb-3 text-black">
-                      📆 เดือน {m.month}
-                    </h5>
-                    <div className="row text-center">
-                      <div className="col-6">
-                        <h6 className="text-black fw-bold">ค่าเช่าห้อง</h6>
-                        <div className="fw-bold text-black">
-                          {m.rent.toLocaleString("th-TH")}
-                        </div>
-                      </div>
-                      <div className="col-6">
-                        <h6 className="text-black fw-bold">ค่าน้ำ</h6>
-                        <div className="fw-bold text-black">
-                          {m.water.toLocaleString("th-TH")}
-                        </div>
-                      </div>
-                    </div>
-                    <div className="row text-center mt-2">
-                      <div className="col-6">
-                        <h6 className="text-black fw-bold">ค่าไฟ</h6>
-                        <div className="fw-bold text-black">
-                          {m.electric.toLocaleString("th-TH")}
-                        </div>
-                      </div>
-                      <div className="col-6">
-                        <h6 className="text-black fw-bold">รายรับรวม</h6>
-                        <div className="fw-bold text-black">
-                          {m.total.toLocaleString("th-TH")}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))
+        <div className="d-flex flex-column gap-3 mt-3">
+          {monthlyData.length ? (
+            monthlyData.map((m) => (
+              <RevenueCard
+                key={m.sortKey}
+                title={`📆 ${m.month}`}
+                amount={m.total}
+                bg="#4A0080"
+                fg="#F7D53D"
+              />
+            ))
           ) : (
-            <p className="text-muted">ไม่มีข้อมูลรายรับในช่วงที่เลือก</p>
+            <p className="text-muted text-center">ไม่มีข้อมูล</p>
           )}
         </div>
       )}
@@ -398,31 +208,33 @@ export default function DashboardRevenue({ bills, bookings }: Props) {
   );
 }
 
-// ✅ Sub component
+/* ============ Sub Component ============ */
 function RevenueCard({
   title,
   amount,
-  color,
+  bg = "#4A0080",
+  fg = "white",
+  height = "95px",
 }: {
   title: string;
   amount: number;
-  color: string;
+  bg?: string;
+  fg?: string;
+  height?: string;
 }) {
   return (
     <div
-      className="card text-center border-0 shadow-sm"
+      className="card border-0 shadow-sm"
       style={{
-        background: color,
-        color: "white",
-        borderRadius: "10px",
-        height: "90px",
+        background: bg,
+        color: fg,
+        borderRadius: "18px",
+        height,
       }}
     >
       <div className="d-flex flex-column justify-content-center align-items-center h-100">
-        <div className="fw-bold" style={{ fontSize: "1.25rem" }}>
-          {title}
-        </div>
-        <div className="fw-semibold" style={{ fontSize: "1.25rem" }}>
+        <div className="fw-bold" style={{ fontSize: "1.2rem" }}>{title}</div>
+        <div className="fw-bold" style={{ fontSize: "1.45rem" }}>
           {amount.toLocaleString("th-TH")}
         </div>
       </div>

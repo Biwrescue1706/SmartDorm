@@ -39,7 +39,6 @@ export default function Dashboard() {
   return (
     <div className="d-flex flex-column min-vh-100" style={{ backgroundColor: "#F7F4FD" }}>
       <Nav
-        message={message}
         onLogout={handleLogout}
         role={role}
         adminName={adminName}

@@ -26,7 +26,7 @@ export function useForgotPassword() {
 });
       return res.data;
     } catch (err: any) {
-      Swal.fire(({
+      Swal.fire({
           toast: true,
           position: "top-end",
           icon: "error",
@@ -57,7 +57,7 @@ export function useForgotPassword() {
 });
       return res.data;
     } catch (err: any) {
-      Swal.fire(({
+      Swal.fire({
           toast: true,
           position: "top-end",
           icon: "error",

@@ -98,7 +98,6 @@ export default function Login() {
        <h2
               className="fw-semibold"
               style={{
-                fontSize: "14px",
                 margin: 0,
                 color: "rgba(255,255,255,0.75)",
                 letterSpacing: "0.4px",

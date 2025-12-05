@@ -3,41 +3,32 @@ import { useNavigate } from "react-router-dom";
 interface DashboardCardProps {
   title: string;
   count: number;
-  color: string;
   link: string;
 }
 
-export default function DashboardCard({
-  title,
-  count,
-  color,
-  link,
-}: DashboardCardProps) {
+export default function DashboardCard({ title, count, link }: DashboardCardProps) {
   const navigate = useNavigate();
 
   return (
     <div
       className="card text-center border-0 shadow-sm"
       style={{
-        background: color,
-        color: "white",
-        borderRadius: "20px",
-        height: "85px", // การ์ดเตี้ยลง
+        background: "linear-gradient(135deg, #4A0080, #2A0052)", // SCB Purple
+        color: "#F7D53D", // SCB Gold
+        borderRadius: "18px",
+        height: "90px",
         cursor: "pointer",
-        transition: "transform 0.15s, box-shadow 0.15s",
+        transition: "transform .15s",
       }}
       onClick={() => navigate(link)}
-      onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.03)")}
+      onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.04)")}
       onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1.0)")}
     >
-      <div
-        className="d-flex flex-column justify-content-center align-items-center h-100"
-        style={{ lineHeight: 1 }}
-      >
-        <div className="fw-semibold mb-2" style={{ fontSize: "1.25rem" }}>
+      <div className="d-flex flex-column justify-content-center align-items-center h-100">
+        <div className="fw-bold" style={{ fontSize: "1.15rem" }}>
           {title}
         </div>
-        <div className="fw-bold" style={{ fontSize: "1.25rem" }}>
+        <div className="fw-bold" style={{ fontSize: "1.4rem" }}>
           {count}
         </div>
       </div>

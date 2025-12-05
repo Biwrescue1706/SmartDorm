@@ -2,6 +2,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 
 export interface NavProps {
+  message?: string;          // 🔥 เพิ่มกลับมา
   onLogout: () => void;
   pendingBookings?: number;
   role?: number | null;

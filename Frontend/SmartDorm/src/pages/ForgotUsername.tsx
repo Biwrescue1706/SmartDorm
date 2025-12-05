@@ -32,7 +32,7 @@ export default function ForgotUsername() {
             className="btn btn-outline-warning fw-semibold"
             onClick={() => navigate("/")}
           >
-            ⬅ เข้าสู่ระบบ
+            <==
           </button>
 
           {/* BRAND กลาง */}

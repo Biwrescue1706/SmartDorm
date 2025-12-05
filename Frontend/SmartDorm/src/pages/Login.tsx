@@ -25,13 +25,12 @@ export default function Login() {
       style={{
         minHeight: "100vh",
         background:
-          "linear-gradient(135deg, #2D006B 0%, #4E2A8E 40%, #200046 100%)",
+          "linear-gradient(135deg, #2D006B 0%, #4E2A8E 45%, #200046 100%)",
         animation: "bgMove 10s linear infinite",
         backgroundSize: "200% 200%",
       }}
     >
-      <style>
-        {`
+      <style>{`
         @keyframes bgMove {
           0% { background-position: 0% 50%; }
           50% { background-position: 100% 50%; }
@@ -47,8 +46,7 @@ export default function Login() {
           50% { box-shadow: 0 0 22px rgba(255,209,0,0.85); }
           100% { box-shadow: 0 0 12px rgba(255,209,0,0.35); }
         }
-        `}
-      </style>
+      `}</style>
 
       <div
         className="p-5 text-center"
@@ -63,55 +61,53 @@ export default function Login() {
           animation: "float 3.5s ease-in-out infinite",
         }}
       >
-        {/* HEADER ROW: LOGO LEFT + TEXT RIGHT */}
+        {/* HEADER ROW */}
         <div
           className="d-flex justify-content-center align-items-center gap-3"
-          style={{ marginBottom: "18px" }}
+          style={{ marginBottom: "6px" }}
         >
           <img
             src="https://smartdorm-admin.biwbong.shop/SmartDorm.webp"
             alt="SmartDorm Logo"
             style={{
-              width: "50px",
-              height: "50px",
+              width: "60px",
+              height: "60px",
               objectFit: "contain",
               filter: "drop-shadow(0 3px 6px rgba(0,0,0,0.45))",
             }}
           />
-          <div className="text-start">
-            <h2
-              className="fw-bold"
-              style={{
-                fontSize: "26px",
-                color: "#FFFFFF",
-                letterSpacing: "0.6px",
-                marginBottom: "2px",
-                textShadow: "0 3px 18px rgba(0,0,0,0.55)",
-              }}
-            >
-              SmartDorm
-            </h2>
-            
-          </div>
+
+          <h2
+            className="fw-bold"
+            style={{
+              fontSize: "26px",
+              color: "#FFFFFF",
+              margin: 0,
+              letterSpacing: "0.6px",
+              textShadow: "0 3px 18px rgba(0,0,0,0.55)",
+            }}
+          >
+            SmartDorm
+          </h2>
         </div>
 
-       <h2
-              className="fw-semibold"
-              style={{
-                margin: 0,
-                color: "rgba(255,255,255,0.75)",
-                letterSpacing: "0.4px",
-              }}
-            >
-              ระบบจัดการหอพักสำหรับผู้ดูแล
-            </h2>
+        {/* 👇 ข้อความนี้อยู่แยกด้านล่างตามคำสั่งคุณ */}
+        <h2
+          className="fw-semibold"
+          style={{
+            marginTop: "-2px",
+            marginBottom: "20px",
+            fontSize: "15px",
+            color: "rgba(255,255,255,0.75)",
+            letterSpacing: "0.4px",
+          }}
+        >
+          ระบบจัดการหอพักสำหรับผู้ดูแล
+        </h2>
 
         {/* FORM */}
         <form onSubmit={handleSubmit} className="text-start">
-          <label
-            className="fw-semibold d-block mb-1"
-            style={{ color: "#FFD100" }}
-          >
+          <label className="fw-semibold d-block mb-1" style={{ color: "#FFD100" }}>
             ชื่อผู้ใช้
           </label>
           <input
@@ -130,10 +126,7 @@ export default function Login() {
             onBlur={(e) => (e.target.style.borderColor = "transparent")}
           />
 
-          <label
-            className="fw-semibold d-block mb-1"
-            style={{ color: "#FFD100" }}
-          >
+          <label className="fw-semibold d-block mb-1" style={{ color: "#FFD100" }}>
             รหัสผ่าน
           </label>
 
@@ -192,17 +185,10 @@ export default function Login() {
         <Separator.Root
           decorative
           className="my-4"
-          style={{
-            height: "1px",
-            backgroundColor: "rgba(255,209,0,0.45)",
-          }}
+          style={{ height: "1px", backgroundColor: "rgba(255,209,0,0.45)" }}
         />
 
-        <Link
-          to="/forgot-username"
-          className="fw-semibold text-decoration-none"
-          style={{ color: "#FFD100" }}
-        >
+        <Link to="/forgot-username" className="fw-semibold text-decoration-none" style={{ color: "#FFD100" }}>
           ลืมรหัสผ่าน ?
         </Link>
       </div>

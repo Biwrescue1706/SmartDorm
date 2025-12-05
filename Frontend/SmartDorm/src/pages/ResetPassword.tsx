@@ -14,13 +14,11 @@ export default function ResetPassword() {
   const state = location.state as LocationState | undefined;
 
   const { resetPassword } = useForgotPassword();
-
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showNew, setShowNew] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
 
-  // ถ้าไม่ได้มาจากหน้า ForgotUsername ให้ redirect ออก
   if (!state?.username) {
     navigate("/forgot-username");
     return null;
@@ -29,114 +27,139 @@ export default function ResetPassword() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // ⭐ ตรวจความยาว
     if (newPassword.length < 6) {
-      Swal.fire(
-        "รหัสผ่านสั้นเกินไป",
-        "รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร",
-        "warning"
-      );
+      Swal.fire("รหัสผ่านสั้นเกินไป", "ต้องมีอย่างน้อย 6 ตัวอักษร", "warning");
       return;
     }
 
-    // ⭐ ตรวจว่าตรงกันไหม
     if (newPassword !== confirmPassword) {
       Swal.fire("ผิดพลาด", "รหัสผ่านใหม่ไม่ตรงกัน", "error");
       return;
     }
 
     try {
-      await resetPassword({
-        username: state.username,
-        newPassword,
-      });
+      await resetPassword({ username: state.username, newPassword });
+      Swal.fire("สำเร็จ", "ตั้งรหัสผ่านใหม่เรียบร้อย", "success");
       navigate("/");
-    } catch {
-      /* ถูกจัดการใน hook */
-    }
+    } catch {}
   };
 
   return (
     <div
-      className="d-flex justify-content-center align-items-center bg-light"
-      style={{ minHeight: "100vh" }}
+      className="container-fluid min-vh-100 d-flex flex-column p-0"
+      style={{
+        background:
+          "linear-gradient(135deg, #2D006B 0%, #4B2E83 45%, #200046 100%)",
+      }}
     >
-      <div
-        className="card shadow p-4"
-        style={{ maxWidth: "400px", width: "100%" }}
-      >
-        <h4 className="fw-bold text-center mb-4">🔐 ตั้งรหัสผ่านใหม่</h4>
-
-        <form onSubmit={handleSubmit}>
-          {/* ชื่อผู้ใช้ */}
-          <div className="alert alert-info text-center">
-            <strong>ชื่อผู้ใช้:</strong> {state.name}
-          </div>
-
-          {/* รหัสผ่านใหม่ */}
-          <div className="mb-3 position-relative">
-            <label className="form-label fw-bold">รหัสผ่านใหม่</label>
-            <input
-              type={showNew ? "text" : "password"}
-              className="form-control"
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-              required
-            />
-
-            <span
-              onClick={() => setShowNew(!showNew)}
-              style={{
-                position: "absolute",
-                right: "10px",
-                top: "65%",
-                transform: "translateY(-50%)",
-                cursor: "pointer",
-                userSelect: "none",
-              }}
-            >
-              {showNew ? "🙈" : "👁️"}
-            </span>
-          </div>
-
-          {/* ยืนยันรหัสผ่านใหม่ */}
-          <div className="mb-3 position-relative">
-            <label className="form-label fw-bold">ยืนยันรหัสผ่านใหม่</label>
-            <input
-              type={showConfirm ? "text" : "password"}
-              className="form-control"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              required
-            />
-
-            <span
-              onClick={() => setShowConfirm(!showConfirm)}
-              style={{
-                position: "absolute",
-                right: "10px",
-                top: "65%",
-                transform: "translateY(-50%)",
-                cursor: "pointer",
-                userSelect: "none",
-              }}
-            >
-              {showConfirm ? "🙈" : "👁️"}
-            </span>
-          </div>
-
-          <button type="submit" className="btn btn-success w-100">
-            บันทึกรหัสผ่านใหม่
-          </button>
-
+      {/* NAVBAR */}
+      <nav className="navbar navbar-dark px-3 py-2" style={{ backgroundColor: "rgba(0,0,0,0.18)" }}>
+        <div className="container-fluid d-flex justify-content-between align-items-center">
+          {/* BACK */}
           <button
-            type="button"
-            className="btn btn-outline-secondary w-100 mt-2"
-            onClick={() => navigate("/")}
+            className="btn btn-outline-warning fw-semibold"
+            onClick={() => navigate("/forgot-username")}
           >
-            กลับ
+            ⬅
           </button>
-        </form>
+
+          {/* BRAND CENTER */}
+          <div className="d-flex flex-column align-items-center mx-auto">
+            <div className="d-flex align-items-center gap-2">
+              <img
+                src="https://smartdorm-admin.biwbong.shop/SmartDorm.webp"
+                alt="logo"
+                width="48"
+                height="48"
+                className="img-fluid"
+              />
+              <span className="fw-bold h4 text-warning mb-0">SmartDorm</span>
+            </div>
+            <small className="text-light opacity-75">
+              ระบบจัดการหอพักสำหรับผู้ดูแล
+            </small>
+          </div>
+
+          {/* Dummy right */}
+          <div className="invisible">
+            <button className="btn btn-outline-warning">X</button>
+          </div>
+        </div>
+      </nav>
+
+      {/* FORM CARD – ใช้คลาสเดียวกับ Login.tsx */}
+      <div className="flex-grow-1 d-flex justify-content-center align-items-center">
+        <div
+          className="card shadow-lg border-0 text-center p-4 col-12 col-sm-10 col-md-7 col-lg-5 col-xl-4 col-xxl-3"
+          style={{ background: "rgba(255,255,255,0.1)", backdropFilter: "blur(10px)" }}
+        >
+          <h2 className="fw-bold text-warning mb-2">🔐 ตั้งรหัสผ่านใหม่</h2>
+          <p className="text-white-50 mb-4">
+            ตั้งรหัสผ่านใหม่สำหรับผู้ใช้:{" "}
+            <strong className="text-warning">{state.name}</strong>
+          </p>
+
+          <form onSubmit={handleSubmit}>
+            {/* NEW PASSWORD */}
+            <div className="mb-3 position-relative text-start">
+              <label className="form-label text-warning fw-semibold">
+                รหัสผ่านใหม่
+              </label>
+              <input
+                type={showNew ? "text" : "password"}
+                className="form-control text-center"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                required
+                style={{
+                  backgroundColor: "rgba(255,255,255,0.18)",
+                  border: "none",
+                  color: "white",
+                }}
+              />
+              <span
+                className="position-absolute"
+                style={{ right: "12px", top: "55%", cursor: "pointer" }}
+                onClick={() => setShowNew(!showNew)}
+              >
+                {showNew ? "🙈" : "👁️"}
+              </span>
+            </div>
+
+            {/* CONFIRM PASSWORD */}
+            <div className="mb-3 position-relative text-start">
+              <label className="form-label text-warning fw-semibold">
+                ยืนยันรหัสผ่านใหม่
+              </label>
+              <input
+                type={showConfirm ? "text" : "password"}
+                className="form-control text-center"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                required
+                style={{
+                  backgroundColor: "rgba(255,255,255,0.18)",
+                  border: "none",
+                  color: "white",
+                }}
+              />
+              <span
+                className="position-absolute"
+                style={{ right: "12px", top: "55%", cursor: "pointer" }}
+                onClick={() => setShowConfirm(!showConfirm)}
+              >
+                {showConfirm ? "🙈" : "👁️"}
+              </span>
+            </div>
+
+            <button
+              type="submit"
+              className="btn btn-warning w-100 fw-bold text-dark"
+            >
+              บันทึกรหัสผ่านใหม่
+            </button>
+          </form>
+        </div>
       </div>
     </div>
   );

@@ -53,7 +53,7 @@ export default function Login() {
       <div
         className="p-5 text-center"
         style={{
-          width: "440px",
+          width: "460px",
           borderRadius: "22px",
           background: "rgba(255,255,255,0.08)",
           border: "1px solid rgba(255,255,255,0.25)",
@@ -63,58 +63,56 @@ export default function Login() {
           animation: "float 3.5s ease-in-out infinite",
         }}
       >
-        <img
-          src="https://smartdorm-admin.biwbong.shop/SmartDorm.webp"
-          alt="SmartDorm Logo"
-          style={{
-            width: "95px",
-            height: "95px",
-            filter: "drop-shadow(0 3px 6px rgba(0,0,0,0.5))",
-            marginBottom: "10px",
-          }}
-        />
-
-        <h2
-          className="fw-bold"
-          style={{
-            fontSize: "30px",
-            color: "#FFFFFF",
-            letterSpacing: "0.6px",
-            textShadow: "0 3px 18px rgba(0,0,0,0.55)",
-          }}
+        {/* HEADER ROW: LOGO LEFT + TEXT RIGHT */}
+        <div
+          className="d-flex justify-content-center align-items-center gap-3"
+          style={{ marginBottom: "18px" }}
         >
-          SmartDorm
-        </h2>
+          <img
+            src="https://smartdorm-admin.biwbong.shop/SmartDorm.webp"
+            alt="SmartDorm Logo"
+            style={{
+              width: "70px",
+              height: "70px",
+              objectFit: "contain",
+              filter: "drop-shadow(0 3px 6px rgba(0,0,0,0.45))",
+            }}
+          />
+          <div className="text-start">
+            <h2
+              className="fw-bold"
+              style={{
+                fontSize: "26px",
+                color: "#FFFFFF",
+                letterSpacing: "0.6px",
+                marginBottom: "2px",
+                textShadow: "0 3px 18px rgba(0,0,0,0.55)",
+              }}
+            >
+              SmartDorm
+            </h2>
+            
+          </div>
+        </div>
 
-        <p
-          className="fw-semibold"
-          style={{
-            marginTop: "-6px",
-            fontSize: "15px",
-            color: "rgba(255,255,255,0.75)",
-            letterSpacing: "0.4px",
-          }}
-        >
-          ระบบจัดการหอพักสำหรับผู้ดูแล
-        </p>
+       <h2
+              className="fw-semibold"
+              style={{
+                fontSize: "14px",
+                margin: 0,
+                color: "rgba(255,255,255,0.75)",
+                letterSpacing: "0.4px",
+              }}
+            >
+              ระบบจัดการหอพักสำหรับผู้ดูแล
+            </h2>
 
-        <h3
-          className="fw-bold mt-2 mb-4"
-          style={{
-            color: "#FFD100",
-            fontSize: "18px",
-            lineHeight: "1.6",
-            textShadow: "0 2px 8px rgba(255,209,0,0.45)",
-          }}
-        >
-          เข้าสู่ระบบเพื่อ
-          <br />
-          จัดการหอพัก
-          <br /> SmartDorm Admin
-        </h3>
-
+        {/* FORM */}
         <form onSubmit={handleSubmit} className="text-start">
-          <label className="fw-semibold d-block mb-1" style={{ color: "#FFD100" }}>
+          <label
+            className="fw-semibold d-block mb-1"
+            style={{ color: "#FFD100" }}
+          >
             ชื่อผู้ใช้
           </label>
           <input
@@ -128,15 +126,18 @@ export default function Login() {
               border: "2px solid transparent",
               background: "rgba(255,255,255,0.15)",
               color: "white",
-              transition: "0.3s",
             }}
             onFocus={(e) => (e.target.style.borderColor = "#FFD100")}
             onBlur={(e) => (e.target.style.borderColor = "transparent")}
           />
 
-          <label className="fw-semibold d-block mb-1" style={{ color: "#FFD100" }}>
+          <label
+            className="fw-semibold d-block mb-1"
+            style={{ color: "#FFD100" }}
+          >
             รหัสผ่าน
           </label>
+
           <div className="position-relative mb-4">
             <input
               type={showPassword ? "text" : "password"}
@@ -150,12 +151,10 @@ export default function Login() {
                 background: "rgba(255,255,255,0.15)",
                 paddingRight: "45px",
                 color: "white",
-                transition: "0.3s",
               }}
               onFocus={(e) => (e.target.style.borderColor = "#FFD100")}
               onBlur={(e) => (e.target.style.borderColor = "transparent")}
             />
-
             <span
               onClick={() => setShowPassword(!showPassword)}
               style={{
@@ -181,16 +180,10 @@ export default function Login() {
               background: isFormValid
                 ? "linear-gradient(135deg, #FFD100, #B98A00, #FFD100)"
                 : "gray",
-              backgroundSize: "260% 260%",
-              animation: isFormValid && "glow 2.8s infinite",
               border: "none",
               color: "#2D006B",
               fontWeight: "bold",
-              boxShadow: isFormValid
-                ? "0 4px 15px rgba(255,209,0,0.6)"
-                : "none",
-              cursor: isFormValid ? "pointer" : "not-allowed",
-              transition: "0.25s",
+              animation: isFormValid && "glow 2.8s infinite",
             }}
           >
             {loading ? "กำลังเข้าสู่ระบบ..." : "เข้าสู่ระบบ"}
@@ -200,18 +193,16 @@ export default function Login() {
         <Separator.Root
           decorative
           className="my-4"
-          style={{ height: "1px", backgroundColor: "rgba(255,209,0,0.45)" }}
+          style={{
+            height: "1px",
+            backgroundColor: "rgba(255,209,0,0.45)",
+          }}
         />
 
         <Link
           to="/forgot-username"
           className="fw-semibold text-decoration-none"
-          style={{
-            color: "#FFD100",
-            transition: "0.3s",
-          }}
-          onMouseOver={(e) => (e.currentTarget.style.opacity = "0.8")}
-          onMouseOut={(e) => (e.currentTarget.style.opacity = "1")}
+          style={{ color: "#FFD100" }}
         >
           ลืมรหัสผ่าน ?
         </Link>

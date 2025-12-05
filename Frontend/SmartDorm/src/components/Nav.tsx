@@ -23,12 +23,12 @@ export default function Nav({
   const [dropdown, setDropdown] = useState<string | null>(null);
   const [profileOpen, setProfileOpen] = useState(false);
 
-  const shortName = (name?: string) => {
-    if (!name) return "-";
-    if (name.length <= 10) return name;
-    const parts = name.split(" ");
-    return parts.length > 1 ? `${parts[0]} ${parts[1][0]}.` : `${name.slice(0, 7)}...`;
-  };
+  const shortName = (name?: string) =>
+    !name
+      ? "-"
+      : name.length <= 12
+      ? name
+      : `${name.split(" ")[0]} ${name.split(" ")[1][0]}.`;
 
   const isActive = (path: string) => location.pathname.startsWith(path);
 
@@ -42,52 +42,69 @@ export default function Nav({
 
   return (
     <>
-      {/* 🔝 TOP BAR */}
+      {/* 🟣 TOP BAR */}
       <div
-        className="position-fixed top-0 start-0 w-100 bg-primary text-white d-flex align-items-center px-3 shadow"
-        style={{ height: "70px", zIndex: 2000 }}
+        className="position-fixed top-0 start-0 w-100 bg-primary text-white shadow d-flex align-items-center px-3"
+        style={{ height: "72px", zIndex: 2000 }}
       >
-        {/* ☰ MENU BUTTON FOR MOBILE */}
+        {/* ☰ MENU BUTTON (Mobile only) */}
         <button
-          className="btn btn-light btn-sm d-xxl-none me-3"
+          className="btn btn-light btn-sm d-xxl-none me-3 fw-bold"
           onClick={() => setMenuOpen(!menuOpen)}
         >
           {menuOpen ? "✖" : "☰"}
         </button>
 
-        {/* BRAND CENTER */}
-        <div className="text-center flex-grow-1">
-          <h6 className="mb-0 fw-bold">ระบบจัดการหอพัก</h6>
-          <h5 className="mb-0 fw-bold text-warning">( SmartDorm )</h5>
+        {/* 🏢 BRAND CENTER */}
+        <div className="flex-grow-1 text-center">
+          <div className="fw-semibold" style={{ fontSize: "0.95rem" }}>ระบบจัดการหอพัก</div>
+          <div className="fw-bold text-warning" style={{ fontSize: "1.18rem" }}>
+            SmartDorm
+          </div>
         </div>
 
-        {/* PROFILE MENU */}
-        <div className="position-relative profile-menu" style={{ cursor: "pointer" }}>
-          <div onClick={() => setProfileOpen(!profileOpen)}>
+        {/* 👤 PROFILE */}
+        <div className="profile-menu position-relative" style={{ cursor: "pointer" }}>
+          <div
+            className="d-flex flex-column text-end"
+            onClick={() => setProfileOpen(!profileOpen)}
+          >
             <span className="text-warning fw-bold">{shortName(adminName)}</span>
-            <span className="text-white ms-2">
-              {role === 0 ? "แอดมิน" : "พนักงาน"}
+            <span className="small text-white opacity-75">
+              {role === 0 ? "ผู้ดูแลระบบ" : "พนักงาน"}
             </span>
           </div>
 
+          {/* PROFILE DROPDOWN */}
           {profileOpen && (
             <div
-              className="position-absolute end-0 mt-2 bg-white shadow p-3 rounded"
-              style={{ minWidth: "220px" }}
+              className="position-absolute end-0 bg-white shadow rounded p-3 mt-2"
+              style={{ minWidth: "230px" }}
             >
               <div className="border-bottom pb-2 mb-2 small">
-                <strong className="text-primary">👤 {adminName}</strong>
+                <span className="fw-bold text-primary">👤 {adminName}</span>
                 <br />
                 <span className="text-muted">{adminUsername}</span>
               </div>
 
-              <button className="btn btn-light w-100 text-start mb-2" onClick={() => navigate("/profile")}>
-                ⚙️ โปรไฟล์
+              <button
+                className="btn btn-light w-100 text-start mb-2"
+                onClick={() => navigate("/profile")}
+              >
+                ⚙️ โปรไฟล์ของฉัน
               </button>
-              <button className="btn btn-light w-100 text-start mb-2" onClick={() => navigate("/change-password")}>
+
+              <button
+                className="btn btn-light w-100 text-start mb-2"
+                onClick={() => navigate("/change-password")}
+              >
                 🔑 เปลี่ยนรหัสผ่าน
               </button>
-              <button className="btn btn-light w-100 text-start text-danger fw-bold" onClick={onLogout}>
+
+              <button
+                className="btn btn-outline-danger w-100 text-start fw-semibold"
+                onClick={onLogout}
+              >
                 🚪 ออกจากระบบ
               </button>
             </div>
@@ -97,8 +114,8 @@ export default function Nav({
 
       {/* 🟣 SIDEBAR DESKTOP (≥1400px) */}
       <div
-        className="d-none d-xxl-flex flex-column position-fixed top-0 start-0 bg-primary text-white shadow"
-        style={{ width: "200px", height: "100vh", paddingTop: "90px" }}
+        className="d-none d-xxl-flex flex-column position-fixed bg-primary text-white shadow"
+        style={{ width: "210px", top: 0, bottom: 0, paddingTop: "85px" }}
       >
         <div className="px-2 d-flex flex-column gap-2">
           <button
@@ -172,7 +189,6 @@ export default function Nav({
             </div>
           )}
 
-          {/* เฉพาะแอดมิน */}
           {role === 0 && (
             <button
               className={`btn text-start ${isActive("/admin/manage") ? "btn-light text-primary fw-bold" : "btn-outline-light"}`}
@@ -195,18 +211,20 @@ export default function Nav({
       {menuOpen && (
         <>
           <div
-            className="position-fixed bg-primary text-white p-3 shadow"
-            style={{ width: "230px", height: "100vh", top: 0, left: 0, paddingTop: "90px", zIndex: 3000 }}
+            className="position-fixed bg-primary text-white shadow p-3"
+            style={{ width: "240px", top: 0, bottom: 0, paddingTop: "90px", zIndex: 3000 }}
           >
-            <button className="btn btn-light btn-sm mb-2" onClick={() => setMenuOpen(false)}>
+            <button className="btn btn-light btn-sm mb-3" onClick={() => setMenuOpen(false)}>
               ✖ ปิดเมนู
             </button>
 
             <div className="d-flex flex-column gap-2">
               <button className="btn btn-outline-light text-start" onClick={() => { navigate("/dashboard"); setMenuOpen(false); }}>🏠 หน้าแรก</button>
 
-              <button className="btn btn-outline-light text-start d-flex justify-content-between"
-                onClick={() => setDropdown(dropdown === "room" ? null : "room")}>
+              <button
+                className="btn btn-outline-light text-start d-flex justify-content-between"
+                onClick={() => setDropdown(dropdown === "room" ? null : "room")}
+              >
                 🛏️ ห้อง {dropdown === "room" ? "▴" : "▾"}
               </button>
 
@@ -218,8 +236,10 @@ export default function Nav({
                 </div>
               )}
 
-              <button className="btn btn-outline-light text-start d-flex justify-content-between"
-                onClick={() => setDropdown(dropdown === "bill" ? null : "bill")}>
+              <button
+                className="btn btn-outline-light text-start d-flex justify-content-between"
+                onClick={() => setDropdown(dropdown === "bill" ? null : "bill")}
+              >
                 💰 บิล {dropdown === "bill" ? "▴" : "▾"}
               </button>
 
@@ -238,7 +258,6 @@ export default function Nav({
             </div>
           </div>
 
-          {/* OVERLAY */}
           <div
             className="position-fixed w-100 h-100 bg-dark bg-opacity-50"
             style={{ top: 0, left: 0, zIndex: 2500 }}

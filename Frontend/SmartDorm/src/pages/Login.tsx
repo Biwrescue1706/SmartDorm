@@ -97,7 +97,6 @@ export default function Login() {
           style={{
             marginTop: "-2px",
             marginBottom: "20px",
-            fontSize: "15px",
             color: "rgba(255,255,255,0.75)",
             letterSpacing: "0.4px",
           }}

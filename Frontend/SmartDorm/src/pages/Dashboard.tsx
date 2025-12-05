@@ -9,7 +9,7 @@ import DashboardSummary from "../components/Dashboard/DashboardSummary";
 import DashboardRevenue from "../components/Dashboard/DashboardRevenue";
 
 export default function Dashboard() {
-  const { handleLogout, role, adminName, adminUsername } = useAuth();
+  const { message, handleLogout, role, adminName, adminUsername } = useAuth();
   const { rooms, fetchRooms } = useRooms();
   const { bookings, fetchBookings } = useBookings();
   const { checkouts, fetchCheckouts } = useCheckouts();
@@ -19,10 +19,12 @@ export default function Dashboard() {
   const [pendingCheckouts, setPendingCheckouts] = useState(0);
 
   useEffect(() => {
-    const load = async () => {
-      await Promise.all([fetchRooms(), fetchBookings(), fetchCheckouts(), fetchBills()]);
-    };
-    load();
+    Promise.all([
+      fetchRooms(),
+      fetchBookings(),
+      fetchCheckouts(),
+      fetchBills(),
+    ]);
   }, []);
 
   useEffect(() => {
@@ -35,9 +37,9 @@ export default function Dashboard() {
   const bookedRooms = rooms.filter((r) => r.status === 1).length;
 
   return (
-    <div className="d-flex flex-column min-vh-100"
-      style={{ background: "#F8F6FF" }}>
+    <div className="d-flex flex-column min-vh-100" style={{ backgroundColor: "#F7F4FD" }}>
       <Nav
+        message={message}
         onLogout={handleLogout}
         role={role}
         adminName={adminName}
@@ -45,10 +47,9 @@ export default function Dashboard() {
         pendingBookings={pendingBookings}
       />
 
-      <main className="main-content flex-grow-1 px-1 py-2 mt-6 mt-lg-7">
-        <div className="mx-auto container-max" style={{ maxWidth: "1400px" }}>
-          <h2 className="text-center mt-3 fw-bold mb-4"
-            style={{ color: "#4E2A7F" }}>
+      <main className="flex-grow-1 px-2 py-2 mt-6 mt-lg-7">
+        <div className="container" style={{ maxWidth: "1400px" }}>
+          <h2 className="fw-bold text-center mt-3 mb-4" style={{ color: "#4A0080" }}>
             📊 สรุปข้อมูลหอพัก
           </h2>
 

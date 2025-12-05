@@ -44,7 +44,7 @@ export default function Login() {
           <h2 className="fw-bold text-white m-0">SmartDorm</h2>
         </div>
 
-        <p className="text-white-50 mb-4">ระบบจัดการหอพักสำหรับผู้ดูแล</p>
+        <h3 className="text-white mb-4">ระบบจัดการหอพักสำหรับผู้ดูแล</h3>
 
         {/* FORM */}
         <form onSubmit={handleSubmit}>

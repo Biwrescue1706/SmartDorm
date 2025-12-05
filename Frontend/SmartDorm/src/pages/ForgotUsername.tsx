@@ -16,21 +16,26 @@ export default function ForgotUsername() {
   };
 
   return (
-    <div className="container-fluid min-vh-100 d-flex flex-column p-0 bg-dark bg-gradient">
-
-      {/* NAVBAR (เหมือน Login) */}
-      <nav className="navbar navbar-dark bg-transparent px-3 py-2">
+    <div
+      className="container-fluid min-vh-100 d-flex flex-column p-0"
+      style={{
+        background:
+          "linear-gradient(135deg, #2D006B 0%, #4B2E83 45%, #200046 100%)",
+      }}
+    >
+      {/* NAVBAR */}
+      <nav className="navbar navbar-dark px-3 py-2" style={{ backgroundColor: "rgba(0,0,0,0.18)" }}>
         <div className="container-fluid d-flex justify-content-between align-items-center">
 
-          {/* ปุ่มย้อนกลับ ซ้ายเหมือน Login */}
+          {/* ปุ่มย้อนกลับซ้าย */}
           <button
             className="btn btn-outline-warning fw-semibold"
             onClick={() => navigate("/")}
           >
-            ⬅
+            ⬅ เข้าสู่ระบบ
           </button>
 
-          {/* LOGO ตรงกลางเหมือน Login */}
+          {/* BRAND กลาง */}
           <div className="d-flex flex-column align-items-center mx-auto">
             <div className="d-flex align-items-center gap-2">
               <img
@@ -38,34 +43,36 @@ export default function ForgotUsername() {
                 alt="logo"
                 width="48"
                 height="48"
-                className="img-fluid"
               />
-              <span className="fw-bold h4 text-warning mb-0">
-                SmartDorm
-              </span>
+              <span className="fw-bold h4 text-warning mb-0">SmartDorm</span>
             </div>
-
             <small className="text-light opacity-75">
               ระบบจัดการหอพักสำหรับผู้ดูแล
             </small>
           </div>
 
-          {/* dummy ด้านขวาให้บาลานซ์ */}
+          {/* Dummy พื้นที่ขวาเพื่อบาลานซ์ */}
           <div className="invisible">
             <button className="btn btn-outline-warning">X</button>
           </div>
         </div>
       </nav>
 
-      {/* CARD FORM เหมือน Login */}
+      {/* FORM CARD */}
       <div className="flex-grow-1 d-flex justify-content-center align-items-center">
         <div
-          className="card shadow-lg border-0 text-center p-4 bg-secondary bg-opacity-25 col-11 col-sm-9 col-md-7 col-lg-5 col-xl-4"
+          className="card shadow-lg border-0 text-center p-4"
+          style={{
+            maxWidth: "460px",
+            width: "100%",
+            backgroundColor: "rgba(255,255,255,0.12)",
+            backdropFilter: "blur(10px)",
+          }}
         >
-          <h2 className="fw-bold text-white mb-3">🔑 ลืมรหัสผ่าน</h2>
-          <h3 className="text-white mb-4">
+          <h2 className="fw-bold text-warning mb-2">🔑 ลืมรหัสผ่าน</h2>
+          <p className="text-white-50 mb-4">
             กรุณากรอกชื่อผู้ใช้เพื่อตรวจสอบข้อมูล
-          </h3>
+          </p>
 
           <form onSubmit={handleSubmit}>
             <div className="mb-3 text-start">
@@ -79,10 +86,18 @@ export default function ForgotUsername() {
                 onChange={(e) => setUsername(e.target.value)}
                 required
                 autoFocus
+                style={{
+                  backgroundColor: "rgba(255,255,255,0.18)",
+                  border: "none",
+                  color: "white",
+                }}
               />
             </div>
 
-            <button type="submit" className="btn btn-warning w-100 fw-bold text-dark">
+            <button
+              type="submit"
+              className="btn btn-warning w-100 fw-bold text-dark"
+            >
               ตรวจสอบชื่อผู้ใช้
             </button>
           </form>

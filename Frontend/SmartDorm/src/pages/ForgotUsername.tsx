@@ -25,26 +25,33 @@ export default function ForgotUsername() {
       }}
     >
       {/* NAVBAR */}
-      <nav className="navbar navbar-dark px-3" style={{ background: "rgba(0,0,0,0.2)" }}>
-        <div className="d-flex align-items-center gap-2">
-          <img
-            src="https://smartdorm-admin.biwbong.shop/SmartDorm.webp"
-            alt="logo"
-            width="42"
-            height="42"
-            className="img-fluid"
-          />
-          <span className="navbar-brand mb-0 h4 fw-bold text-warning">
-            SmartDorm
-          </span>
-        </div>
-
+      <nav className="navbar navbar-dark px-3 py-2" style={{ background: "rgba(0,0,0,0.2)" }}>
         <button
           className="btn btn-outline-warning fw-semibold"
           onClick={() => navigate("/")}
         >
           ⬅ เข้าสู่ระบบ
         </button>
+
+        {/* LOGO + BRAND + SUBTEXT อยู่รวมกันตรงขวา */}
+        <div className="d-flex flex-column align-items-end">
+          <div className="d-flex align-items-center gap-2">
+            <img
+              src="https://smartdorm-admin.biwbong.shop/SmartDorm.webp"
+              width="42"
+              height="42"
+              alt="logo"
+            />
+            <span className="navbar-brand mb-0 h4 fw-bold text-warning m-0">
+              SmartDorm
+            </span>
+          </div>
+
+          {/* ⬇ ข้อความนี้อยู่ *ใต้ SmartDorm* ตามที่สั่ง */}
+          <small className="text-white-50 mt-1">
+            ระบบจัดการหอพักสำหรับผู้ดูแล
+          </small>
+        </div>
       </nav>
 
       {/* CONTENT */}
@@ -53,10 +60,8 @@ export default function ForgotUsername() {
           className="card shadow-lg border-0 text-center p-4 col-11 col-sm-8 col-md-6 col-lg-4"
           style={{ background: "rgba(255,255,255,0.12)", backdropFilter: "blur(10px)" }}
         >
-          <h3 className="text-white fw-bold mb-3">🔑 ลืมรหัสผ่าน</h3>
-          <p className="text-white-50 mb-4">
-            กรุณากรอกชื่อผู้ใช้เพื่อตรวจสอบข้อมูล
-          </p>
+          <h2 className="text-white fw-bold mb-3">🔑 ลืมรหัสผ่าน</h2>
+          <h3 className="text-white-50 mb-4">กรุณากรอกชื่อผู้ใช้เพื่อตรวจสอบข้อมูล</h3>
 
           <form onSubmit={handleSubmit}>
             <div className="mb-3 text-start">

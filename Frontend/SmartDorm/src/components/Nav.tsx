@@ -2,7 +2,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 
 export interface NavProps {
-  message?: string;          // 🔥 เพิ่มกลับมา
+  message?: string;
   onLogout: () => void;
   pendingBookings?: number;
   role?: number | null;
@@ -11,6 +11,7 @@ export interface NavProps {
 }
 
 export default function Nav({
+  message,
   onLogout,
   pendingBookings = 0,
   role,
@@ -26,8 +27,8 @@ export default function Nav({
   const shortName = (name?: string) => {
     if (!name) return "-";
     if (name.length <= 10) return name;
-    const p = name.split(" ");
-    return p.length > 1 ? `${p[0]} ${p[1][0]}.` : `${name.slice(0, 7)}...`;
+    const parts = name.split(" ");
+    return parts.length > 1 ? `${parts[0]} ${parts[1][0]}.` : `${name.slice(0, 7)}...`;
   };
 
   const isActive = (path: string) => location.pathname.startsWith(path);
@@ -42,109 +43,127 @@ export default function Nav({
 
   return (
     <>
-      {/* TOP BAR */}
+      {/* 🔝 TOP BAR */}
       <div
-        className="position-fixed top-0 start-0 w-100 text-white d-flex align-items-center px-3 shadow"
-        style={{ height: "70px", zIndex: 2000, background: "#4E2A7F" }}
+        className="position-fixed top-0 start-0 w-100 d-flex align-items-center shadow px-3"
+        style={{
+          height: "70px",
+          backgroundColor: "#4A0080",
+          color: "#F7D53D",
+          zIndex: 2000,
+        }}
       >
-        {/* MOBILE MENU BUTTON */}
+        {/* ☰ MENU BUTTON */}
         <button
-          className="btn btn-light btn-sm d-xxl-none me-3 fw-bold"
+          className="btn btn-warning btn-sm d-xxl-none me-3 fw-bold"
           onClick={() => setMenuOpen(!menuOpen)}
-          style={{ color: "#4E2A7F" }}
         >
           {menuOpen ? "✖" : "☰"}
         </button>
 
         {/* BRAND */}
         <div className="text-center flex-grow-1">
-          <h6 className="mb-0 fw-bold">ระบบจัดการหอพัก</h6>
-          <h5 className="mb-0 fw-bold" style={{ color: "#F7C325" }}>
-            SmartDorm
-          </h5>
+          <h6 className="mb-0 fw-bold text-white">ระบบจัดการหอพัก</h6>
+          <h5 className="mb-0 fw-bold text-warning">( SmartDorm )</h5>
         </div>
 
         {/* PROFILE */}
-        <div className="position-relative profile-menu" style={{ cursor: "pointer" }}>
+        <div className="profile-menu position-relative" style={{ cursor: "pointer" }}>
           <div onClick={() => setProfileOpen(!profileOpen)}>
-            <span className="fw-bold" style={{ color: "#F7C325" }}>
-              {shortName(adminName)}
-            </span>
-            <span className="ms-2 text-white">
-              {role === 0 ? "ผู้ดูแลระบบ" : "พนักงาน"}
-            </span>
+            <span className="fw-bold text-warning">{shortName(adminName)}</span>
+            <span className="ms-2 text-white">{role === 0 ? "แอดมิน" : "พนักงาน"}</span>
           </div>
 
-          {/* DROPDOWN */}
           {profileOpen && (
-            <div className="position-absolute end-0 mt-2 bg-white shadow p-3 rounded"
-              style={{ minWidth: "220px", color: "#4E2A7F" }}>
+            <div
+              className="position-absolute end-0 mt-2 bg-white shadow p-3 rounded"
+              style={{ minWidth: "220px" }}
+            >
               <div className="border-bottom pb-2 mb-2 small">
-                <strong style={{ color: "#4E2A7F" }}>👤 {adminName}</strong>
-                <br />
+                <strong className="text-primary">👤 {adminName}</strong><br />
                 <span className="text-muted">{adminUsername}</span>
               </div>
 
-              <button className="btn btn-light w-100 text-start mb-2"
-                onClick={() => navigate("/profile")}>⚙️ โปรไฟล์</button>
+              <button className="btn btn-light w-100 text-start mb-2" onClick={() => navigate("/profile")}>
+                ⚙️ โปรไฟล์
+              </button>
 
-              <button className="btn btn-light w-100 text-start mb-2"
-                onClick={() => navigate("/change-password")}>🔑 เปลี่ยนรหัสผ่าน</button>
+              <button className="btn btn-light w-100 text-start mb-2" onClick={() => navigate("/change-password")}>
+                🔑 เปลี่ยนรหัสผ่าน
+              </button>
 
-              <button className="btn btn-light w-100 text-start fw-bold text-danger"
-                onClick={onLogout}>🚪 ออกจากระบบ</button>
+              <button className="btn btn-light w-100 text-start text-danger fw-bold" onClick={onLogout}>
+                🚪 ออกจากระบบ
+              </button>
             </div>
           )}
         </div>
       </div>
 
-      {/* DESKTOP SIDEBAR */}
+      {/* 🔔 MESSAGE BAR */}
+      {message && (
+        <div
+          className="position-fixed start-50 translate-middle-x text-center px-3 py-1 rounded shadow"
+          style={{
+            top: "70px",
+            backgroundColor: "#F7D53D",
+            color: "#4A0080",
+            fontWeight: 600,
+            zIndex: 3000,
+            minWidth: "260px",
+          }}
+        >
+          {message}
+        </div>
+      )}
+
+      {/* 🟣 SIDEBAR DESKTOP (≥1400px) */}
       <div
         className="d-none d-xxl-flex flex-column position-fixed top-0 start-0 text-white shadow"
-        style={{ width: "200px", height: "100vh", paddingTop: "90px", background: "#4E2A7F" }}
+        style={{
+          width: "220px",
+          height: "100vh",
+          paddingTop: "90px",
+          backgroundColor: "#4A0080",
+        }}
       >
-        <div className="d-flex flex-column gap-2 px-2">
+        <div className="px-2 d-flex flex-column gap-2">
           <button
-            className={`btn text-start ${isActive("/dashboard") ? "btn-light fw-bold" : "btn-outline-light"}`}
-            style={isActive("/dashboard") ? { color: "#4E2A7F" } : {}}
+            className={`btn text-start ${isActive("/dashboard") ? "btn-warning text-dark fw-bold" : "btn-outline-warning"}`}
             onClick={() => navigate("/dashboard")}
           >
             🏠 หน้าแรก
           </button>
 
-          {/* ROOM DROPDOWN */}
-          <button className="btn btn-outline-light text-start d-flex justify-content-between"
-            onClick={() => setDropdown(dropdown === "room" ? null : "room")}>
+          {/* ห้อง */}
+          <button
+            className="btn btn-outline-warning text-start d-flex justify-content-between"
+            onClick={() => setDropdown(dropdown === "room" ? null : "room")}
+          >
             🛏️ ห้อง {dropdown === "room" ? "▴" : "▾"}
           </button>
 
           {dropdown === "room" && (
             <div className="ps-3 d-flex flex-column gap-2">
               <button
-                className={`btn text-start ${isActive("/rooms") ? "btn-light fw-bold" : "btn-outline-light"}`}
-                style={isActive("/rooms") ? { color: "#4E2A7F" } : {}}
+                className={`btn text-start ${isActive("/rooms") ? "btn-warning text-dark fw-bold" : "btn-outline-warning"}`}
                 onClick={() => navigate("/rooms")}
               >
                 🏘️ จัดการห้องพัก
               </button>
 
               <button
-                className={`btn text-start position-relative ${isActive("/bookings") ? "btn-light fw-bold" : "btn-outline-light"}`}
-                style={isActive("/bookings") ? { color: "#4E2A7F" } : {}}
+                className={`btn text-start position-relative ${isActive("/bookings") ? "btn-warning text-dark fw-bold" : "btn-outline-warning"}`}
                 onClick={() => navigate("/bookings")}
               >
                 📑 การจอง
                 {pendingBookings > 0 && (
-                  <span className="badge"
-                    style={{ background: "#F7C325", color: "#4E2A7F", position: "absolute", top: 0, right: 0 }}>
-                    {pendingBookings}
-                  </span>
+                  <span className="badge bg-danger position-absolute top-0 end-0">{pendingBookings}</span>
                 )}
               </button>
 
               <button
-                className={`btn text-start ${isActive("/checkout") ? "btn-light fw-bold" : "btn-outline-light"}`}
-                style={isActive("/checkout") ? { color: "#4E2A7F" } : {}}
+                className={`btn text-start ${isActive("/checkout") ? "btn-warning text-dark fw-bold" : "btn-outline-warning"}`}
                 onClick={() => navigate("/checkout")}
               >
                 🔄 หน้าคืน
@@ -152,26 +171,25 @@ export default function Nav({
             </div>
           )}
 
-          {/* BILL */}
+          {/* บิล */}
           <button
-            className="btn btn-outline-light text-start d-flex justify-content-between"
-            onClick={() => setDropdown(dropdown === "bill" ? null : "bill")}>
+            className="btn btn-outline-warning text-start d-flex justify-content-between"
+            onClick={() => setDropdown(dropdown === "bill" ? null : "bill")}
+          >
             💰 บิล {dropdown === "bill" ? "▴" : "▾"}
           </button>
 
           {dropdown === "bill" && (
             <div className="ps-3 d-flex flex-column gap-2">
               <button
-                className={`btn text-start ${isActive("/bills") ? "btn-light fw-bold" : "btn-outline-light"}`}
-                style={isActive("/bills") ? { color: "#4E2A7F" } : {}}
+                className={`btn text-start ${isActive("/bills") ? "btn-warning text-dark fw-bold" : "btn-outline-warning"}`}
                 onClick={() => navigate("/bills")}
               >
                 💵 สร้างบิล
               </button>
 
               <button
-                className={`btn text-start ${isActive("/allbills") ? "btn-light fw-bold" : "btn-outline-light"}`}
-                style={isActive("/allbills") ? { color: "#4E2A7F" } : {}}
+                className={`btn text-start ${isActive("/allbills") ? "btn-warning text-dark fw-bold" : "btn-outline-warning"}`}
                 onClick={() => navigate("/allbills")}
               >
                 📋 บิลทั้งหมด
@@ -179,11 +197,9 @@ export default function Nav({
             </div>
           )}
 
-          {/* ADMIN ONLY */}
           {role === 0 && (
             <button
-              className={`btn text-start ${isActive("/admin/manage") ? "btn-light fw-bold" : "btn-outline-light"}`}
-              style={isActive("/admin/manage") ? { color: "#4E2A7F" } : {}}
+              className={`btn text-start ${isActive("/admin/manage") ? "btn-warning text-dark fw-bold" : "btn-outline-warning"}`}
               onClick={() => navigate("/admin/manage")}
             >
               👥 จัดการสมาชิก
@@ -191,8 +207,7 @@ export default function Nav({
           )}
 
           <button
-            className={`btn text-start ${isActive("/users") ? "btn-light fw-bold" : "btn-outline-light"}`}
-            style={isActive("/users") ? { color: "#4E2A7F" } : {}}
+            className={`btn text-start ${isActive("/users") ? "btn-warning text-dark fw-bold" : "btn-outline-warning"}`}
             onClick={() => navigate("/users")}
           >
             👤 ข้อมูลลูกค้า
@@ -200,83 +215,72 @@ export default function Nav({
         </div>
       </div>
 
-      {/* MOBILE SIDEBAR */}
+      {/* 📱 MOBILE SIDEBAR */}
       {menuOpen && (
         <>
           <div
             className="position-fixed text-white p-3 shadow"
-            style={{ width: "230px", height: "100vh", top: 0, left: 0, paddingTop: "90px", zIndex: 3000, background: "#4E2A7F" }}
+            style={{
+              width: "230px",
+              height: "100vh",
+              top: 0,
+              left: 0,
+              paddingTop: "90px",
+              backgroundColor: "#4A0080",
+              zIndex: 3000,
+            }}
           >
-            <button className="btn btn-light btn-sm mb-3 fw-bold"
-              style={{ color: "#4E2A7F" }} onClick={() => setMenuOpen(false)}>
+            <button
+              className="btn btn-warning btn-sm mb-2 fw-bold"
+              onClick={() => setMenuOpen(false)}
+            >
               ✖ ปิดเมนู
             </button>
 
             <div className="d-flex flex-column gap-2">
-              <button className="btn btn-outline-light text-start"
-                onClick={() => { navigate("/dashboard"); setMenuOpen(false); }}>
+              <button className="btn btn-outline-warning text-start" onClick={() => { navigate("/dashboard"); setMenuOpen(false); }}>
                 🏠 หน้าแรก
               </button>
 
-              <button className="btn btn-outline-light text-start d-flex justify-content-between"
-                onClick={() => setDropdown(dropdown === "room" ? null : "room")}>
+              <button
+                className="btn btn-outline-warning text-start d-flex justify-content-between"
+                onClick={() => setDropdown(dropdown === "room" ? null : "room")}
+              >
                 🛏️ ห้อง {dropdown === "room" ? "▴" : "▾"}
               </button>
 
               {dropdown === "room" && (
                 <div className="ps-3 d-flex flex-column gap-2">
-                  <button className="btn btn-outline-light text-start"
-                    onClick={() => { navigate("/rooms"); setMenuOpen(false); }}>
-                    🏘️ จัดการห้องพัก
-                  </button>
-
-                  <button className="btn btn-outline-light text-start"
-                    onClick={() => { navigate("/bookings"); setMenuOpen(false); }}>
-                    📑 การจอง
-                  </button>
-
-                  <button className="btn btn-outline-light text-start"
-                    onClick={() => { navigate("/checkout"); setMenuOpen(false); }}>
-                    🔄 หน้าคืน
-                  </button>
+                  <button className="btn btn-outline-warning text-start" onClick={() => { navigate("/rooms"); setMenuOpen(false); }}>🏘️ จัดการห้องพัก</button>
+                  <button className="btn btn-outline-warning text-start" onClick={() => { navigate("/bookings"); setMenuOpen(false); }}>📑 การจอง</button>
+                  <button className="btn btn-outline-warning text-start" onClick={() => { navigate("/checkout"); setMenuOpen(false); }}>🔄 หน้าคืน</button>
                 </div>
               )}
 
-              <button className="btn btn-outline-light text-start d-flex justify-content-between"
-                onClick={() => setDropdown(dropdown === "bill" ? null : "bill")}>
+              <button
+                className="btn btn-outline-warning text-start d-flex justify-content-between"
+                onClick={() => setDropdown(dropdown === "bill" ? null : "bill")}
+              >
                 💰 บิล {dropdown === "bill" ? "▴" : "▾"}
               </button>
 
               {dropdown === "bill" && (
                 <div className="ps-3 d-flex flex-column gap-2">
-                  <button className="btn btn-outline-light text-start"
-                    onClick={() => { navigate("/bills"); setMenuOpen(false); }}>
-                    💵 สร้างบิล
-                  </button>
-
-                  <button className="btn btn-outline-light text-start"
-                    onClick={() => { navigate("/allbills"); setMenuOpen(false); }}>
-                    📋 บิลทั้งหมด
-                  </button>
+                  <button className="btn btn-outline-warning text-start" onClick={() => { navigate("/bills"); setMenuOpen(false); }}>💵 สร้างบิล</button>
+                  <button className="btn btn-outline-warning text-start" onClick={() => { navigate("/allbills"); setMenuOpen(false); }}>📋 บิลทั้งหมด</button>
                 </div>
               )}
 
-              <button className="btn btn-outline-light text-start"
-                onClick={() => { navigate("/users"); setMenuOpen(false); }}>
-                👤 ข้อมูลลูกค้า
-              </button>
+              <button className="btn btn-outline-warning text-start" onClick={() => { navigate("/users"); setMenuOpen(false); }}>👤 ข้อมูลลูกค้า</button>
 
               {role === 0 && (
-                <button className="btn btn-outline-light text-start"
-                  onClick={() => { navigate("/admin/manage"); setMenuOpen(false); }}>
-                  👥 จัดการสมาชิก
-                </button>
+                <button className="btn btn-outline-warning text-start" onClick={() => { navigate("/admin/manage"); setMenuOpen(false); }}>👥 จัดการสมาชิก</button>
               )}
             </div>
           </div>
 
-          {/* OVERLAY */}
-          <div className="position-fixed w-100 h-100 bg-dark bg-opacity-50"
+          <div
+            className="position-fixed w-100 h-100 bg-dark bg-opacity-50"
             style={{ top: 0, left: 0, zIndex: 2500 }}
             onClick={() => setMenuOpen(false)}
           />

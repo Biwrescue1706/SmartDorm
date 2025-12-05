@@ -10,7 +10,7 @@ import DashboardSummary from "../components/Dashboard/DashboardSummary";
 import DashboardRevenue from "../components/Dashboard/DashboardRevenue";
 
 export default function Dashboard() {
-  const { message, handleLogout, role, adminName, adminUsername } = useAuth();
+  const { handleLogout, role, adminName, adminUsername } = useAuth();
   const { rooms, fetchRooms } = useRooms();
   const { bookings, fetchBookings } = useBookings();
   const { checkouts, fetchCheckouts } = useCheckouts();
@@ -43,7 +43,6 @@ export default function Dashboard() {
   return (
     <div className="d-flex flex-column min-vh-100 bg-light">
       <Nav
-        message={message}
         onLogout={handleLogout}
         role={role}
         adminName={adminName}
@@ -61,6 +60,7 @@ export default function Dashboard() {
             pendingBookings={pendingBookings}
             pendingCheckouts={pendingCheckouts}
           />
+
           <DashboardRevenue bills={bills} bookings={bookings} />
         </div>
       </main>

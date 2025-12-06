@@ -7,7 +7,7 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
-import type { ChartOptions } from "chart.js"; // 👈 FIX TS1484
+import type { ChartOptions } from "chart.js";
 import { Bar } from "react-chartjs-2";
 import { useMemo } from "react";
 
@@ -46,9 +46,10 @@ export default function DashboardRevenueChart({
       legend: { display: false },
       tooltip: {
         callbacks: {
-          // 👇 FIX TS18046 ด้วย cast number
-          label: (ctx) =>
-            `${title}: ${(ctx.raw as number).toLocaleString("th-TH")} บาท`,
+          label(ctx) {
+            const val = ctx.raw as number; // safe cast
+            return `${title}: ${val.toLocaleString("th-TH")} บาท`;
+          },
         },
       },
     },
@@ -60,7 +61,10 @@ export default function DashboardRevenueChart({
       y: {
         ticks: {
           color: "#555",
-          callback: (v: number) => v.toLocaleString("th-TH"),
+          callback(tickValue) {
+            const v = typeof tickValue === "string" ? Number(tickValue) : tickValue;
+            return v.toLocaleString("th-TH");
+          },
         },
       },
     },

@@ -30,7 +30,11 @@ const formatThaiDate = (x?: string) => {
   if (!x) return "-";
   const d = new Date(x);
   return !isNaN(d.getTime())
-    ? d.toLocaleDateString("th-TH", { year: "numeric", month: "long", day: "numeric" })
+    ? d.toLocaleDateString("th-TH", {
+        year: "numeric",
+        month: "long",
+        day: "numeric"
+      })
     : "-";
 };
 
@@ -56,19 +60,33 @@ export default function Users() {
     return () => window.removeEventListener("resize", resize);
   }, []);
 
+  // ** โหลดข้อมูล และรวมตาม 'ชื่อจริง (fullName)' **
   const fetchUsers = async () => {
     try {
       setLoading(true);
       const res = await axios.get(`${API_BASE}/user/getall`);
-
       const merged: Record<string, Customer & { bookings: BookingDetail[] }> = {};
+
       (res.data.users || []).forEach((u: Customer) => {
-        if (!merged[u.userName]) merged[u.userName] = { ...u, bookings: [...(u.bookings || [])] };
-        else merged[u.userName].bookings?.push(...(u.bookings || []));
+        const key =
+          u.bookings?.[0]?.fullName?.trim() !== ""
+            ? u.bookings?.[0]?.fullName
+            : u.userName; // ถ้าไม่มีชื่อจริง ใช้ LINE แทน
+
+        if (!merged[key]) {
+          merged[key] = { ...u, bookings: [...(u.bookings || [])] };
+        } else {
+          merged[key].bookings?.push(...(u.bookings || []));
+        }
       });
 
       setUsers(
-        Object.values(merged).sort((a, b) => a.userName.localeCompare(b.userName, "th"))
+        Object.values(merged).sort((a, b) =>
+          (a.bookings?.[0]?.fullName || "").localeCompare(
+            b.bookings?.[0]?.fullName || "",
+            "th"
+          )
+        )
       );
     } finally {
       setLoading(false);
@@ -83,7 +101,9 @@ export default function Users() {
     if (!search.trim()) return;
     setLoading(true);
     try {
-      const res = await axios.get(`${API_BASE}/user/search`, { params: { keyword: search } });
+      const res = await axios.get(`${API_BASE}/user/search`, {
+        params: { keyword: search }
+      });
       setUsers(res.data.users || []);
       setCurrentPage(1);
     } finally {
@@ -93,49 +113,63 @@ export default function Users() {
 
   const handleDeleteBooking = async (b: BookingDetail) => {
     if (!b.bookingId) return;
+
     const ok = await Swal.fire({
       title: "ยืนยันลบรายการจอง?",
       text: `ห้อง ${b.room?.number}`,
       icon: "warning",
       showCancelButton: true,
       confirmButtonText: "ลบ",
-      cancelButtonText: "ยกเลิก",
+      cancelButtonText: "ยกเลิก"
     });
     if (!ok.isConfirmed) return;
 
     try {
       await axios.delete(`${API_BASE}/booking/${b.bookingId}`);
-      Swal.fire("สำเร็จ", "ลบแล้ว", "success");
+      Swal.fire("สำเร็จ", "ลบรายการจองแล้ว", "success");
 
       setSelectedUser((prev) =>
-        prev ? { ...prev, bookings: prev.bookings?.filter((x) => x.bookingId !== b.bookingId) } : prev
+        prev
+          ? {
+              ...prev,
+              bookings: prev.bookings?.filter(
+                (x) => x.bookingId !== b.bookingId
+              )
+            }
+          : prev
       );
+
       fetchUsers();
     } catch {
-      Swal.fire("ผิดพลาด", "ไม่สามารถลบได้", "error");
+      Swal.fire("ผิดพลาด", "ไม่สามารถลบข้อมูลได้", "error");
     }
   };
 
   const handleDeleteUser = async () => {
     if (!selectedUser) return;
+
     const ok = await Swal.fire({
       title: "ยืนยันลบลูกค้า?",
-      html: `<b>${selectedUser.userName}</b><br/>ข้อมูลทั้งหมดจะถูกลบถาวร`,
+      html: `<b>${selectedUser.bookings?.[0]?.fullName}</b><br/>ข้อมูลทั้งหมดจะถูกลบถาวร`,
       icon: "warning",
       showCancelButton: true,
       confirmButtonText: "ลบลูกค้า",
       cancelButtonText: "ยกเลิก",
-      confirmButtonColor: "#d9534f",
+      confirmButtonColor: "#d9534f"
     });
+
     if (!ok.isConfirmed) return;
 
     try {
       await axios.delete(`${API_BASE}/user/${selectedUser.customerId}`);
       Swal.fire("สำเร็จ", "ลบลูกค้าเรียบร้อย", "success");
-      setUsers((prev) => prev.filter((u) => u.customerId !== selectedUser.customerId));
+
+      setUsers((prev) =>
+        prev.filter((x) => x.customerId !== selectedUser.customerId)
+      );
       setShowDialog(false);
     } catch {
-      Swal.fire("ผิดพลาด", "ไม่สามารถลบลูกค้าได้", "error");
+      Swal.fire("ผิดพลาด", "ลบลูกค้าไม่สำเร็จ", "error");
     }
   };
 
@@ -159,11 +193,10 @@ export default function Users() {
 
       <main className="main-content mt-6 px-2">
         <div className="container-max mx-auto">
-          <h2 className="fw-bold text-center mt-3 mb-3 text-dark">
+          <h2 className="fw-bold text-center mt-2 mb-3 text-dark">
             👥 รายชื่อลูกค้าทั้งหมด ({users.length} คน)
           </h2>
 
-          {/* Search */}
           <div className="d-flex justify-content-center gap-2 mb-3">
             <input
               className="form-control w-50 shadow-sm"
@@ -180,52 +213,56 @@ export default function Users() {
             </button>
           </div>
 
-          {/* TABLE OR CARD */}
+          {/* TABLE mode */}
           {width >= 1400 ? (
-            <div className="responsive-table" style={{ overflowX: "auto" }}>
-              <table className="table table-hover text-center shadow-sm">
-                <thead className="table-dark">
-                  <tr>
-                    <th>#</th>
-                    <th>LINE</th>
-                    <th>ประวัติ</th>
-                    <th>ลบ</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {paginated.map((u, idx) => (
-                    <tr key={u.customerId}>
-                      <td>{startIndex + idx + 1}</td>
-                      <td className="fw-bold">{u.userName}</td>
-                      <td>
+            <table className="table table-hover text-center shadow-sm">
+              <thead className="table-dark">
+                <tr>
+                  <th>#</th>
+                  <th>LINE</th>
+                  <th>ชื่อจริง</th>
+                  <th>ประวัติ</th>
+                  <th>ลบ</th>
+                </tr>
+              </thead>
+              <tbody>
+                {paginated.map((u, idx) => (
+                  <tr key={u.customerId}>
+                    <td>{startIndex + idx + 1}</td>
+                    <td>{u.userName}</td>
+                    <td>{u.bookings?.[0]?.fullName || "-"}</td>
+                    <td>
+                      <button
+                        className="btn btn-info btn-sm text-white"
+                        onClick={() => {
+                          setSelectedUser(u);
+                          setShowDialog(true);
+                        }}
+                      >
+                        ดูประวัติ
+                      </button>
+                    </td>
+                    <td>
+                      {role === 0 && (
                         <button
-                          className="btn btn-info btn-sm text-white"
-                          onClick={() => {
-                            setSelectedUser(u);
-                            setShowDialog(true);
-                          }}
+                          className="btn btn-danger btn-sm"
+                          onClick={() => setSelectedUser(u) || handleDeleteUser()}
                         >
-                          ดูประวัติ
+                          🗑️
                         </button>
-                      </td>
-                      <td>
-                        {role === 0 && (
-                          <button className="btn btn-danger btn-sm" onClick={handleDeleteUser}>
-                            🗑️
-                          </button>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           ) : (
+            /* CARD MODE */
             <div
               className="d-grid"
               style={{
                 gridTemplateColumns: width < 600 ? "1fr" : "repeat(3,1fr)",
-                gap: "14px",
+                gap: "14px"
               }}
             >
               {paginated.map((u) => (
@@ -234,10 +271,11 @@ export default function Users() {
                   className="bg-white shadow-sm p-3 rounded border-start border-4"
                   style={{ borderColor: "#4A0080" }}
                 >
-                  <h5 className="fw-bold">{u.userName}</h5>
+                  <h5 className="fw-bold">{u.bookings?.[0]?.fullName}</h5>
+                  <span className="text-muted small">{u.userName}</span>
 
                   <button
-                    className="btn btn-info w-100 text-white mt-2"
+                    className="btn btn-info w-100 mt-2 text-white"
                     onClick={() => {
                       setSelectedUser(u);
                       setShowDialog(true);
@@ -249,10 +287,7 @@ export default function Users() {
                   {role === 0 && (
                     <button
                       className="btn btn-danger w-100 mt-2"
-                      onClick={() => {
-                        setSelectedUser(u);
-                        handleDeleteUser();
-                      }}
+                      onClick={() => setSelectedUser(u) || handleDeleteUser()}
                     >
                       ลบลูกค้า
                     </button>
@@ -288,11 +323,11 @@ export default function Users() {
               width: "90%",
               maxWidth: "650px",
               maxHeight: "85vh",
-              overflowY: "auto",
+              overflowY: "auto"
             }}
           >
             <Dialog.Title className="fw-bold text-center fs-5 mb-3">
-              ประวัติของ {selectedUser?.userName}
+              ประวัติของ {selectedUser?.bookings?.[0]?.fullName}
             </Dialog.Title>
 
             {selectedUser?.bookings?.length ? (
@@ -314,7 +349,7 @@ export default function Users() {
                 </div>
               ))
             ) : (
-              <p className="text-center text-muted">ไม่มีประวัติการจอง</p>
+              <p className="text-muted text-center">ไม่มีประวัติการจอง</p>
             )}
 
             {role === 0 && (

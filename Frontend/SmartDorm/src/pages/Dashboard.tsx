@@ -80,7 +80,7 @@ export default function Dashboard() {
           {/* ลิขสิทธิ์ */}
           <div className="text-center mt-5 mb-3">
             <small style={{ color: "#4A0080", opacity: 0.7 }}>
-              © 2025 SmartDorm Management System · SCB Theme Edition
+              © 2025 SmartDorm Management System 
             </small>
           </div>
         </div>

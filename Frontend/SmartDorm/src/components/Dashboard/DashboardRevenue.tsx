@@ -196,7 +196,7 @@ export default function DashboardRevenue({
   return (
     <div className="mt-4">
       <h2 className="fw-bold text-center" style={{ color: "#4A0080" }}>
-        💜 รายรับ SmartDorm
+        รายรับ 🏫SmartDorm🎉
       </h2>
       <h6 className="text-center mb-3">({suffix})</h6>
 
@@ -232,12 +232,12 @@ export default function DashboardRevenue({
       </div>
 
       {/* BOOKING */}
-      <Section title="รายรับการจอง">
+      <Section title="รายรับการจอง ของ 🏫SmartDorm🎉">
         <CardsGrid>
           <Card title="ค่าเช่า" value={sum(rentBookingArr)} color="#4A148C" />
           <Card title="ค่ามัดจำ" value={sum(depositBookingArr)} color="#7B1FA2" />
           <Card title="ค่าจอง" value={sum(bookingFeeArr)} color="#FFC107" />
-          <Card title="รวมรายรับการจอง" value={sum(totalBookingArr)} color="#2E7D32" />
+          <Card title="รวมรายรับการจอง ของ 🏫SmartDorm🎉" value={sum(totalBookingArr)} color="#2E7D32" />
         </CardsGrid>
         <ChartsGrid labels={labels} charts={bookingCharts} titleSuffix={suffix} />
       </Section>
@@ -254,7 +254,7 @@ export default function DashboardRevenue({
       </Section>
 
       {/* TOTAL */}
-      <Section title="รวมรายรับทั้งหมด">
+      <Section title="รวมรายรับทั้งหมด ของ 🏫SmartDorm🎉 ">
         <Card title="รวมรายรับทั้งหมด" value={totalAll} color="#4A0080" />
       </Section>
 
@@ -265,7 +265,7 @@ export default function DashboardRevenue({
       {isDesktop && (
         <>
           <h4 className="fw-bold mt-4" style={{ color: "#4A0080" }}>
-            📅 รายรับรายเดือนจากบิล
+            📅 รายรับรายเดือนจากบิล ของ 🏫SmartDorm🎉
           </h4>
           <MonthlyBillTable bills={FBills} monthNamesTH={monthNamesTH} />
         </>

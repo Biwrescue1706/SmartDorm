@@ -1,3 +1,4 @@
+// src/pages/Rooms.tsx
 import { useState, useEffect } from "react";
 import RoomTable from "../components/Room/RoomTable";
 import RoomCard from "../components/Room/RoomCard";
@@ -8,31 +9,47 @@ import RoomFilter from "../components/Room/RoomFilter";
 import { useAuth } from "../hooks/useAuth";
 import { useRooms } from "../hooks/useRooms";
 
+/* -------------------------------------------
+   🎨 SCB THEME สำหรับหน้า Rooms
+-------------------------------------------- */
+const THEME = {
+  purple: "#4A0080",
+  purpleLight: "#6A11CB",
+  purpleDark: "#2E0055",
+  gold: "#D4AF37",
+  bg: "#f5f3fa",
+  text: "#333",
+  cardBg: "#ffffff",
+};
+
 export default function Rooms() {
   const { rooms, loading, fetchRooms } = useRooms();
   const { handleLogout, role, adminName, adminUsername } = useAuth();
 
+  // โหลดข้อมูลห้อง
   useEffect(() => {
     fetchRooms();
   }, []);
 
-  const [isLargeScreen, setIsLargeScreen] = useState(window.innerWidth >= 1400);
+  // เก็บขนาดหน้าจอเพื่อใช้ทั้ง breakpoint table/card และ grid
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+  const isLargeScreen = windowWidth >= 1400;
+
   useEffect(() => {
-    const handleResize = () => {
-      setIsLargeScreen(window.innerWidth >= 1400);
-    };
+    const handleResize = () => setWindowWidth(window.innerWidth);
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // แก้ type ให้ถูกต้อง
+  /* -------------------------------------------
+     🔢 ฟังก์ชัน floor จากเลขห้อง
+  -------------------------------------------- */
   const getFloor = (roomNumber: string | number): number | null => {
     const num = Number(roomNumber);
     if (isNaN(num)) return null;
     return Math.floor(num / 100);
   };
 
-  // แก้ null ให้หาย ก่อน sort
   const allFloors: number[] = Array.from(
     new Set(
       rooms
@@ -41,7 +58,9 @@ export default function Rooms() {
     )
   ).sort((a, b) => a - b);
 
-  // แก้ type ฟิลเตอร์ให้ชัดเจน
+  /* -------------------------------------------
+     🎯 ฟิลเตอร์สถานะห้อง + ชั้น
+  -------------------------------------------- */
   const [filter, setFilter] = useState<"all" | "available" | "booked">("all");
   const [selectedFloor, setSelectedFloor] = useState("ทั้งหมด");
 
@@ -63,6 +82,9 @@ export default function Rooms() {
     return true;
   });
 
+  /* -------------------------------------------
+     📄 Pagination
+  -------------------------------------------- */
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
@@ -74,8 +96,124 @@ export default function Rooms() {
     await fetchRooms();
   };
 
+  /* -------------------------------------------
+     🧩 Helper UI Components (ในไฟล์เดียว)
+  -------------------------------------------- */
+
+  const FloorSelector = () => (
+    <div className="text-center mb-4">
+      <label
+        className="fw-semibold me-2 fs-5"
+        style={{ color: THEME.purpleDark }}
+      >
+        เลือกชั้น :
+      </label>
+      <select
+        className="form-select d-inline-block text-center fw-semibold shadow-sm"
+        style={{
+          width: "170px",
+          borderRadius: "12px",
+          padding: "6px 10px",
+          borderColor: THEME.purpleLight,
+        }}
+        value={selectedFloor}
+        onChange={(e) => {
+          setSelectedFloor(e.target.value);
+          setCurrentPage(1);
+        }}
+      >
+        <option value="ทั้งหมด">ทุกชั้น</option>
+        {allFloors.map((f) => (
+          <option key={f} value={f.toString()}>
+            ชั้น {f}
+          </option>
+        ))}
+      </select>
+    </div>
+  );
+
+  const PageHeader = () => (
+    <div className="mb-3 mt-3 text-center">
+      <h2
+        className="fw-bold mb-1"
+        style={{ color: THEME.purple, letterSpacing: "0.5px" }}
+      >
+        🏠 จัดการห้องพัก SmartDorm
+      </h2>
+      <p className="text-muted mb-0">
+        ตรวจสอบสถานะห้องพัก, เพิ่มห้องใหม่ และจัดการได้ในหน้าจอเดียว
+      </p>
+    </div>
+  );
+
+  const StatsBar = () => (
+    <div
+      className="row g-3 mb-3 justify-content-center"
+      style={{ marginTop: "10px" }}
+    >
+      <div className="col-12 col-md-4">
+        <div
+          className="card shadow-sm text-center"
+          style={{
+            borderRadius: "12px",
+            background: "#ffffff",
+            border: "1px solid #eee",
+          }}
+        >
+          <div className="card-body py-2">
+            <div className="fw-semibold text-muted">ห้องทั้งหมด</div>
+            <div className="fw-bold fs-5" style={{ color: THEME.purple }}>
+              {counts.total.toLocaleString("th-TH")}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="col-6 col-md-4">
+        <div
+          className="card shadow-sm text-center"
+          style={{
+            borderRadius: "12px",
+            background: "#e6f4ea",
+            border: "1px solid #d0ebdd",
+          }}
+        >
+          <div className="card-body py-2">
+            <div className="fw-semibold text-success">ว่าง</div>
+            <div className="fw-bold fs-5 text-success">
+              {counts.available.toLocaleString("th-TH")}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="col-6 col-md-4">
+        <div
+          className="card shadow-sm text-center"
+          style={{
+            borderRadius: "12px",
+            background: "#fff3e0",
+            border: "1px solid #ffe0b2",
+          }}
+        >
+          <div className="card-body py-2">
+            <div className="fw-semibold" style={{ color: "#ff6f00" }}>
+              ถูกจอง / ไม่ว่าง
+            </div>
+            <div className="fw-bold fs-5" style={{ color: "#ff6f00" }}>
+              {counts.booked.toLocaleString("th-TH")}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  /* -------------------------------------------
+     🧠 Render หลัก
+  -------------------------------------------- */
   return (
-    <div className="d-flex min-vh-100 bg-white">
+    <div className="d-flex min-vh-100" style={{ background: THEME.bg }}>
       <Nav
         onLogout={handleLogout}
         role={role}
@@ -84,48 +222,26 @@ export default function Rooms() {
       />
 
       <main
-        className="main-content flex-grow-1 px-2 py-2 mt-6 mt-lg-7"
+        className="main-content flex-grow-1 px-2 py-3 mt-6 mt-lg-7"
         style={{ paddingLeft: "20px", paddingRight: "20px" }}
       >
         <div className="mx-auto" style={{ maxWidth: "1200px" }}>
-          <div className="d-flex justify-content-center mb-3 mt-3">
-            <h2 className="fw-bold text-dark">จัดการห้องพัก</h2>
-          </div>
+          {/* Header */}
+          <PageHeader />
 
+          {/* ปุ่มเพิ่มห้อง + Stat bar */}
           {role === 0 && (
             <div className="text-center mb-3">
               <AddRoomDialog onSuccess={handleRefresh} />
             </div>
           )}
 
-          {/* Dropdown เลือกชั้น */}
-          <div className="text-center mb-4">
-            <label className="fw-semibold me-2 fs-5 text-dark">
-              เลือกชั้น :
-            </label>
-            <select
-              className="form-select d-inline-block text-center fw-semibold shadow-sm"
-              style={{
-                width: "150px",
-                borderRadius: "10px",
-                padding: "6px",
-              }}
-              value={selectedFloor}
-              onChange={(e) => {
-                setSelectedFloor(e.target.value);
-                setCurrentPage(1);
-              }}
-            >
-              <option value="ทั้งหมด">ทั้งหมด</option>
+          <StatsBar />
 
-              {allFloors.map((f) => (
-                <option key={f} value={f.toString()}>
-                  ชั้น {f}
-                </option>
-              ))}
-            </select>
-          </div>
+          {/* เลือกชั้น */}
+          <FloorSelector />
 
+          {/* Filter สถานะห้อง */}
           <RoomFilter
             activeFilter={filter}
             counts={counts}
@@ -135,21 +251,38 @@ export default function Rooms() {
             }}
           />
 
+          {/* Content: Loading / Table / Cards */}
           {loading ? (
             <div className="text-center my-5">
-              <div className="spinner-border text-success" role="status"></div>
-              <p className="mt-3 text-muted">กำลังโหลดข้อมูลห้อง...</p>
+              <div
+                className="spinner-border"
+                role="status"
+                style={{ color: THEME.purple }}
+              ></div>
+              <p className="mt-3 text-muted">กำลังโหลดข้อมูลห้องพัก...</p>
             </div>
           ) : (
             <>
               {isLargeScreen ? (
                 <>
-                  <RoomTable
-                    rooms={currentRooms}
-                    startIndex={indexOfFirst}
-                    onUpdated={handleRefresh}
-                    role={role}
-                  />
+                  {/* DESKTOP: TABLE MODE */}
+                  <div
+                    className="card shadow-sm mb-3"
+                    style={{
+                      borderRadius: "14px",
+                      background: THEME.cardBg,
+                      border: "1px solid #eee",
+                    }}
+                  >
+                    <div className="card-body p-2 p-md-3">
+                      <RoomTable
+                        rooms={currentRooms}
+                        startIndex={indexOfFirst}
+                        onUpdated={handleRefresh}
+                        role={role}
+                      />
+                    </div>
+                  </div>
 
                   <Pagination
                     currentPage={currentPage}
@@ -164,14 +297,19 @@ export default function Rooms() {
                 </>
               ) : (
                 <>
+                  {/* MOBILE / TABLET: CARD GRID */}
                   <div
-                    className="d-grid"
+                    className="d-grid mb-3"
                     style={{
                       gridTemplateColumns:
-                        window.innerWidth >= 600 ? "1fr 1fr 1fr" : "1fr",
-                      gap: "20px",
-                      paddingLeft: "10px",
-                      paddingRight: "10px",
+                        windowWidth >= 992
+                          ? "1fr 1fr 1fr"
+                          : windowWidth >= 600
+                          ? "1fr 1fr"
+                          : "1fr",
+                      gap: "18px",
+                      paddingLeft: "4px",
+                      paddingRight: "4px",
                     }}
                   >
                     {currentRooms.map((room) => (

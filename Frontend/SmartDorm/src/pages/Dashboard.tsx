@@ -48,10 +48,11 @@ export default function Dashboard() {
       />
 
       {/* 🔥 MAIN CONTENT */}
-      <main className="flex-grow-1 px-2 py-3 mt-5  mt-lg-7">
-        <div className="container" style={{ maxWidth: "1400px" }}>
+         <main className="main-content flex-grow-1 px-1 py-2 mt-6 mt-lg-6">
+        <div className="mx-auto container-max">
+          <div className="d-flex justify-content-center align-items-center mb-3 mt-3">
           <h2
-            className="fw-bold text-center mb-4 mt-6"
+            className="fw-bold text-center "
             style={{
               color: "#4A0080",
               textShadow: "0px 1px 3px rgba(74,0,128,0.2)",
@@ -71,6 +72,8 @@ export default function Dashboard() {
 
           {/* รายรับ Dashboard */}
           <DashboardRevenue bills={bills} bookings={bookings} />
+
+        </div>
         </div>
       </main>
     </div>

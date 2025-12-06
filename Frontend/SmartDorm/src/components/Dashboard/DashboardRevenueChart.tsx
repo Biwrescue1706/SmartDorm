@@ -26,9 +26,10 @@ export default function DashboardRevenueChart({ labels, datasets, title }: Props
     labels,
     datasets: datasets.map((ds) => ({
       ...ds,
-      backgroundColor: ds.backgroundColor ?? ds.borderColor + "99", // ทำสีอ่อนลง
+      backgroundColor: ds.backgroundColor ?? ds.borderColor + "33", // สีโปร่งใสโทน SCB
       borderColor: ds.borderColor,
-      borderWidth: 1,
+      borderWidth: 2,
+      borderRadius: 6,
     })),
   };
 
@@ -38,14 +39,29 @@ export default function DashboardRevenueChart({ labels, datasets, title }: Props
       options={{
         responsive: true,
         plugins: {
-          legend: { position: "top" as const },
-          title: { display: true, text: title },
+          legend: {
+            position: "top",
+            labels: { font: { size: 12 } },
+          },
+          title: {
+            display: true,
+            text: title, // ❌ ไม่มีคำว่า บาท
+            color: "#4A148C",
+            font: { size: 14, weight: "bold" },
+          },
         },
         scales: {
           y: {
             ticks: {
-              callback: (v: any) => v.toLocaleString("th-TH") + " บาท",
+              callback: (v: any) => v.toLocaleString("th-TH"), // ❌ เอา "บาท" ออก
+              color: "#4A148C",
+              font: { weight: "bold" },
             },
+            grid: { color: "#E1D5F9" },
+          },
+          x: {
+            ticks: { color: "#4A148C" },
+            grid: { display: false },
           },
         },
       }}

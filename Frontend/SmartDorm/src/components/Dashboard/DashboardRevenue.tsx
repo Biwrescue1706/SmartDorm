@@ -6,7 +6,7 @@ import MonthlyBillCards from "./MonthlyBillCards";
 import MonthlyBillTable from "./MonthlyBillTable";
 
 /* ---------------- UI ---------------- */
-function Section({ title, children }: any) {
+function Section({ title, children }: { title: string; children: any }) {
   return (
     <div className="mt-4">
       <h4 className="fw-bold" style={{ color: "#4A0080" }}>{title}</h4>
@@ -15,7 +15,15 @@ function Section({ title, children }: any) {
   );
 }
 
-function Card({ title, value, color }: any) {
+function Card({
+  title,
+  value,
+  color,
+}: {
+  title: string;
+  value: number;
+  color: string;
+}) {
   return (
     <div className="card text-center shadow-sm"
       style={{ background: color, color: "#fff", borderRadius: 10 }}>
@@ -27,16 +35,16 @@ function Card({ title, value, color }: any) {
   );
 }
 
-function CardsGrid({ children }: any) {
+function CardsGrid({ children }: { children: any }) {
   const arr = Array.isArray(children) ? children : [children];
   const w = window.innerWidth;
 
   if (w < 600)
-    return arr.map((c: any, i: number) => <div key={i} className="my-2 w-100">{c}</div>);
+    return arr.map((c, i) => <div key={i} className="my-2 w-100">{c}</div>);
 
   return (
     <div className="row g-2">
-      {arr.map((c: any, i: number) => (
+      {arr.map((c, i) => (
         <div key={i} className="col-6 col-md-3">{c}</div>
       ))}
     </div>
@@ -47,8 +55,10 @@ function CardsGrid({ children }: any) {
 export default function DashboardRevenue({
   bills,
   bookings,
-}: { bills: Bill[]; bookings: Booking[] }) {
-
+}: {
+  bills: Bill[];
+  bookings: Booking[];
+}) {
   const [selectedYear, setSelectedYear] = useState("");
   const [selectedMonth, setSelectedMonth] = useState("");
 
@@ -62,87 +72,97 @@ export default function DashboardRevenue({
   const YEARS = Array.from({ length: 11 }, (_, i) => 2566 + i);
 
   /* ---------------- FILTER DATA ---------------- */
-  const FBills = useMemo(() => bills.filter(b => {
-    const d = new Date(b.month);
-    const y = d.getUTCFullYear() + 543;
-    const m = String(d.getUTCMonth() + 1).padStart(2, "0");
-    return b.status === 1 &&
-      (!selectedYear || y.toString() === selectedYear) &&
-      (!selectedMonth || m === selectedMonth);
-  }), [bills, selectedYear, selectedMonth]);
+  const FBills = useMemo(
+    () =>
+      bills.filter((b: Bill) => {
+        const d = new Date(b.month);
+        const y = d.getUTCFullYear() + 543;
+        const m = String(d.getUTCMonth() + 1).padStart(2, "0");
+        return (
+          b.status === 1 &&
+          (!selectedYear || y.toString() === selectedYear) &&
+          (!selectedMonth || m === selectedMonth)
+        );
+      }),
+    [bills, selectedYear, selectedMonth]
+  );
 
-  const FBookings = useMemo(() => bookings.filter(b => {
-    if (!b.createdAt || b.approveStatus !== 1 || !b.room) return false;
-    const d = new Date(b.createdAt);
-    const y = d.getUTCFullYear() + 543;
-    const m = String(d.getUTCMonth() + 1).padStart(2, "0");
-    return (!selectedYear || y.toString() === selectedYear) &&
-      (!selectedMonth || m === selectedMonth);
-  }), [bookings, selectedYear, selectedMonth]);
+  const FBookings = useMemo(
+    () =>
+      bookings.filter((b: Booking) => {
+        if (!b.createdAt || b.approveStatus !== 1 || !b.room) return false;
+        const d = new Date(b.createdAt);
+        const y = d.getUTCFullYear() + 543;
+        const m = String(d.getUTCMonth() + 1).padStart(2, "0");
+        return (
+          (!selectedYear || y.toString() === selectedYear) &&
+          (!selectedMonth || m === selectedMonth)
+        );
+      }),
+    [bookings, selectedYear, selectedMonth]
+  );
 
   /* ---------------- GROUP FOR CHART ---------------- */
-  const groupBy = (arr: any[], getKey: (b: any) => string) =>
-    arr.reduce((acc: any, b: any) => {
+  const groupBy = <T,>(arr: T[], getKey: (b: T) => string): Record<string, T[]> =>
+    arr.reduce((acc: Record<string, T[]>, b: T) => {
       const key = getKey(b);
       if (!acc[key]) acc[key] = [];
       acc[key].push(b);
       return acc;
     }, {});
 
-  const billGroup = groupBy(FBills, (b) => {
+  const billGroup = groupBy(FBills, (b: Bill) => {
     const d = new Date(b.month);
     return `${d.getUTCFullYear() + 543}-${d.getUTCMonth() + 1}`;
   });
 
-  const bookingGroup = groupBy(FBookings, (b) => {
+  const bookingGroup = groupBy(FBookings, (b: Booking) => {
     const d = new Date(b.createdAt);
     return `${d.getUTCFullYear() + 543}-${d.getUTCMonth() + 1}`;
   });
 
-  const labels = Object.keys({ ...bookingGroup, ...billGroup })
-    .sort((a, b) => +a.split("-")[1] - +b.split("-")[1])
-    .map(k => monthNamesTH[+k.split("-")[1] - 1]);
+  const mergedKeys = Object.keys({ ...bookingGroup, ...billGroup }).sort(
+    (a, b) => Number(a.split("-")[1]) - Number(b.split("-")[1])
+  );
+
+  const labels = mergedKeys.map(
+    (key) => monthNamesTH[Number(key.split("-")[1]) - 1]
+  );
 
   const sumArr = (arr: number[]) => arr.reduce((s, n) => s + n, 0);
 
-  /* BOOKING */
-  const rentBookingArr = labels.map((_, i) => {
-    const key = Object.keys(bookingGroup)[i];
-    return sumArr((bookingGroup[key] ?? []).map(b => Number(b.room?.rent ?? 0)));
-  });
-
-  const depositBookingArr = labels.map((_, i) => {
-    const key = Object.keys(bookingGroup)[i];
-    return sumArr((bookingGroup[key] ?? []).map(b => Number(b.room?.deposit ?? 0)));
-  });
-
-  const feeBookingArr = labels.map((_, i) => {
-    const key = Object.keys(bookingGroup)[i];
-    return sumArr((bookingGroup[key] ?? []).map(b => Number(b.room?.bookingFee ?? 0)));
-  });
-
-  const totalBookingArr = labels.map((_, i) =>
-    rentBookingArr[i] + depositBookingArr[i] + feeBookingArr[i]
+  /* BOOKING ARRAYS */
+  const rentBookingArr = mergedKeys.map((k) =>
+    sumArr((bookingGroup[k] ?? []).map((b: Booking) => Number(b.room?.rent ?? 0)))
   );
 
-  /* BILLS */
-  const rentBillArr = labels.map((_, i) => {
-    const key = Object.keys(billGroup)[i];
-    return sumArr((billGroup[key] ?? []).map(b => Number(b.rent ?? 0)));
-  });
+  const depositBookingArr = mergedKeys.map((k) =>
+    sumArr((bookingGroup[k] ?? []).map((b: Booking) => Number(b.room?.deposit ?? 0)))
+  );
 
-  const waterBillArr = labels.map((_, i) => {
-    const key = Object.keys(billGroup)[i];
-    return sumArr((billGroup[key] ?? []).map(b => Number(b.waterCost ?? 0)));
-  });
+  const feeBookingArr = mergedKeys.map((k) =>
+    sumArr((bookingGroup[k] ?? []).map((b: Booking) => Number(b.room?.bookingFee ?? 0)))
+  );
 
-  const electricBillArr = labels.map((_, i) => {
-    const key = Object.keys(billGroup)[i];
-    return sumArr((billGroup[key] ?? []).map(b => Number(b.electricCost ?? 0)));
-  });
+  const totalBookingArr = mergedKeys.map(
+    (_, i) => rentBookingArr[i] + depositBookingArr[i] + feeBookingArr[i]
+  );
 
-  const totalBillArr = labels.map((_, i) =>
-    rentBillArr[i] + waterBillArr[i] + electricBillArr[i]
+  /* BILL ARRAYS */
+  const rentBillArr = mergedKeys.map((k) =>
+    sumArr((billGroup[k] ?? []).map((b: Bill) => Number(b.rent ?? 0)))
+  );
+
+  const waterBillArr = mergedKeys.map((k) =>
+    sumArr((billGroup[k] ?? []).map((b: Bill) => Number(b.waterCost ?? 0)))
+  );
+
+  const electricBillArr = mergedKeys.map((k) =>
+    sumArr((billGroup[k] ?? []).map((b: Bill) => Number(b.electricCost ?? 0)))
+  );
+
+  const totalBillArr = mergedKeys.map(
+    (_, i) => rentBillArr[i] + waterBillArr[i] + electricBillArr[i]
   );
 
   const totalAll = sumArr(totalBookingArr) + sumArr(totalBillArr);
@@ -167,30 +187,42 @@ export default function DashboardRevenue({
       ? "ทุกปี"
       : selectedYear && !selectedMonth
       ? `ปี ${selectedYear}`
-      : `${monthNamesTH[+selectedMonth - 1]} ${selectedYear}`;
+      : `${monthNamesTH[Number(selectedMonth) - 1]} ${selectedYear}`;
 
   /* ---------------- UI ---------------- */
   return (
     <div className="mt-4">
-
-      <h2 className="fw-bold text-center" style={{ color: "#4A0080" }}>รายรับ SmartDorm</h2>
+      <h2 className="fw-bold text-center" style={{ color: "#4A0080" }}>
+        รายรับ SmartDorm
+      </h2>
       <h6 className="text-center mb-3">({suffix})</h6>
 
       <div className="d-flex justify-content-center gap-2 flex-wrap mb-3">
-        <select className="form-select w-auto"
+        <select
+          className="form-select w-auto"
           value={selectedYear}
-          onChange={e => { setSelectedYear(e.target.value); setSelectedMonth(""); }}>
+          onChange={(e) => {
+            setSelectedYear(e.target.value);
+            setSelectedMonth("");
+          }}
+        >
           <option value="">ทุกปี</option>
-          {YEARS.map(y => <option key={y}>{y}</option>)}
+          {YEARS.map((y) => (
+            <option key={y}>{y}</option>
+          ))}
         </select>
 
-        <select className="form-select w-auto"
+        <select
+          className="form-select w-auto"
           disabled={!selectedYear}
           value={selectedMonth}
-          onChange={e => setSelectedMonth(e.target.value)}>
+          onChange={(e) => setSelectedMonth(e.target.value)}
+        >
           <option value="">ทุกเดือน</option>
           {monthNamesTH.map((m, i) => (
-            <option key={i} value={String(i + 1).padStart(2, "0")}>{m}</option>
+            <option key={m} value={String(i + 1).padStart(2, "0")}>
+              {m}
+            </option>
           ))}
         </select>
       </div>
@@ -226,7 +258,9 @@ export default function DashboardRevenue({
 
       {isDesktop && (
         <>
-          <h4 className="fw-bold mt-4" style={{ color: "#4A0080" }}>📅 รายรับรายเดือนจากบิล</h4>
+          <h4 className="fw-bold mt-4" style={{ color: "#4A0080" }}>
+            📅 รายรับรายเดือนจากบิล
+          </h4>
           <MonthlyBillTable bills={FBills} monthNamesTH={monthNamesTH} />
         </>
       )}

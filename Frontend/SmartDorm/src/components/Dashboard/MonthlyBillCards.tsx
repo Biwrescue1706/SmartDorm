@@ -6,6 +6,7 @@ Responsive:
 600-1399px   = 2 cards / row
 >=1400px     = 3 cards / row
 */
+
 export default function MonthlyBillCards({ bills, monthNamesTH }: any) {
   const screen = window.innerWidth;
   const acc: any = {};
@@ -33,52 +34,75 @@ export default function MonthlyBillCards({ bills, monthNamesTH }: any) {
   };
 
   return (
-    <div className="mt-4 row g-2">
+    <div className="mt-4 row g-3">
       {entries.map(([k, v]: any, i) => {
         const [y, m] = k.split("-");
+
         return (
           <div key={i} className={getColClass()}>
-            <div className="card shadow-sm" style={{ borderRadius: 10 }}>
-              <div className="card-body p-2">
+            <div
+              className="card shadow-lg border-0 h-100"
+              style={{
+                borderRadius: "18px",
+                background:
+                  "linear-gradient(135deg, #4A148C 0%, #6A1B9A 100%)",
+                color: "#fff",
+              }}
+            >
+              {/* HEADER */}
+              <div
+                className="text-center fw-bold py-2"
+                style={{
+                  backgroundColor: "#FFCC00",
+                  color: "#4A148C",
+                  borderTopLeftRadius: "18px",
+                  borderTopRightRadius: "18px",
+                  fontSize: "1rem",
+                  boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+                }}
+              >
+                🏦 รายการรายรับ SmartDorm
+              </div>
 
-                {/* TITLE */}
-                <h5 className="fw-bold text-center text-primary">
-                  รายการรับเงินของ 🏫SmartDorm🎉
-                </h5>
+              {/* BODY */}
+              <div className="card-body px-3 pt-3">
 
                 {/* DATE */}
-                <h6 className="fw-bold text-primary text-center mb-3">
+                <h6 className="fw-bold text-warning text-center mb-3">
                   📅 {monthNamesTH[+m - 1]} {y}
                 </h6>
 
                 {/* RENT */}
-                <div className="mb-1">
-                  <h6 className="text-start fw-bold">ค่าเช่าห้อง</h6>
-                  <h6 className="fw-bold">{v.rent.toLocaleString("th-TH")}</h6>
+                <div className="d-flex justify-content-between mb-2">
+                  <span className="fw-bold">ค่าเช่าห้อง</span>
+                  <span className="fw-bold">{v.rent.toLocaleString("th-TH")}</span>
                 </div>
 
                 {/* WATER */}
-                <div className="mb-1">
-                  <h6 className="text-start fw-bold">ค่าน้ำ</h6>
-                  <h6 className="fw-bold">{v.water.toLocaleString("th-TH")}</h6>
+                <div className="d-flex justify-content-between mb-2">
+                  <span className="fw-bold">ค่าน้ำ</span>
+                  <span className="fw-bold">{v.water.toLocaleString("th-TH")}</span>
                 </div>
 
                 {/* ELECTRIC */}
-                <div className="mb-1">
-                  <h6 className="text-start fw-bold">ค่าไฟ</h6>
-                  <h6 className="fw-bold">{v.electric.toLocaleString("th-TH")}</h6>
+                <div className="d-flex justify-content-between mb-2">
+                  <span className="fw-bold">ค่าไฟ</span>
+                  <span className="fw-bold">{v.electric.toLocaleString("th-TH")}</span>
                 </div>
 
                 {/* TOTAL */}
-                <div className="mt-2">
-                  <h6 className="fw-bold text-success text-start">
-                    รวมรายรับบิล
-                  </h6>
-                  <h6 className="fw-bold text-success">
-                    {v.total.toLocaleString("th-TH")}
-                  </h6>
+                <div
+                  className="mt-3 text-center py-2 fw-bold"
+                  style={{
+                    backgroundColor: "#FFCC00",
+                    color: "#4A148C",
+                    borderRadius: "10px",
+                    fontSize: "1.05rem",
+                    boxShadow: "0 1px 6px rgba(255,204,0,0.45)",
+                  }}
+                >
+                  รวมรายรับบิล {v.total.toLocaleString("th-TH")}
                 </div>
-
               </div>
             </div>
           </div>

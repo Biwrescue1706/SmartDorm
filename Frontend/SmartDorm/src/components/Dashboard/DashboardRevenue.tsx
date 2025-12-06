@@ -15,7 +15,6 @@ export default function DashboardRevenue({
   const [selectedMonth, setSelectedMonth] = useState("");
 
   const screen = window.innerWidth;
-  const isMobile = screen < 600;
   const isTablet = screen >= 600 && screen < 1400;
   const isDesktop = screen >= 1400;
 
@@ -24,22 +23,22 @@ export default function DashboardRevenue({
     "กรกฎาคม","สิงหาคม","กันยายน","ตุลาคม","พฤศจิกายน","ธันวาคม",
   ];
 
-  /* ===== ปีที่มีข้อมูลจริง (เริ่ม 2568-2578) ===== */
+  /* ===== ปีที่มีข้อมูลจริง ===== */
   const yearsInData = Array.from(
     new Set(bills.map(b => new Date(b.month).getUTCFullYear() + 543))
   ).sort((a,b)=>a-b);
-  const availableYears = Array.from({length:11},(_,i)=>2568+i)
-    .filter(y => yearsInData.includes(y));
 
   /* ===== labels ของกราฟ ===== */
   const labels = useMemo(()=>{
-    if(!selectedYear) return yearsInData.map(String);      // โหมดรวมรายปี
+    if(!selectedYear) return yearsInData.map(String);
+
     const months = bills
-      .filter(b=>new Date(b.month).getUTCFullYear()+543===+selectedYear)
-      .map(b=>new Date(b.month).getUTCMonth());
+      .filter(b => new Date(b.month).getUTCFullYear()+543===+selectedYear)
+      .map(b => new Date(b.month).getUTCMonth());
     const uniqMonths = Array.from(new Set(months)).sort((a,b)=>a-b);
-    if(!selectedMonth) return uniqMonths.map(i=>monthNamesTH[i]); // โหมดรายเดือน
-    return [monthNamesTH[+selectedMonth-1]];              // เดือนเดียว
+
+    if(!selectedMonth) return uniqMonths.map(i => monthNamesTH[i]);
+    return [monthNamesTH[+selectedMonth-1]];
   },[bills,selectedYear,selectedMonth]);
 
   /* ===== กรองข้อมูลตามปี/เดือน ===== */
@@ -60,38 +59,44 @@ export default function DashboardRevenue({
     return (!selectedYear||y.toString()===selectedYear)&&(!selectedMonth||m===selectedMonth);
   }),[bookings,selectedYear,selectedMonth]);
 
-  /* ===== รวมยอด ===== */
-  const sum=(arr:any[],key:any)=>arr.reduce((s,b)=>s+(b[key]||0),0);
-  const rentBooking=sum(filteredBookings.map(b=>b.room),"rent");
-  const depositBooking=sum(filteredBookings.map(b=>b.room),"deposit");
-  const bookingFee=sum(filteredBookings.map(b=>b.room),"bookingFee");
-  const totalBookingRevenue=rentBooking+depositBooking+bookingFee;
+  /* ===== sum helper ให้รับ number[] เท่านั้น ===== */
+  const sum = (arr: number[]) => arr.reduce((s,n)=>s+n,0);
 
-  const rentBill=sum(filteredBills,"rent");
-  const waterBill=sum(filteredBills,"waterCost");
-  const electricBill=sum(filteredBills,"electricCost");
-  const totalBillRevenue=sum(filteredBills,"total");
-  const totalAllRevenue=totalBookingRevenue+totalBillRevenue;
+  /* ===== รวมยอด Booking ===== */
+  const rentBooking = sum(filteredBookings.map(b => b.room?.rent ?? 0));
+  const depositBooking = sum(filteredBookings.map(b => b.room?.deposit ?? 0));
+  const bookingFee = sum(filteredBookings.map(b => b.room?.bookingFee ?? 0));
+  const totalBookingRevenue = rentBooking + depositBooking + bookingFee;
 
-  /* ===== ข้อมูลกราฟตามโหมด ===== */
-  const isYearMode=!selectedYear;
-  const getYearData=(key:keyof Bill)=>yearsInData.map(y=>
-    bills.filter(b=>new Date(b.month).getUTCFullYear()+543===y)
-         .reduce((s,b)=>s+(b[key]||0),0)
+  /* ===== รวมยอด Bill ===== */
+  const rentBill = sum(filteredBills.map(b => b.rent ?? 0));
+  const waterBill = sum(filteredBills.map(b => b.waterCost ?? 0));
+  const electricBill = sum(filteredBills.map(b => b.electricCost ?? 0));
+  const totalBillRevenue = sum(filteredBills.map(b => b.total ?? 0));
+
+  const totalAllRevenue = totalBookingRevenue + totalBillRevenue;
+
+  /* ===== กราฟตามโหมด ===== */
+  const isYearMode = !selectedYear;
+
+  const getYearData = (key:keyof Bill)=>yearsInData.map(y =>
+    bills.filter(b => new Date(b.month).getUTCFullYear()+543===y)
+         .reduce((s,b)=>s+(b[key]??0),0)
   );
-  const getMonthData=(arr:Bill[],key:keyof Bill)=>
+
+  const getMonthData = (arr:Bill[],key:keyof Bill)=>
     labels.map(label=>{
-      const idx=monthNamesTH.indexOf(label);
+      const idx = monthNamesTH.indexOf(label);
       return arr.filter(b=>new Date(b.month).getUTCMonth()===idx)
-                .reduce((s,b)=>s+(b[key]||0),0);
+                .reduce((s,b)=>s+(b[key]??0),0);
     });
 
-  const billRentData=isYearMode?getYearData("rent"):getMonthData(filteredBills,"rent");
-  const waterData=isYearMode?getYearData("waterCost"):getMonthData(filteredBills,"waterCost");
-  const electricData=isYearMode?getYearData("electricCost"):getMonthData(filteredBills,"electricCost");
-  const billTotalData=isYearMode?getYearData("total"):getMonthData(filteredBills,"total");
+  const billRentData = isYearMode ? getYearData("rent") : getMonthData(filteredBills,"rent");
+  const waterData = isYearMode ? getYearData("waterCost") : getMonthData(filteredBills,"waterCost");
+  const electricData = isYearMode ? getYearData("electricCost") : getMonthData(filteredBills,"electricCost");
+  const billTotalData = isYearMode ? getYearData("total") : getMonthData(filteredBills,"total");
 
-  /* ===== หัวข้อกราฟ ===== */
+  /* ===== หัวข้อกราฟ Dynamic ===== */
   const titleSuffix =
     !selectedYear && !selectedMonth ? "ทุกปี" :
     selectedYear && !selectedMonth ? `ปี ${selectedYear}` :
@@ -102,15 +107,13 @@ export default function DashboardRevenue({
       <h2 className="fw-bold text-center" style={{color:"#4A0080"}}>💜 รายรับ SmartDorm</h2>
       <h5 className="text-center mb-4">({titleSuffix})</h5>
 
-      {/* ตัวเลือกปี/เดือน */}
+      {/* ==== FILTER ==== */}
       <div className="d-flex justify-content-center gap-2 flex-wrap">
         <select value={selectedYear}
           onChange={e=>{setSelectedYear(e.target.value);setSelectedMonth("");}}
           className="form-select w-auto">
           <option value="">ทุกปี</option>
-          {Array.from({length:11},(_,i)=>2568+i).map(y=>
-            <option key={y}>{y}</option>
-          )}
+          {Array.from({length:11},(_,i)=>2568+i).map(y=> <option key={y}>{y}</option>)}
         </select>
 
         <select disabled={!selectedYear}
@@ -118,9 +121,7 @@ export default function DashboardRevenue({
           onChange={e=>setSelectedMonth(e.target.value)}
           className="form-select w-auto">
           <option value="">ทุกเดือน</option>
-          {monthNamesTH.map((m,i)=>
-            <option key={i} value={String(i+1).padStart(2,"0")}>{m}</option>
-          )}
+          {monthNamesTH.map((m,i)=> <option key={i} value={String(i+1).padStart(2,"0")}>{m}</option>)}
         </select>
       </div>
 
@@ -140,8 +141,10 @@ export default function DashboardRevenue({
               <Card title="รวมรายรับการจอง" value={totalBookingRevenue} color="#2E7D32"/>
             </>
         }
+
         <DashboardRevenueChart labels={labels}
-          data={billRentData} title={`ค่าเช่า${titleSuffix}`} color="#4A148C"/>
+          data={billRentData}
+          title={`ค่าเช่า${titleSuffix}`} color="#4A148C"/>
       </Section>
 
       {/* ==== รายรับบิล ==== */}
@@ -179,7 +182,7 @@ export default function DashboardRevenue({
       {/* ==== การ์ดรายเดือน ==== */}
       <MonthlyBillCards bills={filteredBills} monthNamesTH={monthNamesTH}/>
 
-      {/* ==== ตารางสำหรับ Desktop ==== */}
+      {/* ==== ตารางเฉพาะ Desktop ==== */}
       {isDesktop && (
         <>
           <h4 className="fw-bold mt-4" style={{color:"#4A0080"}}>📅 รายรับรายเดือนจากบิล</h4>
@@ -190,7 +193,7 @@ export default function DashboardRevenue({
   );
 }
 
-/* ===== helpers ===== */
+/* ===== HELPER COMPONENTS ===== */
 function Section({title,children}:any){
   return(<div className="mt-4"><h4 className="fw-bold">{title}</h4>{children}</div>);
 }
@@ -217,17 +220,17 @@ function Card({title,value,color}:any){
   );
 }
 
-/* ===== การ์ดรายเดือน ===== */
+/* ===== การ์ดรายรับรายเดือน ===== */
 function MonthlyBillCards({bills,monthNamesTH}:any){
   const acc:any={};
   bills.forEach((b:Bill)=>{
     const d=new Date(b.month);
     const key=`${d.getUTCFullYear()+543}-${String(d.getUTCMonth()+1).padStart(2,"0")}`;
     if(!acc[key]) acc[key]={rent:0,water:0,electric:0,total:0};
-    acc[key].rent+=b.rent||0;
-    acc[key].water+=b.waterCost||0;
-    acc[key].electric+=b.electricCost||0;
-    acc[key].total+=b.total||0;
+    acc[key].rent+=b.rent??0;
+    acc[key].water+=b.waterCost??0;
+    acc[key].electric+=b.electricCost??0;
+    acc[key].total+=b.total??0;
   });
   const rows=Object.entries(acc).map(([k,v]:any)=>{
     const [y,m]=k.split("-");
@@ -259,10 +262,10 @@ function MonthlyBillTable({bills,monthNamesTH}:{bills:Bill[],monthNamesTH:string
     const d=new Date(b.month);
     const key=`${d.getUTCFullYear()+543}-${String(d.getUTCMonth()+1).padStart(2,"0")}`;
     if(!acc[key]) acc[key]={rent:0,water:0,electric:0,total:0};
-    acc[key].rent+=b.rent||0;
-    acc[key].water+=b.waterCost||0;
-    acc[key].electric+=b.electricCost||0;
-    acc[key].total+=b.total||0;
+    acc[key].rent+=b.rent??0;
+    acc[key].water+=b.waterCost??0;
+    acc[key].electric+=b.electricCost??0;
+    acc[key].total+=b.total??0;
   });
   const rows=Object.entries(acc).map(([k,v]:any)=>{
     const [y,m]=k.split("-");

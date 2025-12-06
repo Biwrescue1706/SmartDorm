@@ -5,13 +5,12 @@ import { useProfile } from "../hooks/useProfile";
 import type { Admin } from "../types/Auth";
 
 export default function Profile() {
-  const { message, handleLogout, role, adminName, adminUsername } = useAuth();
+  const { handleLogout, role, adminName, adminUsername } = useAuth();
   const { admin, loading, updateProfile } = useProfile();
 
   return (
     <>
       <Nav
-        message={message}
         onLogout={handleLogout}
         role={role}
         adminName={adminName}

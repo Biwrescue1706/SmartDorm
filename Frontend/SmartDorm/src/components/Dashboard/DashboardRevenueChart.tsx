@@ -7,6 +7,7 @@ import {
   PointElement,
   Legend,
   Tooltip,
+  Title,
 } from "chart.js";
 
 ChartJS.register(
@@ -15,7 +16,8 @@ ChartJS.register(
   LinearScale,
   PointElement,
   Legend,
-  Tooltip
+  Tooltip,
+  Title
 );
 
 interface Props {
@@ -24,7 +26,6 @@ interface Props {
     label: string;
     data: number[];
     borderColor: string;
-    backgroundColor?: string;
   }[];
   title: string;
 }
@@ -35,8 +36,7 @@ export default function DashboardRevenueChart({ labels, datasets, title }: Props
     datasets: datasets.map((ds) => ({
       ...ds,
       tension: 0.3,
-      pointRadius: 4,
-      pointHoverRadius: 6,
+      pointRadius: 3,
       borderWidth: 2,
       fill: false,
     })),
@@ -48,11 +48,8 @@ export default function DashboardRevenueChart({ labels, datasets, title }: Props
       title: {
         display: true,
         text: title,
-        font: {
-          size: 18,
-          weight: "bold" as const, // FIXED
-        },
         color: "#4A0080",
+        font: { size: 18, weight: "bold" as const },
       },
       legend: {
         position: "bottom" as const,
@@ -72,7 +69,7 @@ export default function DashboardRevenueChart({ labels, datasets, title }: Props
         },
       },
     },
-  } as const; // FIXED TYPE
+  };
 
   return <Line data={data} options={options} />;
 }

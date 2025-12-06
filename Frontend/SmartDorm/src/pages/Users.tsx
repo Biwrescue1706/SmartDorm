@@ -149,7 +149,6 @@ export default function Users() {
   return (
     <>
       <Nav
-        message={message}
         onLogout={handleLogout}
         role={role}
         adminName={adminName}

@@ -1,53 +1,94 @@
 // src/components/Dashboard/DashboardRevenueChart.tsx
 import {
   Chart as ChartJS,
+  BarElement,
   CategoryScale,
   LinearScale,
-  BarElement,
   Tooltip,
-  Legend
+  Legend,
+  ChartOptions,
 } from "chart.js";
 import { Bar } from "react-chartjs-2";
+import { useMemo } from "react";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, Legend);
 
-interface Props {
+export default function DashboardRevenueChart({
+  labels,
+  data,
+  title,
+  color,
+}: {
   labels: string[];
   data: number[];
   title: string;
   color: string;
-}
+}) {
+  /* ================= CHART CONFIG ================= */
+  const chartData = useMemo(
+    () => ({
+      labels,
+      datasets: [
+        {
+          label: title,
+          data,
+          backgroundColor: color,
+          borderRadius: 8,
+        },
+      ],
+    }),
+    [labels, data, title, color]
+  );
 
-export default function DashboardRevenueChart({ labels, data, title, color }: Props) {
+  const options: ChartOptions<"bar"> = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        display: false, // ไม่ต้องโชว์ legend ซ้ำ
+      },
+      tooltip: {
+        callbacks: {
+          label: (ctx) =>
+            `${title}: ${ctx.raw.toLocaleString("th-TH")} บาท`,
+        },
+      },
+    },
+    scales: {
+      x: {
+        ticks: {
+          color: "#333",
+          font: {
+            weight: "bold",
+          },
+        },
+        grid: {
+          display: false,
+        },
+      },
+      y: {
+        ticks: {
+          color: "#555",
+          callback: (v) => v.toLocaleString("th-TH"),
+        },
+      },
+    },
+  };
+
+  /* ================= UI ================= */
   return (
-    <div className="card shadow-sm p-3" style={{ borderRadius: "14px" }}>
-      <h5 className="fw-bold text-center mb-3" style={{ color: "#4A0080" }}>
+    <div
+      className="p-3 shadow-sm bg-white"
+      style={{
+        borderRadius: "14px",
+        height: "300px",
+        marginBottom: "16px",
+      }}
+    >
+      <h5 className="fw-bold text-center mb-2" style={{ color }}>
         {title}
       </h5>
-
-      <Bar
-        data={{
-          labels,
-          datasets: [
-            {
-              label: title,
-              data,
-              backgroundColor: color,
-              borderRadius: 6,
-            },
-          ],
-        }}
-        options={{
-          responsive: true,
-          plugins: {
-            legend: { display: false },
-          },
-          scales: {
-            x: { ticks: { color: "#4A0080" } },
-            y: { ticks: { color: "#4A0080" } },
-          }
-        }}
-      />
+      <Bar data={chartData} options={options} />
     </div>
   );
 }

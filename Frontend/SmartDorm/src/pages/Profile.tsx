@@ -19,15 +19,16 @@ export default function Profile() {
 
       <div
         className="container d-flex justify-content-center align-items-center"
-        style={{ minHeight: "100vh", paddingTop: "80px" }}
+        style={{
+          minHeight: "100vh",
+          paddingTop: "100px",
+          background: "#f6f1fc",
+        }}
       >
         {loading ? (
           <p className="text-center text-muted">⏳ กำลังโหลดข้อมูล...</p>
         ) : admin ? (
-          <ProfileCardInline
-            admin={admin}
-            onSave={(name) => updateProfile({ name })}
-          />
+          <ProfileCardInline admin={admin} onSave={(name) => updateProfile({ name })} />
         ) : (
           <p className="text-danger">ไม่พบข้อมูลผู้ใช้</p>
         )}
@@ -37,7 +38,7 @@ export default function Profile() {
 }
 
 /* ------------------------------------------------
-   🔽 ProfileCard รวมไว้ในไฟล์เดียว (Inline Component)
+   Profile Card Component (SCB THEME)
 ------------------------------------------------- */
 
 interface ProfileCardProps {
@@ -50,65 +51,106 @@ function ProfileCardInline({ admin, onSave }: ProfileCardProps) {
   const [name, setName] = useState(admin.name);
 
   const handleSave = () => {
-    if (!name.trim()) {
-      alert("กรุณากรอกชื่อให้ถูกต้อง");
-      return;
-    }
+    if (!name.trim()) return alert("กรุณากรอกชื่อให้ถูกต้อง");
     onSave(name);
     setEditing(false);
   };
 
   return (
-    <div className="card shadow-sm p-5 w-100" style={{ maxWidth: "520px" }}>
-      <h4 className="fw-bold text-center mb-4">⚙️ โปรไฟล์ของฉัน</h4>
+    <div
+      className="card shadow-lg p-4 w-100"
+      style={{
+        maxWidth: "520px",
+        borderRadius: 20,
+        border: "2px solid #4A0080",
+      }}
+    >
+      <h4 className="fw-bold text-center mb-4" style={{ color: "#4A0080" }}>
+        ⚙️ โปรไฟล์ของฉัน
+      </h4>
 
-      {/* 🔒 Username */}
-      <div className="mb-3">
-        <label className="form-label fw-bold">ชื่อผู้ใช้</label>
-        <input type="text" className="form-control" value={admin.username} disabled />
-      </div>
+      {/* Username */}
+      <FormItem label="ชื่อผู้ใช้">
+        <input
+          type="text"
+          className="form-control"
+          value={admin.username}
+          disabled
+        />
+      </FormItem>
 
-      {/* 📝 Name (Edit) */}
-      <div className="mb-3">
-        <label className="form-label fw-bold">ชื่อ</label>
+      {/* Name */}
+      <FormItem label="ชื่อ">
         <input
           type="text"
           className="form-control"
           value={name}
           disabled={!editing}
           onChange={(e) => setName(e.target.value)}
+          style={{ borderColor: editing ? "#4A0080" : undefined }}
         />
-      </div>
+      </FormItem>
 
-      {/* 🔐 Role */}
-      <div className="mb-3">
-        <label className="form-label fw-bold">สิทธิ์</label>
+      {/* Role */}
+      <FormItem label="สิทธิ์">
         <input
           type="text"
           className="form-control"
-          value={admin.role === 0 ? "แอดมิน" : "พนักงาน"}
+          value={admin.role === 0 ? "แอดมินหลัก" : "พนักงาน"}
           disabled
         />
-      </div>
+      </FormItem>
 
-      {/* 🔘 Buttons */}
+      {/* Buttons */}
       {editing ? (
-        <div className="d-flex justify-content-between">
+        <div className="d-flex gap-2 mt-3">
           <button
-            className="btn btn-secondary w-100 me-2"
+            className="btn w-50"
+            style={{ background: "#6c757d", color: "#fff" }}
             onClick={() => setEditing(false)}
           >
-            ยกเลิก
+            ❌ ยกเลิก
           </button>
-          <button className="btn btn-success w-100" onClick={handleSave}>
+
+          <button
+            className="btn w-50"
+            style={{
+              background: "#4A0080",
+              color: "#fff",
+              fontWeight: "bold",
+            }}
+            onClick={handleSave}
+          >
             💾 บันทึก
           </button>
         </div>
       ) : (
-        <button className="btn btn-primary w-100" onClick={() => setEditing(true)}>
+        <button
+          className="btn w-100 mt-3"
+          style={{
+            background: "#4A0080",
+            color: "#fff",
+            fontWeight: "bold",
+          }}
+          onClick={() => setEditing(true)}
+        >
           ✏️ แก้ไขข้อมูล
         </button>
       )}
+    </div>
+  );
+}
+
+/* ------------------------------------------------
+   📌 Inline Form Wrapper (ลดความซ้ำ)
+------------------------------------------------- */
+function FormItem({ label, children }: { label: string; children: any }) {
+  return (
+    <div className="mb-3">
+      <label className="form-label fw-bold" style={{ color: "#4A0080" }}>
+        {label}
+      </label>
+      {children}
     </div>
   );
 }

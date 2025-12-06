@@ -136,3 +136,31 @@ function RevenueCard({title,amount,color,dark}:any){
     </div>
   );
 }
+function MonthlyCard({ data }: any) {
+  return (
+    <div className="card shadow-sm p-3 mb-3" style={{ borderRadius: "16px" }}>
+      <h5 className="fw-bold text-center" style={{ color: "#4A0080" }}>
+        {data.month}
+      </h5>
+
+      <div className="row text-center fw-bold mt-2">
+        <div className="col-6">
+          ค่าเช่า<br />
+          {data.rent.toLocaleString("th-TH")}
+        </div>
+        <div className="col-6">
+          ค่าน้ำ<br />
+          {data.water.toLocaleString("th-TH")}
+        </div>
+        <div className="col-6 mt-2">
+          ค่าไฟ<br />
+          {data.electric.toLocaleString("th-TH")}
+        </div>
+        <div className="col-6 mt-2" style={{ color: "#4A0080" }}>
+          รวม<br />
+          {data.total.toLocaleString("th-TH")}
+        </div>
+      </div>
+    </div>
+  );
+}

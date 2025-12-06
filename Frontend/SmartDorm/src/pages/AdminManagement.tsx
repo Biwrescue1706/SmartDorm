@@ -8,6 +8,19 @@ import Swal from "sweetalert2";
 import { API_BASE } from "../config";
 import type { Admin } from "../types/admin";
 
+/* -------------------------------------------
+   🎨 SCB THEME PREMIUM
+-------------------------------------------- */
+const THEME = {
+  purple: "#4A0080",
+  purpleLight: "#6A11CB",
+  purpleDark: "#2E0055",
+  gold: "#D4AF37",
+  bg: "#f5f3fa",
+  text: "#333",
+  cardBg: "#ffffff",
+};
+
 export default function AdminManagement() {
   const { admins, loading, fetchAdmins } = useAdmins();
   const { handleLogout, role, adminName, adminUsername } = useAuth();
@@ -20,35 +33,35 @@ export default function AdminManagement() {
   const smartDormIcon =
     "https://smartdorm-admin.biwbong.shop/assets/SmartDorm.png";
 
-  /* ===================== SCB THEME TOAST ===================== */
+  /* -------------------------------------------
+     🔔 SweetAlert + Toast theme SCB
+  -------------------------------------------- */
   const Toast = Swal.mixin({
     toast: true,
     position: "top-end",
     showConfirmButton: false,
     timer: 2600,
-    timerProgressBar: true,
     background: "#ffffff",
-    color: "#4A0080",
-    iconColor: "#D4AF37",
+    color: THEME.purpleDark,
+    iconColor: THEME.gold,
+    timerProgressBar: true,
   });
 
-  /* ===================== RESIZE DETECTOR ===================== */
   useEffect(() => {
     const resize = () => setWindowWidth(window.innerWidth);
     window.addEventListener("resize", resize);
     return () => window.removeEventListener("resize", resize);
   }, []);
 
-  /* ===================== BLOCK OLDEST ADMIN DELETE ===================== */
   const oldestAdminId =
     admins.length > 0
       ? [...admins].sort(
           (a, b) =>
-            new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+            new Date(a.createdAt).getTime() -
+            new Date(b.createdAt).getTime()
         )[0].adminId
       : null;
 
-  /* ===================== FILTER ===================== */
   const filteredAdmins =
     filterRole === "admin"
       ? admins.filter((a) => a.role === 0)
@@ -62,155 +75,199 @@ export default function AdminManagement() {
     currentPage * rowsPerPage
   );
 
-  /* ===========================================================
-     🔥 ADD ADMIN POPUP (SCB THEME)
-  =========================================================== */
+  /* =============================================================
+     🟣 ADD ADMIN POPUP (PREMIUM UI)
+  ============================================================= */
   const openAddDialog = async () => {
     const result = await Swal.fire({
-      width: "95%",
-      title: `<h3 class="fw-bold" style="color:#4A0080">เพิ่มผู้ดูแลระบบ</h3>`,
       html: `
-      <div class="text-start">
-        <label class="form-label">ชื่อผู้ใช้</label>
-        <input id="add-username" class="form-control mb-2">
+      <div style="color:${THEME.purpleDark}">
+        <h2 class="fw-bold" style="color:${THEME.purple}">เพิ่มผู้ดูแลระบบใหม่</h2>
+        <hr style="border:1px solid ${THEME.gold};opacity:.6">
 
-        <label class="form-label">ชื่อจริง</label>
-        <input id="add-name" class="form-control mb-2">
+        <div class="mb-2 text-start">
+          <label class="fw-bold">ชื่อผู้ใช้</label>
+          <input id="add-username" class="form-control" placeholder="ชื่อผู้ใช้">
+        </div>
 
-        <label class="form-label">รหัสผ่าน (≥ 6 ตัว)</label>
-        <input id="add-password" type="password" class="form-control mb-2">
+        <div class="mb-2 text-start">
+          <label class="fw-bold">ชื่อจริง</label>
+          <input id="add-name" class="form-control" placeholder="ชื่อจริง">
+        </div>
 
-        <label class="form-label">สิทธิ์</label>
-        <select id="add-role" class="form-select">
-          <option value="0">แอดมินหลัก</option>
-          <option value="1" selected>พนักงาน</option>
-        </select>
+        <div class="mb-2 text-start">
+          <label class="fw-bold">รหัสผ่าน (ขั้นต่ำ 6 ตัว)</label>
+          <input id="add-password" class="form-control" type="password" placeholder="รหัสผ่าน">
+        </div>
+
+        <div class="mb-2 text-start">
+          <label class="fw-bold">สิทธิ์</label>
+          <select id="add-role" class="form-select">
+            <option value="0">แอดมินหลัก</option>
+            <option value="1" selected>พนักงาน</option>
+          </select>
+        </div>
       </div>
       `,
       showCancelButton: true,
-      confirmButtonText: "💾 บันทึก",
+      confirmButtonText: "บันทึก",
       cancelButtonText: "ยกเลิก",
-      confirmButtonColor: "#4A0080",
-      cancelButtonColor: "#6c757d",
+      background: "#fff",
+      width: "480px",
+      confirmButtonColor: THEME.purple,
+      cancelButtonColor: "#777",
+      preConfirm: () => ({
+        username: (document.getElementById("add-username") as HTMLInputElement)
+          ?.value,
+        name: (document.getElementById("add-name") as HTMLInputElement)?.value,
+        password: (
+          document.getElementById("add-password") as HTMLInputElement
+        )?.value,
+        role: parseInt(
+          (document.getElementById("add-role") as HTMLSelectElement)?.value
+        ),
+      }),
     });
 
-    const data = result.value;
-    if (!data) return;
+    const v = result.value;
+    if (!v) return;
 
-    data.username = document.getElementById("add-username").value;
-    data.name = document.getElementById("add-name").value;
-    data.password = document.getElementById("add-password").value;
-    data.role = +document.getElementById("add-role").value;
-
-    if (data.password.length < 6) {
-      Toast.fire({ icon: "warning", title: "รหัสผ่านต้อง ≥ 6 ตัว" });
-      return;
-    }
+    if (v.password.length < 6)
+      return Toast.fire({ icon: "warning", title: "รหัสผ่านต้อง 6 ตัวขึ้นไป" });
 
     try {
       const res = await fetch(`${API_BASE}/auth/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify(data),
+        body: JSON.stringify(v),
       });
 
-      if (!res.ok) throw new Error("เกิดข้อผิดพลาด");
+      if (!res.ok) throw new Error("เพิ่มผู้ดูแลไม่สำเร็จ");
 
       await fetchAdmins();
       Toast.fire({
-        iconHtml: `<img src="${smartDormIcon}" style="width:28px;border-radius:50%">`,
-        title: `เพิ่มผู้ดูแลแล้ว`,
+        iconHtml: `<img src="${smartDormIcon}" style="width:25px;height:25px;border-radius:50%">`,
+        title: `<b>${v.name}</b> ถูกเพิ่มแล้ว`,
       });
-    } catch (err) {
-      Toast.fire({ icon: "error", title: "บันทึกไม่สำเร็จ" });
+    } catch (e: any) {
+      Toast.fire({ icon: "error", title: e.message });
     }
   };
 
-  /* ===========================================================
-     🔥 EDIT DIALOG (SCB STYLE)
-  =========================================================== */
+  /* =============================================================
+     🟣 EDIT ADMIN (SCB UI)
+  ============================================================= */
   const openEditDialog = async (admin: Admin) => {
     const result = await Swal.fire({
-      title: `<b style="color:#4A0080">แก้ไข (${admin.username})</b>`,
       html: `
-      <label class="form-label">ชื่อจริง</label>
-      <input id="edit-name" value="${admin.name}" class="form-control mb-2">
+      <h2 class="fw-bold" style="color:${THEME.purple}">แก้ไขข้อมูล</h2>
+      <hr style="border:1px solid ${THEME.gold};opacity:.6">
 
-      <label class="form-label">รหัสผ่านใหม่ (ไม่บังคับ)</label>
-      <input id="edit-pass" type="password" class="form-control mb-2">
+      <div class="text-start">
+        <label class="fw-bold">ชื่อจริง</label>
+        <input id="edit-name" class="form-control" value="${admin.name}">
+      </div>
 
-      <label class="form-label">สิทธิ์</label>
-      <select id="edit-role" class="form-select">
-        <option value="0" ${admin.role === 0 && "selected"}>แอดมินหลัก</option>
-        <option value="1" ${admin.role === 1 && "selected"}>พนักงาน</option>
-      </select>
+      <div class="mt-2 text-start">
+        <label class="fw-bold">รหัสผ่านใหม่</label>
+        <input id="edit-pass" class="form-control" placeholder="(ไม่บังคับ)" type="password">
+      </div>
+
+      <div class="mt-2 text-start">
+        <label class="fw-bold">สิทธิ์</label>
+        <select id="edit-role" class="form-select">
+          <option value="0" ${admin.role === 0 ? "selected" : ""}>แอดมินหลัก</option>
+          <option value="1" ${admin.role === 1 ? "selected" : ""}>พนักงาน</option>
+        </select>
+      </div>
       `,
       showCancelButton: true,
-      confirmButtonText: "💾 บันทึก",
-      cancelButtonText: "ยกเลิก",
-      confirmButtonColor: "#4A0080",
+      confirmButtonText: "บันทึก",
+      background: "#fff",
+      width: "480px",
+      confirmButtonColor: THEME.purple,
+      cancelButtonColor: "#777",
+      preConfirm: () => ({
+        name: (document.getElementById("edit-name") as HTMLInputElement)?.value,
+        password: (document.getElementById("edit-pass") as HTMLInputElement)
+          ?.value,
+        role: parseInt(
+          (document.getElementById("edit-role") as HTMLSelectElement)?.value
+        ),
+      }),
     });
 
-    if (!result.isConfirmed) return;
+    const v = result.value;
+    if (!v) return;
 
-    const payload = {
-      name: document.getElementById("edit-name").value,
-      password: document.getElementById("edit-pass").value,
-      role: +document.getElementById("edit-role").value,
-    };
-
-    if (payload.password && payload.password.length < 6) {
-      Toast.fire({ icon: "warning", title: "รหัสผ่าน ≥ 6 ตัว" });
-      return;
-    }
-
-    try {
-      await fetch(`${API_BASE}/admin/${admin.adminId}`, {
-        method: "PUT",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+    if (v.password && v.password.length < 6)
+      return Toast.fire({
+        icon: "warning",
+        title: "รหัสผ่านต้องมากกว่า 6 ตัว",
       });
 
+    try {
+      const res = await fetch(`${API_BASE}/admin/${admin.adminId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(v),
+      });
+
+      if (!res.ok) throw new Error("บันทึกไม่สำเร็จ");
+
       await fetchAdmins();
-      Toast.fire({ icon: "success", title: "บันทึกสำเร็จ" });
-    } catch {
-      Toast.fire({ icon: "error", title: "แก้ไขไม่สำเร็จ" });
+      Toast.fire({
+        iconHtml: `<img src="${smartDormIcon}" style="width:25px;height:25px;border-radius:50%">`,
+        title: `อัปเดตข้อมูลสำเร็จ`,
+      });
+    } catch (e: any) {
+      Toast.fire({ icon: "error", title: e.message });
     }
   };
 
-  /* ===========================================================
-     🔥 DELETE ADMIN
-  =========================================================== */
+  /* =============================================================
+     🟣 DELETE ADMIN
+  ============================================================= */
   const handleDelete = async (adminId: string) => {
     if (adminId === oldestAdminId)
-      return Toast.fire({ icon: "warning", title: "ห้ามลบแอดมินคนแรก" });
+      return Toast.fire({
+        icon: "warning",
+        title: "❌ ห้ามลบแอดมินคนแรก",
+      });
 
-    const conf = await Swal.fire({
+    const ok = await Swal.fire({
+      title: "ต้องการลบ?",
       icon: "warning",
-      title: "ลบผู้ดูแล?",
-      text: "ไม่สามารถย้อนกลับได้",
+      showCancelButton: true,
       confirmButtonText: "ลบ",
       cancelButtonText: "ยกเลิก",
-      confirmButtonColor: "#4A0080",
-      showCancelButton: true,
+      confirmButtonColor: THEME.purple,
     });
 
-    if (!conf.isConfirmed) return;
+    if (!ok.isConfirmed) return;
 
-    await fetch(`${API_BASE}/admin/${adminId}`, {
-      method: "DELETE",
-      credentials: "include",
-    });
+    try {
+      const res = await fetch(`${API_BASE}/admin/${adminId}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
 
-    await fetchAdmins();
-    Toast.fire({ icon: "success", title: "ลบแล้ว" });
+      if (!res.ok) throw new Error("ลบไม่สำเร็จ");
+      await fetchAdmins();
+
+      Toast.fire({ icon: "success", title: "ลบแล้ว" });
+    } catch (e: any) {
+      Toast.fire({ icon: "error", title: e.message });
+    }
   };
 
-  /* ===================== UI ===================== */
+  /* =============================================================
+     🎯 UI RENDER
+  ============================================================= */
   return (
-    <div style={{ background: "#f6f1fc", minHeight: "100vh" }}>
+    <div style={{ background: THEME.bg, minHeight: "100vh" }}>
       <Nav
         onLogout={handleLogout}
         role={role}
@@ -218,126 +275,145 @@ export default function AdminManagement() {
         adminUsername={adminUsername}
       />
 
-      <main className="container py-4 mt-5">
-        <h2 className="fw-bold text-center mb-4" style={{ color: "#4A0080" }}>
-          ⚙️ จัดการผู้ดูแลระบบ
-        </h2>
-
-        {/* ADD BUTTON */}
-        <div className="text-center mb-4">
-          <button
-            className="btn fw-bold text-white px-5 py-2"
-            style={{
-              background: "linear-gradient(135deg,#4A0080,#D4AF37)",
-              borderRadius: "12px",
-            }}
-            onClick={openAddDialog}
+      <main className="main-content px-3 py-3 mt-5">
+        <div className="container">
+          <h2
+            className="text-center fw-bold mb-4"
+            style={{ color: THEME.purple }}
           >
-            ➕ เพิ่มสมาชิก
-          </button>
+            🛡️ จัดการผู้ดูแลระบบ SmartDorm
+          </h2>
+
+          {/* BUTTON */}
+          <div className="text-center mb-4">
+            <button
+              className="btn text-white fw-bold px-5 py-2"
+              style={{
+                background: `linear-gradient(135deg, ${THEME.purple}, ${THEME.purpleLight})`,
+                borderRadius: "12px",
+              }}
+              onClick={openAddDialog}
+            >
+              ➕ เพิ่มสมาชิก
+            </button>
+          </div>
+
+          {/* FILTER */}
+          <div className="d-flex justify-content-center gap-3 flex-wrap mb-4">
+            {[
+              { key: "all", label: `ทั้งหมด (${admins.length})` },
+              {
+                key: "admin",
+                label: `แอดมินหลัก (${admins.filter((a) => a.role === 0).length})`,
+              },
+              {
+                key: "staff",
+                label: `พนักงาน (${admins.filter((a) => a.role === 1).length})`,
+              },
+            ].map((f) => (
+              <div
+                key={f.key}
+                className={`px-4 py-2 fw-bold shadow-sm`}
+                style={{
+                  cursor: "pointer",
+                  borderRadius: "10px",
+                  background:
+                    filterRole === f.key
+                      ? THEME.purple
+                      : THEME.cardBg,
+                  color: filterRole === f.key ? "#fff" : THEME.text,
+                  border:
+                    filterRole === f.key ? "2px solid #fff" : "1px solid #ddd",
+                  transition: ".3s",
+                }}
+                onClick={() => setFilterRole(f.key)}
+              >
+                {f.label}
+              </div>
+            ))}
+          </div>
+
+          {/* MOBILE / TABLET / DESKTOP */}
+          {loading ? (
+            <p className="text-center">⏳ กำลังโหลดข้อมูล...</p>
+          ) : windowWidth < 600 ? (
+            <MobileView
+              admins={currentAdmins}
+              oldestAdminId={oldestAdminId}
+              handleDelete={handleDelete}
+              openEditDialog={openEditDialog}
+            />
+          ) : windowWidth < 1400 ? (
+            <TabletView
+              admins={currentAdmins}
+              oldestAdminId={oldestAdminId}
+              handleDelete={handleDelete}
+              openEditDialog={openEditDialog}
+            />
+          ) : (
+            <DesktopView
+              currentAdmins={currentAdmins}
+              oldestAdminId={oldestAdminId}
+              handleDelete={handleDelete}
+              openEditDialog={openEditDialog}
+              currentPage={currentPage}
+              rowsPerPage={rowsPerPage}
+            />
+          )}
+
+          <Pagination
+            currentPage={currentPage}
+            totalItems={totalItems}
+            rowsPerPage={rowsPerPage}
+            onPageChange={setCurrentPage}
+            onRowsPerPageChange={(v) => {
+              setRowsPerPage(v);
+              setCurrentPage(1);
+            }}
+          />
         </div>
-
-        {/* FILTER */}
-        <div className="d-flex justify-content-center gap-3 flex-wrap mb-4">
-          <FilterCard
-            active={filterRole === "all"}
-            label={`ทั้งหมด (${admins.length})`}
-            onClick={() => setFilterRole("all")}
-          />
-          <FilterCard
-            active={filterRole === "admin"}
-            label={`แอดมินหลัก (${admins.filter((a) => a.role === 0).length})`}
-            onClick={() => setFilterRole("admin")}
-          />
-          <FilterCard
-            active={filterRole === "staff"}
-            label={`พนักงาน (${admins.filter((a) => a.role === 1).length})`}
-            onClick={() => setFilterRole("staff")}
-          />
-        </div>
-
-        {/* RESPONSIVE DISPLAY */}
-        {loading ? (
-          <p className="text-center">⏳ โหลดข้อมูล...</p>
-        ) : windowWidth < 600 ? (
-          <MobileView
-            admins={currentAdmins}
-            oldestAdminId={oldestAdminId}
-            openEditDialog={openEditDialog}
-            handleDelete={handleDelete}
-          />
-        ) : windowWidth < 1400 ? (
-          <TabletView
-            admins={currentAdmins}
-            oldestAdminId={oldestAdminId}
-            openEditDialog={openEditDialog}
-            handleDelete={handleDelete}
-          />
-        ) : (
-          <DesktopView
-            admins={currentAdmins}
-            oldestAdminId={oldestAdminId}
-            openEditDialog={openEditDialog}
-            handleDelete={handleDelete}
-          />
-        )}
-
-        <Pagination
-          currentPage={currentPage}
-          totalItems={totalItems}
-          rowsPerPage={rowsPerPage}
-          onPageChange={setCurrentPage}
-          onRowsPerPageChange={(r) => {
-            setRowsPerPage(r);
-            setCurrentPage(1);
-          }}
-        />
       </main>
     </div>
   );
 }
 
-/* ================= COMPONENTS ================= */
-function FilterCard({
-  active,
-  label,
-  onClick,
-}: {
-  active: boolean;
-  label: string;
-  onClick: () => void;
-}) {
-  return (
-    <div
-      onClick={onClick}
-      className={`px-4 py-2 fw-bold shadow-sm`}
-      style={{
-        cursor: "pointer",
-        borderRadius: "12px",
-        background: active ? "#4A0080" : "#fff",
-        color: active ? "#fff" : "#4A0080",
-        border: `2px solid #4A0080`,
-      }}
-    >
-      {label}
-    </div>
-  );
-}
-
-function MobileView({ admins, oldestAdminId, openEditDialog, handleDelete }) {
+/* =============================================================
+   📱 MOBILE VIEW
+============================================================= */
+function MobileView({
+  admins,
+  oldestAdminId,
+  handleDelete,
+  openEditDialog,
+}: any) {
   return (
     <div className="row g-3">
-      {admins.map((a) => (
+      {admins.map((a: Admin) => (
         <div key={a.adminId} className="col-12">
-          <div className="card shadow-sm p-3 border-0" style={{ borderLeft: "5px solid #4A0080" }}>
+          <div className="card p-3 shadow-sm" style={{ borderRadius: "14px" }}>
             <h5 className="fw-bold">{a.username}</h5>
-            <p><b>ชื่อ:</b> {a.name}</p>
-            <p><b>สิทธิ์:</b> {a.role === 0 ? "แอดมินหลัก" : "พนักงาน"}</p>
+            <p>
+              <b>ชื่อ :</b> {a.name}
+            </p>
+            <p>
+              <b>สิทธิ์ :</b> {a.role === 0 ? "แอดมินหลัก" : "พนักงาน"}
+            </p>
 
             <div className="d-flex justify-content-between">
-              <button className="btn btn-sm text-white" style={{ background:"#4A0080" }} onClick={() => openEditDialog(a)}>✏️</button>
+              <button
+                className="btn btn-sm btn-primary"
+                onClick={() => openEditDialog(a)}
+              >
+                ✏️
+              </button>
+
               {a.adminId !== oldestAdminId && (
-                <button className="btn btn-sm btn-danger" onClick={() => handleDelete(a.adminId)}>ลบ</button>
+                <button
+                  className="btn btn-sm btn-danger"
+                  onClick={() => handleDelete(a.adminId)}
+                >
+                  ลบ
+                </button>
               )}
             </div>
           </div>
@@ -347,51 +423,120 @@ function MobileView({ admins, oldestAdminId, openEditDialog, handleDelete }) {
   );
 }
 
-function TabletView(props) {
+/* =============================================================
+   📟 TABLET VIEW
+============================================================= */
+function TabletView({
+  admins,
+  oldestAdminId,
+  handleDelete,
+  openEditDialog,
+}: any) {
   return (
     <div className="row g-3">
-      {props.admins.map((a) => (
-        <div key={a.adminId} className="col-sm-6 col-lg-4">
-          <MobileView {...props} admins={[a]} />
+      {admins.map((a: Admin) => (
+        <div key={a.adminId} className="col-12 col-sm-6 col-lg-4">
+          <div className="card p-3 shadow-sm" style={{ borderRadius: "14px" }}>
+            <h5 className="fw-bold">{a.username}</h5>
+            <p>
+              <b>ชื่อ :</b> {a.name}
+            </p>
+            <p>
+              <b>สิทธิ์ :</b> {a.role === 0 ? "แอดมินหลัก" : "พนักงาน"}
+            </p>
+
+            <div className="d-flex justify-content-between">
+              <button
+                className="btn btn-sm btn-primary"
+                onClick={() => openEditDialog(a)}
+              >
+                ✏️
+              </button>
+
+              {a.adminId !== oldestAdminId && (
+                <button
+                  className="btn btn-sm btn-danger"
+                  onClick={() => handleDelete(a.adminId)}
+                >
+                  ลบ
+                </button>
+              )}
+            </div>
+          </div>
         </div>
       ))}
     </div>
   );
 }
 
-function DesktopView({ admins, oldestAdminId, openEditDialog, handleDelete }) {
+/* =============================================================
+   🖥️ DESKTOP VIEW
+============================================================= */
+function DesktopView({
+  currentAdmins,
+  oldestAdminId,
+  handleDelete,
+  openEditDialog,
+  currentPage,
+  rowsPerPage,
+}: any) {
   return (
-    <table className="table table-bordered text-center align-middle">
-      <thead style={{ background: "#4A0080", color: "#fff" }}>
-        <tr>
-          <th>#</th>
-          <th>ชื่อผู้ใช้</th>
-          <th>ชื่อ</th>
-          <th>สิทธิ์</th>
-          <th>แก้ไข</th>
-          <th>ลบ</th>
-        </tr>
-      </thead>
-      <tbody>
-        {admins.map((a, i) => (
-          <tr key={a.adminId}>
-            <td>{i + 1}</td>
-            <td>{a.username}</td>
-            <td>{a.name}</td>
-            <td>{a.role === 0 ? "แอดมินหลัก" : "พนักงาน"}</td>
-            <td>
-              <button className="btn text-white" style={{ background:"#4A0080" }} onClick={() => openEditDialog(a)}>
-                ✏️
-              </button>
-            </td>
-            <td>
-              {a.adminId !== oldestAdminId && (
-                <button className="btn btn-danger" onClick={() => handleDelete(a.adminId)}>ลบ</button>
-              )}
-            </td>
+    <div className="responsive-table" style={{ overflowX: "auto" }}>
+      <table
+        className="table table-striped align-middle text-center shadow-sm"
+        style={{
+          borderRadius: "14px",
+          overflow: "hidden",
+          background: "#fff",
+        }}
+      >
+        <thead
+          className="text-white"
+          style={{ background: THEME.purple, fontSize: "1rem" }}
+        >
+          <tr>
+            <th>#</th>
+            <th>ชื่อผู้ใช้</th>
+            <th>ชื่อ</th>
+            <th>สิทธิ์</th>
+            <th>แก้ไข</th>
+            <th>ลบ</th>
           </tr>
-        ))}
-      </tbody>
-    </table>
+        </thead>
+
+        <tbody style={{ fontSize: ".95rem" }}>
+          {currentAdmins.map((a: Admin, i: number) => (
+            <tr
+              key={a.adminId}
+              style={{ transition: "0.3s" }}
+              className="table-hover"
+            >
+              <td>{(currentPage - 1) * rowsPerPage + i + 1}</td>
+              <td>{a.username}</td>
+              <td>{a.name}</td>
+              <td>{a.role === 0 ? "แอดมินหลัก" : "พนักงาน"}</td>
+              <td>
+                <button
+                  className="btn btn-primary btn-sm"
+                  onClick={() => openEditDialog(a)}
+                >
+                  ✏️
+                </button>
+              </td>
+              <td>
+                {a.adminId !== oldestAdminId && (
+                  <button
+                    className="btn btn-danger btn-sm"
+                    onClick={() => handleDelete(a.adminId)}
+                  >
+                    ลบ
+                  </button>
+                )}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 }

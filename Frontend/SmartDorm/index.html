@@ -38,18 +38,24 @@
     <!-- React Root -->
     <div id="root"></div>
 
-    <!-- Footer -->
-    <footer
-      class="smart-footer text-center text-secondary py-2 fixed-bottom w-100"
-      style="z-index: 998"
-    >
-      © <span id="smartYear"></span> SmartDorm • All rights reserved.
-    </footer>
+<!-- Footer -->
+<footer
+  class="smart-footer text-center text-secondary py-2 w-100"
+  style="
+    margin-top: 50px;
+    font-size: 14px;
+    background: rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(8px);
+    border-top: 1px solid rgba(0,0,0,.15);
+  "
+>
+  © <span id="smartYear"></span> SmartDorm • All rights reserved.
+</footer>
 
-    <script>
-      document.getElementById("smartYear").textContent =
-        `2025 - ${new Date().getFullYear()}`;
-    </script>
+<script>
+  document.getElementById("smartYear").textContent =
+    `2025 - ${new Date().getFullYear()}`;
+</script>
 
     <!-- Ribbon Mourning -->
     <img

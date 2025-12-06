@@ -63,32 +63,32 @@ export default function DashboardRevenue({
   const sum = (arr: number[]) => arr.reduce((s,n)=>s+n,0);
 
   /* ===== รวมยอด Booking ===== */
-  const rentBooking = sum(filteredBookings.map(b => b.room?.rent ?? 0));
-  const depositBooking = sum(filteredBookings.map(b => b.room?.deposit ?? 0));
-  const bookingFee = sum(filteredBookings.map(b => b.room?.bookingFee ?? 0));
-  const totalBookingRevenue = rentBooking + depositBooking + bookingFee;
+  const rentBooking = sum(filteredBookings.map(b => Number(b.room?.rent ?? 0)));
+  const depositBooking = sum(filteredBookings.map(b => Number(b.room?.deposit ?? 0)));
+  const bookingFee = sum(filteredBookings.map(b => Number(b.room?.bookingFee ?? 0)));
+  const totalBookingRevenue = Number(rentBooking) + Number(depositBooking) + Number(bookingFee);
 
   /* ===== รวมยอด Bill ===== */
-  const rentBill = sum(filteredBills.map(b => b.rent ?? 0));
-  const waterBill = sum(filteredBills.map(b => b.waterCost ?? 0));
-  const electricBill = sum(filteredBills.map(b => b.electricCost ?? 0));
-  const totalBillRevenue = sum(filteredBills.map(b => b.total ?? 0));
+  const rentBill = sum(filteredBills.map(b => Number(b.rent ?? 0)));
+  const waterBill = sum(filteredBills.map(b => Number(b.waterCost ?? 0)));
+  const electricBill = sum(filteredBills.map(b => Number(b.electricCost ?? 0)));
+  const totalBillRevenue = sum(filteredBills.map(b => Number(b.total ?? 0)));
 
-  const totalAllRevenue = totalBookingRevenue + totalBillRevenue;
+  const totalAllRevenue = Number(totalBookingRevenue) + Number(totalBillRevenue);
 
   /* ===== กราฟตามโหมด ===== */
   const isYearMode = !selectedYear;
 
   const getYearData = (key:keyof Bill)=>yearsInData.map(y =>
     bills.filter(b => new Date(b.month).getUTCFullYear()+543===y)
-         .reduce((s,b)=>s+(b[key]??0),0)
+         .reduce((s,b)=>s+Number(b[key]??0),0)
   );
 
   const getMonthData = (arr:Bill[],key:keyof Bill)=>
     labels.map(label=>{
       const idx = monthNamesTH.indexOf(label);
       return arr.filter(b=>new Date(b.month).getUTCMonth()===idx)
-                .reduce((s,b)=>s+(b[key]??0),0);
+                .reduce((s,b)=>s+Number(b[key]??0),0);
     });
 
   const billRentData = isYearMode ? getYearData("rent") : getMonthData(filteredBills,"rent");
@@ -220,17 +220,17 @@ function Card({title,value,color}:any){
   );
 }
 
-/* ===== การ์ดรายรับรายเดือน ===== */
+/* ===== การ์ดรายเดือน ===== */
 function MonthlyBillCards({bills,monthNamesTH}:any){
   const acc:any={};
-  bills.forEach((b:Bill)=>{
+  bills.forEach(b=>{
     const d=new Date(b.month);
     const key=`${d.getUTCFullYear()+543}-${String(d.getUTCMonth()+1).padStart(2,"0")}`;
     if(!acc[key]) acc[key]={rent:0,water:0,electric:0,total:0};
-    acc[key].rent+=b.rent??0;
-    acc[key].water+=b.waterCost??0;
-    acc[key].electric+=b.electricCost??0;
-    acc[key].total+=b.total??0;
+    acc[key].rent+=Number(b.rent??0);
+    acc[key].water+=Number(b.waterCost??0);
+    acc[key].electric+=Number(b.electricCost??0);
+    acc[key].total+=Number(b.total??0);
   });
   const rows=Object.entries(acc).map(([k,v]:any)=>{
     const [y,m]=k.split("-");
@@ -262,24 +262,34 @@ function MonthlyBillTable({bills,monthNamesTH}:{bills:Bill[],monthNamesTH:string
     const d=new Date(b.month);
     const key=`${d.getUTCFullYear()+543}-${String(d.getUTCMonth()+1).padStart(2,"0")}`;
     if(!acc[key]) acc[key]={rent:0,water:0,electric:0,total:0};
-    acc[key].rent+=b.rent??0;
-    acc[key].water+=b.waterCost??0;
-    acc[key].electric+=b.electricCost??0;
-    acc[key].total+=b.total??0;
+    acc[key].rent+=Number(b.rent??0);
+    acc[key].water+=Number(b.waterCost??0);
+    acc[key].electric+=Number(b.electricCost??0);
+    acc[key].total+=Number(b.total??0);
   });
+
   const rows=Object.entries(acc).map(([k,v]:any)=>{
     const [y,m]=k.split("-");
     return {month:`${monthNamesTH[+m-1]} ${y}`,...v};
   });
+
   return(
     <table className="table table-hover text-center mt-3">
       <thead style={{background:"#4A0080",color:"#fff"}}>
-        <tr><th>#</th><th>เดือน</th><th>ค่าเช่าห้อง</th><th>ค่าน้ำ</th><th>ค่าไฟ</th><th>รวม</th></tr>
+        <tr>
+          <th>#</th>
+          <th>เดือน</th>
+          <th>ค่าเช่าห้อง</th>
+          <th>ค่าน้ำ</th>
+          <th>ค่าไฟ</th>
+          <th>รวม</th>
+        </tr>
       </thead>
       <tbody>
         {rows.map((r,i)=>(
           <tr key={i}>
-            <td>{i+1}</td><td>{r.month}</td>
+            <td>{i+1}</td>
+            <td>{r.month}</td>
             <td>{r.rent.toLocaleString("th-TH")}</td>
             <td>{r.water.toLocaleString("th-TH")}</td>
             <td>{r.electric.toLocaleString("th-TH")}</td>

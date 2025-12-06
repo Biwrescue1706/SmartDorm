@@ -1,4 +1,3 @@
-// src/components/Dashboard/DashboardRevenueChart.tsx
 import { Line } from "react-chartjs-2";
 import {
   Chart as ChartJS,
@@ -49,7 +48,10 @@ export default function DashboardRevenueChart({ labels, datasets, title }: Props
       title: {
         display: true,
         text: title,
-        font: { size: 18, weight: "bold" },
+        font: {
+          size: 18,
+          weight: "bold" as const, // FIXED
+        },
         color: "#4A0080",
       },
       legend: {
@@ -70,7 +72,7 @@ export default function DashboardRevenueChart({ labels, datasets, title }: Props
         },
       },
     },
-  };
+  } as const; // FIXED TYPE
 
   return <Line data={data} options={options} />;
 }

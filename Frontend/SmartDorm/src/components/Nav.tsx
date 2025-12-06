@@ -68,7 +68,7 @@ export default function Nav({
         {/* PROFILE */}
         <div className="profile-menu position-relative" style={{ cursor: "pointer" }}>
           <div onClick={() => setProfileOpen(!profileOpen)}>
-            <span className="fw-bold text-warning">{shortName(adminName)}</span>
+            <span className="fw-bold text-warning">{shortName(adminName)}</span><br />
             <span className="ms-2 text-white">{role === 0 ? "แอดมิน" : "พนักงาน"}</span>
           </div>
 

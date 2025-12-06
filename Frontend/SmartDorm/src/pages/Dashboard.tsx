@@ -55,7 +55,7 @@ export default function Dashboard() {
       <main className="flex-grow-1 px-2 py-3 mt-6 mt-lg-7">
         <div className="container" style={{ maxWidth: "1400px" }}>
           <h2
-            className="fw-bold text-center mb-4"
+            className="fw-bold text-center mb-4 mt-3"
             style={{
               color: "#4A0080", // SCB Purple
               textShadow: "0px 1px 3px rgba(74,0,128,0.2)",
@@ -77,11 +77,6 @@ export default function Dashboard() {
           {/* รายงานรายรับ */}
           <DashboardRevenue bills={bills} bookings={bookings} />
 
-          {/* ลิขสิทธิ์ */}
-          <div className="text-center mt-5 mb-3">
-            <small style={{ color: "#4A0080", opacity: 0.7 }}>
-              © 2025 SmartDorm Management System 
-            </small>
           </div>
         </div>
       </main>

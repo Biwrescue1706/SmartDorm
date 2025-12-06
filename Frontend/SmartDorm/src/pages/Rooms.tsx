@@ -77,7 +77,6 @@ export default function Rooms() {
   return (
     <div className="d-flex min-vh-100 bg-white">
       <Nav
-        message={message}
         onLogout={handleLogout}
         role={role}
         adminName={adminName}

@@ -207,7 +207,7 @@ function Select({ value, setter, items, placeholder, disabled, withIndex }: any)
 function RevenueCard({ title, amount, color, dark, big }: any) {
   return (
     <div
-      className="card border-0 shadow-sm text-center"
+      className="card border-0 shadow-sm text-center col-4 col-md-2"
       style={{
         background: color,
         color: dark ? "#4A0080" : "white",
@@ -217,8 +217,8 @@ function RevenueCard({ title, amount, color, dark, big }: any) {
       }}
     >
       <div className="d-flex flex-column justify-content-center h-100">
-        <strong style={{ fontSize: "1.1rem" }}>{title}</strong>
-        <span style={{ fontSize: "1.3rem" }}>{amount.toLocaleString("th-TH")}</span>
+        <strong style={{ fontSize: "1rem" }}>{title}</strong>
+        <span style={{ fontSize: "1rem" }}>{amount.toLocaleString("th-TH")}</span>
       </div>
     </div>
   );
@@ -227,7 +227,7 @@ function RevenueCard({ title, amount, color, dark, big }: any) {
 function MobileMonthCard({ data }: any) {
   return (
     <div
-      className="card shadow-sm p-3"
+      className="card shadow-sm p-3 col-4 col-md-2"
       style={{
         borderRadius: "14px",
         background: "rgba(255,255,255,0.75)",

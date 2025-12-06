@@ -7,7 +7,7 @@ import Nav from "../components/Nav";
 import { useAuth } from "../hooks/useAuth";
 
 export default function Booking() {
-  const { message, handleLogout, role, adminName, adminUsername } = useAuth();
+  const { handleLogout, role, adminName, adminUsername } = useAuth();
 
   const {
     bookings,
@@ -60,7 +60,6 @@ export default function Booking() {
   return (
     <div className="d-flex min-vh-50 bg-white">
       <Nav
-        message={message}
         onLogout={handleLogout}
         role={role}
         adminName={adminName}

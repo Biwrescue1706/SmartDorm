@@ -1,4 +1,5 @@
 // src/components/Dashboard/DashboardRevenueChart.tsx
+
 import {
   Chart as ChartJS,
   BarElement,
@@ -7,8 +8,6 @@ import {
   Tooltip,
   Legend,
   type ChartOptions,
-  type Tick,
-  type ScriptableContext,
 } from "chart.js";
 import { Bar } from "react-chartjs-2";
 import { useMemo } from "react";
@@ -48,7 +47,8 @@ export default function DashboardRevenueChart({
       legend: { display: false },
       tooltip: {
         callbacks: {
-          label: (ctx) => `${title}: ${(ctx.raw as number).toLocaleString("th-TH")} บาท`,
+          label: (ctx) =>
+            `${title}: ${(ctx.raw as number).toLocaleString("th-TH")} บาท`,
         },
       },
     },
@@ -60,8 +60,7 @@ export default function DashboardRevenueChart({
       y: {
         ticks: {
           color: "#444",
-          callback: (v: string | number) =>
-            Number(v).toLocaleString("th-TH"),
+          callback: (v: string | number) => Number(v).toLocaleString("th-TH"),
         },
       },
     },

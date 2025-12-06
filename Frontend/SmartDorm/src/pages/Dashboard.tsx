@@ -23,13 +23,13 @@ export default function Dashboard() {
   }, []);
 
   useEffect(() => {
-    setPendingBookings(bookings.filter((b) => b.approveStatus === 0).length);
-    setPendingCheckouts(checkouts.filter((c) => c.returnStatus === 0).length);
+    setPendingBookings(bookings.filter(b => b.approveStatus === 0).length);
+    setPendingCheckouts(checkouts.filter(c => c.returnStatus === 0).length);
   }, [bookings, checkouts]);
 
   const totalRooms = rooms.length;
-  const availableRooms = rooms.filter((r) => r.status === 0).length;
-  const bookedRooms = rooms.filter((r) => r.status === 1).length;
+  const availableRooms = rooms.filter(r => r.status === 0).length;
+  const bookedRooms = rooms.filter(r => r.status === 1).length;
 
   return (
     <div
@@ -47,12 +47,13 @@ export default function Dashboard() {
         pendingBookings={pendingBookings}
       />
 
-      {/* 🔥 MAIN CONTENT */}
-         <main className="main-content flex-grow-1 px-1 py-2 mt-6 mt-lg-6">
+      {/* MAIN CONTENT */}
+      <main className="main-content flex-grow-1 px-2 py-2 mt-6 mt-lg-6">
         <div className="mx-auto container-max">
-          <div className="d-flex justify-content-center align-items-center mb-3 mt-3">
+
+          {/* ⭐ หัวข้อใหญ่ */}
           <h2
-            className="fw-bold text-center "
+            className="fw-bold text-center mb-4 mt-3"
             style={{
               color: "#4A0080",
               textShadow: "0px 1px 3px rgba(74,0,128,0.2)",
@@ -61,7 +62,7 @@ export default function Dashboard() {
             📊 สรุปข้อมูลหอพัก SmartDorm
           </h2>
 
-          {/* สรุป Dashboard */}
+          {/* 🔥 ส่วนสรุป Dashboard */}
           <DashboardSummary
             totalRooms={totalRooms}
             availableRooms={availableRooms}
@@ -70,10 +71,9 @@ export default function Dashboard() {
             pendingCheckouts={pendingCheckouts}
           />
 
-          {/* รายรับ Dashboard */}
+          {/* 💜 รายรับ Dashboard */}
           <DashboardRevenue bills={bills} bookings={bookings} />
 
-        </div>
         </div>
       </main>
     </div>

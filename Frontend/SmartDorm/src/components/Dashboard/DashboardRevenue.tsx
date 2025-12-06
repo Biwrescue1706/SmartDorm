@@ -14,25 +14,24 @@ export default function DashboardRevenue({
   const [selectedYear, setSelectedYear] = useState<string>("");
   const [selectedMonth, setSelectedMonth] = useState<string>("");
 
+  /* ================= SCREEN BREAKPOINT ================= */
   const screen = window.innerWidth;
   const isMobile = screen < 600;
   const isTablet = screen >= 600 && screen < 1400;
   const isDesktop = screen >= 1400;
+  const cardsPerRow = isMobile ? "row-cols-2" : isTablet ? "row-cols-4" : "row-cols-6";
 
   const monthNamesTH = [
-    "มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน",
-    "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม",
+    "มกราคม","กุมภาพันธ์","มีนาคม","เมษายน","พฤษภาคม","มิถุนายน",
+    "กรกฎาคม","สิงหาคม","กันยายน","ตุลาคม","พฤศจิกายน","ธันวาคม",
   ];
 
+  /* ================= AVAILABLE YEARS FROM DATA ================= */
   const yearFromBills = Array.from(
-    new Set(
-      bills.map((b) => new Date(b.month).getUTCFullYear() + 543)
-    )
+    new Set(bills.map((b) => new Date(b.month).getUTCFullYear() + 543))
   ).sort((a, b) => a - b);
 
-  const availableYears = yearFromBills.length
-    ? yearFromBills.map(String)
-    : ["2568"];
+  const availableYears = yearFromBills.length ? yearFromBills.map(String) : ["2568"];
 
   /* ================= FILTER ================= */
   const filteredBills = useMemo(() => {
@@ -65,20 +64,20 @@ export default function DashboardRevenue({
   const sum = (arr: any[], key: any) =>
     arr.reduce((s, b) => s + (b[key] || 0), 0);
 
-  // Booking revenue summary
+  // BOOKING summary
   const rentBooking = sum(filteredBookings.map((b) => b.room), "rent");
   const depositBooking = sum(filteredBookings.map((b) => b.room), "deposit");
   const bookingFee = sum(filteredBookings.map((b) => b.room), "bookingFee");
   const totalBookingRevenue = rentBooking + depositBooking + bookingFee;
 
-  // Bill revenue summary
+  // BILL summary
   const rentBill = sum(filteredBills, "rent");
   const waterBill = sum(filteredBills, "waterCost");
   const electricBill = sum(filteredBills, "electricCost");
   const totalBillRevenue = sum(filteredBills, "total");
 
-  // Total income
-  const totalAllRevenue = totalBillRevenue + totalBookingRevenue;
+  // ALL revenue
+  const totalAllRevenue = totalBookingRevenue + totalBillRevenue;
 
   /* ================= MONTHLY DATA ================= */
   const monthlyData = useMemo(() => {
@@ -94,7 +93,6 @@ export default function DashboardRevenue({
       acc[key].electric += b.electricCost || 0;
       acc[key].total += b.total || 0;
     });
-
     return Object.entries(acc)
       .map(([k, v]) => {
         const [y, m] = k.split("-");
@@ -107,6 +105,7 @@ export default function DashboardRevenue({
       .sort((a, b) => (a.sortKey > b.sortKey ? 1 : -1));
   }, [filteredBills]);
 
+  /* ================= DISPLAY TITLE ================= */
   const displayTitle =
     selectedYear && selectedMonth
       ? `${monthNamesTH[+selectedMonth - 1]} ${selectedYear}`
@@ -120,8 +119,7 @@ export default function DashboardRevenue({
   const depositData = filteredBookings.map((b) => b.room?.deposit || 0);
   const bookingFeeData = filteredBookings.map((b) => b.room?.bookingFee || 0);
   const bookingTotalData = filteredBookings.map(
-    (b) =>
-      (b.room?.rent || 0) + (b.room?.deposit || 0) + (b.room?.bookingFee || 0)
+    (b) => (b.room?.rent || 0) + (b.room?.deposit || 0) + (b.room?.bookingFee || 0)
   );
 
   const waterData = filteredBills.map((b) => b.waterCost);
@@ -131,12 +129,12 @@ export default function DashboardRevenue({
   /* ================= UI ================= */
   return (
     <div className="mt-4">
-      <h2 className="fw-bold text-center mb-3" style={{ color: "#4A0080" }}>
+      <h2 className="fw-bold text-center" style={{ color: "#4A0080" }}>
         💜 รายรับรวม SmartDorm
       </h2>
       <h5 className="text-center mb-4">({displayTitle})</h5>
 
-      {/* FILTER */}
+      {/* YEAR & MONTH FILTER */}
       <div className="d-flex justify-content-center gap-2 flex-wrap">
         <select
           className="form-select w-auto"
@@ -167,29 +165,31 @@ export default function DashboardRevenue({
         </select>
       </div>
 
-      {/* ========= SUMMARY CARDS ========= */}
-      <h4 className="fw-bold mt-4">📦 รายรับจากการจอง</h4>
-      <div className="row g-2">
-        <Card title="ค่าเช่า" value={rentBooking} color="#0052CC" />
+      {/* ========== CARDS ========== */}
+      <h4 className="fw-bold mt-4" style={{ color: "#4A0080" }}>รายรับจากการจอง</h4>
+      <div className={`row g-2 ${cardsPerRow}`}>
+        <Card title="ค่าเช่า" value={rentBooking} color="#4A148C" />
         <Card title="ค่ามัดจำ" value={depositBooking} color="#7E57C2" />
-        <Card title="ค่าจอง" value={bookingFee} color="#FFA000" />
-        <Card title="รวมรายรับการจอง" value={totalBookingRevenue} color="#00897B" />
+        <Card title="ค่าจอง" value={bookingFee} color="#F9A825" />
+        <Card title="รวมรายรับการจอง" value={totalBookingRevenue} color="#2E7D32" />
       </div>
 
-      <h4 className="fw-bold mt-4">🧾 รายรับจากบิล</h4>
-      <div className="row g-2">
+      <h4 className="fw-bold mt-4" style={{ color: "#4A0080" }}>รายรับจากบิล</h4>
+      <div className={`row g-2 ${cardsPerRow}`}>
         <Card title="ค่าเช่าห้อง" value={rentBill} color="#3F51B5" />
         <Card title="ค่าน้ำ" value={waterBill} color="#26C6DA" />
-        <Card title="ค่าไฟ" value={electricBill} color="#FF7043" />
-        <Card title="รวมรายรับบิล" value={totalBillRevenue} color="#0097A7" />
+        <Card title="ค่าไฟ" value={electricBill} color="#EF6C00" />
+        <Card title="รวมรายรับบิล" value={totalBillRevenue} color="#00838F" />
       </div>
 
-      <h4 className="fw-bold mt-4">💰 รายรับทั้งหมด</h4>
-      <div className="row g-2">
-        <Card title="รวมทั้งหมด" value={totalAllRevenue} color="#43A047" />
+      <h4 className="fw-bold mt-4" style={{ color: "#4A0080" }}>
+        รายรับทั้งหมด
+      </h4>
+      <div className={`row g-2 ${cardsPerRow}`}>
+        <Card title="รวมทั้งหมด" value={totalAllRevenue} color="#1B5E20" />
       </div>
 
-      {/* ========= CHARTS ========= */}
+      {/* ========== CHARTS ========== */}
       <div className="mt-4">
         <DashboardRevenueChart labels={labels} data={rentData} title="ค่าเช่า" color="#4A0080" />
         <DashboardRevenueChart labels={labels} data={depositData} title="ค่ามัดจำ" color="#8D41D8" />
@@ -200,12 +200,13 @@ export default function DashboardRevenue({
         <DashboardRevenueChart labels={labels} data={billTotalData} title="รวมรายรับบิล" color="#00B4D8" />
       </div>
 
-      {/* ========= TABLE ========= */}
+      {/* ========== TABLE ========== */}
       {isDesktop && monthlyData.length > 0 && (
         <>
           <h4 className="fw-bold mt-4" style={{ color: "#4A0080" }}>
-            📅 รายรับรายเดือนจากบิล
+            📅 รายรับรายเดือน
           </h4>
+
           <table className="table table-hover text-center">
             <thead style={{ background: "#4A0080", color: "white" }}>
               <tr>
@@ -238,14 +239,14 @@ export default function DashboardRevenue({
   );
 }
 
-/* =============== CARD COMPONENT =============== */
+/* ================= CARD COMPONENT ================= */
 function Card({ title, value, color }: any) {
   return (
     <div
-      className="card shadow-sm col-6 col-md-3 text-center border-0"
-      style={{ background: color, color: "white", borderRadius: "14px" }}
+      className="card shadow-sm text-center border-0"
+      style={{ background: color, color: "white", borderRadius: 14 }}
     >
-      <div className="card-body">
+      <div className="card-body p-3">
         <b>{title}</b>
         <h4 className="fw-bold mt-2">{value.toLocaleString("th-TH")} บาท</h4>
       </div>

@@ -19,12 +19,7 @@ export default function Dashboard() {
   const [pendingCheckouts, setPendingCheckouts] = useState(0);
 
   useEffect(() => {
-    Promise.all([
-      fetchRooms(),
-      fetchBookings(),
-      fetchCheckouts(),
-      fetchBills(),
-    ]);
+    Promise.all([fetchRooms(), fetchBookings(), fetchCheckouts(), fetchBills()]);
   }, []);
 
   useEffect(() => {
@@ -40,7 +35,7 @@ export default function Dashboard() {
     <div
       className="d-flex flex-column min-vh-100"
       style={{
-        backgroundColor: "#F7F4FD", // SCB Lavender BG
+        backgroundColor: "#F7F4FD",
         fontFamily: "Sarabun, sans-serif",
       }}
     >
@@ -52,20 +47,20 @@ export default function Dashboard() {
         pendingBookings={pendingBookings}
       />
 
+      {/* 🔥 MAIN CONTENT */}
       <main className="flex-grow-1 px-2 py-3 mt-6 mt-lg-7">
         <div className="container" style={{ maxWidth: "1400px" }}>
           <h2
             className="fw-bold text-center mb-4 mt-3"
             style={{
-              color: "#4A0080", // SCB Purple
+              color: "#4A0080",
               textShadow: "0px 1px 3px rgba(74,0,128,0.2)",
-              letterSpacing: "0.5px",
             }}
           >
             📊 สรุปข้อมูลหอพัก SmartDorm
           </h2>
 
-          {/* รายงานสรุป */}
+          {/* สรุป Dashboard */}
           <DashboardSummary
             totalRooms={totalRooms}
             availableRooms={availableRooms}
@@ -74,10 +69,8 @@ export default function Dashboard() {
             pendingCheckouts={pendingCheckouts}
           />
 
-          {/* รายงานรายรับ */}
+          {/* รายรับ Dashboard */}
           <DashboardRevenue bills={bills} bookings={bookings} />
-
-          </div>
         </div>
       </main>
     </div>

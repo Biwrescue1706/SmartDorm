@@ -8,7 +8,7 @@ import CheckoutEditDialog from "../components/Checkout/CheckoutEditDialog";
 import type { Booking } from "../types/Checkout";
 
 export default function Checkout() {
-  const { message, handleLogout, role, adminName, adminUsername } = useAuth();
+  const { handleLogout, role, adminName, adminUsername } = useAuth();
   const {
     checkouts,
     loading,
@@ -38,7 +38,6 @@ export default function Checkout() {
     <div className="d-flex min-vh-100 bg-white">
       {/* 🔹 Navbar */}
       <Nav
-        message={message}
         onLogout={handleLogout}
         role={role}
         adminName={adminName}

@@ -14,20 +14,25 @@ export default function DashboardRevenue({
   const [selectedYear, setSelectedYear] = useState<string>("");
   const [selectedMonth, setSelectedMonth] = useState<string>("");
 
-  /* ================= SCREEN BREAKPOINT ================= */
   const screen = window.innerWidth;
-  const isMobile = screen < 600;          // ใช้ในการแสดง 1 กราฟ 1 แถว
-  const isTablet = screen >= 600 && screen < 1400; // 3 กราฟต่อแถว
-  const isDesktop = screen >= 1400;       // ตารางรายเดือน
+  const isMobile = screen < 600;
+  const isTablet = screen >= 600 && screen < 1400;
+  const isDesktop = screen >= 1400;
 
   const monthNamesTH = [
     "มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน",
     "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม",
   ];
 
-  const availableYears = Array.from({ length: 10 }, (_, i) =>
-    (2566 + i).toString()
-  );
+  const yearFromBills = Array.from(
+    new Set(
+      bills.map((b) => new Date(b.month).getUTCFullYear() + 543)
+    )
+  ).sort((a, b) => a - b);
+
+  const availableYears = yearFromBills.length
+    ? yearFromBills.map(String)
+    : ["2568"];
 
   /* ================= FILTER ================= */
   const filteredBills = useMemo(() => {
@@ -60,15 +65,20 @@ export default function DashboardRevenue({
   const sum = (arr: any[], key: any) =>
     arr.reduce((s, b) => s + (b[key] || 0), 0);
 
-  // Booking revenue
+  // Booking revenue summary
   const rentBooking = sum(filteredBookings.map((b) => b.room), "rent");
   const depositBooking = sum(filteredBookings.map((b) => b.room), "deposit");
   const bookingFee = sum(filteredBookings.map((b) => b.room), "bookingFee");
   const totalBookingRevenue = rentBooking + depositBooking + bookingFee;
 
-  // Bill revenue
+  // Bill revenue summary
+  const rentBill = sum(filteredBills, "rent");
+  const waterBill = sum(filteredBills, "waterCost");
+  const electricBill = sum(filteredBills, "electricCost");
   const totalBillRevenue = sum(filteredBills, "total");
-  const totalAllRevenue = totalBookingRevenue + totalBillRevenue;
+
+  // Total income
+  const totalAllRevenue = totalBillRevenue + totalBookingRevenue;
 
   /* ================= MONTHLY DATA ================= */
   const monthlyData = useMemo(() => {
@@ -84,14 +94,17 @@ export default function DashboardRevenue({
       acc[key].electric += b.electricCost || 0;
       acc[key].total += b.total || 0;
     });
-    return Object.entries(acc).map(([k, v]) => {
-      const [y, m] = k.split("-");
-      return {
-        month: `${monthNamesTH[+m - 1]} ${y}`,
-        sortKey: k,
-        ...v,
-      };
-    });
+
+    return Object.entries(acc)
+      .map(([k, v]) => {
+        const [y, m] = k.split("-");
+        return {
+          month: `${monthNamesTH[+m - 1]} ${y}`,
+          sortKey: k,
+          ...v,
+        };
+      })
+      .sort((a, b) => (a.sortKey > b.sortKey ? 1 : -1));
   }, [filteredBills]);
 
   const displayTitle =
@@ -106,20 +119,18 @@ export default function DashboardRevenue({
   const rentData = filteredBills.map((b) => b.rent);
   const depositData = filteredBookings.map((b) => b.room?.deposit || 0);
   const bookingFeeData = filteredBookings.map((b) => b.room?.bookingFee || 0);
-  const waterData = filteredBills.map((b) => b.waterCost);
-  const electricData = filteredBills.map((b) => b.electricCost);
-  const billTotalData = filteredBills.map((b) => b.total);
   const bookingTotalData = filteredBookings.map(
     (b) =>
       (b.room?.rent || 0) + (b.room?.deposit || 0) + (b.room?.bookingFee || 0)
   );
 
-  /* ================= UI ================= */
+  const waterData = filteredBills.map((b) => b.waterCost);
+  const electricData = filteredBills.map((b) => b.electricCost);
+  const billTotalData = filteredBills.map((b) => b.total);
 
+  /* ================= UI ================= */
   return (
     <div className="mt-4">
-
-      {/* TITLE */}
       <h2 className="fw-bold text-center mb-3" style={{ color: "#4A0080" }}>
         💜 รายรับรวม SmartDorm
       </h2>
@@ -156,52 +167,44 @@ export default function DashboardRevenue({
         </select>
       </div>
 
-      {/* ================= CHART RESPONSIVE ================= */}
+      {/* ========= SUMMARY CARDS ========= */}
+      <h4 className="fw-bold mt-4">📦 รายรับจากการจอง</h4>
+      <div className="row g-2">
+        <Card title="ค่าเช่า" value={rentBooking} color="#0052CC" />
+        <Card title="ค่ามัดจำ" value={depositBooking} color="#7E57C2" />
+        <Card title="ค่าจอง" value={bookingFee} color="#FFA000" />
+        <Card title="รวมรายรับการจอง" value={totalBookingRevenue} color="#00897B" />
+      </div>
+
+      <h4 className="fw-bold mt-4">🧾 รายรับจากบิล</h4>
+      <div className="row g-2">
+        <Card title="ค่าเช่าห้อง" value={rentBill} color="#3F51B5" />
+        <Card title="ค่าน้ำ" value={waterBill} color="#26C6DA" />
+        <Card title="ค่าไฟ" value={electricBill} color="#FF7043" />
+        <Card title="รวมรายรับบิล" value={totalBillRevenue} color="#0097A7" />
+      </div>
+
+      <h4 className="fw-bold mt-4">💰 รายรับทั้งหมด</h4>
+      <div className="row g-2">
+        <Card title="รวมทั้งหมด" value={totalAllRevenue} color="#43A047" />
+      </div>
+
+      {/* ========= CHARTS ========= */}
       <div className="mt-4">
-        {isMobile && (
-          <>
-            <DashboardRevenueChart labels={labels} data={rentData} title="ค่าเช่า" color="#4A0080" />
-            <DashboardRevenueChart labels={labels} data={depositData} title="ค่ามัดจำ" color="#8D41D8" />
-            <DashboardRevenueChart labels={labels} data={bookingFeeData} title="ค่าจอง" color="#FBD341" />
-            <DashboardRevenueChart labels={labels} data={bookingTotalData} title="รวมรายรับการจอง" color="#28A745" />
-            <DashboardRevenueChart labels={labels} data={waterData} title="ค่าน้ำ" color="#48CAE4" />
-            <DashboardRevenueChart labels={labels} data={electricData} title="ค่าไฟ" color="#FF9800" />
-            <DashboardRevenueChart labels={labels} data={billTotalData} title="รวมรายรับบิล" color="#00B4D8" />
-          </>
-        )}
-
-        {isTablet && (
-          <div className="row row-cols-1 row-cols-md-3 g-3">
-            <DashboardRevenueChart labels={labels} data={rentData} title="ค่าเช่า" color="#4A0080" />
-            <DashboardRevenueChart labels={labels} data={depositData} title="ค่ามัดจำ" color="#8D41D8" />
-            <DashboardRevenueChart labels={labels} data={bookingFeeData} title="ค่าจอง" color="#FBD341" />
-            <DashboardRevenueChart labels={labels} data={bookingTotalData} title="รวมรายรับการจอง" color="#28A745" />
-            <DashboardRevenueChart labels={labels} data={waterData} title="ค่าน้ำ" color="#48CAE4" />
-            <DashboardRevenueChart labels={labels} data={electricData} title="ค่าไฟ" color="#FF9800" />
-            <DashboardRevenueChart labels={labels} data={billTotalData} title="รวมรายรับบิล" color="#00B4D8" />
-          </div>
-        )}
-
-        {isDesktop && (
-          <>
-            <DashboardRevenueChart labels={labels} data={bookingTotalData} title="รวมรายรับการจอง" color="#28A745" />
-            <DashboardRevenueChart labels={labels} data={billTotalData} title="รวมรายรับบิล" color="#00B4D8" />
-          </>
-        )}
+        <DashboardRevenueChart labels={labels} data={rentData} title="ค่าเช่า" color="#4A0080" />
+        <DashboardRevenueChart labels={labels} data={depositData} title="ค่ามัดจำ" color="#8D41D8" />
+        <DashboardRevenueChart labels={labels} data={bookingFeeData} title="ค่าจอง" color="#FBD341" />
+        <DashboardRevenueChart labels={labels} data={bookingTotalData} title="รวมรายรับการจอง" color="#28A745" />
+        <DashboardRevenueChart labels={labels} data={waterData} title="ค่าน้ำ" color="#48CAE4" />
+        <DashboardRevenueChart labels={labels} data={electricData} title="ค่าไฟ" color="#FF9800" />
+        <DashboardRevenueChart labels={labels} data={billTotalData} title="รวมรายรับบิล" color="#00B4D8" />
       </div>
 
-      {/* SUMMARY CARD */}
-      <div className="row g-3 mt-4 justify-content-center">
-        <Card title="รายรับการจอง" value={totalBookingRevenue} color="#4A0080" />
-        <Card title="รายรับบิล" value={totalBillRevenue} color="#6A1B9A" />
-        <Card title="รวมทั้งหมด" value={totalAllRevenue} color="#28A745" />
-      </div>
-
-      {/* DESKTOP TABLE */}
+      {/* ========= TABLE ========= */}
       {isDesktop && monthlyData.length > 0 && (
         <>
           <h4 className="fw-bold mt-4" style={{ color: "#4A0080" }}>
-            📅 รายรับรายเดือน
+            📅 รายรับรายเดือนจากบิล
           </h4>
           <table className="table table-hover text-center">
             <thead style={{ background: "#4A0080", color: "white" }}>
@@ -235,11 +238,11 @@ export default function DashboardRevenue({
   );
 }
 
-/* ================= CARD COMPONENT ================= */
+/* =============== CARD COMPONENT =============== */
 function Card({ title, value, color }: any) {
   return (
     <div
-      className="card shadow-sm col-4 text-center border-0"
+      className="card shadow-sm col-6 col-md-3 text-center border-0"
       style={{ background: color, color: "white", borderRadius: "14px" }}
     >
       <div className="card-body">

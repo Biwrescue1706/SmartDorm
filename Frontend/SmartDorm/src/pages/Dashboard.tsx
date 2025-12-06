@@ -48,10 +48,10 @@ export default function Dashboard() {
       />
 
       {/* 🔥 MAIN CONTENT */}
-      <main className="flex-grow-1 px-2 py-3 mt-6 mt-lg-7">
+      <main className="flex-grow-1 px-2 py-3 mt-5  mt-lg-7">
         <div className="container" style={{ maxWidth: "1400px" }}>
           <h2
-            className="fw-bold text-center mb-4 mt-3"
+            className="fw-bold text-center mb-4 mt-6"
             style={{
               color: "#4A0080",
               textShadow: "0px 1px 3px rgba(74,0,128,0.2)",

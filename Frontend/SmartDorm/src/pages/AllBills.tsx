@@ -8,13 +8,13 @@ import AllBillsTable from "../components/AllBills/AllBillsTable";
 import Pagination from "../components/Pagination";
 import BillStatusCardFilter from "../components/AllBills/BillStatusCardFilter";
 import AllBillsEditDialog from "../components/AllBills/AllBillsEditDialog";
-import BillManageDialog from "../components/AllBills/BillManageDialog"; // ⭐ import ใหม่
+import BillManageDialog from "../components/AllBills/BillManageDialog";
 import Swal from "sweetalert2";
 import type { Bill } from "../types/Bill";
 
 export default function AllBills() {
   const { handleLogout, role, adminName, adminUsername } = useAuth();
-  const { bills, loading, updateBill, deleteBill, approveBill, rejectBill } =
+  const { bills, loading, fetchBills, updateBill, deleteBill, approveBill, rejectBill } =
     useBills();
 
   const [filterStatus, setFilterStatus] = useState("0");
@@ -23,7 +23,7 @@ export default function AllBills() {
 
   const [filtered, setFiltered] = useState<Bill[]>([]);
   const [editingBill, setEditingBill] = useState<Bill | null>(null);
-  const [manageBill, setManageBill] = useState<Bill | null>(null); // ⭐ เพิ่ม state
+  const [manageBill, setManageBill] = useState<Bill | null>(null);
 
   const unpaidCount = bills.filter((b) => b.status === 0).length;
   const paidCount = bills.filter((b) => b.status === 1).length;
@@ -39,6 +39,7 @@ export default function AllBills() {
     return () => window.removeEventListener("resize", resize);
   }, []);
 
+  /* ---------------- FILTER ---------------- */
   useEffect(() => {
     let result = bills;
 
@@ -75,13 +76,8 @@ export default function AllBills() {
     });
   };
 
-  const handleManage = (bill: Bill) => setManageBill(bill); // ⭐ ฟังก์ชันเปิด modal
-
   return (
-    <div
-      className="d-flex flex-column"
-      style={{ background: "#fafafa", minHeight: "100vh" }}
-    >
+    <div className="d-flex flex-column" style={{ background: "#f5f3ff", minHeight: "100vh" }}>
       <Nav
         onLogout={handleLogout}
         role={role}
@@ -89,10 +85,38 @@ export default function AllBills() {
         adminUsername={adminUsername}
       />
 
-      <main className="main-content px-2 py-2 mt-6 mt-lg-7 flex-grow-1">
+      <main className="main-content px-2 py-3 mt-6 mt-lg-7 flex-grow-1">
         <div className="mx-auto" style={{ maxWidth: "1400px" }}>
-          <h2 className="text-center fw-bold mb-3">📋 รายการบิลทั้งหมด</h2>
+          <h2
+            className="fw-bold text-center py-2 mb-3"
+            style={{
+              color: "#4A0080",
+              borderBottom: "3px solid #CE93D8",
+              width: "fit-content",
+              margin: "0 auto",
+            }}
+          >
+            รายการบิลทั้งหมด
+          </h2>
 
+          {/* 🔁 ปุ่มรีเฟรช */}
+          <div className="text-center mb-3">
+            <button
+              onClick={fetchBills}
+              disabled={loading}
+              className="btn fw-semibold shadow-sm px-4 py-2"
+              style={{
+                background: "linear-gradient(135deg, #4A148C, #7B1FA2, #CE93D8)",
+                color: "#fff",
+                borderRadius: "10px",
+                border: "none",
+              }}
+            >
+              {loading ? "⏳ กำลังโหลด..." : "🔄 รีเฟรชข้อมูล"}
+            </button>
+          </div>
+
+          {/* FILTER STATUS */}
           <BillStatusCardFilter
             filterStatus={filterStatus}
             setFilterStatus={setFilterStatus}
@@ -101,27 +125,29 @@ export default function AllBills() {
             pendingCount={pendingCount}
           />
 
+          {/* FILTER INPUTS */}
           <div className="d-flex gap-2 flex-wrap mb-3">
             <input
               type="month"
-              className="form-control"
-              style={{ width: 160 }}
+              className="form-control shadow-sm"
+              style={{ width: 160, borderRadius: 8 }}
               value={filterMonth}
               onChange={(e) => setFilterMonth(e.target.value)}
             />
 
             <input
               type="text"
-              className="form-control"
-              style={{ width: 180 }}
+              className="form-control shadow-sm"
+              style={{ width: 200, borderRadius: 8 }}
               placeholder="ค้นหาห้อง..."
               value={filterRoom}
               onChange={(e) => setFilterRoom(e.target.value)}
             />
           </div>
 
+          {/* TABLE / CARD VIEW */}
           {loading ? (
-            <p className="text-center">⏳ กำลังโหลดข้อมูล...</p>
+            <p className="text-center text-muted">⏳ กำลังโหลดข้อมูล...</p>
           ) : width >= 1400 ? (
             <AllBillsTable
               bills={currentBills}
@@ -129,13 +155,14 @@ export default function AllBills() {
               onEdit={setEditingBill}
               onDelete={deleteBill}
               onViewSlip={handleViewSlip}
-              onManage={handleManage} // ⭐ ส่งเข้า Row
+              onManage={setManageBill}
             />
           ) : (
             <div
               className="d-grid"
               style={{
                 gridTemplateColumns: width < 600 ? "1fr" : "repeat(3, 1fr)",
+                gap: "14px",
               }}
             >
               {currentBills.map((bill) => (
@@ -146,7 +173,7 @@ export default function AllBills() {
                   onEdit={setEditingBill}
                   onDelete={deleteBill}
                   onViewSlip={handleViewSlip}
-                  onManage={handleManage} // ⭐ ส่งเข้า Card
+                  onManage={setManageBill}
                 />
               ))}
             </div>

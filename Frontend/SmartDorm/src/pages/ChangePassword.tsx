@@ -15,6 +15,7 @@ export default function ChangePassword() {
   const [showNew, setShowNew] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
 
+  /* ==================== SUBMIT ==================== */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -23,19 +24,16 @@ export default function ChangePassword() {
       return;
     }
 
-    // ⭐ รหัสผ่านใหม่ต้องยาวอย่างน้อย 6 ตัว
     if (newPassword.length < 6) {
       alert("รหัสผ่านใหม่ต้องมีอย่างน้อย 6 ตัวอักษร");
       return;
     }
 
-    // ⭐ รหัสผ่านใหม่ต้องไม่ตรงกับรหัสผ่านเดิม
     if (newPassword === oldPassword) {
       alert("รหัสผ่านใหม่ต้องไม่เหมือนรหัสผ่านเดิม");
       return;
     }
 
-    // ⭐ ยืนยันรหัสผ่านต้องตรงกัน
     if (newPassword !== confirmPassword) {
       alert("รหัสผ่านใหม่ไม่ตรงกัน");
       return;
@@ -49,6 +47,7 @@ export default function ChangePassword() {
     }
   };
 
+  /* ==================== INPUT FIELD ==================== */
   const renderPasswordInput = (
     label: string,
     value: string,
@@ -58,7 +57,10 @@ export default function ChangePassword() {
     placeholder: string
   ) => (
     <div className="mb-3 position-relative">
-      <label className="form-label fw-semibold">{label}</label>
+      <label className="form-label fw-bold" style={{ color: "#4A0080" }}>
+        {label}
+      </label>
+
       <input
         type={show ? "text" : "password"}
         className="form-control pe-5"
@@ -66,18 +68,23 @@ export default function ChangePassword() {
         value={value}
         onChange={(e) => setValue(e.target.value)}
         required
+        style={{
+          borderColor: "#4A0080",
+          borderWidth: 2,
+        }}
       />
+
       <span
         onClick={toggle}
         style={{
           position: "absolute",
           right: "15px",
-          top: "68%",
+          top: "58%",
           transform: "translateY(-50%)",
           cursor: "pointer",
+          color: show ? "#4A0080" : "#A0A0A0",
+          fontSize: "1.2rem",
           userSelect: "none",
-          color: show ? "#0d6efd" : "#999",
-          transition: "color 0.3s",
         }}
       >
         {show ? "🙈" : "👁️"}
@@ -85,6 +92,7 @@ export default function ChangePassword() {
     </div>
   );
 
+  /* ==================== UI ==================== */
   return (
     <>
       <Nav
@@ -96,21 +104,28 @@ export default function ChangePassword() {
 
       <div
         className="container d-flex justify-content-center align-items-center"
-        style={{ minHeight: "100vh", paddingTop: "75px" }}
+        style={{
+          minHeight: "100vh",
+          paddingTop: "85px",
+          background: "#f6f1fc", // SCB โทนอ่อน
+        }}
       >
         <div
-          className="card shadow-sm border-0 p-4 w-100"
+          className="card shadow-lg border-0 p-4 w-100"
           style={{
             maxWidth: "500px",
-            borderRadius: "16px",
-            background: "linear-gradient(180deg, #ffffff, #f8f9fa)",
+            borderRadius: "20px",
+            background: "#fff",
+            border: "3px solid #4A0080",
           }}
         >
-          <h4 className="fw-bold text-center mb-4 text-primary">
-            🔑 เปลี่ยนรหัสผ่าน
+          <h4
+            className="fw-bold text-center mb-4"
+            style={{ color: "#4A0080" }}
+          >
+            🔐 เปลี่ยนรหัสผ่าน
           </h4>
 
-          {/* FORM อยู่ในไฟล์นี้เลย */}
           <form onSubmit={handleSubmit}>
             {renderPasswordInput(
               "รหัสผ่านเดิม",
@@ -141,17 +156,18 @@ export default function ChangePassword() {
 
             <button
               type="submit"
-              className="btn w-100 fw-semibold text-white py-2"
+              disabled={loading}
+              className="btn w-100 fw-bold py-2 mt-2"
               style={{
+                borderRadius: "12px",
+                border: "none",
                 background: loading
                   ? "gray"
-                  : "linear-gradient(135deg, #007bff, #00b4d8)",
-                border: "none",
-                borderRadius: "10px",
+                  : "linear-gradient(135deg, #4A0080, #D4AF37)",
+                color: "#fff",
               }}
-              disabled={loading}
             >
-              {loading ? "⏳ กำลังบันทึก..." : "💾 บันทึก"}
+              {loading ? "⏳ กำลังบันทึก..." : "💾 บันทึกการเปลี่ยนแปลง"}
             </button>
           </form>
         </div>

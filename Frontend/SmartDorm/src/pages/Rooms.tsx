@@ -10,7 +10,7 @@ import { useRooms } from "../hooks/useRooms";
 
 export default function Rooms() {
   const { rooms, loading, fetchRooms } = useRooms();
-  const { message, handleLogout, role, adminName, adminUsername } = useAuth();
+  const { handleLogout, role, adminName, adminUsername } = useAuth();
 
   useEffect(() => {
     fetchRooms();

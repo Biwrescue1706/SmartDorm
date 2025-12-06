@@ -15,9 +15,9 @@ export default function DashboardRevenue({
   const [selectedMonth, setSelectedMonth] = useState<string>("");
 
   const screen = window.innerWidth;
-  const isMobile = screen < 600; // A
-  const isTablet = screen >= 600 && screen < 1400; // B
-  const isDesktop = screen >= 1400; // Table
+  const isMobile = screen < 600;
+  const isTablet = screen >= 600 && screen < 1400;
+  const isDesktop = screen >= 1400;
 
   const monthNamesTH = [
     "มกราคม","กุมภาพันธ์","มีนาคม","เมษายน","พฤษภาคม","มิถุนายน",
@@ -77,6 +77,7 @@ export default function DashboardRevenue({
   const electricBill = sum(filteredBills, "electricCost");
   const totalBillRevenue = sum(filteredBills, "total");
 
+  /* ---- ALL REVENUE ---- */
   const totalAllRevenue = totalBookingRevenue + totalBillRevenue;
 
   /* ================= CHART DATA ================= */
@@ -101,12 +102,8 @@ export default function DashboardRevenue({
       ? `ปี ${selectedYear}`
       : `ทุกปี`;
 
-  /* ============ RESPONSIVE UI ============ */
-
   return (
     <div className="mt-4">
-
-      {/* TITLE */}
       <h2 className="fw-bold text-center" style={{ color: "#4A0080" }}>
         💜 รายรับ SmartDorm
       </h2>
@@ -137,11 +134,10 @@ export default function DashboardRevenue({
       </div>
 
       {/* ===========================================================
-         📌 A — MOBILE (<600px) : การ์ด → กราฟ → การ์ด → กราฟ
+         📌 MOBILE (<600px)
       =========================================================== */}
       {isMobile && (
         <>
-          {/* BOOKING */}
           <Section title="รายรับการจอง">
             <Card title="ค่าเช่า" value={rentBooking} color="#4A148C" />
             <DashboardRevenueChart labels={labels} data={bookingRentData} title="ค่าเช่า" color="#4A148C" />
@@ -156,7 +152,6 @@ export default function DashboardRevenue({
             <DashboardRevenueChart labels={labels} data={bookingTotalData} title="รวมรายรับการจอง" color="#2E7D32" />
           </Section>
 
-          {/* BILL */}
           <Section title="รายรับบิล">
             <Card title="ค่าเช่าห้อง" value={rentBill} color="#3F51B5" />
             <DashboardRevenueChart labels={labels} data={billRentData} title="ค่าเช่าห้อง" color="#3F51B5" />
@@ -170,12 +165,16 @@ export default function DashboardRevenue({
             <Card title="รวมรายรับบิล" value={totalBillRevenue} color="#00838F" />
             <DashboardRevenueChart labels={labels} data={billTotalData} title="รวมรายรับบิล" color="#00838F" />
           </Section>
+
+          {/* TOTAL ALL */}
+          <Section title="รวมรายรับทั้งหมด">
+            <Card title="รวมรายรับทั้งหมด" value={totalAllRevenue} color="#4A0080" />
+          </Section>
         </>
       )}
 
       {/* ===========================================================
-         📌 B — TABLET (600–1399px)
-         แผงการ์ด 3 ใบต่อแถว + กราฟเรียงต่อกัน
+         📌 TABLET (600–1399px)
       =========================================================== */}
       {isTablet && (
         <>
@@ -206,14 +205,26 @@ export default function DashboardRevenue({
             <DashboardRevenueChart labels={labels} data={electricData} title="ค่าไฟ" color="#FF7043" />
             <DashboardRevenueChart labels={labels} data={billTotalData} title="รวมรายรับบิล" color="#00838F" />
           </Section>
+
+          {/* TOTAL ALL */}
+          <Section title="รวมรายรับทั้งหมด">
+            <Cards3>
+              <Card title="รวมรายรับทั้งหมด" value={totalAllRevenue} color="#4A0080" />
+            </Cards3>
+          </Section>
         </>
       )}
 
       {/* ===========================================================
-         📌 DESKTOP TABLE (>1400px)
+         📌 DESKTOP (>1400px)
       =========================================================== */}
       {isDesktop && (
         <>
+          <h4 className="fw-bold mt-4" style={{ color: "#4A0080" }}>
+            💰 รวมรายรับทั้งหมด
+          </h4>
+          <Card title="รวมรายรับทั้งหมด" value={totalAllRevenue} color="#4A0080" />
+
           <h4 className="fw-bold mt-4" style={{ color: "#4A0080" }}>
             📅 รายรับรายเดือนจากบิล
           </h4>

@@ -1,7 +1,8 @@
+// ---------------- DashboardRevenue.tsx ----------------
 import { useMemo, useState } from "react";
+import DashboardRevenueChart from "./DashboardRevenueChart";
 import type { Bill } from "../../types/Bill";
 import type { Booking } from "../../types/Booking";
-import DashboardRevenueChart from "./DashboardRevenueChart";
 
 interface Props {
   bills: Bill[];
@@ -9,158 +10,169 @@ interface Props {
 }
 
 export default function DashboardRevenue({ bills, bookings }: Props) {
-  const [year, setYear] = useState("");
-  const [month, setMonth] = useState("");
+  const [selectedYear, setSelectedYear] = useState("");
+  const [selectedMonth, setSelectedMonth] = useState("");
 
-  const monthNamesTH = [
-    "มกราคม","กุมภาพันธ์","มีนาคม","เมษายน","พฤษภาคม","มิถุนายน",
-    "กรกฎาคม","สิงหาคม","กันยายน","ตุลาคม","พฤศจิกายน","ธันวาคม"
+  const monthNames = [
+    "มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน",
+    "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม",
   ];
 
-  const years = Array.from({ length: 6 }, (_, i) => (2568 + i).toString());
+  const availableYears = Array.from({ length: 10 }, (_, i) =>
+    (2567 + i).toString()
+  );
 
+  // ✨ Filter ตามปี / เดือน
   const filteredBills = useMemo(() => {
     return bills.filter((b) => {
       const d = new Date(b.month);
-      const y = d.getUTCFullYear() + 543;
-      const m = String(d.getUTCMonth() + 1).padStart(2,"0");
-      return b.status === 1 &&
-        (!year || y.toString() === year) &&
-        (!month || m === month);
+      const y = d.getFullYear() + 543;
+      const m = String(d.getMonth() + 1).padStart(2, "0");
+
+      return (
+        b.status === 1 &&
+        (!selectedYear || y.toString() === selectedYear) &&
+        (!selectedMonth || m === selectedMonth)
+      );
     });
-  }, [bills, year, month]);
+  }, [bills, selectedYear, selectedMonth]);
 
   const filteredBookings = useMemo(() => {
     return bookings.filter((b) => {
       if (!b.createdAt || b.approveStatus !== 1) return false;
       const d = new Date(b.createdAt);
-      const y = d.getUTCFullYear() + 543;
-      const m = String(d.getUTCMonth() + 1).padStart(2, "0");
-      return (!year || y.toString() === year) &&
-        (!month || m === month);
+      const y = d.getFullYear() + 543;
+      const m = String(d.getMonth() + 1).padStart(2, "0");
+
+      return (
+        (!selectedYear || y.toString() === selectedYear) &&
+        (!selectedMonth || m === selectedMonth)
+      );
     });
-  }, [bookings, year, month]);
+  }, [bookings, selectedYear, selectedMonth]);
 
-  const sum = (arr: any[], key: string) =>
-    arr.reduce((s, b) => s + (b[key] || 0), 0);
+  // ✨ เดือนที่มีข้อมูลจริง
+  const monthly = useMemo(() => {
+    const acc: any = {};
+    filteredBills.forEach((b) => {
+      const d = new Date(b.month);
+      const m = d.getMonth() + 1;
+      if (!acc[m]) acc[m] = { bill: 0, booking: 0 };
+      acc[m].bill += b.total || 0;
+    });
 
-  const totalRentBooking = sum(filteredBookings.map((b)=>b.room),"rent");
-  const totalDepositBooking = sum(filteredBookings.map((b)=>b.room),"deposit");
-  const totalBookingFee = sum(filteredBookings.map((b)=>b.room),"bookingFee");
+    filteredBookings.forEach((b) => {
+      const d = new Date(b.createdAt);
+      const m = d.getMonth() + 1;
+      if (!acc[m]) acc[m] = { bill: 0, booking: 0 };
+      acc[m].booking +=
+        (b.room?.rent || 0) +
+        (b.room?.deposit || 0) +
+        (b.room?.bookingFee || 0);
+    });
 
-  const totalRentBill = sum(filteredBills,"rent");
-  const totalWater = sum(filteredBills,"waterCost");
-  const totalElectric = sum(filteredBills,"electricCost");
-  const totalBill = sum(filteredBills,"total");
+    return Object.entries(acc)
+      .sort(([a], [b]) => +a - +b)
+      .map(([m, v]: any) => ({
+        month: monthNames[+m - 1],
+        bill: v.bill,
+        booking: v.booking,
+        total: v.bill + v.booking,
+      }));
+  }, [filteredBills, filteredBookings]);
 
-  const totalAll = totalRentBooking + totalDepositBooking + totalBookingFee + totalBill;
+  const chartLabels = monthly.map((m) => m.month);
+  const chartBooking = monthly.map((m) => m.booking);
+  const chartBill = monthly.map((m) => m.bill);
+
+  const totalRevenue = chartBooking.reduce((a, b) => a + b, 0) +
+    chartBill.reduce((a, b) => a + b, 0);
 
   return (
     <div className="mt-4">
+      <h2 className="fw-bold text-center" style={{ color: "#4A0080" }}>
+        💜 รายรับรวม
+      </h2>
 
-      {/* === FILTER === */}
-      <div className="d-flex justify-content-center gap-2 flex-wrap mb-3">
+      {/* เลือกปี / เดือน */}
+      <div className="d-flex justify-content-center gap-2 mt-3 flex-wrap">
         <select
-          value={year}
           className="form-select w-auto"
-          onChange={(e)=>{ setYear(e.target.value); setMonth(""); }}
+          value={selectedYear}
+          onChange={(e) => {
+            setSelectedYear(e.target.value);
+            setSelectedMonth("");
+          }}
         >
           <option value="">ทุกปี</option>
-          {years.map((y) => <option key={y}>{y}</option>)}
+          {availableYears.map((y) => (
+            <option key={y}>{y}</option>
+          ))}
         </select>
 
         <select
-          value={month}
           className="form-select w-auto"
-          onChange={(e)=>setMonth(e.target.value)}
-          disabled={!year}
+          value={selectedMonth}
+          onChange={(e) => setSelectedMonth(e.target.value)}
+          disabled={!selectedYear}
         >
           <option value="">ทุกเดือน</option>
-          {monthNamesTH.map((m,i)=>(
-            <option key={i} value={String(i+1).padStart(2,"0")}>{m}</option>
+          {monthNames.map((m, i) => (
+            <option key={m} value={String(i + 1).padStart(2, "0")}>
+              {m}
+            </option>
           ))}
         </select>
       </div>
 
-      {/* === TOTAL SUMMARY === */}
-      <div className="card shadow-sm text-center mb-3"
+      {/* การ์ดรวม */}
+      <div
+        className="card shadow-sm text-center mx-auto my-4"
         style={{
-          maxWidth:"420px",margin:"0 auto",
-          background:"#4A0080",color:"white",borderRadius:"12px"
+          maxWidth: "420px",
+          borderRadius: "16px",
+          background: "#4A0080",
+          color: "white",
         }}
       >
         <div className="card-body">
-          <h5 className="fw-bold mb-1">💰 รายรับรวม</h5>
-          <h3 className="fw-bold">{totalAll.toLocaleString("th-TH")} บาท</h3>
+          <h5 className="fw-bold">💰 รายรับทั้งหมด</h5>
+          <h3 className="fw-bold">
+            {totalRevenue.toLocaleString("th-TH")} บาท
+          </h3>
         </div>
       </div>
 
-      {/* === GRAPH SECTION === */}
-      <DashboardRevenueChart
-        bills={filteredBills}
-        bookings={filteredBookings}
-        year={year}
-        month={month}
-      />
+      {/* กราฟรายเดือน */}
+      {selectedYear && monthly.length > 0 && (
+        <DashboardRevenueChart
+          labels={chartLabels}
+          bookingData={chartBooking}
+          billData={chartBill}
+          title={`รายรับรายเดือน (${selectedYear})`}
+        />
+      )}
 
-      {/* === BOOKING CARDS === */}
-      <h4 className="fw-bold mt-4" style={{color:"#4A0080"}}>📦 รายรับจากการจอง</h4>
-      <div className="row g-2">
-        <RevenueCard title="ค่าเช่า" amount={totalRentBooking} color="#5A00A8" />
-        <RevenueCard title="ค่ามัดจำ" amount={totalDepositBooking} color="#8D41D8" />
-        <RevenueCard title="ค่าจอง" amount={totalBookingFee} color="#FBD341" dark />
-      </div>
-
-      {/* === BILL CARDS === */}
-      <h4 className="fw-bold mt-4" style={{color:"#4A0080"}}>📄 รายรับจากบิล</h4>
-      <div className="row g-2">
-        <RevenueCard title="ค่าเช่า" amount={totalRentBill} color="#5A00A8" />
-        <RevenueCard title="ค่าน้ำ" amount={totalWater} color="#48CAE4" />
-        <RevenueCard title="ค่าไฟ" amount={totalElectric} color="#FF9800" />
-        <RevenueCard title="รวมบิล" amount={totalBill} color="#00B4D8" />
-      </div>
-
-    </div>
-  );
-}
-
-function RevenueCard({title,amount,color,dark}:any){
-  return(
-    <div className="col-6 col-md-3">
-      <div className="card shadow-sm text-center p-3"
-        style={{background:color,color:dark?"#4A0080":"white",borderRadius:"10px"}}
-      >
-        <strong className="small">{title}</strong>
-        <div>{amount.toLocaleString("th-TH")}</div>
-      </div>
-    </div>
-  );
-}
-function MonthlyCard({ data }: any) {
-  return (
-    <div className="card shadow-sm p-3 mb-3" style={{ borderRadius: "16px" }}>
-      <h5 className="fw-bold text-center" style={{ color: "#4A0080" }}>
-        {data.month}
-      </h5>
-
-      <div className="row text-center fw-bold mt-2">
-        <div className="col-6">
-          ค่าเช่า<br />
-          {data.rent.toLocaleString("th-TH")}
-        </div>
-        <div className="col-6">
-          ค่าน้ำ<br />
-          {data.water.toLocaleString("th-TH")}
-        </div>
-        <div className="col-6 mt-2">
-          ค่าไฟ<br />
-          {data.electric.toLocaleString("th-TH")}
-        </div>
-        <div className="col-6 mt-2" style={{ color: "#4A0080" }}>
-          รวม<br />
-          {data.total.toLocaleString("th-TH")}
-        </div>
-      </div>
+      {/* การ์ดรายเดือน */}
+      {selectedYear &&
+        monthly.map((m, i) => (
+          <div
+            key={i}
+            className="card shadow-sm p-3 mb-3"
+            style={{ borderRadius: "16px" }}
+          >
+            <h5 className="fw-bold" style={{ color: "#4A0080" }}>
+              📅 {m.month} {selectedYear}
+            </h5>
+            <div className="row text-center fw-bold">
+              <div className="col-6">จอง<br />{m.booking.toLocaleString("th-TH")}</div>
+              <div className="col-6">บิล<br />{m.bill.toLocaleString("th-TH")}</div>
+              <div className="col-12 mt-2" style={{ color: "#4A0080" }}>
+                รวมทั้งหมด {m.total.toLocaleString("th-TH")} บาท
+              </div>
+            </div>
+          </div>
+        ))}
     </div>
   );
 }

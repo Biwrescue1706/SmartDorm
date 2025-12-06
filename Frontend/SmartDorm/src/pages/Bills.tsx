@@ -10,7 +10,7 @@ import Pagination from "../components/Pagination";
 import "bootstrap/dist/css/bootstrap.min.css";
 
 export default function Bills() {
-  const { message, handleLogout, role, adminName, adminUsername } = useAuth();
+  const { handleLogout, role, adminName, adminUsername } = useAuth();
 
   // Hook โหลดข้อมูลทั้งหมด
   const { rooms, bookings, existingBills, loading, reloadAll } =
@@ -122,7 +122,6 @@ export default function Bills() {
     >
       {/* Navbar */}
       <Nav
-        message={message}
         onLogout={handleLogout}
         role={role}
         adminName={adminName}

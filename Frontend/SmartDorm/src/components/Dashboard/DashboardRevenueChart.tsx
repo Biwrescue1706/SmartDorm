@@ -1,4 +1,4 @@
-// src/components/Dashboard/DashboardRevenueChart.tsx
+// ================= DashboardRevenueChart.tsx =================
 import {
   Chart as ChartJS,
   BarElement,
@@ -17,11 +17,13 @@ export default function DashboardRevenueChart({
   labels,
   data,
   title,
+  subtitle,
   color,
 }: {
   labels: string[];
   data: number[];
   title: string;
+  subtitle: string;
   color: string;
 }) {
   const chartData = useMemo(
@@ -32,7 +34,7 @@ export default function DashboardRevenueChart({
           label: title,
           data,
           backgroundColor: color,
-          borderRadius: 10,
+          borderRadius: 12,
         },
       ],
     }),
@@ -46,24 +48,21 @@ export default function DashboardRevenueChart({
       legend: { display: false },
       tooltip: {
         callbacks: {
-          label(ctx) {
-            const val = ctx.raw as number; // safe cast
-            return `${title}: ${val.toLocaleString("th-TH")} บาท`;
-          },
+          label: (ctx) =>
+            `${title}: ${(ctx.raw as number).toLocaleString("th-TH")} บาท`,
         },
       },
     },
     scales: {
       x: {
-        ticks: { color: "#333", font: { weight: "bold" } },
+        ticks: { color: "#2E2E2E", font: { weight: "bold" } },
         grid: { display: false },
       },
       y: {
         ticks: {
           color: "#555",
-          callback(tickValue) {
-            const v = typeof tickValue === "string" ? Number(tickValue) : tickValue;
-            return v.toLocaleString("th-TH");
+          callback(value) {
+            return Number(value).toLocaleString("th-TH");
           },
         },
       },
@@ -73,11 +72,14 @@ export default function DashboardRevenueChart({
   return (
     <div
       className="p-3 shadow-sm bg-white"
-      style={{ height: 300, borderRadius: 14, marginBottom: 20 }}
+      style={{ height: 320, borderRadius: 16, marginBottom: 25 }}
     >
-      <h5 className="fw-bold text-center mb-2" style={{ color }}>
+      <h5 className="fw-bold text-center" style={{ color }}>
         {title}
       </h5>
+      <p className="text-center mb-1" style={{ fontSize: 13 }}>
+        ({subtitle})
+      </p>
       <Bar data={chartData} options={options} />
     </div>
   );

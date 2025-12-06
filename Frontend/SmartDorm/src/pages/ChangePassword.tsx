@@ -4,7 +4,7 @@ import { useAuth } from "../hooks/useAuth";
 import { useChangePassword } from "../hooks/useChangePassword";
 
 export default function ChangePassword() {
-  const { message, handleLogout, role, adminName, adminUsername } = useAuth();
+  const { handleLogout, role, adminName, adminUsername } = useAuth();
   const { changePassword, loading } = useChangePassword();
 
   const [oldPassword, setOldPassword] = useState("");
@@ -88,7 +88,6 @@ export default function ChangePassword() {
   return (
     <>
       <Nav
-        message={message}
         onLogout={handleLogout}
         role={role}
         adminName={adminName}

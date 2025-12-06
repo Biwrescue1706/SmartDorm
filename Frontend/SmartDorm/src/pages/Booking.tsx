@@ -1,4 +1,4 @@
-//src/pages/Booking.tsx
+// src/pages/Booking.tsx
 import { useState, useEffect } from "react";
 import BookingFilter from "../components/Booking/BookingFilter";
 import BookingTable from "../components/Booking/BookingTable";
@@ -8,7 +8,6 @@ import { useAuth } from "../hooks/useAuth";
 
 export default function Booking() {
   const { handleLogout, role, adminName, adminUsername } = useAuth();
-
   const {
     bookings,
     loading,
@@ -24,41 +23,30 @@ export default function Booking() {
     "pending" | "approved" | "rejected" | "checkinPending"
   >("pending");
 
-  // ⭐ Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
-  // ⭐ กรองข้อมูลตามเงื่อนไขใหม่
+  /* ---------------- FILTER LOGIC ---------------- */
   useEffect(() => {
-    if (active === "pending") {
-      // → รออนุมัติ
-      setFiltered(bookings.filter((b) => b.approveStatus === 0));
-    } else if (active === "approved") {
-      // → อนุมัติแล้ว และต้องมี actualCheckin แล้ว
-      setFiltered(
-        bookings.filter((b) => b.approveStatus === 1 && b.actualCheckin != null)
-      );
-    } else if (active === "rejected") {
-      // → ไม่อนุมัติ
-      setFiltered(bookings.filter((b) => b.approveStatus === 2));
-    } else if (active === "checkinPending") {
-      // → รอเข้าพัก = อนุมัติแล้ว & ยังไม่เช็คอิน
-      setFiltered(
-        bookings.filter((b) => b.approveStatus === 1 && b.actualCheckin == null)
-      );
-    }
-
-    // เปลี่ยน filter หรือข้อมูล เปลี่ยนหน้าให้กลับไปหน้า 1
+    setFiltered(
+      active === "pending"
+        ? bookings.filter((b) => b.approveStatus === 0)
+        : active === "approved"
+        ? bookings.filter((b) => b.approveStatus === 1 && b.actualCheckin != null)
+        : active === "rejected"
+        ? bookings.filter((b) => b.approveStatus === 2)
+        : bookings.filter((b) => b.approveStatus === 1 && b.actualCheckin == null)
+    );
     setCurrentPage(1);
-  }, [bookings, active]);
+  }, [active, bookings]);
 
   const handleFilter = (
     status: "pending" | "approved" | "rejected" | "checkinPending"
-  ) => {
-    setActive(status);
-  };
+  ) => setActive(status);
+
   return (
-    <div className="d-flex min-vh-50 bg-white">
+    <div className="d-flex bg-white min-vh-100">
+      {/* -------- NAV -------- */}
       <Nav
         onLogout={handleLogout}
         role={role}
@@ -66,50 +54,69 @@ export default function Booking() {
         adminUsername={adminUsername}
       />
 
-      <main className="main-content flex-grow-1 px-1 py-2 mt-6 mt-lg-7">
-        <div className="mx-auto container-max">
-          <h2 className="py-1 text-center text-while mt-3 mb-3">จัดการการจอง</h2>
+      {/* -------- CONTENT -------- */}
+      <main className="main-content flex-grow-1 px-2 py-3 mt-6 mt-lg-7">
+        <div className="mx-auto" style={{ maxWidth: "1300px" }}>
+          <h2
+            className="fw-bold text-center py-2 mt-1"
+            style={{
+              color: "#4A0080",
+              borderBottom: "3px solid #B39DDB",
+              width: "fit-content",
+              margin: "0 auto 18px",
+            }}
+          >
+            จัดการการจอง
+          </h2>
 
-          {/* ปุ่มรีเฟรช */}
+          {/* -------- REFRESH BUTTON -------- */}
           <div className="text-center mb-3">
             <button
-              className="btn btn-sm btn-outline-primary"
+              className="btn fw-semibold shadow-sm px-4 py-2"
+              style={{
+                background:
+                  "linear-gradient(135deg, #4A148C, #7B1FA2, #CE93D8)",
+                color: "#fff",
+                borderRadius: "10px",
+                border: "none",
+              }}
               onClick={fetchBookings}
               disabled={loading}
             >
-              {loading ? "กำลังโหลด..." : "รีเฟรชข้อมูล"}
+              {loading ? "⏳ กำลังโหลด..." : "🔄 รีเฟรชข้อมูล"}
             </button>
           </div>
 
-          {/* ฟิลเตอร์ */}
-          <div className="py-1 text-center text-while mb-3">
-            <BookingFilter
-              active={active}
-              onChange={handleFilter}
-              bookings={bookings}
-            />
+          {/* -------- FILTER BAR -------- */}
+          <div
+            className="py-2 mb-3"
+            style={{
+              background: "#F3E5F5",
+              borderRadius: "12px",
+              border: "1px solid #E1BEE7",
+            }}
+          >
+            <BookingFilter active={active} onChange={handleFilter} bookings={bookings} />
           </div>
 
-          {/* ตาราง / การ์ด */}
+          {/* -------- TABLE / CARD VIEW -------- */}
           {loading ? (
-            <p className="text-center text-muted mt-3">กำลังโหลดข้อมูล...</p>
+            <p className="text-center text-muted mt-3">
+              ⏳ กำลังโหลดข้อมูล...
+            </p>
           ) : (
             <BookingTable
               bookings={filtered}
               onApprove={approveBooking}
               onReject={rejectBooking}
               onDelete={deleteBooking}
-              onEditSuccess={() => fetchBookings()}
+              onEditSuccess={fetchBookings}
               onCheckin={checkinBooking}
               role={role}
-              // แสดงคอลัมน์ "เข้าพักจริง" เฉพาะ 2 แท็บนี้
-              showActualColumn={
-                active === "approved" || active === "checkinPending"
-              }
-              // Pagination
+              showActualColumn={active === "approved" || active === "checkinPending"}
               currentPage={currentPage}
               rowsPerPage={rowsPerPage}
-              onPageChange={(page) => setCurrentPage(page)}
+              onPageChange={setCurrentPage}
               onRowsPerPageChange={(rows) => {
                 setRowsPerPage(rows);
                 setCurrentPage(1);

@@ -89,7 +89,7 @@ export default function DashboardRevenue({
     "กรกฎาคม","สิงหาคม","กันยายน","ตุลาคม","พฤศจิกายน","ธันวาคม",
   ];
 
-  const YEARS = Array.from({ length: 11 }, (_, i) => 2566 + i);
+  const YEARS = Array.from({ length: 11 }, (_, i) => 2567 + i);
 
   /* ===== FILTER DATA ===== */
   const FBills = useMemo(() =>

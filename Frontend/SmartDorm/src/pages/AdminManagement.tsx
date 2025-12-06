@@ -275,8 +275,8 @@ export default function AdminManagement() {
         adminUsername={adminUsername}
       />
 
-      <main className="main-content px-3 py-3 mt-5">
-        <div className="container">
+            <main className="main-content flex-grow-1 px-2 py-2 mt-6 mt-lg-6">
+        <div className="mx-auto container-max">
           <h2
             className="text-center fw-bold mb-4"
             style={{ color: THEME.purple }}

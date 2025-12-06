@@ -10,7 +10,7 @@ import type { Admin } from "../types/admin";
 
 export default function AdminManagement() {
   const { admins, loading, fetchAdmins } = useAdmins();
-  const { message, handleLogout, role, adminName, adminUsername } = useAuth();
+  const { handleLogout, role, adminName, adminUsername } = useAuth();
 
   const [filterRole, setFilterRole] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
@@ -301,7 +301,6 @@ export default function AdminManagement() {
   return (
     <div style={{ backgroundColor: "#f4f7fb", minHeight: "100vh" }}>
       <Nav
-        message={message}
         onLogout={handleLogout}
         role={role}
         adminName={adminName}

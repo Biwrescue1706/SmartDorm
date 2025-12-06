@@ -10,7 +10,7 @@ interface LinkItem {
 }
 
 export default function LinksPage() {
-  const { message, handleLogout, role, adminName, adminUsername } = useAuth();
+  const { handleLogout, role, adminName, adminUsername } = useAuth();
 
   const links: LinkItem[] = [
     {
@@ -47,7 +47,6 @@ export default function LinksPage() {
       {/* 🔝 Navbar */}
       return (
       <Nav
-        message={message}
         onLogout={handleLogout}
         role={role}
         adminName={adminName}

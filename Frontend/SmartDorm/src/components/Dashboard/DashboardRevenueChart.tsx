@@ -1,80 +1,76 @@
 // src/components/Dashboard/DashboardRevenueChart.tsx
-
+import { Line } from "react-chartjs-2";
 import {
   Chart as ChartJS,
-  BarElement,
+  LineElement,
   CategoryScale,
   LinearScale,
-  Tooltip,
+  PointElement,
   Legend,
-  type ChartOptions,
+  Tooltip,
 } from "chart.js";
-import { Bar } from "react-chartjs-2";
-import { useMemo } from "react";
 
-ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, Legend);
+ChartJS.register(
+  LineElement,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  Legend,
+  Tooltip
+);
 
-export default function DashboardRevenueChart({
-  labels,
-  data,
-  title,
-  color,
-}: {
+interface Props {
   labels: string[];
-  data: number[];
+  datasets: {
+    label: string;
+    data: number[];
+    borderColor: string;
+    backgroundColor?: string;
+  }[];
   title: string;
-  color: string;
-}) {
-  const chartData = useMemo(
-    () => ({
-      labels,
-      datasets: [
-        {
-          label: title,
-          data,
-          backgroundColor: color,
-          borderRadius: 10,
-        },
-      ],
-    }),
-    [labels, data, title, color]
-  );
+}
 
-  const options: ChartOptions<"bar"> = {
+export default function DashboardRevenueChart({ labels, datasets, title }: Props) {
+  const data = {
+    labels,
+    datasets: datasets.map((ds) => ({
+      ...ds,
+      tension: 0.3,
+      pointRadius: 4,
+      pointHoverRadius: 6,
+      borderWidth: 2,
+      fill: false,
+    })),
+  };
+
+  const options = {
     responsive: true,
-    maintainAspectRatio: false,
     plugins: {
-      legend: { display: false },
+      title: {
+        display: true,
+        text: title,
+        font: { size: 18, weight: "bold" },
+        color: "#4A0080",
+      },
+      legend: {
+        position: "bottom" as const,
+        labels: { boxWidth: 12 },
+      },
       tooltip: {
         callbacks: {
-          label: (ctx) =>
-            `${title}: ${(ctx.raw as number).toLocaleString("th-TH")} บาท`,
+          label: (ctx: any) =>
+            `${ctx.dataset.label}: ${ctx.raw.toLocaleString("th-TH")} บาท`,
         },
       },
     },
     scales: {
-      x: {
-        ticks: { color: "#222", font: { weight: "bold" } },
-        grid: { display: false },
-      },
       y: {
         ticks: {
-          color: "#444",
-          callback: (v: string | number) => Number(v).toLocaleString("th-TH"),
+          callback: (v: any) => v.toLocaleString("th-TH"),
         },
       },
     },
   };
 
-  return (
-    <div
-      className="p-3 shadow-sm bg-white"
-      style={{ height: 300, borderRadius: 14, marginBottom: 20 }}
-    >
-      <h5 className="fw-bold text-center mb-2" style={{ color }}>
-        {title}
-      </h5>
-      <Bar data={chartData} options={options} />
-    </div>
-  );
+  return <Line data={data} options={options} />;
 }

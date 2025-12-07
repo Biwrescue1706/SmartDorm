@@ -14,14 +14,21 @@ import type { Bill } from "../types/Bill";
 
 export default function AllBills() {
   const { handleLogout, role, adminName, adminUsername } = useAuth();
-  const { bills, loading, fetchBills, updateBill, deleteBill, approveBill, rejectBill } =
-    useBills();
+  const {
+    bills,
+    loading,
+    fetchBills,
+    updateBill,
+    deleteBill,
+    approveBill,
+    rejectBill,
+  } = useBills();
 
   const [filterStatus, setFilterStatus] = useState("0");
   const [filterMonth, setFilterMonth] = useState("");
   const [filterRoom, setFilterRoom] = useState("");
-
   const [filtered, setFiltered] = useState<Bill[]>([]);
+
   const [editingBill, setEditingBill] = useState<Bill | null>(null);
   const [manageBill, setManageBill] = useState<Bill | null>(null);
 
@@ -63,6 +70,7 @@ export default function AllBills() {
   const start = (page - 1) * rows;
   const currentBills = filtered.slice(start, start + rows);
 
+  /* ---------------- SLIP VIEW ---------------- */
   const handleViewSlip = (bill: Bill) => {
     const url = bill.payment?.slipUrl || bill.slipUrl;
     if (!url) return Swal.fire("ไม่มีสลิป", "ยังไม่มีหลักฐานการชำระ", "info");
@@ -70,14 +78,26 @@ export default function AllBills() {
     Swal.fire({
       title: `สลิปห้อง ${bill.room.number}`,
       imageUrl: url,
-      imageWidth: 400,
+      imageWidth: 420,
       showConfirmButton: false,
       showCloseButton: true,
     });
   };
 
+  /* ---------------- RESET ALL STATE ---------------- */
+  const handleRefresh = async () => {
+    setFilterStatus("0");
+    setFilterMonth("");
+    setFilterRoom("");
+    setPage(1);
+    await fetchBills(); // ดึงข้อมูลใหม่ทั้งหมด
+  };
+
   return (
-    <div className="d-flex flex-column" style={{ background: "#f5f3ff", minHeight: "100vh" }}>
+    <div
+      className="d-flex flex-column"
+      style={{ background: "#f5f3ff", minHeight: "100vh" }}
+    >
       <Nav
         onLogout={handleLogout}
         role={role}
@@ -99,24 +119,25 @@ export default function AllBills() {
             รายการบิลทั้งหมด
           </h2>
 
-          {/* 🔁 ปุ่มรีเฟรช */}
+          {/* 🔁 ปุ่มรีเซ็ต / รีเฟรช */}
           <div className="text-center mb-3">
             <button
-              onClick={fetchBills}
+              onClick={handleRefresh}
               disabled={loading}
               className="btn fw-semibold shadow-sm px-4 py-2"
               style={{
-                background: "linear-gradient(135deg, #4A148C, #7B1FA2, #CE93D8)",
+                background:
+                  "linear-gradient(135deg, #4A148C, #7B1FA2, #CE93D8)",
                 color: "#fff",
                 borderRadius: "10px",
                 border: "none",
               }}
             >
-              {loading ? "⏳ กำลังโหลด..." : "🔄 รีเฟรชข้อมูล"}
+              {loading ? "⏳ กำลังโหลด..." : "🔄 รีเซ็ตข้อมูล"}
             </button>
           </div>
 
-          {/* FILTER STATUS */}
+          {/* STATUS FILTER */}
           <BillStatusCardFilter
             filterStatus={filterStatus}
             setFilterStatus={setFilterStatus}
@@ -145,7 +166,7 @@ export default function AllBills() {
             />
           </div>
 
-          {/* TABLE / CARD VIEW */}
+          {/* TABLE / CARD RESPONSIVE */}
           {loading ? (
             <p className="text-center text-muted">⏳ กำลังโหลดข้อมูล...</p>
           ) : width >= 1400 ? (
@@ -192,6 +213,7 @@ export default function AllBills() {
         </div>
       </main>
 
+      {/* EDIT DIALOG */}
       {editingBill && (
         <AllBillsEditDialog
           bill={editingBill}
@@ -200,6 +222,7 @@ export default function AllBills() {
         />
       )}
 
+      {/* APPROVE / REJECT DIALOG */}
       {manageBill && (
         <BillManageDialog
           bill={manageBill}

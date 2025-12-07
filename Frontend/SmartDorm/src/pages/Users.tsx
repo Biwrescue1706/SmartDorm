@@ -8,6 +8,7 @@ import { useAuth } from "../hooks/useAuth";
 import Pagination from "../components/Pagination";
 import * as Dialog from "@radix-ui/react-dialog";
 
+/* ---------------------- Types ---------------------- */
 interface BookingDetail {
   bookingId: string;
   room?: { number: string };
@@ -20,23 +21,26 @@ interface BookingDetail {
 
 interface Customer {
   customerId: string;
-  userName: string;
+  userName: string; // LINE
+  userId: string;
   bookings?: BookingDetail[];
   createdAt: string;
 }
 
-const formatThaiDate = (d?: string) => {
-  if (!d) return "-";
-  const date = new Date(d);
-  return isNaN(date.getTime())
-    ? "-"
-    : date.toLocaleDateString("th-TH", {
+/* ---------------------- Utils ---------------------- */
+const formatThaiDate = (x?: string) => {
+  if (!x) return "-";
+  const d = new Date(x);
+  return !isNaN(d.getTime())
+    ? d.toLocaleDateString("th-TH", {
         year: "numeric",
         month: "long",
         day: "numeric",
-      });
+      })
+    : "-";
 };
 
+/* ---------------------- Main Page ---------------------- */
 export default function Users() {
   const { handleLogout, role, adminName, adminUsername } = useAuth();
 
@@ -48,10 +52,10 @@ export default function Users() {
   const [selectedUser, setSelectedUser] = useState<Customer | null>(null);
   const [showDialog, setShowDialog] = useState(false);
 
-  const [page, setPage] = useState(1);
-  const [rows, setRows] = useState(10);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
 
-  const startIndex = (page - 1) * rows;
+  const startIndex = (currentPage - 1) * rowsPerPage;
 
   useEffect(() => {
     const resize = () => setWidth(window.innerWidth);
@@ -59,16 +63,16 @@ export default function Users() {
     return () => window.removeEventListener("resize", resize);
   }, []);
 
-  /* โหลดข้อมูลรวมตามชื่อจริง */
+  /* ---------------- Load & merge by fullName ---------------- */
   const fetchUsers = async () => {
-    setLoading(true);
     try {
+      setLoading(true);
       const res = await axios.get(`${API_BASE}/user/getall`);
       const merged: Record<string, Customer & { bookings: BookingDetail[] }> = {};
 
       (res.data.users || []).forEach((u: Customer) => {
-        const name = u.bookings?.[0]?.fullName?.trim();
-        const key = name && name !== "" ? name : u.userName;
+        const full = u.bookings?.[0]?.fullName?.trim();
+        const key = full && full !== "" ? full : u.userName; // ใช้ fullName ถ้ามี
 
         if (!merged[key]) merged[key] = { ...u, bookings: [...(u.bookings || [])] };
         else merged[key].bookings?.push(...(u.bookings || []));
@@ -77,7 +81,7 @@ export default function Users() {
       setUsers(
         Object.values(merged).sort((a, b) =>
           (a.bookings?.[0]?.fullName || "").localeCompare(
-            b.bookings?.[0]?.fullName || "",
+            (b.bookings?.[0]?.fullName || ""),
             "th"
           )
         )
@@ -91,7 +95,7 @@ export default function Users() {
     fetchUsers();
   }, []);
 
-  /* Search */
+  /* ---------------- Search ---------------- */
   const handleSearch = async () => {
     if (!search.trim()) return;
     setLoading(true);
@@ -100,24 +104,26 @@ export default function Users() {
         params: { keyword: search },
       });
       setUsers(res.data.users || []);
-      setPage(1);
+      setCurrentPage(1);
     } finally {
       setLoading(false);
     }
   };
 
-  /* ลบ booking */
+  /* ---------------- Delete booking ---------------- */
   const handleDeleteBooking = async (b: BookingDetail) => {
+    if (!b.bookingId) return;
+
     const ok = await Swal.fire({
-      title: "ลบรายการจอง?",
+      title: "ยืนยันลบรายการจอง?",
       text: `ห้อง ${b.room?.number}`,
       icon: "warning",
       showCancelButton: true,
       confirmButtonText: "ลบ",
       cancelButtonText: "ยกเลิก",
     });
-    if (!ok.isConfirmed || !b.bookingId) return;
 
+    if (!ok.isConfirmed) return;
     try {
       await axios.delete(`${API_BASE}/booking/${b.bookingId}`);
 
@@ -130,35 +136,36 @@ export default function Users() {
           : prev
       );
 
-      Swal.fire("สำเร็จ", "ลบแล้ว", "success");
+      Swal.fire("สำเร็จ", "ลบรายการจองแล้ว", "success");
       fetchUsers();
     } catch {
       Swal.fire("ผิดพลาด", "ไม่สามารถลบได้", "error");
     }
   };
 
-  /* ลบลูกค้า */
+  /* ---------------- Delete user ---------------- */
   const handleDeleteUser = async () => {
     if (!selectedUser) return;
 
     const ok = await Swal.fire({
       title: "ยืนยันลบลูกค้า?",
-      html: `<b>${selectedUser.bookings?.[0]?.fullName || selectedUser.userName}</b>`,
+      html: `<b>${selectedUser.bookings?.[0]?.fullName || selectedUser.userName}</b><br/>ข้อมูลทั้งหมดจะถูกลบถาวร`,
       icon: "warning",
       showCancelButton: true,
       confirmButtonText: "ลบลูกค้า",
       cancelButtonText: "ยกเลิก",
       confirmButtonColor: "#d9534f",
     });
-    if (!ok.isConfirmed) return;
 
+    if (!ok.isConfirmed) return;
     try {
       await axios.delete(`${API_BASE}/user/${selectedUser.customerId}`);
-      Swal.fire("สำเร็จ", "ลบเรียบร้อย", "success");
+
       setUsers((prev) => prev.filter((x) => x.customerId !== selectedUser.customerId));
       setShowDialog(false);
+      Swal.fire("สำเร็จ", "ลบลูกค้าเรียบร้อย", "success");
     } catch {
-      Swal.fire("ผิดพลาด", "ลบไม่สำเร็จ", "error");
+      Swal.fire("ผิดพลาด", "ลบลูกค้าไม่สำเร็จ", "error");
     }
   };
 
@@ -169,19 +176,19 @@ export default function Users() {
       </div>
     );
 
-  const paginated = users.slice(startIndex, startIndex + rows);
+  const paginated = users.slice(startIndex, startIndex + rowsPerPage);
 
+  /* ---------------- Render ---------------- */
   return (
     <>
       <Nav onLogout={handleLogout} role={role} adminName={adminName} adminUsername={adminUsername} />
 
       <main className="main-content mt-6 px-2">
         <div className="container-max mx-auto">
-          <h2 className="fw-bold text-center mt-2 mb-3 text-dark">
+          <h2 className="fw-bold text-center mt-2 mb-3" style={{ color: "#4A0080" }}>
             👥 รายชื่อลูกค้าทั้งหมด ({users.length} คน)
           </h2>
 
-          {/* Search bar */}
           <div className="d-flex justify-content-center gap-2 mb-3">
             <input
               className="form-control w-50 shadow-sm"
@@ -197,7 +204,7 @@ export default function Users() {
           {/* TABLE MODE */}
           {width >= 1400 ? (
             <table className="table table-hover text-center shadow-sm">
-              <thead className="table-dark">
+              <thead style={{ background: "#4A0080", color: "white" }}>
                 <tr>
                   <th>#</th>
                   <th>LINE</th>
@@ -255,7 +262,7 @@ export default function Users() {
                   className="shadow-sm bg-white p-3 rounded border-start border-4"
                   style={{ borderColor: "#4A0080" }}
                 >
-                  <h5 className="fw-bold">{u.bookings?.[0]?.fullName || "-"}</h5>
+                  <h5 className="fw-bold text-dark">{u.bookings?.[0]?.fullName || "-"}</h5>
                   <p className="small text-muted">{u.userName}</p>
 
                   <button
@@ -285,75 +292,75 @@ export default function Users() {
           )}
 
           <Pagination
-            currentPage={page}
+            currentPage={currentPage}
             totalItems={users.length}
-            rowsPerPage={rows}
-            onPageChange={setPage}
+            rowsPerPage={rowsPerPage}
+            onPageChange={setCurrentPage}
             onRowsPerPageChange={(r) => {
-              setRows(r);
-              setPage(1);
+              setRowsPerPage(r);
+              setCurrentPage(1);
             }}
           />
         </div>
       </main>
 
-      {/* DIALOG ดูประวัติ Booking */}
+      {/* ---------------- Dialog ---------------- */}
       <Dialog.Root open={showDialog} onOpenChange={setShowDialog}>
         <Dialog.Portal>
           <Dialog.Overlay
             className="position-fixed top-0 start-0 w-100 h-100"
             style={{ background: "rgba(0,0,0,.45)" }}
           />
+
           <Dialog.Content
-            className="position-fixed top-50 start-50 translate-middle bg-white rounded-4 shadow-lg p-4"
-            style={{ width: "90%", maxWidth: "650px", maxHeight: "85vh", overflowY: "auto" }}
+            className="position-fixed top-50 start-50 translate-middle bg-white rounded-4 shadow-lg p-0"
+            style={{
+              width: "95%",
+              maxWidth: "600px",
+              maxHeight: "90vh",
+              display: "flex",
+              flexDirection: "column",
+            }}
           >
-            <Dialog.Title className="fw-bold text-center fs-5 mb-3">
+            {/* Header */}
+            <div className="p-3 border-bottom text-center fw-bold fs-5" style={{ color: "#4A0080" }}>
               ประวัติของ {selectedUser?.bookings?.[0]?.fullName}
-            </Dialog.Title>
+            </div>
 
-            {selectedUser?.bookings?.length ? (
-              [...selectedUser.bookings]
-                .sort((a, b) => new Date(b.createdAt!).getTime() - new Date(a.createdAt!).getTime())
-                .map((b, idx) => (
-                  <div
-                    key={b.bookingId}
-                    className="bg-light p-3 rounded shadow-sm mb-3 border"
-                  >
-                    <h5 className="fw-bold text-primary mb-2">📌 ห้อง {b.room?.number}</h5>
+            {/* Scrollable Body */}
+            <div style={{ overflowY: "auto", padding: "16px", flexGrow: 1 }}>
+              {selectedUser?.bookings?.length ? (
+                selectedUser.bookings.map((b) => (
+                  <div key={b.bookingId} className="bg-light p-3 rounded shadow-sm mb-3 border">
+                    <p><b>📌 ห้อง:</b> {b.room?.number}</p>
+                    <p><b>ชื่อ:</b> {b.fullName}</p>
+                    <p><b>โทร:</b> {b.cphone}</p>
+                    <p><b>จอง:</b> {formatThaiDate(b.createdAt)}</p>
+                    <p><b>เช็คอิน:</b> {formatThaiDate(b.checkin)}</p>
+                    <p><b>เข้าพักจริง:</b> {formatThaiDate(b.actualCheckin)}</p>
 
-                    <p className="mb-1"><b>ชื่อ:</b> {b.fullName}</p>
-                    <p className="mb-1"><b>โทร:</b> {b.cphone}</p>
-                    <p className="mb-1"><b>จอง:</b> {formatThaiDate(b.createdAt)}</p>
-                    <p className="mb-1"><b>เช็คอิน:</b> {formatThaiDate(b.checkin)}</p>
-                    <p className="mb-2"><b>เข้าพักจริง:</b> {formatThaiDate(b.actualCheckin)}</p>
-
-                    <button
-                      className="btn btn-danger btn-sm w-100"
-                      onClick={() => handleDeleteBooking(b)}
-                    >
+                    <button className="btn btn-danger btn-sm w-100 mt-2" onClick={() => handleDeleteBooking(b)}>
                       ลบรายการนี้
                     </button>
-
-                    {idx !== selectedUser.bookings!.length - 1 && <hr className="mt-3" />}
                   </div>
                 ))
-            ) : (
-              <p className="text-center text-muted">ไม่มีประวัติการจอง</p>
-            )}
+              ) : (
+                <p className="text-center text-muted">ไม่มีประวัติการจอง</p>
+              )}
+            </div>
 
-            {role === 0 && (
-              <button
-                className="btn btn-outline-danger w-100 mt-3 fw-bold"
-                onClick={handleDeleteUser}
-              >
-                ลบลูกค้าคนนี้ทั้งหมด
-              </button>
-            )}
+            {/* Footer */}
+            <div className="p-3 border-top">
+              {role === 0 && (
+                <button className="btn btn-outline-danger w-100 mb-2 fw-bold" onClick={handleDeleteUser}>
+                  ลบลูกค้าคนนี้ทั้งหมด
+                </button>
+              )}
 
-            <Dialog.Close asChild>
-              <button className="btn btn-secondary w-100 mt-2">ปิด</button>
-            </Dialog.Close>
+              <Dialog.Close asChild>
+                <button className="btn btn-secondary w-100">ปิด</button>
+              </Dialog.Close>
+            </div>
           </Dialog.Content>
         </Dialog.Portal>
       </Dialog.Root>

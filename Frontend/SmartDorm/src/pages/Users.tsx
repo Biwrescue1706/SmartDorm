@@ -33,7 +33,7 @@ const formatThaiDate = (x?: string) => {
     ? d.toLocaleDateString("th-TH", {
         year: "numeric",
         month: "long",
-        day: "numeric"
+        day: "numeric",
       })
     : "-";
 };
@@ -46,11 +46,11 @@ export default function Users() {
   const [search, setSearch] = useState("");
   const [width, setWidth] = useState(window.innerWidth);
 
-  const [currentPage, setCurrentPage] = useState(1);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
-
   const [selectedUser, setSelectedUser] = useState<Customer | null>(null);
   const [showDialog, setShowDialog] = useState(false);
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
 
   const startIndex = (currentPage - 1) * rowsPerPage;
 
@@ -60,7 +60,7 @@ export default function Users() {
     return () => window.removeEventListener("resize", resize);
   }, []);
 
-  // ** โหลดข้อมูล และรวมตาม 'ชื่อจริง (fullName)' **
+  /* โหลดข้อมูล merges by fullName */
   const fetchUsers = async () => {
     try {
       setLoading(true);
@@ -68,16 +68,11 @@ export default function Users() {
       const merged: Record<string, Customer & { bookings: BookingDetail[] }> = {};
 
       (res.data.users || []).forEach((u: Customer) => {
-        const key =
-          u.bookings?.[0]?.fullName?.trim() !== ""
-            ? u.bookings?.[0]?.fullName
-            : u.userName; // ถ้าไม่มีชื่อจริง ใช้ LINE แทน
+        const full = u.bookings?.[0]?.fullName?.trim();
+        const key = full && full !== "" ? full : u.userName; // <-- ปลอดภัยแล้ว
 
-        if (!merged[key]) {
-          merged[key] = { ...u, bookings: [...(u.bookings || [])] };
-        } else {
-          merged[key].bookings?.push(...(u.bookings || []));
-        }
+        if (!merged[key]) merged[key] = { ...u, bookings: [...(u.bookings || [])] };
+        else merged[key].bookings?.push(...(u.bookings || []));
       });
 
       setUsers(
@@ -102,7 +97,7 @@ export default function Users() {
     setLoading(true);
     try {
       const res = await axios.get(`${API_BASE}/user/search`, {
-        params: { keyword: search }
+        params: { keyword: search },
       });
       setUsers(res.data.users || []);
       setCurrentPage(1);
@@ -112,36 +107,32 @@ export default function Users() {
   };
 
   const handleDeleteBooking = async (b: BookingDetail) => {
-    if (!b.bookingId) return;
-
     const ok = await Swal.fire({
       title: "ยืนยันลบรายการจอง?",
       text: `ห้อง ${b.room?.number}`,
       icon: "warning",
       showCancelButton: true,
       confirmButtonText: "ลบ",
-      cancelButtonText: "ยกเลิก"
+      cancelButtonText: "ยกเลิก",
     });
-    if (!ok.isConfirmed) return;
 
+    if (!ok.isConfirmed || !b.bookingId) return;
     try {
       await axios.delete(`${API_BASE}/booking/${b.bookingId}`);
-      Swal.fire("สำเร็จ", "ลบรายการจองแล้ว", "success");
 
       setSelectedUser((prev) =>
         prev
           ? {
               ...prev,
-              bookings: prev.bookings?.filter(
-                (x) => x.bookingId !== b.bookingId
-              )
+              bookings: prev.bookings?.filter((x) => x.bookingId !== b.bookingId),
             }
           : prev
       );
 
+      Swal.fire("สำเร็จ", "ลบรายการจองแล้ว", "success");
       fetchUsers();
     } catch {
-      Swal.fire("ผิดพลาด", "ไม่สามารถลบข้อมูลได้", "error");
+      Swal.fire("ผิดพลาด", "ไม่สามารถลบได้", "error");
     }
   };
 
@@ -150,24 +141,22 @@ export default function Users() {
 
     const ok = await Swal.fire({
       title: "ยืนยันลบลูกค้า?",
-      html: `<b>${selectedUser.bookings?.[0]?.fullName}</b><br/>ข้อมูลทั้งหมดจะถูกลบถาวร`,
+      html: `<b>${selectedUser.bookings?.[0]?.fullName || selectedUser.userName}</b><br/>ข้อมูลทั้งหมดจะถูกลบถาวร`,
       icon: "warning",
       showCancelButton: true,
       confirmButtonText: "ลบลูกค้า",
       cancelButtonText: "ยกเลิก",
-      confirmButtonColor: "#d9534f"
+      confirmButtonColor: "#d9534f",
     });
 
     if (!ok.isConfirmed) return;
-
     try {
       await axios.delete(`${API_BASE}/user/${selectedUser.customerId}`);
-      Swal.fire("สำเร็จ", "ลบลูกค้าเรียบร้อย", "success");
 
-      setUsers((prev) =>
-        prev.filter((x) => x.customerId !== selectedUser.customerId)
-      );
+      setUsers((prev) => prev.filter((x) => x.customerId !== selectedUser.customerId));
       setShowDialog(false);
+
+      Swal.fire("สำเร็จ", "ลบลูกค้าเรียบร้อย", "success");
     } catch {
       Swal.fire("ผิดพลาด", "ลบลูกค้าไม่สำเร็จ", "error");
     }
@@ -184,12 +173,7 @@ export default function Users() {
 
   return (
     <>
-      <Nav
-        onLogout={handleLogout}
-        role={role}
-        adminName={adminName}
-        adminUsername={adminUsername}
-      />
+      <Nav onLogout={handleLogout} role={role} adminName={adminName} adminUsername={adminUsername} />
 
       <main className="main-content mt-6 px-2">
         <div className="container-max mx-auto">
@@ -200,20 +184,15 @@ export default function Users() {
           <div className="d-flex justify-content-center gap-2 mb-3">
             <input
               className="form-control w-50 shadow-sm"
-              placeholder="ค้นหา..."
+              placeholder="ค้นหาชื่อ / เบอร์โทร / ห้อง"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleSearch()}
             />
-            <button className="btn btn-primary" onClick={handleSearch}>
-              ค้นหา
-            </button>
-            <button className="btn btn-secondary" onClick={fetchUsers}>
-              รีเฟรช
-            </button>
+            <button className="btn btn-primary" onClick={handleSearch}>ค้นหา</button>
+            <button className="btn btn-secondary" onClick={fetchUsers}>รีเฟรช</button>
           </div>
 
-          {/* TABLE mode */}
           {width >= 1400 ? (
             <table className="table table-hover text-center shadow-sm">
               <thead className="table-dark">
@@ -246,7 +225,10 @@ export default function Users() {
                       {role === 0 && (
                         <button
                           className="btn btn-danger btn-sm"
-                          onClick={() => setSelectedUser(u) || handleDeleteUser()}
+                          onClick={() => {
+                            setSelectedUser(u);
+                            handleDeleteUser();
+                          }}
                         >
                           🗑️
                         </button>
@@ -262,20 +244,16 @@ export default function Users() {
               className="d-grid"
               style={{
                 gridTemplateColumns: width < 600 ? "1fr" : "repeat(3,1fr)",
-                gap: "14px"
+                gap: "12px",
               }}
             >
               {paginated.map((u) => (
-                <div
-                  key={u.customerId}
-                  className="bg-white shadow-sm p-3 rounded border-start border-4"
-                  style={{ borderColor: "#4A0080" }}
-                >
-                  <h5 className="fw-bold">{u.bookings?.[0]?.fullName}</h5>
-                  <span className="text-muted small">{u.userName}</span>
+                <div key={u.customerId} className="shadow-sm bg-white p-3 rounded border-start border-4" style={{ borderColor: "#4A0080" }}>
+                  <h5 className="fw-bold">{u.bookings?.[0]?.fullName || "-"}</h5>
+                  <p className="small text-muted">{u.userName}</p>
 
                   <button
-                    className="btn btn-info w-100 mt-2 text-white"
+                    className="btn btn-info btn-sm w-100 mt-2 text-white"
                     onClick={() => {
                       setSelectedUser(u);
                       setShowDialog(true);
@@ -286,8 +264,11 @@ export default function Users() {
 
                   {role === 0 && (
                     <button
-                      className="btn btn-danger w-100 mt-2"
-                      onClick={() => setSelectedUser(u) || handleDeleteUser()}
+                      className="btn btn-danger btn-sm w-100 mt-2"
+                      onClick={() => {
+                        setSelectedUser(u);
+                        handleDeleteUser();
+                      }}
                     >
                       ลบลูกค้า
                     </button>
@@ -313,18 +294,10 @@ export default function Users() {
       {/* DIALOG */}
       <Dialog.Root open={showDialog} onOpenChange={setShowDialog}>
         <Dialog.Portal>
-          <Dialog.Overlay
-            className="position-fixed top-0 start-0 w-100 h-100"
-            style={{ background: "rgba(0,0,0,.4)" }}
-          />
+          <Dialog.Overlay className="position-fixed top-0 start-0 w-100 h-100" style={{ background: "rgba(0,0,0,.45)" }} />
           <Dialog.Content
             className="position-fixed top-50 start-50 translate-middle bg-white rounded-4 shadow-lg p-4"
-            style={{
-              width: "90%",
-              maxWidth: "650px",
-              maxHeight: "85vh",
-              overflowY: "auto"
-            }}
+            style={{ width: "90%", maxWidth: "650px", maxHeight: "85vh", overflowY: "auto" }}
           >
             <Dialog.Title className="fw-bold text-center fs-5 mb-3">
               ประวัติของ {selectedUser?.bookings?.[0]?.fullName}
@@ -333,30 +306,24 @@ export default function Users() {
             {selectedUser?.bookings?.length ? (
               selectedUser.bookings.map((b) => (
                 <div key={b.bookingId} className="bg-light p-3 rounded shadow-sm mb-2">
-                  <p><b>ห้อง :</b> {b.room?.number}</p>
-                  <p><b>ชื่อ :</b> {b.fullName}</p>
-                  <p><b>โทร :</b> {b.cphone}</p>
-                  <p><b>จอง :</b> {formatThaiDate(b.createdAt)}</p>
-                  <p><b>เช็คอิน :</b> {formatThaiDate(b.checkin)}</p>
-                  <p><b>เข้าพักจริง :</b> {formatThaiDate(b.actualCheckin)}</p>
+                  <p><b>ห้อง:</b> {b.room?.number}</p>
+                  <p><b>ชื่อ:</b> {b.fullName}</p>
+                  <p><b>โทร:</b> {b.cphone}</p>
+                  <p><b>จอง:</b> {formatThaiDate(b.createdAt)}</p>
+                  <p><b>เช็คอิน:</b> {formatThaiDate(b.checkin)}</p>
+                  <p><b>เข้าพักจริง:</b> {formatThaiDate(b.actualCheckin)}</p>
 
-                  <button
-                    className="btn btn-danger btn-sm w-100 mt-2"
-                    onClick={() => handleDeleteBooking(b)}
-                  >
+                  <button className="btn btn-danger btn-sm w-100 mt-2" onClick={() => handleDeleteBooking(b)}>
                     ลบรายการนี้
                   </button>
                 </div>
               ))
             ) : (
-              <p className="text-muted text-center">ไม่มีประวัติการจอง</p>
+              <p className="text-center text-muted">ไม่มีประวัติการจอง</p>
             )}
 
             {role === 0 && (
-              <button
-                className="btn btn-outline-danger w-100 mt-3 fw-bold"
-                onClick={handleDeleteUser}
-              >
+              <button className="btn btn-outline-danger w-100 mt-3 fw-bold" onClick={handleDeleteUser}>
                 ลบลูกค้าคนนี้ทั้งหมด
               </button>
             )}

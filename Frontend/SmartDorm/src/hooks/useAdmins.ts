@@ -1,35 +1,30 @@
 import { useState, useEffect } from "react";
 import { API_BASE } from "../config";
 import { type Admin } from "../types/admin";
-import Swal from "sweetalert2";
+import { toast } from "../utils/toast"; // ใช้ toast ที่มี 3 args
 
 export function useAdmins() {
   const [admins, setAdmins] = useState<Admin[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // ฟังก์ชันช่วยเหลือสำหรับแสดง Toast Notification
-  const showToast = (icon: 'success' | 'error', title: string) => {
-    Swal.fire({
-      toast: true,
-      position: "top-end",
-      icon: icon, // สามารถเป็น 'success' หรือ 'error'
-      title: title,
-      timer: 1500,
-      showConfirmButton: false,
-    });
-  };
-
-  // โหลดทั้งหมด (Fetch All)
+  // โหลดข้อมูลผู้ดูแลทั้งหมด
   const fetchAdmins = async () => {
     setLoading(true);
     try {
       const res = await fetch(`${API_BASE}/admin/getall`, {
         credentials: "include",
       });
+
+      if (!res.ok) {
+        toast("error", "โหลดข้อมูลไม่สำเร็จ", "ไม่สามารถโหลดข้อมูลผู้ดูแลได้");
+        return;
+      }
+
       const data = await res.json();
       setAdmins(data);
-    } catch (error) {
-      showToast('error', "ไม่สามารถโหลดข้อมูลได้");
+      toast("success", "โหลดข้อมูลสำเร็จ", "ดึงข้อมูลผู้ดูแลทั้งหมดแล้ว");
+    } catch {
+      toast("error", "เชื่อมต่อไม่สำเร็จ", "ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์");
     } finally {
       setLoading(false);
     }
@@ -39,7 +34,7 @@ export function useAdmins() {
     fetchAdmins();
   }, []);
 
-  // ✅ เพิ่ม Admin (Add Admin)
+  // เพิ่ม Admin
   const addAdmin = async (
     adminData: Omit<Admin, "adminId" | "createdAt" | "updatedAt"> & {
       password: string;
@@ -54,18 +49,18 @@ export function useAdmins() {
       });
 
       if (!res.ok) {
-        showToast('error', "เพิ่มผู้ดูแลไม่สำเร็จ");
-        return; 
+        toast("error", "เพิ่มไม่สำเร็จ", "ไม่สามารถเพิ่มผู้ดูแลได้");
+        return;
       }
-      
-      showToast('success', "เพิ่มผู้ดูแลสำเร็จ");
-      await fetchAdmins(); // รีเฟรชข้อมูล
-    } catch (error) {
-      showToast('error', "เกิดข้อผิดพลาดในการเชื่อมต่อ");
+
+      toast("success", "เพิ่มผู้ดูแลสำเร็จ", "ระบบได้บันทึกข้อมูลเรียบร้อย");
+      await fetchAdmins();
+    } catch {
+      toast("error", "เกิดข้อผิดพลาด", "ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์");
     }
   };
 
-  // ✅ แก้ไข Admin (Update Admin)
+  // อัปเดต Admin
   const updateAdmin = async (
     adminId: string,
     data: Partial<Admin> & { password?: string }
@@ -79,18 +74,18 @@ export function useAdmins() {
       });
 
       if (!res.ok) {
-        showToast('error', "อัปเดตข้อมูลไม่สำเร็จ");
-        return; 
+        toast("error", "อัปเดตไม่สำเร็จ", "ไม่สามารถแก้ไขข้อมูลได้");
+        return;
       }
 
-      showToast('success', "อัปเดตข้อมูลสำเร็จ");
-      await fetchAdmins(); // รีเฟรชข้อมูล
-    } catch (error) {
-      showToast('error', "เกิดข้อผิดพลาดในการเชื่อมต่อ");
+      toast("success", "อัปเดตข้อมูลสำเร็จ", "บันทึกข้อมูลใหม่เรียบร้อยแล้ว");
+      await fetchAdmins();
+    } catch {
+      toast("error", "เกิดข้อผิดพลาด", "ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์");
     }
   };
 
-  // ✅ ลบ Admin (Delete Admin)
+  // ลบ Admin
   const deleteAdmin = async (adminId: string) => {
     try {
       const res = await fetch(`${API_BASE}/admin/${adminId}`, {
@@ -99,14 +94,14 @@ export function useAdmins() {
       });
 
       if (!res.ok) {
-        showToast('error', "ลบผู้ดูแลไม่สำเร็จ");
-        return; 
+        toast("error", "ลบไม่สำเร็จ", "ไม่สามารถลบผู้ดูแลได้");
+        return;
       }
-      
-      showToast('success', "ลบผู้ดูแลสำเร็จ");
-      await fetchAdmins(); // รีเฟรชข้อมูล
-    } catch (error) {
-      showToast('error', "เกิดข้อผิดพลาดในการเชื่อมต่อ");
+
+      toast("success", "ลบผู้ดูแลสำเร็จ", "ข้อมูลถูกลบออกจากระบบแล้ว");
+      await fetchAdmins();
+    } catch {
+      toast("error", "เกิดข้อผิดพลาด", "ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์");
     }
   };
 

@@ -1,7 +1,7 @@
 // src/hooks/useAuth.ts
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import Swal from "sweetalert2";
+import { toast } from "../utils/toast"; // <-- เรียกใช้ toast แยกไฟล์แล้ว
 import { API_BASE } from "../config";
 import { Login, Register, Verify, Logout } from "../apis/endpoint.api";
 import type { LoginCredentials, RegisterData } from "../types/Auth";
@@ -15,7 +15,7 @@ export function useAuth() {
   const [message, setMessage] = useState("กำลังโหลด...");
   const navigate = useNavigate();
 
-  // ----------------------------- Register -----------------------------
+  /* ---------------- Register ---------------- */
   const register = async (data: RegisterData) => {
     setLoading(true);
     try {
@@ -27,39 +27,21 @@ export function useAuth() {
       }).catch(() => null);
 
       if (!res) {
-        Swal.fire({
-          icon: "error",
-          title: "ข้อผิดพลาด",
-          text: "ไม่สามารถเชื่อมต่อกับ Backend ได้",
-          timer: 1500,
-          showConfirmButton: false,
-        });
+        toast(
+          "error",
+          "ไม่สามารถโหลดข้อมูลได้",
+          "ไม่สามารถเชื่อมต่อกับ Backend ได้"
+        );
         return false;
       }
 
       const result = await res.json();
 
       if (res.ok) {
-        Swal.fire({
-          toast: true,
-          position: "top-end",
-          icon: "success",
-          title: "เพิ่มสมาชิกสำเร็จ",
-          text: "ระบบได้บันทึกข้อมูลของคุณแล้ว",
-          timer: 1500,
-          showConfirmButton: false,
-        });
+        toast("success", "เพิ่มสมาชิกสำเร็จ", "ระบบได้บันทึกข้อมูลของคุณแล้ว");
         return true;
       } else {
-        Swal.fire({
-          toast: true,
-          position: "top-end",
-          icon: "error",
-          title: "เพิ่มสมาชิกไม่สำเร็จ",
-          text: result.error,
-          timer: 1500,
-          showConfirmButton: false,
-        });
+        toast("error", "เพิ่มสมาชิกไม่สำเร็จ", result.error);
         return false;
       }
     } finally {
@@ -67,7 +49,7 @@ export function useAuth() {
     }
   };
 
-  // ----------------------------- Login -----------------------------
+  /* ---------------- Login ---------------- */
   const login = async (credentials: LoginCredentials) => {
     setLoading(true);
     try {
@@ -76,80 +58,49 @@ export function useAuth() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(credentials),
         credentials: "include",
-        mode: "cors",
       }).catch(() => null);
 
       if (!res) {
-        Swal.fire({
-          toast: true,
-          position: "top-end",
-          icon: "error",
-          title: "ข้อผิดพลาด",
-          text: "ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้",
-          timer: 1500,
-          showConfirmButton: false,
-        });
+        toast("error", "ข้อผิดพลาด", "ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้");
         return false;
       }
 
       const data = await res.json();
 
       if (!res.ok) {
-        Swal.fire({
-          toast: true,
-          position: "top-end",
-          icon: "error",
-          title: "ล้มเหลว",
-          text: data.error || "เข้าสู่ระบบไม่สำเร็จ",
-          timer: 1500,
-          showConfirmButton: false,
-        });
+        toast(
+          "error",
+          "เข้าสู่ระบบไม่สำเร็จ",
+          data.error || "กรุณาตรวจสอบข้อมูลอีกครั้ง"
+        );
         return false;
       }
 
-      Swal.fire({
-        toast: true,
-        position: "top-end",
-        icon: "success",
-        title: "เข้าสู่ระบบสำเร็จ",
-        text: `ยินดีต้อนรับ ${data.admin?.name || credentials.username}`,
-        timer: 1500,
-        showConfirmButton: false,
-      });
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      toast(
+        "success",
+        "เข้าสู่ระบบสำเร็จ",
+        `ยินดีต้อนรับ ${data.admin?.name || credentials.username}`
+      );
+
+      await new Promise((r) => setTimeout(r, 1500));
       return true;
     } finally {
       setLoading(false);
     }
   };
 
-  // ----------------------------- Logout -----------------------------
+  /* ---------------- Logout ---------------- */
   const handleLogout = async () => {
     const res = await fetch(`${API_BASE}${Logout}`, {
       method: "POST",
       credentials: "include",
-      mode: "cors",
     }).catch(() => null);
 
-    if (res?.ok) {
-      Swal.fire({
-        toast: true,
-        position: "top-end",
-        icon: "success",
-        title: "ออกจากระบบสำเร็จ",
-        timer: 1500,
-        showConfirmButton: false,
-      });
-    } else {
-      Swal.fire({
-        toast: true,
-        position: "top-end",
-        icon: "error",
-        title: "ออกจากระบบไม่สำเร็จ",
-        timer: 1500,
-        showConfirmButton: false,
-      });
-    }
+    toast(
+      res?.ok ? "success" : "error",
+      res?.ok ? "ออกจากระบบสำเร็จ" : "ออกจากระบบไม่สำเร็จ",
+      res?.ok ? "กรุณาเข้าสู่ระบบ" : "ออกจากระบบไม่สำเร็จ"
+    );
 
     setIsAuth(false);
     setRole(null);
@@ -159,13 +110,12 @@ export function useAuth() {
     setTimeout(() => navigate("/"), 1500);
   };
 
-  // ----------------------------- Verify Auth -----------------------------
+  /* ---------------- Verify Auth ---------------- */
   useEffect(() => {
     const verify = async () => {
       const res = await fetch(`${API_BASE}${Verify}`, {
         method: "GET",
         credentials: "include",
-        mode: "cors",
       }).catch(() => null);
 
       if (!res || !res.ok) {
@@ -173,19 +123,15 @@ export function useAuth() {
         setRole(null);
         setAdminName("");
         setAdminUsername("");
-        Swal.fire({
-          toast: true,
-          position: "top-end",
-          icon: "warning",
-          title: "กรุณาเข้าสู่ระบบ",
-          timer: 2000,
-          showConfirmButton: false,
-        });
+
+        toast("warning", "กรุณาเข้าสู่ระบบ", "กรุณาเข้าสู่ระบบ");
+
         setTimeout(() => navigate("/"), 2000);
         return;
       }
 
       const data = await res.json().catch(() => null);
+
       if (data?.valid) {
         setIsAuth(true);
         setRole(data.admin?.role ?? 1);
@@ -194,16 +140,12 @@ export function useAuth() {
         setMessage(data.admin?.name || "ไม่พบชื่อ");
       } else {
         setIsAuth(false);
-        setRole(null);
-        setAdminName("");
-        setAdminUsername("");
       }
     };
 
     verify();
   }, [navigate]);
 
-  // ✅ ส่งออกทั้งหมด
   return {
     register,
     login,
@@ -217,16 +159,14 @@ export function useAuth() {
   };
 }
 
-// ----------------------------- Route Guard -----------------------------
+/* ---------------- Route Guard ---------------- */
 export async function verifyAuth(): Promise<boolean> {
   const res = await fetch(`${API_BASE}${Verify}`, {
     method: "GET",
     credentials: "include",
-    mode: "cors",
   }).catch(() => null);
 
   if (!res || !res.ok) return false;
-
   const data = await res.json().catch(() => null);
   return data?.valid === true;
 }

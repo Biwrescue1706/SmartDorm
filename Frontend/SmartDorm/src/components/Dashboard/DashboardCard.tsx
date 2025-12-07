@@ -6,7 +6,11 @@ interface DashboardCardProps {
   link: string;
 }
 
-export default function DashboardCard({ title, count, link }: DashboardCardProps) {
+export default function DashboardCard({
+  title,
+  count,
+  link,
+}: DashboardCardProps) {
   const navigate = useNavigate();
 
   return (

@@ -24,15 +24,17 @@ export default function ForgotUsername() {
       }}
     >
       {/* NAVBAR */}
-      <nav className="navbar navbar-dark px-3 py-2" style={{ backgroundColor: "rgba(0,0,0,0.18)" }}>
+      <nav
+        className="navbar navbar-dark px-3 py-2"
+        style={{ backgroundColor: "rgba(0,0,0,0.18)" }}
+      >
         <div className="container-fluid d-flex justify-content-between align-items-center">
-
           {/* ปุ่มย้อนกลับซ้าย */}
           <button
             className="btn btn-outline-warning fw-semibold"
             onClick={() => navigate("/")}
           >
-  &larr;
+            &larr;
           </button>
 
           {/* BRAND กลาง */}

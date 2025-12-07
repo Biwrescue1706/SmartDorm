@@ -32,10 +32,14 @@ export default function Booking() {
       active === "pending"
         ? bookings.filter((b) => b.approveStatus === 0)
         : active === "approved"
-        ? bookings.filter((b) => b.approveStatus === 1 && b.actualCheckin != null)
+        ? bookings.filter(
+            (b) => b.approveStatus === 1 && b.actualCheckin != null
+          )
         : active === "rejected"
         ? bookings.filter((b) => b.approveStatus === 2)
-        : bookings.filter((b) => b.approveStatus === 1 && b.actualCheckin == null)
+        : bookings.filter(
+            (b) => b.approveStatus === 1 && b.actualCheckin == null
+          )
     );
     setCurrentPage(1);
   }, [active, bookings]);
@@ -96,14 +100,16 @@ export default function Booking() {
               border: "1px solid #E1BEE7",
             }}
           >
-            <BookingFilter active={active} onChange={handleFilter} bookings={bookings} />
+            <BookingFilter
+              active={active}
+              onChange={handleFilter}
+              bookings={bookings}
+            />
           </div>
 
           {/* -------- TABLE / CARD VIEW -------- */}
           {loading ? (
-            <p className="text-center text-muted mt-3">
-              ⏳ กำลังโหลดข้อมูล...
-            </p>
+            <p className="text-center text-muted mt-3">⏳ กำลังโหลดข้อมูล...</p>
           ) : (
             <BookingTable
               bookings={filtered}
@@ -113,7 +119,9 @@ export default function Booking() {
               onEditSuccess={fetchBookings}
               onCheckin={checkinBooking}
               role={role}
-              showActualColumn={active === "approved" || active === "checkinPending"}
+              showActualColumn={
+                active === "approved" || active === "checkinPending"
+              }
               currentPage={currentPage}
               rowsPerPage={rowsPerPage}
               onPageChange={setCurrentPage}

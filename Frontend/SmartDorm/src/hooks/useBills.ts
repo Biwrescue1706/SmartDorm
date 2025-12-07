@@ -4,34 +4,37 @@ import axios from "axios";
 import { API_BASE } from "../config";
 import { GetAllBill, UpdateBill, DeleteBill } from "../apis/endpoint.api";
 import type { Bill } from "../types/Bill";
+import { toast } from "../utils/toast"; // ใช้ toast กลาง
 
 export function useBills() {
   const [bills, setBills] = useState<Bill[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // ดึงข้อมูลบิลทั้งหมด
   const fetchBills = async () => {
+    setLoading(true);
     try {
       const res = await fetch(`${API_BASE}${GetAllBill}`, {
         method: "GET",
         credentials: "include",
       });
-      if (!res.ok) throw new Error("โหลดข้อมูลบิลไม่สำเร็จ");
+
+      if (!res.ok) {
+        toast("error", "โหลดข้อมูลบิลไม่สำเร็จ", "ไม่สามารถโหลดข้อมูลได้");
+        return;
+      }
+
       const data = await res.json();
       setBills(data);
+      // ไม่จำเป็นต้องโชว์ toast เมื่อโหลดสำเร็จทุกครั้ง
     } catch {
-      Swal.fire({
-        toast: true,
-        position: "top-end",
-        icon: "error",
-        title: "ไม่สามารถโหลดข้อมูลได้",
-        timer: 1500,
-        showConfirmButton: false,
-      });
+      toast("error", "เชื่อมต่อไม่สำเร็จ", "ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์");
     } finally {
       setLoading(false);
     }
   };
 
+  // อัปเดตบิล
   const updateBill = async (billId: string, formValues: any) => {
     try {
       Swal.fire({ title: "กำลังอัปเดต...", didOpen: () => Swal.showLoading() });
@@ -43,69 +46,43 @@ export function useBills() {
         body: JSON.stringify(formValues),
       });
 
-      if (!res.ok) throw new Error("Update failed");
+      if (!res.ok) throw new Error();
 
-      await Swal.fire({
-        toast: true,
-        position: "top-end",
-        icon: "success",
-        title: "อัปเดตสำเร็จ",
-        timer: 1500,
-        showConfirmButton: false,
-      });
-
-      fetchBills();
-    } catch (err) {
-      console.error(err);
-      Swal.fire({
-        toast: true,
-        position: "top-end",
-        icon: "error",
-        title: "ไม่สามารถอัปเดตข้อมูลได้",
-        timer: 1500,
-        showConfirmButton: false,
-      });
+      toast("success", "อัปเดตสำเร็จ", "ระบบได้บันทึกข้อมูลบิลแล้ว");
+      await fetchBills();
+    } catch {
+      toast("error", "อัปเดตไม่สำเร็จ", "กรุณาลองใหม่อีกครั้ง");
     }
   };
 
+  // ลบบิล
   const deleteBill = async (billId: string, roomNumber: string) => {
-    const confirm = await Swal.fire({
-      title: `ลบบิลของห้อง ${roomNumber}?`,
+    const ok = await Swal.fire({
+      title: `ลบบิลห้อง ${roomNumber}?`,
       icon: "warning",
       showCancelButton: true,
       confirmButtonText: "ลบ",
       cancelButtonText: "ยกเลิก",
     });
-    if (!confirm.isConfirmed) return;
+
+    if (!ok.isConfirmed) return;
 
     try {
       const res = await fetch(`${API_BASE}${DeleteBill(billId)}`, {
         method: "DELETE",
         credentials: "include",
       });
+
       if (!res.ok) throw new Error();
-      Swal.fire({
-        toast: true,
-        position: "top-end",
-        icon: "success",
-        title: "ลบบิลสำเร็จแล้ว",
-        timer: 1500,
-        showConfirmButton: false,
-      });
-      fetchBills();
+
+      toast("success", "ลบบิลสำเร็จ", `บิลห้อง ${roomNumber} ถูกลบแล้ว`);
+      await fetchBills();
     } catch {
-      Swal.fire({
-        toast: true,
-        position: "top-end",
-        icon: "error",
-        title: "ลบบิลไม่สำเร็จ",
-        timer: 1500,
-        showConfirmButton: false,
-      });
+      toast("error", "ลบไม่สำเร็จ", "ไม่สามารถลบบิลได้");
     }
   };
 
-  // ✔️ อนุมัติบิล
+  // อนุมัติบิล
   const approveBill = async (billId: string, room: string) => {
     const ok = await Swal.fire({
       title: `อนุมัติบิลห้อง ${room}?`,
@@ -117,12 +94,20 @@ export function useBills() {
 
     if (!ok.isConfirmed) return;
 
-    await axios.put(`${API_BASE}/bill/${billId}/approve`, {}, { withCredentials: true });
-    await fetchBills();
-    Swal.fire("สำเร็จ", "อนุมัติการชำระแล้ว", "success");
+    try {
+      await axios.put(
+        `${API_BASE}/bill/${billId}/approve`,
+        {},
+        { withCredentials: true }
+      );
+      toast("success", "อนุมัติการชำระแล้ว", `บิลห้อง ${room} ถูกอนุมัติ`);
+      await fetchBills();
+    } catch {
+      toast("error", "อนุมัติไม่สำเร็จ", "ไม่สามารถอัปเดตสถานะได้");
+    }
   };
 
-  // ❌ ปฏิเสธบิล
+  // ปฏิเสธบิล
   const rejectBill = async (billId: string, room: string) => {
     const ok = await Swal.fire({
       title: `ปฏิเสธบิลห้อง ${room}?`,
@@ -134,16 +119,23 @@ export function useBills() {
 
     if (!ok.isConfirmed) return;
 
-    await axios.put(`${API_BASE}/bill/${billId}/reject`, {}, { withCredentials: true });
-    await fetchBills();
-    Swal.fire("ปฏิเสธสำเร็จ", "สถานะกลับไปยังไม่ชำระ", "info");
+    try {
+      await axios.put(
+        `${API_BASE}/bill/${billId}/reject`,
+        {},
+        { withCredentials: true }
+      );
+      toast("info", "ปฏิเสธสำเร็จ", "สถานะกลับเป็นยังไม่ชำระ");
+      await fetchBills();
+    } catch {
+      toast("error", "ปฏิเสธไม่สำเร็จ", "ระบบไม่สามารถเปลี่ยนสถานะได้");
+    }
   };
 
   useEffect(() => {
     fetchBills();
   }, []);
 
-  // ⭐ สำคัญมาก — ต้อง return ทั้ง 2 ฟังก์ชันใหม่ด้วย
   return {
     bills,
     loading,

@@ -30,7 +30,8 @@ export default function Checkout() {
     if (filter === "pending") return b.returnStatus === 0;
     if (filter === "approved") return b.returnStatus === 1;
     if (filter === "rejected") return b.returnStatus === 2;
-    if (filter === "waitingCheckout") return b.checkoutStatus === 1 && !b.actualCheckout;
+    if (filter === "waitingCheckout")
+      return b.checkoutStatus === 1 && !b.actualCheckout;
     return true;
   });
 
@@ -60,7 +61,11 @@ export default function Checkout() {
           </div>
 
           {/* 🔹 ตัวกรองสถานะ */}
-          <CheckoutFilter active={filter} onChange={setFilter} checkouts={checkouts} />
+          <CheckoutFilter
+            active={filter}
+            onChange={setFilter}
+            checkouts={checkouts}
+          />
 
           {/* 🔹 ตารางแสดงข้อมูล */}
           {loading ? (

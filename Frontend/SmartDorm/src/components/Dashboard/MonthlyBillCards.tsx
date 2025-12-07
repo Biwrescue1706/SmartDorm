@@ -44,8 +44,7 @@ export default function MonthlyBillCards({ bills, monthNamesTH }: any) {
               className="card shadow-lg border-0 h-100"
               style={{
                 borderRadius: "18px",
-                background:
-                  "linear-gradient(135deg, #4A148C 0%, #6A1B9A 100%)",
+                background: "linear-gradient(135deg, #4A148C 0%, #6A1B9A 100%)",
                 color: "#fff",
               }}
             >
@@ -66,7 +65,6 @@ export default function MonthlyBillCards({ bills, monthNamesTH }: any) {
 
               {/* BODY */}
               <div className="card-body px-3 pt-3">
-
                 {/* DATE */}
                 <h6 className="fw-bold text-warning text-center mb-3">
                   📅 {monthNamesTH[+m - 1]} {y}
@@ -75,19 +73,25 @@ export default function MonthlyBillCards({ bills, monthNamesTH }: any) {
                 {/* RENT */}
                 <div className="d-flex justify-content-between mb-2">
                   <span className="fw-bold">ค่าเช่าห้อง</span>
-                  <span className="fw-bold">{v.rent.toLocaleString("th-TH")}</span>
+                  <span className="fw-bold">
+                    {v.rent.toLocaleString("th-TH")}
+                  </span>
                 </div>
 
                 {/* WATER */}
                 <div className="d-flex justify-content-between mb-2">
                   <span className="fw-bold">ค่าน้ำ</span>
-                  <span className="fw-bold">{v.water.toLocaleString("th-TH")}</span>
+                  <span className="fw-bold">
+                    {v.water.toLocaleString("th-TH")}
+                  </span>
                 </div>
 
                 {/* ELECTRIC */}
                 <div className="d-flex justify-content-between mb-2">
                   <span className="fw-bold">ค่าไฟ</span>
-                  <span className="fw-bold">{v.electric.toLocaleString("th-TH")}</span>
+                  <span className="fw-bold">
+                    {v.electric.toLocaleString("th-TH")}
+                  </span>
                 </div>
 
                 {/* TOTAL */}

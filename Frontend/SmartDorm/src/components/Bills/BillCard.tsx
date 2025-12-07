@@ -18,16 +18,26 @@ export default function BillCard({
   formatThaiDate,
   onCreateBill,
 }: Props) {
+  const SCB_PURPLE = "#4A0080";
+  const SCB_GOLD = "#FFC800";
+
   return (
     <div
       className="p-3 rounded-4 shadow-sm"
       style={{
-        background: "#f1f1f1",
-        transition: "0.2s",
-        border: "1px solid #ddd",
+        background: "#FFFFFF",
+        borderLeft: `6px solid ${SCB_PURPLE}`,
+        borderRadius: "14px",
+        boxShadow: "0 4px 8px rgba(0,0,0,.12)",
+        transition: ".25s",
       }}
     >
-      <h5 className="fw-bold text-center mb-2">ห้อง {room.number}</h5>
+      <h5
+        className="fw-bold text-center"
+        style={{ color: SCB_PURPLE, marginBottom: "10px" }}
+      >
+        ห้อง {room.number}
+      </h5>
 
       <p className="mb-1">
         <b>LINE :</b> {booking?.customer?.userName || "-"}
@@ -36,22 +46,22 @@ export default function BillCard({
         <b>ค่าเช่า :</b> {room.rent.toLocaleString()}
       </p>
       <p className="mb-1">
-        <b>ขอเข้าพัก :</b>{" "}
-        {booking?.checkin ? formatThaiDate(booking.checkin) : "-"}
+        <b>ขอเข้าพัก :</b> {booking?.checkin ? formatThaiDate(booking.checkin) : "-"}
       </p>
-      <p className="mb-2">
+      <p className="mb-3">
         <b>เข้าพักจริง :</b>{" "}
         {booking?.actualCheckin ? formatThaiDate(booking.actualCheckin) : "-"}
       </p>
 
-      {/* ปุ่มออกบิล */}
       {!hasBill && booking?.actualCheckin && canCreateBill && (
         <button
-          className="btn w-100 fw-semibold text-white"
+          className="btn w-100 fw-bold"
           style={{
-            background: "linear-gradient(135deg, #11998e, #38ef7d)",
+            background: SCB_GOLD,
+            color: "#2D1A47",
             borderRadius: "10px",
             border: "none",
+            boxShadow: "0 2px 6px rgba(0,0,0,.15)",
           }}
           onClick={() => onCreateBill(room)}
         >
@@ -59,9 +69,10 @@ export default function BillCard({
         </button>
       )}
 
-      {/* ออกบิลแล้ว */}
       {hasBill && (
-        <div className="text-center fw-bold text-success mt-2">ออกบิลแล้ว</div>
+        <div className="text-center fw-bold mt-2" style={{ color: SCB_PURPLE }}>
+          ออกบิลแล้ว 
+        </div>
       )}
     </div>
   );

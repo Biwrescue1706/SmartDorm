@@ -21,7 +21,11 @@ interface Props {
   title: string;
 }
 
-export default function DashboardRevenueChart({ labels, datasets, title }: Props) {
+export default function DashboardRevenueChart({
+  labels,
+  datasets,
+  title,
+}: Props) {
   const data = {
     labels,
     datasets: datasets.map((ds) => ({

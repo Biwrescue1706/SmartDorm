@@ -18,13 +18,16 @@ export default function DashboardSummary({
   return (
     <div className="container my-4">
       <div className="row g-3 justify-content-center">
-
         <div className="col-4 col-md-2">
           <DashboardCard title="ห้องทั้งหมด" count={totalRooms} link="/rooms" />
         </div>
 
         <div className="col-4 col-md-2">
-          <DashboardCard title="ห้องว่าง" count={availableRooms} link="/rooms" />
+          <DashboardCard
+            title="ห้องว่าง"
+            count={availableRooms}
+            link="/rooms"
+          />
         </div>
 
         <div className="col-4 col-md-2">
@@ -32,13 +35,20 @@ export default function DashboardSummary({
         </div>
 
         <div className="col-4 col-md-2">
-          <DashboardCard title="คำขอจอง" count={pendingBookings} link="/bookings" />
+          <DashboardCard
+            title="คำขอจอง"
+            count={pendingBookings}
+            link="/bookings"
+          />
         </div>
 
         <div className="col-4 col-md-2">
-          <DashboardCard title="คำขอคืน" count={pendingCheckouts} link="/checkout" />
+          <DashboardCard
+            title="คำขอคืน"
+            count={pendingCheckouts}
+            link="/checkout"
+          />
         </div>
-
       </div>
     </div>
   );

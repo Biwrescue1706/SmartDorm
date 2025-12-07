@@ -55,7 +55,10 @@ export default function MonthlyBillTable({ bills, monthNamesTH }: any) {
                 <td>{v.electric.toLocaleString("th-TH")}</td>
                 <td
                   className="fw-bold"
-                  style={{ color: "#6A1B9A", textShadow: "0 1px 2px rgba(0,0,0,0.15)" }}
+                  style={{
+                    color: "#6A1B9A",
+                    textShadow: "0 1px 2px rgba(0,0,0,0.15)",
+                  }}
                 >
                   {v.total.toLocaleString("th-TH")}
                 </td>

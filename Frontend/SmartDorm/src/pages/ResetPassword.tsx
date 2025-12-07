@@ -53,7 +53,10 @@ export default function ResetPassword() {
       }}
     >
       {/* NAVBAR */}
-      <nav className="navbar navbar-dark px-3 py-2" style={{ backgroundColor: "rgba(0,0,0,0.18)" }}>
+      <nav
+        className="navbar navbar-dark px-3 py-2"
+        style={{ backgroundColor: "rgba(0,0,0,0.18)" }}
+      >
         <div className="container-fluid d-flex justify-content-between align-items-center">
           {/* BACK */}
           <button
@@ -91,7 +94,10 @@ export default function ResetPassword() {
       <div className="flex-grow-1 d-flex justify-content-center align-items-center">
         <div
           className="card shadow-lg border-0 text-center p-4 col-12 col-sm-10 col-md-7 col-lg-5 col-xl-4 col-xxl-3"
-          style={{ background: "rgba(255,255,255,0.1)", backdropFilter: "blur(10px)" }}
+          style={{
+            background: "rgba(255,255,255,0.1)",
+            backdropFilter: "blur(10px)",
+          }}
         >
           <h2 className="fw-bold text-warning mb-2">🔐 ตั้งรหัสผ่านใหม่</h2>
           <p className="text-white-50 mb-4">

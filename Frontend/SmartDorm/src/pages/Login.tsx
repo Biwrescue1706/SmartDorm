@@ -30,7 +30,10 @@ export default function Login() {
       {/* >>> LOGIN CARD <<< */}
       <div
         className="card shadow-lg border-0 text-center p-4 col-12 col-sm-10 col-md-7 col-lg-5 col-xl-4 col-xxl-3"
-        style={{ background: "rgba(255,255,255,0.1)", backdropFilter: "blur(10px)" }}
+        style={{
+          background: "rgba(255,255,255,0.1)",
+          backdropFilter: "blur(10px)",
+        }}
       >
         {/* HEADER */}
         <div className="d-flex justify-content-center align-items-center gap-3 mb-3">
@@ -49,7 +52,9 @@ export default function Login() {
         {/* FORM */}
         <form onSubmit={handleSubmit}>
           <div className="mb-3 text-start">
-            <label className="form-label text-warning fw-semibold">ชื่อผู้ใช้</label>
+            <label className="form-label text-warning fw-semibold">
+              ชื่อผู้ใช้
+            </label>
             <input
               type="text"
               className="form-control text-center"
@@ -60,7 +65,9 @@ export default function Login() {
           </div>
 
           <div className="mb-3 text-start">
-            <label className="form-label text-warning fw-semibold">รหัสผ่าน</label>
+            <label className="form-label text-warning fw-semibold">
+              รหัสผ่าน
+            </label>
             <div className="input-group">
               <input
                 type={showPassword ? "text" : "password"}
@@ -90,7 +97,10 @@ export default function Login() {
 
         {/* FORGOT */}
         <div className="mt-3">
-          <Link to="/forgot-username" className="text-warning fw-semibold text-decoration-none">
+          <Link
+            to="/forgot-username"
+            className="text-warning fw-semibold text-decoration-none"
+          >
             ลืมรหัสผ่าน ?
           </Link>
         </div>

@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import Swal from "sweetalert2";
+import axios from "axios";
 import { API_BASE } from "../config";
 import {
   GetAllBooking,
@@ -6,113 +8,78 @@ import {
   RejectBooking,
   DeleteBooking,
 } from "../apis/endpoint.api";
-import Swal from "sweetalert2";
-import axios from "axios";
+import { toast } from "../utils/toast";
 
 export function useBookings() {
   const [bookings, setBookings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // ✅ ดึง token จาก localStorage (หลัง login สำเร็จ)
   const token = localStorage.getItem("token");
 
-  // ดึงข้อมูลทั้งหมด
+  // โหลดข้อมูลทั้งหมด
   const fetchBookings = async () => {
+    setLoading(true);
     try {
-      setLoading(true);
       const res = await fetch(`${API_BASE}${GetAllBooking}`, {
-        method: "GET",
         credentials: "include",
       });
-      if (!res.ok) throw new Error("โหลดข้อมูลไม่สำเร็จ");
+
+      if (!res.ok) {
+        toast("error", "โหลดข้อมูลไม่สำเร็จ", "ไม่สามารถโหลดข้อมูลการจองได้");
+        return;
+      }
+
       const data = await res.json();
       setBookings(data);
     } catch {
-      Swal.fire({
-        toast: true,
-        position: "top-end",
-        icon: "error",
-        title: "ไม่สามารถโหลดข้อมูลการจองได้",
-        timer: 1500,
-        showConfirmButton: false,
-      });
+      toast("error", "เชื่อมต่อไม่สำเร็จ", "ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์");
     } finally {
       setLoading(false);
     }
   };
 
-  // ✅ อนุมัติการจอง
+  // อนุมัติการจอง
   const approveBooking = async (id: string) => {
     try {
       const res = await fetch(`${API_BASE}${ApproveBooking(id)}`, {
         method: "PUT",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
         credentials: "include",
       });
 
       if (!res.ok) throw new Error();
-      Swal.fire({
-        toast: true,
-        position: "top-end",
-        icon: "success",
-        title: "อนุมัติเรียบร้อยแล้ว",
-        timer: 1500,
-        showConfirmButton: false,
-      });
+
+      toast("success", "อนุมัติสำเร็จ", "การจองได้รับการอนุมัติแล้ว");
       await fetchBookings();
     } catch {
-      Swal.fire({
-        toast: true,
-        position: "top-end",
-        icon: "error",
-        title: "ไม่สามารถอนุมัติได้",
-        timer: 1500,
-        showConfirmButton: false,
-      });
+      toast("error", "ไม่สามารถอนุมัติได้", "กรุณาลองใหม่อีกครั้ง");
     }
   };
 
-  // ✅ ปฏิเสธการจอง
+  // ปฏิเสธการจอง
   const rejectBooking = async (id: string) => {
     try {
       const res = await fetch(`${API_BASE}${RejectBooking(id)}`, {
         method: "PUT",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
         credentials: "include",
       });
 
       if (!res.ok) throw new Error();
-      Swal.fire({
-        toast: true,
-        position: "top-end",
-        icon: "warning",
-        title: "ปฏิเสธการจองแล้ว",
-        timer: 1500,
-        showConfirmButton: false,
-      });
+
+      toast("warning", "ปฏิเสธสำเร็จ", "สถานะกลับเป็นยังไม่อนุมัติ");
       await fetchBookings();
     } catch {
-      Swal.fire({
-        toast: true,
-        position: "top-end",
-        icon: "error",
-        title: "ไม่สามารถปฏิเสธได้",
-        timer: 1500,
-        showConfirmButton: false,
-      });
+      toast("error", "ปฏิเสธไม่สำเร็จ", "ไม่สามารถปฏิเสธการจองได้");
     }
   };
 
-  // ✅ ลบการจอง
-  const deleteBooking = async (id: string, roomNum: string) => {
-    const confirm = await Swal.fire({
+  // ลบการจอง
+  const deleteBooking = async (id: string, room: string) => {
+    const ok = await Swal.fire({
+      title: `ลบการจองห้อง ${room}?`,
+      text: "การลบจะไม่สามารถกู้คืนได้",
       icon: "warning",
-      title: "ยืนยันการลบ?",
-      text: `คุณต้องการลบการจองห้อง ${roomNum} ใช่หรือไม่?`,
       showCancelButton: true,
       confirmButtonText: "ลบ",
       cancelButtonText: "ยกเลิก",
@@ -120,69 +87,37 @@ export function useBookings() {
       cancelButtonColor: "#3085d6",
     });
 
-    if (!confirm.isConfirmed) return;
+    if (!ok.isConfirmed) return;
 
     try {
       const res = await fetch(`${API_BASE}${DeleteBooking(id)}`, {
         method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
         credentials: "include",
       });
 
       if (!res.ok) throw new Error();
-      Swal.fire({
-        toast: true,
-        position: "top-end",
-        icon: "success",
-        title: "ลบการจองสำเร็จ",
-        timer: 1500,
-        showConfirmButton: false,
-      });
+
+      toast("success", "ลบสำเร็จ", `ลบการจองห้อง ${room} แล้ว`);
       await fetchBookings();
     } catch {
-      Swal.fire({
-        toast: true,
-        position: "top-end",
-        icon: "error",
-        title: "ไม่สามารถลบข้อมูลได้",
-        timer: 1500,
-        showConfirmButton: false,
-      });
+      toast("error", "ลบไม่สำเร็จ", "ไม่สามารถลบข้อมูลได้");
     }
   };
 
-  // ✅ เช็คอิน
+  // เช็คอิน
   const checkinBooking = async (id: string) => {
     try {
       await axios.put(
         `${API_BASE}/booking/${id}/checkin`,
         {},
-        {
-          withCredentials: true,
-          headers: { Authorization: `Bearer ${token}` },
-        }
+        { withCredentials: true, headers: { Authorization: `Bearer ${token}` } }
       );
 
-      Swal.fire({
-        toast: true,
-        position: "top-end",
-        icon: "success",
-        title: "เช็คอินสำเร็จแล้ว",
-        timer: 1500,
-        showConfirmButton: false,
-      });
+      toast("success", "เช็คอินสำเร็จ", "ผู้จองได้เช็คอินแล้ว");
       fetchBookings();
-    } catch (err: any) {
-      Swal.fire({
-        toast: true,
-        position: "top-end",
-        icon: "warning",
-        title: "ไม่สามารถเช็คอินได้",
-        timer: 1500,
-        showConfirmButton: false,
-      });
+    } catch {
+      toast("warning", "เช็คอินไม่สำเร็จ", "กรุณาลองใหม่อีกครั้ง");
     }
   };
 

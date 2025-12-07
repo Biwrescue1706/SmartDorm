@@ -28,7 +28,10 @@ export default function Profile() {
         {loading ? (
           <p className="text-center text-muted">⏳ กำลังโหลดข้อมูล...</p>
         ) : admin ? (
-          <ProfileCardInline admin={admin} onSave={(name) => updateProfile({ name })} />
+          <ProfileCardInline
+            admin={admin}
+            onSave={(name) => updateProfile({ name })}
+          />
         ) : (
           <p className="text-danger">ไม่พบข้อมูลผู้ใช้</p>
         )}

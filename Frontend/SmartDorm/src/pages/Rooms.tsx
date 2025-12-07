@@ -150,63 +150,7 @@ export default function Rooms() {
     <div
       className="row g-3 mb-3 justify-content-center"
       style={{ marginTop: "10px" }}
-    >
-      <div className="col-12 col-md-4">
-        <div
-          className="card shadow-sm text-center"
-          style={{
-            borderRadius: "12px",
-            background: "#ffffff",
-            border: "1px solid #eee",
-          }}
-        >
-          <div className="card-body py-2">
-            <div className="fw-semibold text-muted">ห้องทั้งหมด</div>
-            <div className="fw-bold fs-5" style={{ color: THEME.purple }}>
-              {counts.total.toLocaleString("th-TH")}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="col-6 col-md-4">
-        <div
-          className="card shadow-sm text-center"
-          style={{
-            borderRadius: "12px",
-            background: "#e6f4ea",
-            border: "1px solid #d0ebdd",
-          }}
-        >
-          <div className="card-body py-2">
-            <div className="fw-semibold text-success">ว่าง</div>
-            <div className="fw-bold fs-5 text-success">
-              {counts.available.toLocaleString("th-TH")}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="col-6 col-md-4">
-        <div
-          className="card shadow-sm text-center"
-          style={{
-            borderRadius: "12px",
-            background: "#fff3e0",
-            border: "1px solid #ffe0b2",
-          }}
-        >
-          <div className="card-body py-2">
-            <div className="fw-semibold" style={{ color: "#ff6f00" }}>
-              ถูกจอง / ไม่ว่าง
-            </div>
-            <div className="fw-bold fs-5" style={{ color: "#ff6f00" }}>
-              {counts.booked.toLocaleString("th-TH")}
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+    ></div>
   );
 
   /* -------------------------------------------

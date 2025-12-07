@@ -1,4 +1,4 @@
-//src/components/Pagination.tsx
+// src/components/Pagination.tsx
 export interface PaginationProps {
   currentPage: number;
   totalItems: number;
@@ -14,17 +14,17 @@ export default function Pagination({
   onPageChange,
   onRowsPerPageChange,
 }: PaginationProps) {
-  // ✅ ป้องกันการหารศูนย์
-  const totalPages = Math.max(1, Math.ceil(totalItems / rowsPerPage));
+  const SCB_PURPLE = "#4A0080";
+  const SCB_GOLD = "#FFC800";
 
-  // ✅ ช่วงข้อมูลที่แสดง
+  const totalPages = Math.max(1, Math.ceil(totalItems / rowsPerPage));
   const startItem = totalItems === 0 ? 0 : (currentPage - 1) * rowsPerPage + 1;
   const endItem = Math.min(currentPage * rowsPerPage, totalItems);
 
-  // ✅ แสดงหน้าทีละ 5 หน้า
-  const pageRange = 4;
+  const pageRange = 5;
   let startPage = Math.max(1, currentPage - Math.floor(pageRange / 2));
   let endPage = startPage + pageRange - 1;
+
   if (endPage > totalPages) {
     endPage = totalPages;
     startPage = Math.max(1, endPage - pageRange + 1);
@@ -34,16 +34,30 @@ export default function Pagination({
   for (let i = startPage; i <= endPage; i++) pages.push(i);
 
   return (
-    <div className="d-flex flex-column flex-md-row align-items-center justify-content-between mt-3 gap-3">
-      {/* ✅ จำนวนต่อหน้า */}
-      <div className="d-flex align-items-center">
-        <label className="fw-semibold me-2 mb-0 mx-3">แสดงต่อหน้า:</label>
+    <div
+      className="d-flex flex-column flex-md-row align-items-center justify-content-between mt-4 gap-3 py-2"
+      style={{
+        background: "#F8F5FC",
+        borderRadius: "10px",
+        border: `1px solid ${SCB_PURPLE}`,
+        boxShadow: "0 2px 6px rgba(0,0,0,.1)",
+      }}
+    >
+      {/* จำนวนต่อหน้า */}
+      <div className="d-flex align-items-center ms-3">
+        <label
+          className="fw-semibold me-2 mb-0"
+          style={{ color: SCB_PURPLE }}
+        >
+          แสดงต่อหน้า:
+        </label>
         <select
-          className="form-select w-auto"
+          className="form-select w-auto border-0 fw-semibold"
+          style={{ color: SCB_PURPLE }}
           value={rowsPerPage}
           onChange={(e) => onRowsPerPageChange(Number(e.target.value))}
         >
-          {[10, 16, 20, 25, 30, 35, 40, 45, 50].map((n) => (
+          {[10, 20, 30, 40, 50].map((n) => (
             <option key={n} value={n}>
               {n}
             </option>
@@ -51,17 +65,25 @@ export default function Pagination({
         </select>
       </div>
 
-      {/* ✅ แสดงช่วงข้อมูล */}
-      <div className="small text-center text-md-start flex-grow-2 me-2 mb-0 mx-3">
+      {/* แสดงช่วงข้อมูล */}
+      <div
+        className="small text-center text-md-start fw-semibold"
+        style={{ color: SCB_PURPLE }}
+      >
         แสดง {startItem}–{endItem} จากทั้งหมด {totalItems} รายการ
       </div>
 
-      {/* ✅ ปุ่ม Pagination */}
-      <nav aria-label="Pagination Navigation">
-        <ul className="pagination mb-0 justify-content-center flex-wrap flex-grow-2 me-2 mb-0 mx-3">
+      {/* Pagination Buttons */}
+      <nav aria-label="Pagination Navigation" className="me-3">
+        <ul className="pagination mb-0 justify-content-center">
+
           {/* หน้าแรก */}
           <li className={`page-item ${currentPage === 1 ? "disabled" : ""}`}>
-            <button className="page-link" onClick={() => onPageChange(1)}>
+            <button
+              className="page-link"
+              style={{ color: SCB_PURPLE }}
+              onClick={() => onPageChange(1)}
+            >
               &laquo;
             </button>
           </li>
@@ -70,46 +92,51 @@ export default function Pagination({
           <li className={`page-item ${currentPage === 1 ? "disabled" : ""}`}>
             <button
               className="page-link"
+              style={{ color: SCB_PURPLE }}
               onClick={() => onPageChange(currentPage - 1)}
             >
               &lt;
             </button>
           </li>
 
-          {/* ... ซ้าย */}
           {startPage > 1 && (
             <li className="page-item disabled">
-              <span className="page-link">…</span>
+              <span className="page-link" style={{ color: SCB_PURPLE }}>
+                …
+              </span>
             </li>
           )}
 
           {/* หมายเลขหน้า */}
           {pages.map((p) => (
-            <li
-              key={p}
-              className={`page-item ${p === currentPage ? "active" : ""}`}
-            >
-              <button className="page-link" onClick={() => onPageChange(p)}>
+            <li key={p} className={`page-item ${p === currentPage ? "active" : ""}`}>
+              <button
+                className="page-link fw-bold"
+                style={{
+                  background: p === currentPage ? SCB_GOLD : "white",
+                  color: p === currentPage ? "#2D1A47" : SCB_PURPLE,
+                  borderColor: SCB_PURPLE,
+                }}
+                onClick={() => onPageChange(p)}
+              >
                 {p}
               </button>
             </li>
           ))}
 
-          {/* ... ขวา */}
           {endPage < totalPages && (
             <li className="page-item disabled">
-              <span className="page-link">…</span>
+              <span className="page-link" style={{ color: SCB_PURPLE }}>
+                …
+              </span>
             </li>
           )}
 
           {/* ถัดไป */}
-          <li
-            className={`page-item ${
-              currentPage === totalPages ? "disabled" : ""
-            }`}
-          >
+          <li className={`page-item ${currentPage === totalPages ? "disabled" : ""}`}>
             <button
               className="page-link"
+              style={{ color: SCB_PURPLE }}
               onClick={() => onPageChange(currentPage + 1)}
             >
               &gt;
@@ -117,13 +144,10 @@ export default function Pagination({
           </li>
 
           {/* หน้าสุดท้าย */}
-          <li
-            className={`page-item ${
-              currentPage === totalPages ? "disabled" : ""
-            }`}
-          >
+          <li className={`page-item ${currentPage === totalPages ? "disabled" : ""}`}>
             <button
               className="page-link"
+              style={{ color: SCB_PURPLE }}
               onClick={() => onPageChange(totalPages)}
             >
               &raquo;

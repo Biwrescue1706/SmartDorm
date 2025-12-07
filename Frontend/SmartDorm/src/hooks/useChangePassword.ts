@@ -1,8 +1,11 @@
 import { useState } from "react";
 import axios from "axios";
-import Swal from "sweetalert2";
 import { API_BASE } from "../config";
-import type { ChangePasswordInput, ChangePasswordResponse } from "../types/Auth";
+import type {
+  ChangePasswordInput,
+  ChangePasswordResponse,
+} from "../types/Auth";
+import { toast } from "../utils/toast"; // ⬅️ ใช้ toast ตัวกลาง
 
 export function useChangePassword() {
   const [loading, setLoading] = useState(false);
@@ -10,31 +13,21 @@ export function useChangePassword() {
   const changePassword = async (data: ChangePasswordInput) => {
     try {
       setLoading(true);
+
       await axios.put<ChangePasswordResponse>(
         `${API_BASE}/auth/change-password`,
         data,
         { withCredentials: true }
       );
 
-      Swal.fire({
-        toast: true,
-        position: "top-end",
-        icon: "success",
-        title: "เปลี่ยนรหัสสำเร็จ",
-        timer: 1500,
-        showConfirmButton: false,
-      });
-
+      toast(
+        "success",
+        "เปลี่ยนรหัสผ่านสำเร็จ",
+        "ระบบได้อัปเดตรหัสใหม่เรียบร้อยแล้ว"
+      );
       return true;
     } catch (err: any) {
-      Swal.fire({
-        toast: true,
-        position: "top-end",
-        icon: "error",
-        title: "ไม่สามารถเปลี่ยนรหัสสำเร็จ",
-        timer: 1500,
-        showConfirmButton: false,
-      });
+      toast("error", "เปลี่ยนรหัสผ่านไม่สำเร็จ", "กรุณาตรวจสอบข้อมูลอีกครั้ง");
       return false;
     } finally {
       setLoading(false);

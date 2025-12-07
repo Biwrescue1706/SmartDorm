@@ -1,7 +1,7 @@
-// src/hooks/useRooms.ts
 import { useEffect, useState } from "react";
 import Swal from "sweetalert2";
 import { API_BASE } from "../config";
+import { toast } from "../utils/toast"; // ⬅️ ใช้ toast กลาง
 import {
   GetAllRoom,
   UpdateRoom,
@@ -15,37 +15,28 @@ export function useRooms(roomId?: string) {
   const [rooms, setRooms] = useState<Room[]>([]);
   const [loading, setLoading] = useState(false);
 
-  //  โหลดห้องทั้งหมด
+  // โหลดห้องทั้งหมด
   const fetchRooms = async () => {
     try {
       setLoading(true);
       const res = await fetch(`${API_BASE}${GetAllRoom}`, {
-        method: "GET",
         credentials: "include",
       });
 
-      if (!res.ok) throw new Error("โหลดห้องล้มเหลว");
+      if (!res.ok) throw new Error();
       const data: Room[] = await res.json();
 
       setRooms(data.sort((a, b) => Number(a.number) - Number(b.number)));
       return data;
     } catch {
-      Swal.fire({
-        toast: true,
-        position: "top-end",
-        icon: "error",
-        title: "ล้มเหลว",
-        text: "โหลดข้อมูลห้องไม่สำเร็จ",
-        timer: 1500,
-        showConfirmButton: false,
-      });
+      toast("error", "โหลดข้อมูลไม่สำเร็จ", "ไม่สามารถโหลดข้อมูลห้องได้");
       return [];
     } finally {
       setLoading(false);
     }
   };
 
-  //  เพิ่มห้องใหม่
+  // เพิ่มห้องใหม่
   const createRoom = async (payload: {
     number: string;
     size: string;
@@ -55,6 +46,7 @@ export function useRooms(roomId?: string) {
   }) => {
     try {
       setLoading(true);
+
       Swal.fire({
         title: "กำลังเพิ่มห้อง...",
         allowOutsideClick: false,
@@ -68,31 +60,15 @@ export function useRooms(roomId?: string) {
         body: JSON.stringify(payload),
       });
 
-      if (!res.ok) throw new Error("เพิ่มห้องล้มเหลว");
-      const data = await res.json();
+      if (!res.ok) throw new Error();
 
-      Swal.fire({
-        toast: true,
-        position: "top-end",
-        icon: "success",
-        title: "เพิ่มห้องสำเร็จ",
-        text: "ระบบได้บันทึกการเพิ่มห้องของคุณเรียบร้อยแล้ว",
-        timer: 1500,
-        showConfirmButton: false,
-      });
+      const data = await res.json();
+      toast("success", "เพิ่มห้องสำเร็จ", "บันทึกข้อมูลเรียบร้อยแล้ว");
 
       setRooms((prev) => [...prev, data.room]);
       return data.room;
     } catch (err: any) {
-      Swal.fire({
-        toast: true,
-        position: "top-end",
-        icon: "error",
-        title: "ผิดพลาด",
-        text: err.message || "ไม่สามารถเพิ่มห้องได้",
-        timer: 1500,
-        showConfirmButton: false,
-      });
+      toast("error", "เพิ่มห้องไม่สำเร็จ", err.message);
       throw err;
     } finally {
       setLoading(false);
@@ -100,7 +76,7 @@ export function useRooms(roomId?: string) {
     }
   };
 
-  //  โหลดห้องเดียว
+  // โหลดห้องเดียว
   const loadRoom = async () => {
     if (!roomId) return;
     try {
@@ -108,28 +84,24 @@ export function useRooms(roomId?: string) {
       const res = await fetch(`${API_BASE}${UpdateRoom(roomId)}`, {
         credentials: "include",
       });
-      if (!res.ok) throw new Error("โหลดข้อมูลห้องล้มเหลว");
+
+      if (!res.ok) throw new Error();
       const data: Room = await res.json();
       setRoom(data);
-    } catch (err: any) {
-      Swal.fire({
-        toast: true,
-        position: "top-end",
-        icon: "error",
-        title: "โหลดข้อมูลห้องล้มเหลว",
-        timer: 1500,
-        showConfirmButton: false,
-      });
+    } catch {
+      toast("error", "โหลดข้อมูลไม่สำเร็จ", "ไม่พบข้อมูลห้องนี้");
     } finally {
       setLoading(false);
     }
   };
 
-  //  อัปเดตห้อง
+  // อัปเดตห้อง
   const updateRoom = async (updatedData: Partial<Room>) => {
     if (!roomId) return;
+
     try {
       setLoading(true);
+
       Swal.fire({
         title: "กำลังบันทึก...",
         allowOutsideClick: false,
@@ -145,79 +117,51 @@ export function useRooms(roomId?: string) {
 
       if (!res.ok) {
         const err = await res.json();
-        throw new Error(err.error || "แก้ไขห้องล้มเหลว");
+        throw new Error(err.error);
       }
 
       const data = await res.json();
+      toast("success", "แก้ไขห้องสำเร็จ", "บันทึกข้อมูลใหม่เรียบร้อยแล้ว");
 
-      Swal.fire({
-        toast: true,
-        position: "top-end",
-        icon: "success",
-        title: "แก้ไขห้องเรียบร้อยแล้ว",
-        timer: 1500,
-        showConfirmButton: false,
-      });
       setRoom(data.updated);
       return data.updated;
-    } catch (err: any) {
-      Swal.fire({
-        toast: true,
-        position: "top-end",
-        icon: "error",
-        title: "ไม่สามารถแก้ไขห้องได้",
-        timer: 1500,
-        showConfirmButton: false,
-      });
-      throw err;
+    } catch {
+      toast("error", "แก้ไขห้องไม่สำเร็จ", "กรุณาลองใหม่อีกครั้ง");
+      throw Error();
     } finally {
       setLoading(false);
       Swal.close();
     }
   };
 
-  //  ลบห้อง
-  const deleteRoom = async (roomId: string) => {
-    const confirm = await Swal.fire({
+  // ลบห้อง
+  const deleteRoom = async (id: string) => {
+    const ok = await Swal.fire({
       icon: "warning",
-      title: "คุณแน่ใจหรือไม่?",
-      text: `ต้องการลบห้องนี้ใช่หรือไม่?`,
+      title: "ลบห้องนี้?",
+      text: "การลบจะไม่สามารถกู้คืนได้",
       showCancelButton: true,
       confirmButtonText: "ลบ",
       cancelButtonText: "ยกเลิก",
     });
 
-    if (!confirm.isConfirmed) return false;
+    if (!ok.isConfirmed) return false;
 
     try {
       setLoading(true);
-      const res = await fetch(`${API_BASE}${DeleteRoom(roomId)}`, {
+      const res = await fetch(`${API_BASE}${DeleteRoom(id)}`, {
         method: "DELETE",
         credentials: "include",
       });
 
-      if (!res.ok) throw new Error("ลบห้องล้มเหลว");
-
+      if (!res.ok) throw new Error();
       await res.json();
 
-      Swal.fire({
-        toast: true,
-        position: "top-end",
-        icon: "success",
-        title: "ลบห้องเรียบร้อยแล้ว",
-        timer: 1500,
-        showConfirmButton: false,
-      });
-
-      setRooms((prev) => prev.filter((r) => r.roomId !== roomId));
+      toast("success", "ลบห้องสำเร็จ", "ลบข้อมูลเรียบร้อยแล้ว");
+      setRooms((prev) => prev.filter((r) => r.roomId !== id));
       return true;
-    } catch (err: any) {
-      Swal.fire({
-        icon: "error",
-        title: "ไม่สามารถลบห้องได้",
-        timer: 1500,
-        showConfirmButton: false,
-      });
+    } catch {
+      toast("error", "ลบไม่สำเร็จ", "ไม่สามารถลบห้องได้");
       return false;
     } finally {
       setLoading(false);

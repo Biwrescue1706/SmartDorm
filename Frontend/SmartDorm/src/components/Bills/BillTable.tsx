@@ -20,43 +20,41 @@ export default function BillTable({
   formatThaiDate,
   onCreateBill,
 }: BillTableProps) {
+  const SCB_PURPLE = "#4A0080";
+  const SCB_GOLD = "#FFC800";
+
   return (
     <div className="responsive-table" style={{ overflowX: "auto" }}>
       <table
-        className="table table-sm table-striped align-middle text-center"
+        className="table table-sm align-middle text-center"
         style={{
           tableLayout: "fixed",
           width: "100%",
-          backgroundColor: "#ffffff",
-          borderRadius: "10px",
+          backgroundColor: "#fff",
+          borderRadius: "14px",
           overflow: "hidden",
+          boxShadow: "0 4px 10px rgba(0,0,0,.15)",
         }}
       >
-        <thead className="table-dark">
+        <thead
+          style={{
+            background: SCB_PURPLE,
+            color: SCB_GOLD,
+            fontWeight: "bold",
+            fontSize: "1rem",
+          }}
+        >
           <tr>
-            <th scope="col" style={{ width: "10%" }}>
-              #
-            </th>
-            <th scope="col" style={{ width: "10%" }}>
-              ห้อง
-            </th>
-            <th scope="col" style={{ width: "15%" }}>
-              Line
-            </th>
-            <th scope="col" style={{ width: "20%" }}>
-              ค่าเช่า
-            </th>
-            <th scope="col" style={{ width: "20%" }}>
-              วันขอเข้าพัก
-            </th>
-            <th scope="col" style={{ width: "20%" }}>
-              วันเข้าพัก
-            </th>
-            <th scope="col" style={{ width: "20%" }}>
-              ออกบิล
-            </th>
+            <th style={{ width: "6%" }}>#</th>
+            <th style={{ width: "10%" }}>ห้อง</th>
+            <th style={{ width: "18%" }}>LINE</th>
+            <th style={{ width: "15%" }}>ค่าเช่า</th>
+            <th style={{ width: "20%" }}>วันขอเข้าพัก</th>
+            <th style={{ width: "20%" }}>วันเข้าพัก</th>
+            <th style={{ width: "15%" }}>ออกบิล</th>
           </tr>
         </thead>
+
         <tbody>
           {rooms.map((room, index) => {
             const booking = bookings.find((b) => b.room.number === room.number);

@@ -12,38 +12,33 @@ import "bootstrap/dist/css/bootstrap.min.css";
 export default function Bills() {
   const { handleLogout, role, adminName, adminUsername } = useAuth();
 
-  // Hook โหลดข้อมูลทั้งหมด
   const { rooms, bookings, existingBills, loading, reloadAll } =
     useCreateBill();
 
   const [openDialog, setOpenDialog] = useState(false);
   const [selectedRoom, setSelectedRoom] = useState<any>(null);
 
-  // Pagination
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
-  // ฟิลเตอร์สถานะบิล
-  const [statusFilter, setStatusFilter] = useState<
-    "billed" | "notBilled"
-  >("notBilled"); // default = notBilled
+  const [statusFilter, setStatusFilter] = useState<"billed" | "notBilled">(
+    "notBilled"
+  );
 
   const [canCreateBill, setCanCreateBill] = useState(false);
   const [todayStr, setTodayStr] = useState("");
 
-  // ตรวจขนาดหน้าจอ
+  // Responsive
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
-
   useEffect(() => {
     const handleResize = () => setWindowWidth(window.innerWidth);
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
-
   const isDesktop = windowWidth >= 1400;
   const isThreeCols = windowWidth >= 600 && windowWidth < 1400;
 
-  // แปลงวันที่ไทย
+  // Thai date
   const formatThaiDate = (dateString: string) => {
     const date = new Date(dateString);
     const monthsThai = [
@@ -65,31 +60,35 @@ export default function Bills() {
     }`;
   };
 
-  // ตรวจว่าสามารถออกบิลได้
   useEffect(() => {
     const now = new Date();
     setTodayStr(formatThaiDate(now.toISOString()));
     setCanCreateBill(now.getDate() >= 1 && now.getDate() <= 31);
   }, []);
 
-  // ฟังก์ชันเปิด Dialog
+  // เปิด dialog
   const handleOpenDialog = (room: any) => {
     setSelectedRoom(room);
     setOpenDialog(true);
   };
 
-  // ⭐ กรองห้อง: ต้องมี booking และ approveStatus !== 0
-  const filteredRooms = rooms.filter((room) => {
+  // ห้องที่มี booking อนุมัติแล้วทั้งหมด
+  const allBookedRooms = rooms.filter((room) => {
     const booking = bookings.find((b) => b.room.number === room.number);
+    return booking && booking.approveStatus !== 0;
+  });
 
-    // ❌ ไม่มี booking หรือยัง approveStatus === 0 → ไม่แสดง
-    if (!booking || booking.approveStatus === 0) return false;
+  // จำนวนห้อง (รวมทั้งหมด ไม่ขึ้นอยู่กับการฟิลเตอร์)
+  const billedCount = allBookedRooms.filter((r) =>
+    existingBills.includes(r.roomId)
+  ).length;
+  const notBilledCount = allBookedRooms.length - billedCount;
 
+  // ห้องตามฟิลเตอร์บนปุ่ม
+  const filteredRooms = allBookedRooms.filter((room) => {
     const hasBill = existingBills.includes(room.roomId);
-
     if (statusFilter === "billed") return hasBill;
     if (statusFilter === "notBilled") return !hasBill;
-
     return true;
   });
 
@@ -101,26 +100,16 @@ export default function Bills() {
     startIndex + rowsPerPage
   );
 
-  // ถ้าหน้าเกิน max page หลัง reload/filter
   useEffect(() => {
     const totalPages = Math.ceil(totalItems / rowsPerPage);
-    if (currentPage > totalPages && totalPages > 0) {
-      setCurrentPage(totalPages);
-    }
+    if (currentPage > totalPages && totalPages > 0) setCurrentPage(totalPages);
   }, [totalItems, rowsPerPage, currentPage]);
-
-  // จำนวนห้องที่ออกบิลแล้ว / ยัง
-  const billedCount = filteredRooms.filter((r) =>
-    existingBills.includes(r.roomId)
-  ).length;
-  const notBilledCount = filteredRooms.length - billedCount;
 
   return (
     <div
       className="d-flex flex-column"
       style={{ backgroundColor: "#f4f7fb", minHeight: "100vh" }}
     >
-      {/* Navbar */}
       <Nav
         onLogout={handleLogout}
         role={role}
@@ -128,7 +117,6 @@ export default function Bills() {
         adminUsername={adminUsername}
       />
 
-      {/* เนื้อหา */}
       <main className="main-content flex-grow-1 px-1 py-2 mt-6 mt-lg-7">
         <div className="mx-auto container-max">
           <h2 className="fw-bold text-center mb-2">สร้างบิลห้องพัก</h2>
@@ -136,77 +124,63 @@ export default function Bills() {
             วันนี้: <b>{todayStr}</b>
           </h5>
 
-          {/* ฟิลเตอร์การ์ด */}
+          {/* ⭐ จำนวนห้องรวม แสดงทันที ไม่ต้องกดอะไร */}
           <div className="container mb-3">
-            <div className="row g-2 justify-content-center">
-
+            <div className="row g-3 justify-content-center text-center">
               {/* ยังไม่ได้ออกบิล */}
-              <div className="col-6 col-sm-4 col-md-3">
+              <div className="col-6 col-md-3">
                 <div
-                  className="card text-center border-0 shadow-sm"
+                  className="p-3 rounded-4 shadow-sm fw-bold"
+                  onClick={() => {
+                    setStatusFilter("notBilled");
+                    setCurrentPage(1);
+                  }}
                   style={{
+                    cursor: "pointer",
                     background:
                       statusFilter === "notBilled"
                         ? "linear-gradient(135deg, #ef233c, #d90429)"
                         : "#e9ecef",
                     color: statusFilter === "notBilled" ? "white" : "#333",
-                    borderRadius: "10px",
-                    height: "70px",
-                    cursor: "pointer",
+                    fontSize: "1.1rem",
                     transform:
                       statusFilter === "notBilled" ? "scale(1.05)" : "scale(1)",
-                    transition: "0.15s",
-                  }}
-                  onClick={() => {
-                    setStatusFilter("notBilled");
-                    setCurrentPage(1);
+                    transition: "0.2s",
                   }}
                 >
-                  <div className="d-flex flex-column justify-content-center align-items-center h-100">
-                    <div className="fw-bold" style={{ fontSize: "1rem" }}>
-                      ยังไม่ได้ออกบิล
-                    </div>
-                    <div className="fw-semibold" style={{ fontSize: "1rem" }}>
-                      {notBilledCount}
-                    </div>
-                  </div>
+                  ยังไม่ได้ออกบิล
+                  <div style={{ fontSize: "1.5rem" }}>{notBilledCount}</div>
                 </div>
               </div>
 
               {/* ออกบิลแล้ว */}
-              <div className="col-6 col-sm-4 col-md-3">
+              <div className="col-6 col-md-3">
                 <div
-                  className="card text-center border-0 shadow-sm"
+                  className="p-3 rounded-4 shadow-sm fw-bold"
+                  onClick={() => {
+                    setStatusFilter("billed");
+                    setCurrentPage(1);
+                  }}
                   style={{
+                    cursor: "pointer",
                     background:
                       statusFilter === "billed"
                         ? "linear-gradient(135deg, #38b000, #008000)"
                         : "#e9ecef",
                     color: statusFilter === "billed" ? "white" : "#333",
-                    borderRadius: "10px",
-                    height: "70px",
-                    cursor: "pointer",
+                    fontSize: "1.1rem",
                     transform:
                       statusFilter === "billed" ? "scale(1.05)" : "scale(1)",
-                    transition: "0.15s",
-                  }}
-                  onClick={() => {
-                    setStatusFilter("billed");
-                    setCurrentPage(1);
+                    transition: "0.2s",
                   }}
                 >
-                  <div className="d-flex flex-column justify-content-center align-items-center h-100">
-                    <div className="fw-bold" style={{ fontSize: "1rem" }}>
-                      ออกบิลแล้ว
-                    </div>
-                    <div className="fw-semibold" style={{ fontSize: "1rem" }}>
-                      {billedCount}
-                    </div>
-                  </div>
+                  ออกบิลแล้ว
+                  <div style={{ fontSize: "1.5rem" }}>{billedCount}</div>
                 </div>
               </div>
             </div>
           </div>
+          {/* ============================== */}
 
           {loading ? (
             <p className="text-center text-secondary mt-3">
@@ -214,7 +188,6 @@ export default function Bills() {
             </p>
           ) : (
             <>
-              {/* Desktop = Table / Mobile = Card */}
               {isDesktop ? (
                 <BillTable
                   rooms={paginatedRooms}
@@ -255,7 +228,6 @@ export default function Bills() {
                 </div>
               )}
 
-              {/* Pagination */}
               {!openDialog && (
                 <Pagination
                   currentPage={currentPage}
@@ -273,7 +245,6 @@ export default function Bills() {
         </div>
       </main>
 
-      {/* Dialog ออกบิล */}
       <BillDialog
         open={openDialog}
         onClose={() => setOpenDialog(false)}

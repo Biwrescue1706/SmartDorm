@@ -57,8 +57,7 @@ export default function AdminManagement() {
     admins.length > 0
       ? [...admins].sort(
           (a, b) =>
-            new Date(a.createdAt).getTime() -
-            new Date(b.createdAt).getTime()
+            new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
         )[0].adminId
       : null;
 
@@ -120,9 +119,8 @@ export default function AdminManagement() {
         username: (document.getElementById("add-username") as HTMLInputElement)
           ?.value,
         name: (document.getElementById("add-name") as HTMLInputElement)?.value,
-        password: (
-          document.getElementById("add-password") as HTMLInputElement
-        )?.value,
+        password: (document.getElementById("add-password") as HTMLInputElement)
+          ?.value,
         role: parseInt(
           (document.getElementById("add-role") as HTMLSelectElement)?.value
         ),
@@ -177,8 +175,12 @@ export default function AdminManagement() {
       <div class="mt-2 text-start">
         <label class="fw-bold">สิทธิ์</label>
         <select id="edit-role" class="form-select">
-          <option value="0" ${admin.role === 0 ? "selected" : ""}>แอดมินหลัก</option>
-          <option value="1" ${admin.role === 1 ? "selected" : ""}>พนักงาน</option>
+          <option value="0" ${
+            admin.role === 0 ? "selected" : ""
+          }>แอดมินหลัก</option>
+          <option value="1" ${
+            admin.role === 1 ? "selected" : ""
+          }>พนักงาน</option>
         </select>
       </div>
       `,
@@ -275,7 +277,7 @@ export default function AdminManagement() {
         adminUsername={adminUsername}
       />
 
-            <main className="main-content flex-grow-1 px-2 py-2 mt-6 mt-lg-6">
+      <main className="main-content flex-grow-1 px-2 py-2 mt-6 mt-lg-6">
         <div className="mx-auto container-max">
           <h2
             className="text-center fw-bold mb-4"
@@ -304,7 +306,9 @@ export default function AdminManagement() {
               { key: "all", label: `ทั้งหมด (${admins.length})` },
               {
                 key: "admin",
-                label: `แอดมินหลัก (${admins.filter((a) => a.role === 0).length})`,
+                label: `แอดมินหลัก (${
+                  admins.filter((a) => a.role === 0).length
+                })`,
               },
               {
                 key: "staff",
@@ -318,9 +322,7 @@ export default function AdminManagement() {
                   cursor: "pointer",
                   borderRadius: "10px",
                   background:
-                    filterRole === f.key
-                      ? THEME.purple
-                      : THEME.cardBg,
+                    filterRole === f.key ? THEME.purple : THEME.cardBg,
                   color: filterRole === f.key ? "#fff" : THEME.text,
                   border:
                     filterRole === f.key ? "2px solid #fff" : "1px solid #ddd",

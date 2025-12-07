@@ -53,7 +53,6 @@ export default function LinksPage() {
         adminUsername={adminUsername}
       />
       );
-      
       <main className="main-content flex-grow-1 px-3 py-4 mt-6 mt-lg-5">
         <div
           className="min-vh-100 d-flex flex-column align-items-center justify-content-start bg-light"

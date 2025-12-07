@@ -119,10 +119,7 @@ export default function ChangePassword() {
             border: "3px solid #4A0080",
           }}
         >
-          <h4
-            className="fw-bold text-center mb-4"
-            style={{ color: "#4A0080" }}
-          >
+          <h4 className="fw-bold text-center mb-4" style={{ color: "#4A0080" }}>
             🔐 เปลี่ยนรหัสผ่าน
           </h4>
 

@@ -50,7 +50,7 @@ export default function BillRow({
       <td>
         {hasBill ? (
           <button className="btn btn-success btn-sm fw-semibold" disabled>
-            ✅ ออกแล้ว
+            ออกแล้ว
           </button>
         ) : canShowButton ? (
           <button

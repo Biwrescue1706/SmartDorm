@@ -122,12 +122,20 @@ export default function AllBillsCard({
 
           {/* 🟢 STATUS 1 → VIEW SLIP */}
           {isPaid && hasSlip && (
-            <button
-              className="btn btn-outline-primary btn-sm fw-semibold"
-              onClick={() => onViewSlip(bill)}
-            >
-              ดูสลิป
-            </button>
+            <div className="d-flex gap-2 mt-2">
+              <button
+                className="btn btn-primary btn-sm fw-semibold"
+                onClick={() => onViewSlip(bill)}
+              >
+                ดูสลิป
+              </button>
+              <button
+                className="btn btn-danger btn-sm fw-semibold"
+                onClick={() => onDelete(bill.billId, bill.room.number)}
+              >
+                🗑️
+              </button>
+            </div>
           )}
         </div>
       )}

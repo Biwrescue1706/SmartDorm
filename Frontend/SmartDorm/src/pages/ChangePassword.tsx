@@ -1,98 +1,47 @@
+// src/pages/ChangePassword.tsx
 import { useState } from "react";
 import Nav from "../components/Nav";
 import { useAuth } from "../hooks/useAuth";
 import { useChangePassword } from "../hooks/useChangePassword";
+import Swal from "sweetalert2";
 
 export default function ChangePassword() {
   const { handleLogout, role, adminName, adminUsername } = useAuth();
   const { changePassword, loading } = useChangePassword();
 
-  const [oldPassword, setOldPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const [oldPassword, setOld] = useState("");
+  const [newPassword, setNew] = useState("");
+  const [confirmPassword, setConfirm] = useState("");
+  const [show, setShow] = useState({ old: false, new: false, confirm: false });
 
-  const [showOld, setShowOld] = useState(false);
-  const [showNew, setShowNew] = useState(false);
-  const [showConfirm, setShowConfirm] = useState(false);
-
-  /* ==================== SUBMIT ==================== */
-  const handleSubmit = async (e: React.FormEvent) => {
+  /* SUBMIT */
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!oldPassword || !newPassword || !confirmPassword) {
-      alert("กรุณากรอกข้อมูลให้ครบ");
-      return;
-    }
+    if (!oldPassword || !newPassword || !confirmPassword)
+      return Swal.fire("กรุณากรอกข้อมูลให้ครบ");
 
-    if (newPassword.length < 6) {
-      alert("รหัสผ่านใหม่ต้องมีอย่างน้อย 6 ตัวอักษร");
-      return;
-    }
+    if (newPassword.length < 6)
+      return Swal.fire("รหัสผ่านใหม่ต้องมีอย่างน้อย 6 ตัว");
 
-    if (newPassword === oldPassword) {
-      alert("รหัสผ่านใหม่ต้องไม่เหมือนรหัสผ่านเดิม");
-      return;
-    }
+    if (newPassword === oldPassword)
+      return Swal.fire("รหัสผ่านใหม่ต้องไม่ซ้ำของเดิม");
 
-    if (newPassword !== confirmPassword) {
-      alert("รหัสผ่านใหม่ไม่ตรงกัน");
-      return;
-    }
+    if (newPassword !== confirmPassword)
+      return Swal.fire("รหัสผ่านใหม่ไม่ตรงกัน");
 
-    const success = await changePassword({ oldPassword, newPassword });
-    if (success) {
-      setOldPassword("");
-      setNewPassword("");
-      setConfirmPassword("");
+    const ok = await changePassword({ oldPassword, newPassword });
+    if (ok) {
+      Swal.fire({
+        icon: "success",
+        title: "เปลี่ยนรหัสผ่านสำเร็จ",
+        timer: 1500,
+        showConfirmButton: false,
+      });
+      setOld(""); setNew(""); setConfirm("");
     }
   };
 
-  /* ==================== INPUT FIELD ==================== */
-  const renderPasswordInput = (
-    label: string,
-    value: string,
-    setValue: (v: string) => void,
-    show: boolean,
-    toggle: () => void,
-    placeholder: string
-  ) => (
-    <div className="mb-3 position-relative">
-      <label className="form-label fw-bold" style={{ color: "#4A0080" }}>
-        {label}
-      </label>
-
-      <input
-        type={show ? "text" : "password"}
-        className="form-control pe-5"
-        placeholder={placeholder}
-        value={value}
-        onChange={(e) => setValue(e.target.value)}
-        required
-        style={{
-          borderColor: "#4A0080",
-          borderWidth: 2,
-        }}
-      />
-
-      <span
-        onClick={toggle}
-        style={{
-          position: "absolute",
-          right: "15px",
-          top: "58%",
-          transform: "translateY(-50%)",
-          cursor: "pointer",
-          color: show ? "#4A0080" : "#A0A0A0",
-          fontSize: "1.2rem",
-          userSelect: "none",
-        }}
-      >
-        {show ? "🙈" : "👁️"}
-      </span>
-    </div>
-  );
-
-  /* ==================== UI ==================== */
   return (
     <>
       <Nav
@@ -102,73 +51,94 @@ export default function ChangePassword() {
         adminUsername={adminUsername}
       />
 
-      <div
-        className="container d-flex justify-content-center align-items-center"
-        style={{
-          minHeight: "100vh",
-          paddingTop: "85px",
-          background: "#f6f1fc", // SCB โทนอ่อน
-        }}
-      >
-        <div
-          className="card shadow-lg border-0 p-4 w-100"
-          style={{
-            maxWidth: "500px",
-            borderRadius: "20px",
-            background: "#fff",
-            border: "3px solid #4A0080",
-          }}
-        >
-          <h4 className="fw-bold text-center mb-4" style={{ color: "#4A0080" }}>
-            🔐 เปลี่ยนรหัสผ่าน
-          </h4>
+      {/* Responsive container */}
+      <div className="container-fluid min-vh-100 d-flex justify-content-center align-items-center bg-light">
 
-          <form onSubmit={handleSubmit}>
-            {renderPasswordInput(
-              "รหัสผ่านเดิม",
-              oldPassword,
-              setOldPassword,
-              showOld,
-              () => setShowOld(!showOld),
-              "กรอกรหัสผ่านเดิม"
-            )}
+        {/* RESPONSIVE CARD */}
+        <div className="card border-black shadow w-100 change-card">
 
-            {renderPasswordInput(
-              "รหัสผ่านใหม่",
-              newPassword,
-              setNewPassword,
-              showNew,
-              () => setShowNew(!showNew),
-              "กรอกรหัสผ่านใหม่"
-            )}
+          <div className="card-body">
+            <h4 className="fw-bold text-center text-black mb-4">
+              🔐 เปลี่ยนรหัสผ่าน
+            </h4>
 
-            {renderPasswordInput(
-              "ยืนยันรหัสผ่านใหม่",
-              confirmPassword,
-              setConfirmPassword,
-              showConfirm,
-              () => setShowConfirm(!showConfirm),
-              "ยืนยันรหัสผ่านใหม่"
-            )}
+            <form onSubmit={submit}>
+              {PasswordInput("รหัสผ่านเดิม", oldPassword, setOld, show.old, () =>
+                setShow({ ...show, old: !show.old })
+              )}
+              {PasswordInput("รหัสผ่านใหม่", newPassword, setNew, show.new, () =>
+                setShow({ ...show, new: !show.new })
+              )}
+              {PasswordInput(
+                "ยืนยันรหัสผ่านใหม่",
+                confirmPassword,
+                setConfirm,
+                show.confirm,
+                () => setShow({ ...show, confirm: !show.confirm })
+              )}
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="btn w-100 fw-bold py-2 mt-2"
-              style={{
-                borderRadius: "12px",
-                border: "none",
-                background: loading
-                  ? "gray"
-                  : "linear-gradient(135deg, #4A0080, #D4AF37)",
-                color: "#fff",
-              }}
-            >
-              {loading ? "⏳ กำลังบันทึก..." : "💾 บันทึกการเปลี่ยนแปลง"}
-            </button>
-          </form>
+              <button
+                type="submit"
+                className="btn btn-warning fw-bold w-100 py-2 mt-2"
+                disabled={loading}
+              >
+                💾 บันทึกรหัสผ่านใหม่
+              </button>
+            </form>
+          </div>
         </div>
+
+        {/* Only Bootstrap Classes */}
+        <style>{`
+          /* Mobile <600px */
+          @media (max-width: 599px) {
+            .change-card { max-width: 100%; border-width: 2px; border-radius: 14px; }
+          }
+
+          /* Tablet 600–1399px */
+          @media (min-width: 600px) and (max-width: 1399px) {
+            .change-card { max-width: 70%; border-width: 3px; border-radius: 18px; }
+          }
+
+          /* Desktop ≥1400px */
+          @media (min-width: 1400px) {
+            .change-card { max-width: 40%; border-width: 4px; border-radius: 22px; }
+          }
+        `}</style>
       </div>
     </>
+  );
+}
+
+/* =============================================
+   PASSWORD INPUT COMPONENT (Bootstrap Only)
+============================================= */
+function PasswordInput(
+  label: string,
+  value: string,
+  setValue: (v: string) => void,
+  show: boolean,
+  toggle: () => void
+) {
+  return (
+    <div className="mb-3 position-relative">
+      <label className="form-label fw-semibold text-black">{label}</label>
+
+      <input
+        type={show ? "text" : "password"}
+        className="form-control text-center border-2 border-warning"
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+      />
+
+      {/* Eye icon centered using Bootstrap ONLY */}
+      <span
+        onClick={toggle}
+        className="position-absolute top-50 translate-middle-y mt-3 end-0 pe-3"
+        style={{ cursor: "pointer", fontSize: "1.3rem" }}
+      >
+        {show ? "🙈" : "👁️"}
+      </span>
+    </div>
   );
 }

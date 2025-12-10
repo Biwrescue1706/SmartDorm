@@ -1,3 +1,4 @@
+// src/components/Dashboard/DashboardRevenue.tsx
 import { useMemo, useState } from "react";
 import type { Bill } from "../../types/Bill";
 import type { Booking } from "../../types/Booking";
@@ -5,7 +6,7 @@ import DashboardRevenueChart from "./DashboardRevenueChart";
 import MonthlyBillCards from "./MonthlyBillCards";
 import MonthlyBillTable from "./MonthlyBillTable";
 
-/* ---------------- UI COMPONENTS ---------------- */
+/* ---------------- BASIC UI COMPONENTS ---------------- */
 function Section({ title, children }: { title: string; children: any }) {
   return (
     <div className="mt-4">
@@ -28,12 +29,20 @@ function Card({
 }) {
   return (
     <div
-      className="card text-center shadow-sm"
-      style={{ background: color, color: "#fff", borderRadius: 10 }}
+      className="card text-center border-0 shadow-sm"
+      style={{
+        background: color,
+        color: "#F7D53D",
+        borderRadius: "18px",
+        height: "95px", // fixed size
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+      }}
     >
-      <div className="card-body p-2">
-        <b>{title}</b>
-        <h5 className="fw-bold mt-1">{value.toLocaleString("th-TH")}</h5>
+      <div>
+        <h4 className="fw-bold mt-1">{title}</h4>
+        <h4 className="fw-bold mt-1">{value.toLocaleString("th-TH")}</h4>
       </div>
     </div>
   );
@@ -42,18 +51,12 @@ function Card({
 function CardsGrid({ children }: { children: any }) {
   const arr = Array.isArray(children) ? children : [children];
   const w = window.innerWidth;
-
-  if (w < 600)
-    return arr.map((c, i) => (
-      <div key={i} className="my-2 w-100">
-        {c}
-      </div>
-    ));
+  const col = w < 600 ? "col-12" : w < 1400 ? "col-4" : "col-3";
 
   return (
-    <div className="row g-2">
+    <div className="row g-2 mt-1">
       {arr.map((c, i) => (
-        <div key={i} className="col-6 col-md-3">
+        <div key={i} className={col}>
           {c}
         </div>
       ))}
@@ -61,27 +64,27 @@ function CardsGrid({ children }: { children: any }) {
   );
 }
 
-/* ------- GRID FOR 4 CHARTS PER SECTION ------- */
+/* ---------------- CHART GRID ---------------- */
 function ChartsGrid({
   labels,
-  items,
+  datasets,
   suffix,
 }: {
   labels: string[];
-  items: { label: string; data: number[]; borderColor: string }[];
+  datasets: { label: string; data: number[]; borderColor: string }[];
   suffix: string;
 }) {
   const w = window.innerWidth;
   const col = w < 600 ? "col-12" : w < 1400 ? "col-6" : "col-3";
 
   return (
-    <div className="row g-2 mt-3">
-      {items.map((c, i) => (
+    <div className="row g-3 mt-2">
+      {datasets.map((d, i) => (
         <div key={i} className={col}>
           <DashboardRevenueChart
             labels={labels}
-            datasets={[c]}
-            title={`${c.label} (${suffix})`}
+            datasets={[d]}
+            title={`${d.label} (${suffix})`}
           />
         </div>
       ))}
@@ -99,7 +102,6 @@ export default function DashboardRevenue({
 }) {
   const [selectedYear, setSelectedYear] = useState("");
   const [selectedMonth, setSelectedMonth] = useState("");
-
   const isDesktop = window.innerWidth >= 1400;
 
   const monthNamesTH = [
@@ -117,15 +119,21 @@ export default function DashboardRevenue({
     "ธันวาคม",
   ];
 
-  const YEARS = Array.from({ length: 11 }, (_, i) => 2567 + i);
+  /* ---------------- YEARS ---------------- */
+  const YEARS = useMemo(() => {
+    const yBills = bills.map((b) => new Date(b.month).getUTCFullYear() + 543);
+    const yBookings = bookings
+      .filter((b) => b.createdAt && b.approveStatus === 1)
+      .map((b) => new Date(b.createdAt!).getUTCFullYear() + 543);
+    return Array.from(new Set([...yBills, ...yBookings])).sort((a, b) => a - b);
+  }, [bills, bookings]);
 
-  /* ===== FILTER DATA ===== */
+  /* ---------------- FILTERING ---------------- */
   const FBills = useMemo(
     () =>
       bills.filter((b) => {
-        const d = new Date(b.month);
-        const y = d.getUTCFullYear() + 543;
-        const m = String(d.getUTCMonth() + 1).padStart(2, "0");
+        const y = new Date(b.month).getUTCFullYear() + 543;
+        const m = String(new Date(b.month).getUTCMonth() + 1).padStart(2, "0");
         return (
           b.status === 1 &&
           (!selectedYear || y.toString() === selectedYear) &&
@@ -139,9 +147,11 @@ export default function DashboardRevenue({
     () =>
       bookings.filter((b) => {
         if (!b.createdAt || b.approveStatus !== 1 || !b.room) return false;
-        const d = new Date(b.createdAt);
-        const y = d.getUTCFullYear() + 543;
-        const m = String(d.getUTCMonth() + 1).padStart(2, "0");
+        const y = new Date(b.createdAt).getUTCFullYear() + 543;
+        const m = String(new Date(b.createdAt).getUTCMonth() + 1).padStart(
+          2,
+          "0"
+        );
         return (
           (!selectedYear || y.toString() === selectedYear) &&
           (!selectedMonth || m === selectedMonth)
@@ -150,92 +160,106 @@ export default function DashboardRevenue({
     [bookings, selectedYear, selectedMonth]
   );
 
-  /* ===== GROUP KEYS (MONTH) ===== */
-  const groupBy = <T,>(
-    arr: T[],
-    getKey: (x: T) => string
-  ): Record<string, T[]> =>
-    arr.reduce((acc: Record<string, T[]>, x: T) => {
-      const key = getKey(x);
-      if (!acc[key]) acc[key] = [];
-      acc[key].push(x);
-      return acc;
-    }, {});
+  /* ---------------- GROUP KEYS ---------------- */
+  let groupKeys: string[] = [];
 
-  const billGroup = groupBy(FBills, (b) => {
-    const d = new Date(b.month);
-    return `${d.getUTCFullYear() + 543}-${d.getUTCMonth() + 1}`;
-  });
+  if (!selectedYear) {
+    groupKeys = YEARS.map(String);
+  } else {
+    const mb = FBills.map((b) =>
+      String(new Date(b.month).getUTCMonth() + 1).padStart(2, "0")
+    );
+    const mk = FBookings.map((b) =>
+      String(new Date(b.createdAt!).getUTCMonth() + 1).padStart(2, "0")
+    );
+    groupKeys = Array.from(new Set([...mb, ...mk])).sort();
+    if (selectedMonth) groupKeys = [selectedMonth];
+  }
 
-  const bookingGroup = groupBy(FBookings, (b) => {
-    const d = new Date(b.createdAt);
-    return `${d.getUTCFullYear() + 543}-${d.getUTCMonth() + 1}`;
-  });
+  /* ---------------- LABELS ---------------- */
+  const labels = !selectedYear
+    ? groupKeys
+    : groupKeys.map((m) => monthNamesTH[Number(m) - 1]);
+  const sum = (arr: number[]) => arr.reduce((a, b) => a + b, 0);
 
-  /* ===== MERGED KEYS ===== */
-  const mergedKeys = Object.keys({ ...billGroup, ...bookingGroup }).sort(
-    (a, b) => Number(a.split("-")[1]) - Number(b.split("-")[1])
+  /* ---------------- BOOKINGS ---------------- */
+  const bookingVals = (key: string, field: "rent" | "deposit" | "fee") =>
+    !selectedYear
+      ? sum(
+          FBookings.filter(
+            (b) => String(new Date(b.createdAt!).getUTCFullYear() + 543) === key
+          ).map((b) =>
+            Number(b.room?.[field === "fee" ? "bookingFee" : field] ?? 0)
+          )
+        )
+      : sum(
+          FBookings.filter(
+            (b) =>
+              String(new Date(b.createdAt!).getUTCMonth() + 1).padStart(
+                2,
+                "0"
+              ) === key
+          ).map((b) =>
+            Number(b.room?.[field === "fee" ? "bookingFee" : field] ?? 0)
+          )
+        );
+
+  const rentBooking = groupKeys.map((k) => bookingVals(k, "rent"));
+  const depositBooking = groupKeys.map((k) => bookingVals(k, "deposit"));
+  const feeBooking = groupKeys.map((k) => bookingVals(k, "fee"));
+  const totalBooking = rentBooking.map(
+    (v, i) => v + depositBooking[i] + feeBooking[i]
   );
 
-  const labels = mergedKeys.map(
-    (key) => monthNamesTH[Number(key.split("-")[1]) - 1]
-  );
+  /* ---------------- BILLS ---------------- */
+  const billVals = (key: string, field: keyof Bill) =>
+    !selectedYear
+      ? sum(
+          FBills.filter(
+            (b) => String(new Date(b.month).getUTCFullYear() + 543) === key
+          ).map((b) => Number(b[field] ?? 0))
+        )
+      : sum(
+          FBills.filter(
+            (b) =>
+              String(new Date(b.month).getUTCMonth() + 1).padStart(2, "0") ===
+              key
+          ).map((b) => Number(b[field] ?? 0))
+        );
 
-  const sumArr = (arr: number[]) => arr.reduce((s, n) => s + n, 0);
+  const rentBill = groupKeys.map((k) => billVals(k, "rent"));
+  const waterBill = groupKeys.map((k) => billVals(k, "waterCost"));
+  const electricBill = groupKeys.map((k) => billVals(k, "electricCost"));
+  const totalBill = rentBill.map((v, i) => v + waterBill[i] + electricBill[i]);
 
-  /* ===== BOOKINGS ARR ===== */
-  const rentBookingArr = mergedKeys.map((k) =>
-    sumArr((bookingGroup[k] ?? []).map((b) => Number(b.room?.rent ?? 0)))
-  );
-  const depositBookingArr = mergedKeys.map((k) =>
-    sumArr((bookingGroup[k] ?? []).map((b) => Number(b.room?.deposit ?? 0)))
-  );
-  const feeBookingArr = mergedKeys.map((k) =>
-    sumArr((bookingGroup[k] ?? []).map((b) => Number(b.room?.bookingFee ?? 0)))
-  );
-  const totalBookingArr = mergedKeys.map(
-    (_, i) => rentBookingArr[i] + depositBookingArr[i] + feeBookingArr[i]
-  );
+  /* ---------------- MODES ---------------- */
+  const YEAR = !selectedYear;
+  const MONTH = selectedYear && !selectedMonth;
+  const ONEMONTH = selectedYear && selectedMonth;
 
-  /* ===== BILLS ARR ===== */
-  const rentBillArr = mergedKeys.map((k) =>
-    sumArr((billGroup[k] ?? []).map((b) => Number(b.rent ?? 0)))
-  );
-  const waterBillArr = mergedKeys.map((k) =>
-    sumArr((billGroup[k] ?? []).map((b) => Number(b.waterCost ?? 0)))
-  );
-  const electricBillArr = mergedKeys.map((k) =>
-    sumArr((billGroup[k] ?? []).map((b) => Number(b.electricCost ?? 0)))
-  );
-  const totalBillArr = mergedKeys.map(
-    (_, i) => rentBillArr[i] + waterBillArr[i] + electricBillArr[i]
-  );
+  /* ---------------- TITLE BUILDER ---------------- */
+  const getTitle = (base: string) => {
+    if (YEAR) return base;
+    if (MONTH) {
+      const Year = [Number(selectedYear)];
+      return `${base} ( ปี ${Year} )`;
+    }
 
-  const totalAll = sumArr(totalBookingArr) + sumArr(totalBillArr);
+    if (ONEMONTH) {
+      const monthTH = monthNamesTH[Number(selectedMonth) - 1];
+      return `${base} ( ${monthTH} ปี ${selectedYear} )`;
+    }
+    return base;
+  };
 
-  /* ===== DATASETS FOR CHART ===== */
-  const bookingCharts = [
-    { label: "ค่าเช่า", data: rentBookingArr, borderColor: "#4A148C" },
-    { label: "ค่ามัดจำ", data: depositBookingArr, borderColor: "#7B1FA2" },
-    { label: "ค่าจอง", data: feeBookingArr, borderColor: "#FFC107" },
-    { label: "รวมรายรับการจอง", data: totalBookingArr, borderColor: "#2E7D32" },
-  ];
+  /* ---------------- SUFFIX FOR CHART ---------------- */
+  const suffix = YEAR
+    ? " ทุกปี "
+    : MONTH
+    ? ` ปี ${selectedYear} `
+    : ` ${monthNamesTH[Number(selectedMonth) - 1]} ${selectedYear} `;
 
-  const billCharts = [
-    { label: "ค่าเช่าห้อง", data: rentBillArr, borderColor: "#3F51B5" },
-    { label: "ค่าน้ำ", data: waterBillArr, borderColor: "#29B6F6" },
-    { label: "ค่าไฟ", data: electricBillArr, borderColor: "#FF7043" },
-    { label: "รวมรายรับบิล", data: totalBillArr, borderColor: "#00838F" },
-  ];
-
-  const suffix =
-    !selectedYear && !selectedMonth
-      ? "ทุกปี"
-      : selectedYear && !selectedMonth
-      ? `ปี ${selectedYear}`
-      : `${monthNamesTH[Number(selectedMonth) - 1]} ${selectedYear}`;
-
-  /* ================== UI RENDER ================== */
+  /* ================================================================ */
   return (
     <div className="mt-4">
       <h2 className="fw-bold text-center" style={{ color: "#4A0080" }}>
@@ -266,75 +290,242 @@ export default function DashboardRevenue({
           onChange={(e) => setSelectedMonth(e.target.value)}
         >
           <option value="">ทุกเดือน</option>
-          {monthNamesTH.map((m, i) => (
-            <option key={i} value={String(i + 1).padStart(2, "0")}>
-              {m}
+          {groupKeys.map((m) => (
+            <option key={m} value={m}>
+              {monthNamesTH[Number(m) - 1]}
             </option>
           ))}
         </select>
       </div>
 
-      {/* BOOKING */}
-      <Section title="รายรับการจอง">
-        <CardsGrid>
-          <Card
-            title="ค่าเช่า"
-            value={sumArr(rentBookingArr)}
-            color="#4A148C"
-          />
-          <Card
-            title="ค่ามัดจำ"
-            value={sumArr(depositBookingArr)}
-            color="#7B1FA2"
-          />
-          <Card title="ค่าจอง" value={sumArr(feeBookingArr)} color="#FFC107" />
-          <Card
-            title="รวมรายรับการจอง"
-            value={sumArr(totalBookingArr)}
-            color="#2E7D32"
-          />
-        </CardsGrid>
-
-        {/* 4 กราฟ */}
-        <ChartsGrid labels={labels} items={bookingCharts} suffix={suffix} />
-      </Section>
-
-      {/* BILL */}
-      <Section title="รายรับบิล">
-        <CardsGrid>
-          <Card
-            title="ค่าเช่าห้อง"
-            value={sumArr(rentBillArr)}
-            color="#3F51B5"
-          />
-          <Card title="ค่าน้ำ" value={sumArr(waterBillArr)} color="#29B6F6" />
-          <Card title="ค่าไฟ" value={sumArr(electricBillArr)} color="#FF7043" />
-          <Card
-            title="รวมรายรับบิล"
-            value={sumArr(totalBillArr)}
-            color="#00838F"
-          />
-        </CardsGrid>
-
-        {/* 4 กราฟ */}
-        <ChartsGrid labels={labels} items={billCharts} suffix={suffix} />
-      </Section>
-
-      {/* TOTAL */}
-      <Section title="รวมรายรับทั้งหมด">
-        <Card title="รวมรายรับทั้งหมด" value={totalAll} color="#4A0080" />
-      </Section>
-
-      {/* MONTHLY CARDS */}
-      <MonthlyBillCards bills={FBills} monthNamesTH={monthNamesTH} />
-
-      {/* DESKTOP TABLE */}
-      {isDesktop && (
+      {/* YEAR MODE */}
+      {YEAR && (
         <>
-          <h4 className="fw-bold mt-4" style={{ color: "#4A0080" }}>
-            📅 รายรับรายเดือนจากบิล
-          </h4>
-          <MonthlyBillTable bills={FBills} monthNamesTH={monthNamesTH} />
+          <Section title={getTitle("รายรับการจอง")}>
+            <CardsGrid>
+              <Card title="ค่าเช่า" value={sum(rentBooking)} color="#4A148C" />
+              <Card
+                title="ค่ามัดจำ"
+                value={sum(depositBooking)}
+                color="#7B1FA2"
+              />
+              <Card title="ค่าจอง" value={sum(feeBooking)} color="#FB0707" />
+              <Card
+                title="รายรับการจอง"
+                value={sum(totalBooking)}
+                color="#2E7D32"
+              />
+            </CardsGrid>
+            <ChartsGrid
+              labels={labels}
+              datasets={[
+                { label: "ค่าเช่า", data: rentBooking, borderColor: "#4A148C" },
+                {
+                  label: "ค่ามัดจำ",
+                  data: depositBooking,
+                  borderColor: "#7B1FA2",
+                },
+                { label: "ค่าจอง", data: feeBooking, borderColor: "#FB0707" },
+                {
+                  label: "รายรับการจอง",
+                  data: totalBooking,
+                  borderColor: "#2E7D32",
+                },
+              ]}
+              suffix={suffix}
+            />
+          </Section>
+
+          <Section title={getTitle("รายรับบิล")}>
+            <CardsGrid>
+              <Card title="ค่าเช่าห้อง" value={sum(rentBill)} color="#3F51B5" />
+              <Card title="ค่าน้ำ" value={sum(waterBill)} color="#29B6F6" />
+              <Card title="ค่าไฟ" value={sum(electricBill)} color="#FF7043" />
+              <Card
+                title="รวมรายรับบิล"
+                value={sum(totalBill)}
+                color="#00838F"
+              />
+            </CardsGrid>
+            <ChartsGrid
+              labels={labels}
+              datasets={[
+                {
+                  label: "ค่าเช่าห้อง",
+                  data: rentBill,
+                  borderColor: "#3F51B5",
+                },
+                { label: "ค่าน้ำ", data: waterBill, borderColor: "#29B6F6" },
+                { label: "ค่าไฟ", data: electricBill, borderColor: "#FF7043" },
+                {
+                  label: "รวมรายรับบิล",
+                  data: totalBill,
+                  borderColor: "#00838F",
+                },
+              ]}
+              suffix={suffix}
+            />
+            {isDesktop ? (
+              <MonthlyBillTable bills={FBills} monthNamesTH={monthNamesTH} />
+            ) : (
+              <MonthlyBillCards bills={FBills} monthNamesTH={monthNamesTH} />
+            )}
+          </Section>
+        </>
+      )}
+
+      {/* MONTH MODE */}
+      {MONTH && (
+        <>
+          <Section title={getTitle("รายรับการจอง")}>
+            <CardsGrid>
+              <Card title="ค่าเช่า" value={sum(rentBooking)} color="#4A148C" />
+              <Card
+                title="ค่ามัดจำ"
+                value={sum(depositBooking)}
+                color="#7B1FA2"
+              />
+              <Card title="ค่าจอง" value={sum(feeBooking)} color="#FB0707" />
+              <Card
+                title="รายรับการจอง"
+                value={sum(totalBooking)}
+                color="#2E7D32"
+              />
+            </CardsGrid>
+            <ChartsGrid
+              labels={labels}
+              datasets={[
+                { label: "ค่าเช่า", data: rentBooking, borderColor: "#4A148C" },
+                {
+                  label: "ค่ามัดจำ",
+                  data: depositBooking,
+                  borderColor: "#7B1FA2",
+                },
+                { label: "ค่าจอง", data: feeBooking, borderColor: "#FB0707" },
+                {
+                  label: "รายรับการจอง",
+                  data: totalBooking,
+                  borderColor: "#2E7D32",
+                },
+              ]}
+              suffix={suffix}
+            />
+          </Section>
+
+          <Section title={getTitle("รายรับบิล")}>
+            <CardsGrid>
+              <Card title="ค่าเช่าห้อง" value={sum(rentBill)} color="#3F51B5" />
+              <Card title="ค่าน้ำ" value={sum(waterBill)} color="#29B6F6" />
+              <Card title="ค่าไฟ" value={sum(electricBill)} color="#FF7043" />
+              <Card
+                title="รวมรายรับบิล"
+                value={sum(totalBill)}
+                color="#00838F"
+              />
+            </CardsGrid>
+            <ChartsGrid
+              labels={labels}
+              datasets={[
+                {
+                  label: "ค่าเช่าห้อง",
+                  data: rentBill,
+                  borderColor: "#3F51B5",
+                },
+                { label: "ค่าน้ำ", data: waterBill, borderColor: "#29B6F6" },
+                { label: "ค่าไฟ", data: electricBill, borderColor: "#FF7043" },
+                {
+                  label: "รวมรายรับบิล",
+                  data: totalBill,
+                  borderColor: "#00838F",
+                },
+              ]}
+              suffix={suffix}
+            />
+          </Section>
+
+          {isDesktop ? (
+            <MonthlyBillTable bills={FBills} monthNamesTH={monthNamesTH} />
+          ) : (
+            <MonthlyBillCards bills={FBills} monthNamesTH={monthNamesTH} />
+          )}
+        </>
+      )}
+
+      {/* ONE MONTH MODE */}
+      {ONEMONTH && (
+        <>
+          <Section title={getTitle("รายรับการจอง")}>
+            <CardsGrid>
+              <Card title="ค่าเช่า" value={sum(rentBooking)} color="#4A148C" />
+              <Card
+                title="ค่ามัดจำ"
+                value={sum(depositBooking)}
+                color="#7B1FA2"
+              />
+              <Card title="ค่าจอง" value={sum(feeBooking)} color="#FB0707" />
+              <Card
+                title="รายรับการจอง"
+                value={sum(totalBooking)}
+                color="#2E7D32"
+              />
+            </CardsGrid>
+            {/* ✅ เพิ่มกราฟตรงนี้ */}
+            <ChartsGrid
+              labels={labels}
+              datasets={[
+                { label: "ค่าเช่า", data: rentBooking, borderColor: "#4A148C" },
+                {
+                  label: "ค่ามัดจำ",
+                  data: depositBooking,
+                  borderColor: "#7B1FA2",
+                },
+                { label: "ค่าจอง", data: feeBooking, borderColor: "#FB0707" },
+                {
+                  label: "รายรับการจอง",
+                  data: totalBooking,
+                  borderColor: "#2E7D32",
+                },
+              ]}
+              suffix={suffix}
+            />
+          </Section>
+
+          <Section title={getTitle("รายรับบิล")}>
+            <CardsGrid>
+              <Card title="ค่าเช่าห้อง" value={sum(rentBill)} color="#3F51B5" />
+              <Card title="ค่าน้ำ" value={sum(waterBill)} color="#29B6F6" />
+              <Card title="ค่าไฟ" value={sum(electricBill)} color="#FF7043" />
+              <Card
+                title="รวมรายรับบิล"
+                value={sum(totalBill)}
+                color="#00838F"
+              />
+            </CardsGrid>
+            <ChartsGrid
+              labels={labels}
+              datasets={[
+                {
+                  label: "ค่าเช่าห้อง",
+                  data: rentBill,
+                  borderColor: "#3F51B5",
+                },
+                { label: "ค่าน้ำ", data: waterBill, borderColor: "#29B6F6" },
+                { label: "ค่าไฟ", data: electricBill, borderColor: "#FF7043" },
+                {
+                  label: "รวมรายรับบิล",
+                  data: totalBill,
+                  borderColor: "#00838F",
+                },
+              ]}
+              suffix={suffix}
+            />
+          </Section>
+
+          {isDesktop ? (
+            <MonthlyBillTable bills={FBills} monthNamesTH={monthNamesTH} />
+          ) : (
+            <MonthlyBillCards bills={FBills} monthNamesTH={monthNamesTH} />
+          )}
         </>
       )}
     </div>

@@ -41,7 +41,7 @@ export default function ForgotUsername() {
           <div className="d-flex flex-column align-items-center mx-auto">
             <div className="d-flex align-items-center gap-2">
               <img
-                src="https://smartdorm-admin.biwbong.shop/SmartDorm.webp"
+                src="/assets/SmartDorm.webp"
                 alt="logo"
                 width="48"
                 height="48"
@@ -71,6 +71,16 @@ export default function ForgotUsername() {
             backdropFilter: "blur(10px)",
           }}
         >
+          <div className="d-flex align-items-center justify-content-center gap-3 mb-3">
+            <img
+              src="/assets/SmartDorm.webp"
+              alt="logo"
+              width="48"
+              height="48"
+              className="img-fluid"
+            />
+            <h3 className="fw-bold text-warning mb-0">SmartDorm</h3>
+          </div>
           <h2 className="fw-bold text-warning mb-2">🔑 ลืมรหัสผ่าน</h2>
           <p className="text-white-50 mb-4">
             กรุณากรอกชื่อผู้ใช้เพื่อตรวจสอบข้อมูล

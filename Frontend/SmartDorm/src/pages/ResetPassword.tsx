@@ -99,11 +99,21 @@ export default function ResetPassword() {
             backdropFilter: "blur(10px)",
           }}
         >
+          <div className="d-flex align-items-center justify-content-center gap-3 mb-3">
+            <img
+              src="/assets/SmartDorm.webp"
+              alt="logo"
+              width="48"
+              height="48"
+              className="img-fluid"
+            />
+            <h3 className="fw-bold text-warning mb-0">SmartDorm</h3>
+          </div>
           <h2 className="fw-bold text-warning mb-2">🔐 ตั้งรหัสผ่านใหม่</h2>
-          <p className="text-white-50 mb-4">
-            ตั้งรหัสผ่านใหม่สำหรับผู้ใช้:{" "}
+          <h4 className="text-white mb-4">
+            ตั้งรหัสผ่านใหม่สำหรับผู้ใช้ :{" "}
             <strong className="text-warning">{state.name}</strong>
-          </p>
+          </h4>
 
           <form onSubmit={handleSubmit}>
             {/* NEW PASSWORD */}

@@ -15,7 +15,7 @@ export default function DashboardCard({
 
   return (
     <div
-      className="card text-center border-0 shadow-sm"
+      className="card text-center border-0 shadow-sm "
       style={{
         background: "linear-gradient(135deg, #4A0080, #2A0052)", // SCB purple
         color: "#F7D53D", // SCB gold

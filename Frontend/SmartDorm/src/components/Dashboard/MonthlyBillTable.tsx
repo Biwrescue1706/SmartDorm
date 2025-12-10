@@ -31,6 +31,9 @@ export default function MonthlyBillTable({ bills, monthNamesTH }: any) {
             fontSize: "1rem",
           }}
         >
+          <td colSpan={6} className="fw-bold py-2">
+            📊 สรุปรายรับรายเดือน (SmartDorm)
+          </td>
           <tr>
             <th>#</th>
             <th>เดือน</th>
@@ -66,14 +69,6 @@ export default function MonthlyBillTable({ bills, monthNamesTH }: any) {
             );
           })}
         </tbody>
-
-        <tfoot style={{ background: "#4A148C", color: "#FFEB3B" }}>
-          <tr>
-            <td colSpan={6} className="fw-bold py-2">
-              📊 สรุปรายรับรายเดือน (SmartDorm)
-            </td>
-          </tr>
-        </tfoot>
       </table>
     </div>
   );

@@ -53,7 +53,7 @@ export default function Dashboard() {
       />
 
       {/* MAIN CONTENT */}
-      <main className="main-content flex-grow-1 px-2 py-2 mt-6 mt-lg-6">
+      <main className="main-content flex-grow-1 px-4 py-4 mt-6 mt-lg-6">
         <div className="mx-auto container-max">
           {/* ⭐ หัวข้อใหญ่ */}
           <h2

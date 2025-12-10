@@ -63,9 +63,26 @@ export default function Nav({
         </button>
 
         {/* BRAND */}
-        <div className="text-center flex-grow-1">
-          <h6 className="mb-0 fw-bold text-white">ระบบจัดการหอพัก</h6>
-          <h5 className="mb-0 fw-bold text-warning">( SmartDorm )</h5>
+        <div className="d-flex justify-content-center align-items-center gap-3 flex-grow-1">
+          <img
+            src="/assets/SmartDorm.webp"
+            alt="SmartDorm Logo"
+            width="50"
+            height="50"
+            style={{ filter: "drop-shadow(0 3px 6px rgba(0,0,0,.45))" }}
+          />
+          <div className="text-start">
+            <h5
+              className="fw-bold text-warning m-0"
+              style={{
+                letterSpacing: "0.5px",
+                textShadow: "0 2px 6px rgba(0,0,0,.45)",
+              }}
+            >
+              SmartDorm
+            </h5>
+            <span className="text-white small opacity-75">ระบบจัดการหอพัก</span>
+          </div>
         </div>
 
         {/* PROFILE */}

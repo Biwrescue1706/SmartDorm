@@ -44,17 +44,17 @@ export default function Nav({
 
   return (
     <>
-      {/* 🔝 TOP BAR */}
+      {/* TOP NAVBAR */}
       <div
         className="position-fixed top-0 start-0 w-100 d-flex align-items-center shadow px-3"
         style={{
-          height: "70px",
+          height: "60px",
           backgroundColor: "#4A0080",
           color: "#F7D53D",
-          zIndex: 2000,
+          zIndex: 1000,
         }}
       >
-        {/* ☰ MENU BUTTON */}
+        {/* MENU BUTTON (MOBILE) */}
         <button
           className="btn btn-warning btn-sm d-xxl-none me-3 fw-bold"
           onClick={() => setMenuOpen(!menuOpen)}
@@ -67,20 +67,12 @@ export default function Nav({
           <img
             src="/assets/SmartDorm.webp"
             alt="SmartDorm Logo"
-            width="50"
-            height="50"
+            width="35"
+            height="35"
             style={{ filter: "drop-shadow(0 3px 6px rgba(0,0,0,.45))" }}
           />
           <div className="text-start">
-            <h5
-              className="fw-bold text-warning m-0"
-              style={{
-                letterSpacing: "0.5px",
-                textShadow: "0 2px 6px rgba(0,0,0,.45)",
-              }}
-            >
-              SmartDorm
-            </h5>
+            <h5 className="fw-bold text-warning m-0">SmartDorm</h5>
             <span className="text-white small opacity-75">ระบบจัดการหอพัก</span>
           </div>
         </div>
@@ -93,7 +85,7 @@ export default function Nav({
           <div onClick={() => setProfileOpen(!profileOpen)}>
             <span className="fw-bold text-warning">{shortName(adminName)}</span>
             <br />
-            <span className="ms-2 text-white">
+            <span className="text-white">
               {role === 0 ? "แอดมิน" : "พนักงาน"}
             </span>
           </div>
@@ -101,7 +93,7 @@ export default function Nav({
           {profileOpen && (
             <div
               className="position-absolute end-0 mt-2 bg-white shadow p-3 rounded"
-              style={{ minWidth: "220px" }}
+              style={{ minWidth: "220px", zIndex: 3000 }}
             >
               <div className="border-bottom pb-2 mb-2 small">
                 <strong className="text-primary">👤 {adminName}</strong>
@@ -134,7 +126,7 @@ export default function Nav({
         </div>
       </div>
 
-      {/* 🟣 SIDEBAR DESKTOP (≥1400px) */}
+      {/* SIDEBAR DESKTOP (≥1400px) */}
       <div
         className="d-none d-xxl-flex flex-column position-fixed top-0 start-0 text-white shadow"
         style={{
@@ -142,6 +134,7 @@ export default function Nav({
           height: "100vh",
           paddingTop: "90px",
           backgroundColor: "#4A0080",
+          zIndex: 1050,
         }}
       >
         <div className="px-2 d-flex flex-column gap-2">
@@ -156,7 +149,7 @@ export default function Nav({
             🏠 หน้าแรก
           </button>
 
-          {/* ห้อง */}
+          {/* ROOM DROPDOWN */}
           <button
             className="btn btn-outline-warning text-start d-flex justify-content-between"
             onClick={() => setDropdown(dropdown === "room" ? null : "room")}
@@ -178,7 +171,7 @@ export default function Nav({
               </button>
 
               <button
-                className={`btn text-start position-relative ${
+                className={`btn text-start ${
                   isActive("/bookings")
                     ? "btn-warning text-dark fw-bold"
                     : "btn-outline-warning"
@@ -206,7 +199,7 @@ export default function Nav({
             </div>
           )}
 
-          {/* บิล */}
+          {/* BILL DROPDOWN */}
           <button
             className="btn btn-outline-warning text-start d-flex justify-content-between"
             onClick={() => setDropdown(dropdown === "bill" ? null : "bill")}
@@ -266,7 +259,7 @@ export default function Nav({
         </div>
       </div>
 
-      {/* 📱 MOBILE SIDEBAR */}
+      {/* MOBILE SIDEBAR */}
       {menuOpen && (
         <>
           <div
@@ -278,14 +271,14 @@ export default function Nav({
               left: 0,
               paddingTop: "90px",
               backgroundColor: "#4A0080",
-              zIndex: 3000,
+              zIndex: 1600,
             }}
           >
             <button
               className="btn btn-warning btn-sm mb-2 fw-bold"
               onClick={() => setMenuOpen(false)}
             >
-              ✖ ปิดเมนู
+              ✖
             </button>
 
             <div className="d-flex flex-column gap-2">
@@ -317,6 +310,7 @@ export default function Nav({
                   >
                     🏘️ จัดการห้องพัก
                   </button>
+
                   <button
                     className="btn btn-outline-warning text-start"
                     onClick={() => {
@@ -326,6 +320,7 @@ export default function Nav({
                   >
                     📑 การจอง
                   </button>
+
                   <button
                     className="btn btn-outline-warning text-start"
                     onClick={() => {
@@ -356,6 +351,7 @@ export default function Nav({
                   >
                     💵 สร้างบิล
                   </button>
+
                   <button
                     className="btn btn-outline-warning text-start"
                     onClick={() => {
@@ -392,9 +388,16 @@ export default function Nav({
             </div>
           </div>
 
+          {/* MOBILE OVERLAY — FIXED VERSION */}
           <div
-            className="position-fixed w-100 h-100 bg-dark bg-opacity-50"
-            style={{ top: 0, left: 0, zIndex: 2500 }}
+            className="position-fixed w-100 h-100"
+            style={{
+              top: 0,
+              left: 0,
+              background: "rgba(0,0,0,.35)",
+              zIndex: 1500,
+              pointerEvents: menuOpen ? "auto" : "none",
+            }}
             onClick={() => setMenuOpen(false)}
           />
         </>

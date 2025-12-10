@@ -4,6 +4,7 @@ import Nav from "../components/Nav";
 import { useAuth } from "../hooks/useAuth";
 import { useChangePassword } from "../hooks/useChangePassword";
 import Swal from "sweetalert2";
+import { API_BASE } from "../config";
 
 export default function ChangePassword() {
   const { handleLogout, role, adminName, adminUsername } = useAuth();
@@ -35,10 +36,26 @@ export default function ChangePassword() {
       Swal.fire({
         icon: "success",
         title: "เปลี่ยนรหัสผ่านสำเร็จ",
+        text: "ระบบจะออกจากระบบเพื่อความปลอดภัย",
         timer: 1500,
         showConfirmButton: false,
       });
-      setOld(""); setNew(""); setConfirm("");
+
+      // เคลียร์ form
+      setOld("");
+      setNew("");
+      setConfirm("");
+
+      // 🚪 ออกจากระบบ backend ทันที
+      await fetch(`${API_BASE}/auth/logout`, {
+        method: "POST",
+        credentials: "include",
+      });
+
+      // กลับไปหน้า Login
+      setTimeout(() => {
+        window.location.href = "/";
+      }, 1500);
     }
   };
 
@@ -53,21 +70,27 @@ export default function ChangePassword() {
 
       {/* Responsive container */}
       <div className="container-fluid min-vh-100 d-flex justify-content-center align-items-center bg-light">
-
         {/* RESPONSIVE CARD */}
         <div className="card border-black shadow w-100 change-card">
-
           <div className="card-body">
             <h4 className="fw-bold text-center text-black mb-4">
               🔐 เปลี่ยนรหัสผ่าน
             </h4>
 
             <form onSubmit={submit}>
-              {PasswordInput("รหัสผ่านเดิม", oldPassword, setOld, show.old, () =>
-                setShow({ ...show, old: !show.old })
+              {PasswordInput(
+                "รหัสผ่านเดิม",
+                oldPassword,
+                setOld,
+                show.old,
+                () => setShow({ ...show, old: !show.old })
               )}
-              {PasswordInput("รหัสผ่านใหม่", newPassword, setNew, show.new, () =>
-                setShow({ ...show, new: !show.new })
+              {PasswordInput(
+                "รหัสผ่านใหม่",
+                newPassword,
+                setNew,
+                show.new,
+                () => setShow({ ...show, new: !show.new })
               )}
               {PasswordInput(
                 "ยืนยันรหัสผ่านใหม่",

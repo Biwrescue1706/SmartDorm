@@ -1,13 +1,12 @@
-// src/pages/Profile.tsx
-import { useState, useEffect, type ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import Nav from "../components/Nav";
 import { useAuth } from "../hooks/useAuth";
 import { useProfile } from "../hooks/useProfile";
 import { useChangePassword } from "../hooks/useChangePassword";
 import Swal from "sweetalert2";
 import type { Admin } from "../types/Auth";
+import { API_BASE } from "../config";
 
-/* ===== สีธีม SCB ===== */
 const SCB_PURPLE = "#4A0080";
 const SCB_GOLD = "#D4AF37";
 const BG_SOFT = "#F6F1FC";
@@ -17,26 +16,64 @@ const BG_SOFT = "#F6F1FC";
 ================================================================ */
 
 export default function Profile() {
-  const { handleLogout, role, adminName, adminUsername } = useAuth();
+  const { handleLogout, role, adminName, adminUsername } =
+    useAuth();
   const { admin, loading, updateProfile } = useProfile();
   const { changePassword, loading: passLoading } = useChangePassword();
 
-  /* ===== SAVE NAME ===== */
   const handleSaveName = async (name: string) => {
     try {
-      await updateProfile({ name });
-      Swal.fire({ icon: "success", title: "บันทึกสำเร็จ", timer: 1500, showConfirmButton: false });
+      await updateProfile({ name }); // บันทึกชื่อใหม่
+
+      Swal.fire({
+        icon: "success",
+        title: "บันทึกชื่อใหม่สำเร็จ",
+        text: "ระบบจะออกจากระบบเพื่ออัปเดตข้อมูล",
+        timer: 1500,
+        showConfirmButton: false,
+      });
+
+      // ออกจากระบบทันที เพื่อ refresh token + ชื่อใหม่
+      await fetch(`${API_BASE}/auth/logout`, {
+        method: "POST",
+        credentials: "include",
+      });
+
+      // กลับไปหน้า Login
+      setTimeout(() => {
+        window.location.href = "/";
+      }, 1500);
     } catch {
       Swal.fire("เกิดข้อผิดพลาด", "ไม่สามารถบันทึกข้อมูลได้", "error");
     }
   };
 
-  /* ===== SAVE PASSWORD ===== */
   const handleSavePassword = async (oldPass: string, newPass: string) => {
     try {
-      const ok = await changePassword({ oldPassword: oldPass, newPassword: newPass });
+      const ok = await changePassword({
+        oldPassword: oldPass,
+        newPassword: newPass,
+      });
+
       if (ok) {
-        Swal.fire({ icon: "success", title: "เปลี่ยนรหัสผ่านสำเร็จ", timer: 1500, showConfirmButton: false });
+        Swal.fire({
+          icon: "success",
+          title: "เปลี่ยนรหัสผ่านสำเร็จ",
+          text: "ระบบจะออกจากระบบเพื่อความปลอดภัย",
+          timer: 1500,
+          showConfirmButton: false,
+        });
+
+        // เรียก logout backend
+        await fetch(`${API_BASE}/auth/logout`, {
+          method: "POST",
+          credentials: "include",
+        });
+
+        // เคลียร์ state แล้วเด้งหน้า login
+        setTimeout(() => {
+          window.location.href = "/";
+        }, 1500);
       }
     } catch {
       Swal.fire("เกิดข้อผิดพลาด", "ไม่สามารถเปลี่ยนรหัสผ่านได้", "error");
@@ -45,7 +82,12 @@ export default function Profile() {
 
   return (
     <>
-      <Nav onLogout={handleLogout} role={role} adminName={adminName} adminUsername={adminUsername} />
+      <Nav
+        onLogout={handleLogout}
+        role={role}
+        adminName={adminName}
+        adminUsername={adminUsername}
+      />
 
       <div
         className="container d-flex justify-content-center align-items-center"
@@ -54,7 +96,12 @@ export default function Profile() {
         {loading ? (
           <p className="text-muted">⏳ กำลังโหลดข้อมูล...</p>
         ) : admin ? (
-          <ProfileCard admin={admin} onSaveName={handleSaveName} onSavePass={handleSavePassword} passLoading={passLoading} />
+          <ProfileCard
+            admin={admin}
+            onSaveName={handleSaveName}
+            onSavePass={handleSavePassword}
+            passLoading={passLoading}
+          />
         ) : (
           <p className="text-danger">ไม่พบข้อมูลผู้ใช้</p>
         )}
@@ -78,8 +125,8 @@ function ProfileCard({
   onSavePass: (oldPass: string, newPass: string) => void;
   passLoading: boolean;
 }) {
-  const [showNameDialog, setShowNameDialog] = useState(false);
-  const [showPassDialog, setShowPassDialog] = useState(false);
+  const [showName, setShowName] = useState(false);
+  const [showPass, setShowPass] = useState(false);
 
   return (
     <>
@@ -89,11 +136,21 @@ function ProfileCard({
         </h4>
 
         <FormItem label="ชื่อผู้ใช้">
-          <input type="text" disabled className="form-control scb-input" value={admin.username} />
+          <input
+            type="text"
+            disabled
+            className="form-control scb-input"
+            value={admin.username}
+          />
         </FormItem>
 
         <FormItem label="ชื่อจริง">
-          <input type="text" disabled className="form-control scb-input" value={admin.name} />
+          <input
+            type="text"
+            disabled
+            className="form-control scb-input"
+            value={admin.name}
+          />
         </FormItem>
 
         <FormItem label="สิทธิ์">
@@ -106,70 +163,100 @@ function ProfileCard({
         </FormItem>
 
         <div className="d-flex gap-2 mt-3">
-          <button className="btn fw-bold w-50 scb-btn-purple" onClick={() => setShowNameDialog(true)}>
+          <button
+            className="btn fw-bold w-50 scb-btn-purple"
+            onClick={() => setShowName(true)}
+          >
             ✏️ แก้ไขชื่อ
           </button>
-          <button className="btn fw-bold w-50 scb-btn-gold" onClick={() => setShowPassDialog(true)}>
+          <button
+            className="btn fw-bold w-50 scb-btn-gold"
+            onClick={() => setShowPass(true)}
+          >
             🔐 เปลี่ยนรหัสผ่าน
           </button>
         </div>
       </div>
 
-      {showNameDialog && <DialogEditName oldName={admin.name} onSave={onSaveName} onClose={() => setShowNameDialog(false)} />}
-      {showPassDialog && <DialogEditPassword loading={passLoading} onSave={onSavePass} onClose={() => setShowPassDialog(false)} />}
+      {showName && (
+        <DialogEditName
+          onSave={onSaveName}
+          onClose={() => setShowName(false)}
+        />
+      )}
+      {showPass && (
+        <DialogEditPassword
+          loading={passLoading}
+          onSave={onSavePass}
+          onClose={() => setShowPass(false)}
+        />
+      )}
 
-      {/* CARD RESPONSIVE */}
-      <style>
-        {`
-          .profile-card {
-            border-radius: 22px;
-            border: 2px solid ${SCB_PURPLE};
-            background: #fff;
-            transition: .25s;
-          }
+      <style>{`
+        .profile-card { border-radius:22px; border:2px solid ${SCB_PURPLE}; background:#fff; }
+        .scb-input { background:#fff; border:1.8px solid ${SCB_PURPLE}33; border-radius:10px; }
 
-          .scb-input {
-            background: #fff;
-            border: 1.8px solid ${SCB_PURPLE}33;
-            border-radius: 10px;
-          }
+        @media(max-width:599px){ .profile-card{max-width:100%; margin:0 10px;} }
+        @media(min-width:600px) and (max-width:1399px){ .profile-card{max-width:70%;} }
+        @media(min-width:1400px){ .profile-card{max-width:42%;} }
 
-          @media (max-width: 599px) { .profile-card { max-width: 100%; margin: 0 10px; } }
-          @media (min-width: 600px) and (max-width: 1399px) { .profile-card { max-width: 70%; } }
-          @media (min-width: 1400px) { .profile-card { max-width: 42%; } }
-
-          .scb-btn-purple { background:${SCB_PURPLE}; color:#fff; border:none; }
-          .scb-btn-purple:hover { background:#360057; }
-
-          .scb-btn-gold { background:${SCB_GOLD}; color:#000; border:none; }
-          .scb-btn-gold:hover { background:#b38b1e; }
-        `}
-      </style>
+        .scb-btn-purple{background:${SCB_PURPLE};color:#fff;border:none;}
+        .scb-btn-purple:hover{background:#360057;}
+        .scb-btn-gold{background:${SCB_GOLD};color:#000;border:none;}
+        .scb-btn-gold:hover{background:#b38b1e;}
+      `}</style>
     </>
   );
 }
 
 /* ================================================================
-   DIALOG — EDIT NAME
+   EDIT NAME DIALOG
 ================================================================ */
 
-function DialogEditName({ oldName, onSave, onClose }: { oldName: string; onSave: (name: string) => void; onClose: () => void }) {
-  const [name, setName] = useState(oldName);
+function DialogEditName({
+  onSave,
+  onClose,
+}: {
+  onSave: (name: string) => void;
+  onClose: () => void;
+}) {
+  const [name, setName] = useState("");
+  const [error, setError] = useState("");
+
+  const submit = () => {
+    const n = name.trim();
+
+    if (!n) return setError("กรุณากรอกชื่อใหม่");
+    if (n.length < 8) return setError("ชื่อต้องมีอย่างน้อย 8 ตัวอักษร");
+    onSave(n);
+    onClose();
+  };
 
   return modal(
     "✏️ เปลี่ยนชื่อผู้ใช้งาน",
     <>
-      <label className="fw-semibold mb-1" style={{ color: SCB_PURPLE }}>ชื่อใหม่</label>
-      <input className="form-control scb-input mb-3" value={name} onChange={(e) => setName(e.target.value)} autoFocus />
-
-      <ButtonsRow onClose={onClose} onSave={() => name.trim() && onSave(name)} />
+      {error && <p className="text-danger fw-semibold mb-2">{error}</p>}
+      <label className="fw-semibold mb-1" style={{ color: SCB_PURPLE }}>
+        ชื่อใหม่
+      </label>
+      <input
+        className="form-control scb-input mb-3"
+        value={name}
+        onChange={(e) => {
+          setName(e.target.value);
+          setError("");
+        }}
+        autoFocus
+        placeholder="กรอกชื่อใหม่ (อย่างน้อย 8 ตัว)"
+      />
+      <ButtonsRow onClose={onClose} onSave={submit} />
     </>,
     onClose
   );
 }
 
 /* ================================================================
-   DIALOG — CHANGE PASSWORD (SHOW / HIDE PASSWORD)
+   EDIT PASSWORD DIALOG
 ================================================================ */
 
 function DialogEditPassword({
@@ -177,20 +264,24 @@ function DialogEditPassword({
   onClose,
   loading,
 }: {
-  onSave: (oldPass: string, newPass: string) => void;
+  onSave: (o: string, n: string) => void;
   onClose: () => void;
   loading: boolean;
 }) {
   const [show, setShow] = useState(false);
-  const [oldPass, setOldPass] = useState("");
-  const [newPass, setNewPass] = useState("");
+  const [oldPass, setOld] = useState("");
+  const [newPass, setNew] = useState("");
   const [confirm, setConfirm] = useState("");
+  const [error, setError] = useState("");
 
   const submit = () => {
-    if (!oldPass || !newPass || !confirm) return Swal.fire("กรุณากรอกข้อมูลให้ครบ");
-    if (newPass.length < 6) return Swal.fire("รหัสผ่านใหม่อย่างน้อย 6 ตัว");
-    if (newPass === oldPass) return Swal.fire("รหัสผ่านใหม่ต้องไม่ซ้ำของเดิม");
-    if (newPass !== confirm) return Swal.fire("รหัสผ่านใหม่ไม่ตรงกัน");
+    if (!oldPass || !newPass || !confirm)
+      return setError("กรุณากรอกข้อมูลให้ครบ");
+    if (newPass.length < 6) return setError("รหัสผ่านใหม่อย่างน้อย 6 ตัว");
+    if (newPass === oldPass)
+      return setError("รหัสผ่านใหม่ต้องแตกต่างจากของเดิม");
+    if (newPass !== confirm) return setError("รหัสผ่านใหม่ไม่ตรงกัน");
+
     onSave(oldPass, newPass);
     onClose();
   };
@@ -198,22 +289,32 @@ function DialogEditPassword({
   return modal(
     "🔐 เปลี่ยนรหัสผ่าน",
     <>
-      {passwordInput("รหัสผ่านเดิม", oldPass, setOldPass, show, setShow)}
-      {passwordInput("รหัสผ่านใหม่", newPass, setNewPass, show, setShow)}
+      {error && <p className="text-danger fw-semibold mb-2">{error}</p>}
+      {passwordInput("รหัสผ่านเดิม", oldPass, setOld, show, setShow)}
+      {passwordInput("รหัสผ่านใหม่", newPass, setNew, show, setShow)}
       {passwordInput("ยืนยันรหัสผ่าน", confirm, setConfirm, show, setShow)}
-
       <ButtonsRow loading={loading} onClose={onClose} onSave={submit} />
     </>,
     onClose
   );
 }
 
-/* ===== INPUT WITH EYE BUTTON ===== */
+/* ================================================================
+   PASSWORD INPUT
+================================================================ */
 
-function passwordInput(label: string, value: string, setValue: (v: string) => void, show: boolean, toggle: (v: boolean) => void) {
+function passwordInput(
+  label: string,
+  value: string,
+  setValue: (v: string) => void,
+  show: boolean,
+  toggle: (v: boolean) => void
+) {
   return (
     <div className="mb-3 position-relative">
-      <label className="fw-semibold mb-1" style={{ color: SCB_PURPLE }}>{label}</label>
+      <label className="fw-semibold mb-1" style={{ color: SCB_PURPLE }}>
+        {label}
+      </label>
       <input
         className="form-control scb-input pe-5"
         type={show ? "text" : "password"}
@@ -221,8 +322,13 @@ function passwordInput(label: string, value: string, setValue: (v: string) => vo
         onChange={(e) => setValue(e.target.value)}
       />
       <span
-        className="position-absolute"
-        style={{ top: "40px", right: "15px", cursor: "pointer", color: SCB_PURPLE }}
+        style={{
+          position: "absolute",
+          top: "40px",
+          right: "15px",
+          cursor: "pointer",
+          color: SCB_PURPLE,
+        }}
         onClick={() => toggle(!show)}
       >
         {show ? "🙈" : "👁️"}
@@ -232,16 +338,32 @@ function passwordInput(label: string, value: string, setValue: (v: string) => vo
 }
 
 /* ================================================================
-   BUTTON ROW (CANCEL / SAVE)
+   BUTTON ROW
 ================================================================ */
 
-function ButtonsRow({ onClose, onSave, loading }: { onClose: () => void; onSave: () => void; loading?: boolean }) {
+function ButtonsRow({
+  onClose,
+  onSave,
+  loading,
+}: {
+  onClose: () => void;
+  onSave: () => void;
+  loading?: boolean;
+}) {
   return (
     <div className="d-flex gap-2 mt-3">
-      <button className="btn w-50" style={{ background: "#6c757d", color: "#fff" }} onClick={onClose}>
+      <button
+        className="btn w-50"
+        style={{ background: "#6c757d", color: "#fff" }}
+        onClick={onClose}
+      >
         ❌ ยกเลิก
       </button>
-      <button className="btn fw-bold w-50 scb-btn-purple" disabled={loading} onClick={onSave}>
+      <button
+        className="btn fw-bold w-50 scb-btn-purple"
+        disabled={loading}
+        onClick={onSave}
+      >
         {loading ? "⏳ กำลังบันทึก..." : "💾 บันทึก"}
       </button>
     </div>
@@ -249,53 +371,47 @@ function ButtonsRow({ onClose, onSave, loading }: { onClose: () => void; onSave:
 }
 
 /* ================================================================
-   MODAL ANIMATION
+   MODAL BASE
 ================================================================ */
 
 function modal(title: string, content: ReactNode, onClose?: () => void) {
-  useEffect(() => {
-    const esc = (e: KeyboardEvent) => e.key === "Escape" && onClose?.();
-    document.addEventListener("keydown", esc);
-    return () => document.removeEventListener("keydown", esc);
-  }, []);
-
   return (
     <>
-      <div className="modal-overlay" onClick={onClose} />
-      <div className="modal-card" onClick={(e) => e.stopPropagation()}>
-        <h5 className="fw-bold text-center mb-3" style={{ color: SCB_PURPLE }}>{title}</h5>
+      {/* Overlay */}
+      <div
+        className="position-fixed top-0 start-0 w-100 h-100"
+        style={{ background: "rgba(0,0,0,.45)", zIndex: 3000 }}
+        onClick={onClose}
+      />
+
+      {/* Center Dialog */}
+      <div
+        className="position-fixed top-50 start-50"
+        style={{
+          transform: "translate(-50%, -50%)",
+          zIndex: 4000,
+          width: "90%",
+          maxWidth: "430px",
+          background: "#fff",
+          borderRadius: "18px",
+          padding: "24px",
+          borderTop: `6px solid ${SCB_PURPLE}`,
+          animation: "zoomIn .25s ease",
+        }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <h5 className="fw-bold text-center mb-3" style={{ color: SCB_PURPLE }}>
+          {title}
+        </h5>
         {content}
-        <div className="modal-handle" />
       </div>
 
-      <style>
-        {`
-        .modal-overlay {
-          position: fixed; top:0; left:0; width: 100%; height: 100%;
-          background: rgba(0,0,0,.45); animation: fade .35s ease forwards; z-index:3000;
+      <style>{`
+        @keyframes zoomIn {
+          0% { opacity: 0; transform: translate(-50%,-40%) scale(.85); }
+          100% { opacity: 1; transform: translate(-50%,-50%) scale(1); }
         }
-        @keyframes fade { from {opacity:0;} to {opacity:1;} }
-
-        .modal-card {
-          position: fixed; top:50%; left:50%;
-          transform: translate(-50%, -50%) scale(.92);
-          width: 90%; max-width: 430px;
-          background: #fff; border-radius: 18px; padding: 24px;
-          border-top: 6px solid ${SCB_PURPLE}; z-index: 4001;
-          animation: spring .45s cubic-bezier(.18,.89,.32,1.28) forwards;
-        }
-        @keyframes spring {
-          0% { opacity:0; transform:translate(-50%,-40%) scale(.85); }
-          55% { transform:translate(-50%,-52%) scale(1.02); }
-          100% { opacity:1; transform:translate(-50%,-50%) scale(1); }
-        }
-
-        .modal-handle {
-          width: 55px; height: 5px;
-          background: #aaa; margin: 10px auto 0; opacity: .45; border-radius: 4px;
-        }
-        `}
-      </style>
+      `}</style>
     </>
   );
 }
@@ -307,7 +423,9 @@ function modal(title: string, content: ReactNode, onClose?: () => void) {
 function FormItem({ label, children }: { label: string; children: ReactNode }) {
   return (
     <div className="mb-3">
-      <label className="fw-bold mb-1" style={{ color: SCB_PURPLE }}>{label}</label>
+      <label className="fw-bold mb-1" style={{ color: SCB_PURPLE }}>
+        {label}
+      </label>
       {children}
     </div>
   );

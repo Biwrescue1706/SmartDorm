@@ -19,13 +19,36 @@ export default function BillManageDialog({
   const slip = bill.payment?.slipUrl ?? bill.slipUrl;
 
   return (
-    <div className="modal show d-block" style={{ background: "#00000070" }}>
+    <div
+      className="modal show d-block"
+      style={{
+        background: "#00000080", // โปร่งแสงกำลังดี
+        position: "fixed",
+        top: 0,
+        left: 0,
+        width: "100vw",
+        height: "100vh",
+        zIndex: 5000, // ⭐ สูงสุดในระบบ ลอยเหนือ nav + sidebar
+      }}
+    >
+      {/* DIALOG WRAPPER */}
       <div
         className="modal-dialog modal-dialog-centered"
-        style={{ maxWidth: "600px" }}
+        style={{
+          maxWidth: "640px",
+          margin: "130px auto 0 auto", // ⭐ ชน navbar จะไม่ติดอีกแล้ว
+        }}
       >
-        <div className="modal-content rounded-4 shadow-lg">
-          <div className="modal-header bg-info text-white">
+        <div className="modal-content rounded-4 shadow-lg border-0">
+          {/* HEADER */}
+          <div
+            className="modal-header text-white"
+            style={{
+              background: "linear-gradient(135deg, #00a8ff, #0097e6)",
+              borderTopLeftRadius: "1rem",
+              borderTopRightRadius: "1rem",
+            }}
+          >
             <h5 className="modal-title fw-bold">
               จัดการบิลห้อง {bill.room.number}
             </h5>
@@ -35,17 +58,32 @@ export default function BillManageDialog({
             ></button>
           </div>
 
-          <div className="modal-body text-center">
-            <h6 className="fw-bold">สลิปการชำระ</h6>
+          {/* BODY */}
+          <div
+            className="modal-body text-center"
+            style={{
+              paddingTop: "25px", // ⭐ กันหัว slip ไม่ชิดเพดาน
+              paddingBottom: "10px",
+              overflowY: "auto",
+              maxHeight: "65vh", // ⭐ scroll เฉพาะภาพ
+            }}
+          >
+            <h6 className="fw-bold mb-3">สลิปการชำระเงิน</h6>
 
             {slip ? (
               <img
                 src={slip}
                 alt="slip"
                 style={{
-                  width: "100%",
-                  borderRadius: "12px",
+                  width: "360px", // ⭐ ฟิกขนาดความกว้าง
+                  maxWidth: "90%", // ⭐ ถ้าจอแคบลง ให้ลดได้
+                  height: "auto", // ⭐ รักษาสัดส่วน ไม่บีบภาพ
+                  maxHeight: "65vh", // ⭐ ไม่ล้นจอ
                   objectFit: "contain",
+                  borderRadius: "14px",
+                  boxShadow: "0 0 10px rgba(0,0,0,0.2)",
+                  display: "block",
+                  margin: "0 auto", // ⭐ ให้อยู่กึ่งกลาง
                 }}
               />
             ) : (
@@ -53,7 +91,8 @@ export default function BillManageDialog({
             )}
           </div>
 
-          <div className="modal-footer d-flex justify-content-between px-4">
+          {/* FOOTER */}
+          <div className="modal-footer d-flex justify-content-between px-4 pb-3">
             <button
               className="btn btn-success fw-semibold px-4"
               onClick={() => onApprove(bill.billId, bill.room.number)}

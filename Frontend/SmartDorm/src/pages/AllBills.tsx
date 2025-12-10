@@ -77,10 +77,25 @@ export default function AllBills() {
 
     Swal.fire({
       title: `สลิปห้อง ${bill.room.number}`,
-      imageUrl: url,
-      imageWidth: 420,
+      html: `
+      <img src="${url}" style="
+        width: 100%;
+        max-width: 350px;
+        max-height: 70vh;
+        object-fit: contain;
+        border-radius: 12px;
+        display: block;
+        margin: 0 auto;
+      "/>
+    `,
       showConfirmButton: false,
       showCloseButton: true,
+      background: "#fff",
+
+      // ⭐ เลื่อนลงให้ไม่ชน Navbar
+      customClass: {
+        popup: "swal-slip-popup",
+      },
     });
   };
 

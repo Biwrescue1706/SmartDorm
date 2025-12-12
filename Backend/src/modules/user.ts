@@ -1,5 +1,4 @@
 // src/modules/user.ts
-
 import { Router } from "express";
 import prisma from "../prisma";
 import { verifyLineToken } from "../utils/verifyLineToken";
@@ -37,18 +36,14 @@ userRouter.post("/register", async (req, res) => {
     const { accessToken } = req.body;
     const { userId, displayName } = await verifyLineToken(accessToken);
 
-    let customer = await prisma.customer.findFirst({ where: { userId } });
-
-    if (customer) {
-      customer = await prisma.customer.update({
-        where: { customerId: customer.customerId },
-        data: { userName: displayName },
-      });
-    } else {
-      customer = await prisma.customer.create({
-        data: { userId, userName: displayName },
-      });
-    }
+    const customer = await prisma.customer.upsert({
+      where: { userId },
+      update: { userName: displayName },
+      create: {
+        userId,
+        userName: displayName,
+      },
+    });
 
     res.json({
       message: "สมัครหรืออัปเดตข้อมูลสำเร็จ",
@@ -67,13 +62,14 @@ userRouter.post("/me", async (req, res) => {
     const { accessToken } = req.body;
     const { userId, displayName } = await verifyLineToken(accessToken);
 
-    let customer = await prisma.customer.findFirst({ where: { userId } });
-
-    if (!customer) {
-      customer = await prisma.customer.create({
-        data: { userId, userName: displayName },
-      });
-    }
+    const customer = await prisma.customer.upsert({
+      where: { userId },
+      update: { userName: displayName },
+      create: {
+        userId,
+        userName: displayName,
+      },
+    });
 
     res.json({
       success: true,
@@ -95,10 +91,13 @@ userRouter.post("/payments", async (req, res) => {
     const { accessToken } = req.body;
     const { userId } = await verifyLineToken(accessToken);
 
+    const customer = await prisma.customer.findFirst({ where: { userId } });
+    if (!customer) return res.json({ bills: [] });
+
     const bills = await prisma.bill.findMany({
       where: {
         status: 1,
-        customer: { userId },
+        customerId: customer.customerId,
       },
       include: {
         room: true,
@@ -125,10 +124,13 @@ userRouter.post("/bills/unpaid", async (req, res) => {
     const { accessToken } = req.body;
     const { userId } = await verifyLineToken(accessToken);
 
+    const customer = await prisma.customer.findFirst({ where: { userId } });
+    if (!customer) return res.json({ bills: [] });
+
     const bills = await prisma.bill.findMany({
       where: {
         status: 0,
-        customer: { userId },
+        customerId: customer.customerId,
       },
       include: { room: true },
       orderBy: { createdAt: "desc" },
@@ -146,18 +148,30 @@ userRouter.post("/bills/unpaid", async (req, res) => {
 
 /* =====================================================
    🚪 ห้องที่สามารถคืนได้ (KEY POINT)
-   หาโดย Customer.userId
+   userId → customerId → booking
 ===================================================== */
 userRouter.post("/bookings/returnable", async (req, res) => {
   try {
     const { accessToken } = req.body;
     const { userId } = await verifyLineToken(accessToken);
 
+    // 1️⃣ หา customer จาก userId
+    const customer = await prisma.customer.findFirst({
+      where: { userId },
+    });
+
+    if (!customer) {
+      return res.json({
+        message: "ไม่พบข้อมูลลูกค้า",
+        count: 0,
+        bookings: [],
+      });
+    }
+
+    // 2️⃣ ใช้ customerId หา booking
     const bookings = await prisma.booking.findMany({
       where: {
-        customer: {
-          userId, // ✅ ถูกต้องตาม Prisma schema
-        },
+        customerId: customer.customerId,
         approveStatus: 1,
         checkoutStatus: 0,
       },
@@ -183,9 +197,7 @@ userRouter.post("/bookings/returnable", async (req, res) => {
 userRouter.get("/search", async (req, res) => {
   try {
     const keyword = req.query.keyword?.toString().trim();
-    if (!keyword) {
-      return res.json({ users: [] });
-    }
+    if (!keyword) return res.json({ users: [] });
 
     const users = await prisma.customer.findMany({
       where: {
@@ -205,9 +217,7 @@ userRouter.get("/search", async (req, res) => {
           },
         ],
       },
-      include: {
-        bookings: { include: { room: true } },
-      },
+      include: { bookings: { include: { room: true } } },
       orderBy: { createdAt: "desc" },
     });
 

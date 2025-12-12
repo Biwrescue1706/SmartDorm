@@ -115,12 +115,16 @@ bookingRouter.post("/create", async (req, res) => {
 
     // ✅ ทุกครั้งที่จอง ให้สร้าง customer ใหม่เสมอ (ไม่ใช้ findFirst แล้ว)
     const booking = await prisma.$transaction(async (tx) => {
-      const customer = await tx.customer.create({
-        data: {
-          userId,                  // ยังผูกกับ LINE userId ได้
-          userName: displayName ?? "-",
-        },
-      });
+     const customer = await tx.customer.upsert({
+  where: { userId },
+  update: {
+    userName: displayName ?? "-",
+  },
+  create: {
+    userId,
+    userName: displayName ?? "-",
+  },
+});
 
       const newBooking = await tx.booking.create({
         data: {

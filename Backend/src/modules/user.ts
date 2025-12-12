@@ -139,12 +139,10 @@ userRouter.post("/bookings/returnable", async (req, res) => {
   try {
     const { accessToken } = req.body;
     const { userId } = await verifyLineToken(accessToken);
-    const customer = await prisma.customer.findFirst({ where: { userId } });
-    if (!customer) throw new Error("ไม่พบลูกค้า");
 
     const bookings = await prisma.booking.findMany({
       where: {
-        customerId: customer.customerId,
+        userId: userId,            // ✅ ใช้ userId ของผู้จองโดยตรง
         approveStatus: 1,
         checkinStatus: 1,
         checkoutStatus: 0,

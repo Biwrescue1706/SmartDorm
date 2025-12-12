@@ -142,13 +142,19 @@ userRouter.post("/bookings/returnable", async (req, res) => {
 
     const bookings = await prisma.booking.findMany({
       where: {
-        userId: userId,            // ✅ ใช้ userId ของผู้จองโดยตรง
+        customer: {
+          userId: userId, // ✅ ถูกต้องตาม schema
+        },
         approveStatus: 1,
         checkinStatus: 1,
         checkoutStatus: 0,
       },
-      include: { room: true },
-      orderBy: { createdAt: "desc" },
+      include: {
+        room: true,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
     });
 
     res.json({

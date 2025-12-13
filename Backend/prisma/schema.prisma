@@ -100,15 +100,24 @@ model Booking {
 model Checkout {
   checkoutId String @id @default(auto()) @map("_id") @db.ObjectId
 
-  bookingId  String @unique @db.ObjectId
+  bookingId  String @db.ObjectId
   roomId     String @db.ObjectId
   customerId String @db.ObjectId
 
-  requestedCheckout DateTime
-  approvedAt        DateTime?
-  actualCheckout    DateTime?
+  requestedCheckout DateTime // วันขอคืน
 
-  status Int @default(0) // 0=PENDING,1=APPROVED,2=COMPLETED,3=REJECTED
+  status     Int      @default(0) 
+  // 0 = PENDING
+  // 1 = APPROVED
+  // 2 = REJECTED
+
+  approvedAt DateTime?
+
+  checkoutStatus Int      @default(0)
+  // 0 = Waiting for checkout
+  // 1 = Checked out
+
+  actualCheckout DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -116,6 +125,9 @@ model Checkout {
   booking  Booking  @relation(fields: [bookingId], references: [bookingId])
   room     Room     @relation(fields: [roomId], references: [roomId])
   customer Customer @relation(fields: [customerId], references: [customerId])
+
+  @@index([bookingId])
+  @@index([status])
 }
 
 //Bill

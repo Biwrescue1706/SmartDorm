@@ -101,8 +101,8 @@ billRouter.post("/create", authMiddleware, async (req, res) => {
     // 🔁 กำหนดครบกำหนดชำระ = วันที่ 5 ของ "เดือนถัดไป" จากเดือนที่เลือก
     const dueDate = new Date(billMonth);
     dueDate.setMonth(dueDate.getMonth() + 1); // เดือนถัดไป
-    dueDate.setDate(5);                        // บังคับวันที่ 5
-    dueDate.setHours(0, 0, 0, 0);              // เคลียร์เวลาให้เป็นเที่ยงคืน
+    dueDate.setDate(5); // บังคับวันที่ 5
+    dueDate.setHours(0, 0, 0, 0); // เคลียร์เวลาให้เป็นเที่ยงคืน
 
     // 💾 บันทึกลงฐานข้อมูล
     const bill = await prisma.bill.create({
@@ -288,8 +288,10 @@ billRouter.put("/:billId/approve", authMiddleware, async (req, res) => {
     });
 
     if (!bill) throw new Error("ไม่พบบิลในระบบ");
-    if (bill.status === 1) throw new Error("บิลนี้ชำระแล้ว ไม่สามารถอนุมัติซ้ำได้");
-    if (bill.status === 0) throw new Error("บิลนี้ถูกปฏิเสธแล้ว กรุณาชำระบิลใหม่");
+    if (bill.status === 1)
+      throw new Error("บิลนี้ชำระแล้ว ไม่สามารถอนุมัติซ้ำได้");
+    if (bill.status === 0)
+      throw new Error("บิลนี้ถูกปฏิเสธแล้ว กรุณาชำระบิลใหม่");
 
     const updated = await prisma.bill.update({
       where: { billId: req.params.billId },
@@ -344,42 +346,39 @@ billRouter.delete("/:billId", authMiddleware, async (req, res) => {
   try {
     const { billId } = req.params;
 
-    // ตรวจสอบบิลก่อนลบ
     const bill = await prisma.bill.findUnique({
       where: { billId },
-      select: { status: true }, // 0 = ยังไม่ชำระ, 1 = ชำระแล้ว
+      select: { status: true },
     });
 
-    if (!bill) throw new Error("ไม่พบบิลนี้ในระบบ");
-
-    // ❌ ถ้าชำระแล้ว ห้ามลบ
-    if (bill.status === 1) {
-      return res
-        .status(400)
-        .json({ error: "บิลนี้ถูกชำระแล้ว ไม่สามารถลบได้" });
+    if (!bill) {
+      return res.status(404).json({ error: "ไม่พบบิลนี้ในระบบ" });
     }
 
-    // 1) ดึง payment เพื่อรู้ slipUrl
+
+    // 🔍 ดึง payment เพื่อหา slip
     const payments = await prisma.payment.findMany({
       where: { billId },
       select: { slipUrl: true },
     });
 
-    // 2) ลบไฟล์ใน Supabase ทุก payment ที่มี slip
+    // 🗑️ ลบสลิปใน Supabase
     for (const pm of payments) {
       if (pm.slipUrl) await deleteSlip(pm.slipUrl);
     }
 
-    // 3) ลบ payment
+    // 🧹 ลบ payment
     await prisma.payment.deleteMany({ where: { billId } });
 
-    // 4) ลบบิล
+    // 🧨 ลบบิล
     await prisma.bill.delete({ where: { billId } });
 
-    res.json({ message: "ลบบิล + ลบสลิป Supabase สำเร็จ" });
+    res.json({ message: "ลบบิลสำเร็จ" });
   } catch (err: any) {
+    console.error("❌ Delete Bill Error:", err.message);
     res.status(500).json({ error: err.message });
   }
 });
+
 
 export default billRouter;

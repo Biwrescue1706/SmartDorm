@@ -17,14 +17,12 @@ const allowedOrigins = [
   "http://localhost:5174",
   "http://localhost:5175",
 
-  // Render deploys
-  "https://smartdorm-returnroom.onrender.com",
-
   // Custom domains (frontend)
   "https://smartdorm-admin.biwbong.shop",
   "https://smartdorm-bookingsroom.biwbong.shop",
   "https://smartdorm-detail.biwbong.shop",
   "https://smartdorm-paymentbill.biwbong.shop",
+  "https://smartdorm-returnroom.biwbong.shop",
 
   // ✅ Backend domain itself
   "https://smartdorm-backend.biwbong.shop",

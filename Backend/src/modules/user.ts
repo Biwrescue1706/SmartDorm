@@ -1,8 +1,9 @@
 // src/modules/user.ts
+
 import { Router } from "express";
 import prisma from "../prisma";
 import { verifyLineToken } from "../utils/verifyLineToken";
-import { deleteSlip } from "../modules/booking";
+import { deleteSlip } from "./booking";
 
 const userRouter = Router();
 
@@ -36,14 +37,23 @@ userRouter.post("/register", async (req, res) => {
     const { accessToken } = req.body;
     const { userId, displayName } = await verifyLineToken(accessToken);
 
-    const customer = await prisma.customer.upsert({
+    let customer = await prisma.customer.findFirst({
       where: { userId },
-      update: { userName: displayName },
-      create: {
-        userId,
-        userName: displayName,
-      },
     });
+
+    if (customer) {
+      customer = await prisma.customer.update({
+        where: { customerId: customer.customerId },
+        data: { userName: displayName },
+      });
+    } else {
+      customer = await prisma.customer.create({
+        data: {
+          userId,
+          userName: displayName,
+        },
+      });
+    }
 
     res.json({
       message: "สมัครหรืออัปเดตข้อมูลสำเร็จ",
@@ -62,14 +72,18 @@ userRouter.post("/me", async (req, res) => {
     const { accessToken } = req.body;
     const { userId, displayName } = await verifyLineToken(accessToken);
 
-    const customer = await prisma.customer.upsert({
+    let customer = await prisma.customer.findFirst({
       where: { userId },
-      update: { userName: displayName },
-      create: {
-        userId,
-        userName: displayName,
-      },
     });
+
+    if (!customer) {
+      customer = await prisma.customer.create({
+        data: {
+          userId,
+          userName: displayName,
+        },
+      });
+    }
 
     res.json({
       success: true,
@@ -91,13 +105,12 @@ userRouter.post("/payments", async (req, res) => {
     const { accessToken } = req.body;
     const { userId } = await verifyLineToken(accessToken);
 
-    const customer = await prisma.customer.findFirst({ where: { userId } });
-    if (!customer) return res.json({ bills: [] });
-
     const bills = await prisma.bill.findMany({
       where: {
         status: 1,
-        customerId: customer.customerId,
+        customer: {
+          userId,
+        },
       },
       include: {
         room: true,
@@ -124,13 +137,12 @@ userRouter.post("/bills/unpaid", async (req, res) => {
     const { accessToken } = req.body;
     const { userId } = await verifyLineToken(accessToken);
 
-    const customer = await prisma.customer.findFirst({ where: { userId } });
-    if (!customer) return res.json({ bills: [] });
-
     const bills = await prisma.bill.findMany({
       where: {
         status: 0,
-        customerId: customer.customerId,
+        customer: {
+          userId,
+        },
       },
       include: { room: true },
       orderBy: { createdAt: "desc" },
@@ -141,21 +153,20 @@ userRouter.post("/bills/unpaid", async (req, res) => {
       count: bills.length,
       bills,
     });
-  } catch (err: any) {
+  } catch {
     res.status(400).json({ error: "Token ไม่ถูกต้องหรือหมดอายุ" });
   }
 });
 
 /* =====================================================
-   🚪 ห้องที่สามารถคืนได้ (KEY POINT)
-   userId → customerId → booking
+   🚪 ห้องที่สามารถคืนได้
+   ✔ ใช้ customerId เป็นหลัก
 ===================================================== */
 userRouter.post("/bookings/returnable", async (req, res) => {
   try {
     const { accessToken } = req.body;
     const { userId } = await verifyLineToken(accessToken);
 
-    // 1️⃣ หา customer จาก userId
     const customer = await prisma.customer.findFirst({
       where: { userId },
     });
@@ -168,16 +179,13 @@ userRouter.post("/bookings/returnable", async (req, res) => {
       });
     }
 
-    // 2️⃣ ใช้ customerId หา booking
     const bookings = await prisma.booking.findMany({
       where: {
         customerId: customer.customerId,
         approveStatus: 1,
         checkoutStatus: 0,
       },
-      include: {
-        room: true,
-      },
+      include: { room: true },
       orderBy: { createdAt: "desc" },
     });
 
@@ -217,7 +225,9 @@ userRouter.get("/search", async (req, res) => {
           },
         ],
       },
-      include: { bookings: { include: { room: true } } },
+      include: {
+        bookings: { include: { room: true } },
+      },
       orderBy: { createdAt: "desc" },
     });
 

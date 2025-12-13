@@ -4,56 +4,17 @@ generator client {
 
 datasource db {
   provider = "mongodb"
+  url      = env("DATABASE_URL")
 }
 
-// สิทธิ์แอดมิน
-enum AdminRole {
-  SUPER_ADMIN
-  STAFF
-}
+//Admin
 
-// สถานะห้อง
-enum RoomStatus {
-  AVAILABLE // ว่าง
-  OCCUPIED // ไม่ว่าง
-}
-
-// สถานะการอนุมัติการจอง
-enum BookingApproveStatus {
-  PENDING
-  APPROVED
-  REJECTED
-}
-
-// สถานะการเช็คอิน
-enum CheckinStatus {
-  NOT_CHECKED_IN
-  CHECKED_IN
-  FAILED
-}
-
-// สถานะการคืนห้อง
-enum CheckoutStatus {
-  PENDING // รออนุมัติคืน
-  APPROVED // อนุมัติแล้ว (รอมาเช็คเอาท์)
-  COMPLETED // เช็คเอาท์แล้ว
-  REJECTED // ปฏิเสธ
-}
-
-// สถานะบิล
-enum BillStatus {
-  UNPAID
-  PAID
-  VERIFYING
-}
-
-// Admin
 model Admin {
-  adminId  String    @id @default(auto()) @map("_id") @db.ObjectId
-  username String    @unique
+  adminId  String @id @default(auto()) @map("_id") @db.ObjectId
+  username String @unique
   name     String
   password String
-  role     AdminRole @default(STAFF)
+  role     Int    @default(1) // 0 = SUPER_ADMIN, 1 = STAFF
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -73,7 +34,7 @@ model Room {
   deposit    Int
   bookingFee Int
 
-  status RoomStatus @default(AVAILABLE)
+  status Int @default(0) // 0 = AVAILABLE, 1 = OCCUPIED
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -104,13 +65,12 @@ model Customer {
   checkouts Checkout[]
 }
 
-// Booking (การเข้าพัก)
+//Booking
 model Booking {
   bookingId  String @id @default(auto()) @map("_id") @db.ObjectId
   roomId     String @db.ObjectId
   customerId String @db.ObjectId
 
-  // snapshot ลูกค้า
   ctitle   String?
   cname    String?
   csurname String?
@@ -121,8 +81,8 @@ model Booking {
   checkin       DateTime
   actualCheckin DateTime?
 
-  approveStatus BookingApproveStatus @default(PENDING)
-  checkinStatus CheckinStatus        @default(NOT_CHECKED_IN)
+  approveStatus Int @default(0) // 0=PENDING,1=APPROVED,2=REJECTED
+  checkinStatus Int @default(0) // 0=NOT_CHECKED_IN,1=CHECKED_IN,2=FAILED
 
   slipUrl String?
 
@@ -136,7 +96,7 @@ model Booking {
   bills    Bill[]
 }
 
-//Checkout (การคืนห้อง)
+//Checkout
 model Checkout {
   checkoutId String @id @default(auto()) @map("_id") @db.ObjectId
 
@@ -148,7 +108,7 @@ model Checkout {
   approvedAt        DateTime?
   actualCheckout    DateTime?
 
-  status CheckoutStatus @default(PENDING)
+  status Int @default(0) // 0=PENDING,1=APPROVED,2=COMPLETED,3=REJECTED
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -179,7 +139,7 @@ model Bill {
   overdueDays  Int @default(0)
   total        Int @default(0)
 
-  status  BillStatus @default(UNPAID)
+  status  Int      @default(0) // 0=UNPAID,1=PAID,2=VERIFYING
   dueDate DateTime
 
   ctitle   String?

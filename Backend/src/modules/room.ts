@@ -1,16 +1,12 @@
 // src/modules/room.ts
-
-// 🚚 Imports
 import { Router } from "express";
 import prisma from "../prisma";
 import { authMiddleware, roleMiddleware } from "../middleware/authMiddleware";
-import { RoomStatus } from "@prisma/client";
 
-// 🌐 Router
 const roomRouter = Router();
 
 /* =====================================================
-   📋 GET ALL ROOMS
+   GET ALL ROOMS
 ===================================================== */
 roomRouter.get("/getall", async (_req, res) => {
   try {
@@ -59,7 +55,7 @@ roomRouter.get("/getall", async (_req, res) => {
 });
 
 /* =====================================================
-   🔍 GET ROOM BY ID
+   GET ROOM BY ID
 ===================================================== */
 roomRouter.get("/:roomId", async (req, res) => {
   try {
@@ -108,12 +104,12 @@ roomRouter.get("/:roomId", async (req, res) => {
 });
 
 /* =====================================================
-   🏗️ CREATE ROOM
+   CREATE ROOM
 ===================================================== */
 roomRouter.post(
   "/create",
   authMiddleware,
-  roleMiddleware("SUPER_ADMIN"),
+  roleMiddleware(0),
   async (req, res) => {
     try {
       const { number, size, rent, deposit, bookingFee } = req.body;
@@ -124,12 +120,14 @@ roomRouter.post(
         rent == null ||
         deposit == null ||
         bookingFee == null
-      )
+      ) {
         throw new Error("กรุณากรอกข้อมูลให้ครบทุกช่อง");
+      }
 
       const exists = await prisma.room.findUnique({ where: { number } });
-      if (exists)
-        throw new Error(`มีห้องหมายเลข ${number} อยู่แล้วในระบบ`);
+      if (exists) {
+        throw new Error(`มีห้องหมายเลข ${number} อยู่แล้ว`);
+      }
 
       const room = await prisma.room.create({
         data: {
@@ -138,7 +136,7 @@ roomRouter.post(
           rent: Number(rent),
           deposit: Number(deposit),
           bookingFee: Number(bookingFee),
-          status: RoomStatus.AVAILABLE,
+          status: 0, // ✅ 0 = AVAILABLE
           adminCreated: {
             connect: { adminId: req.admin!.adminId },
           },
@@ -159,12 +157,12 @@ roomRouter.post(
 );
 
 /* =====================================================
-   ✏️ UPDATE ROOM
+   UPDATE ROOM
 ===================================================== */
 roomRouter.put(
   "/:roomId",
   authMiddleware,
-  roleMiddleware("SUPER_ADMIN"),
+  roleMiddleware(0),
   async (req, res) => {
     try {
       const { number, size, rent, deposit, bookingFee, status } = req.body;
@@ -172,14 +170,14 @@ roomRouter.put(
       const room = await prisma.room.update({
         where: { roomId: req.params.roomId },
         data: {
-          ...(number && { number }),
-          ...(size && { size }),
+          ...(number !== undefined && { number }),
+          ...(size !== undefined && { size }),
           ...(rent !== undefined && { rent: Number(rent) }),
           ...(deposit !== undefined && { deposit: Number(deposit) }),
           ...(bookingFee !== undefined && {
             bookingFee: Number(bookingFee),
           }),
-          ...(status && { status }), // ต้องเป็น RoomStatus เท่านั้น
+          ...(status !== undefined && { status: Number(status) }), // ✅ 0 / 1
           adminUpdated: {
             connect: { adminId: req.admin!.adminId },
           },
@@ -203,12 +201,12 @@ roomRouter.put(
 );
 
 /* =====================================================
-   🗑️ DELETE ROOM
+   DELETE ROOM
 ===================================================== */
 roomRouter.delete(
   "/:roomId",
   authMiddleware,
-  roleMiddleware("SUPER_ADMIN"),
+  roleMiddleware(0),
   async (req, res) => {
     try {
       await prisma.room.delete({

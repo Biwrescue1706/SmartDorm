@@ -5,20 +5,18 @@ import prisma from "../prisma";
 import { createClient } from "@supabase/supabase-js";
 import { verifyLineToken } from "../utils/verifyLineToken";
 import { sendFlexMessage } from "../utils/lineFlex";
-import { BillStatus } from "@prisma/client";
 
 const paymentRouter = Router();
 const upload = multer({ storage: multer.memoryStorage() });
 
-/* ===================== Supabase ===================== */
+// Supabase
 const supabase = createClient(
   process.env.SUPABASE_URL!,
   process.env.SUPABASE_KEY!
 );
 
-/* ===================== Helpers ===================== */
+// Helpers
 const logTime = () => new Date().toISOString().replace("T", " ").split(".")[0];
-
 const formatThaiDate = (d?: string | Date | null) =>
   d
     ? new Date(d).toLocaleDateString("th-TH", {
@@ -28,9 +26,9 @@ const formatThaiDate = (d?: string | Date | null) =>
       })
     : "-";
 
-/* =====================================================
-   📌 CREATE PAYMENT + UPLOAD SLIP
-===================================================== */
+/* ========================================================
+   CREATE PAYMENT + UPLOAD SLIP
+======================================================== */
 paymentRouter.post("/create", upload.single("slip"), async (req, res) => {
   try {
     const { billId, accessToken } = req.body;
@@ -38,35 +36,32 @@ paymentRouter.post("/create", upload.single("slip"), async (req, res) => {
 
     if (!billId) throw new Error("ไม่พบรหัสบิล");
     if (!accessToken) throw new Error("ไม่มี accessToken");
-    if (!slip) throw new Error("ต้องแนบสลิปการชำระเงิน");
+    if (!slip) throw new Error("ต้องแนบสลิป");
 
-    /* 1️⃣ ตรวจสอบ LINE token */
     const { userId } = await verifyLineToken(accessToken);
 
-    /* 2️⃣ หา customer */
     const customer = await prisma.customer.findFirst({ where: { userId } });
     if (!customer) throw new Error("ไม่พบข้อมูลลูกค้า");
 
-    /* 3️⃣ ดึงบิล */
     const bill = await prisma.bill.findUnique({
       where: { billId },
       include: { room: true, booking: true, customer: true },
     });
     if (!bill) throw new Error("ไม่พบบิลนี้");
+    if (bill.status === 1) throw new Error("บิลนี้ชำระแล้ว");
+    if (bill.status === 2) throw new Error("บิลนี้รอตรวจสอบอยู่");
 
-    if (bill.status === BillStatus.PAID)
-      throw new Error("บิลนี้ชำระแล้ว");
-    if (bill.status === BillStatus.VERIFYING)
-      throw new Error("บิลนี้อยู่ระหว่างตรวจสอบ");
+    // 🔒 กันจ่ายบิลคนอื่น
+    if (bill.customerId && bill.customerId !== customer.customerId) {
+      throw new Error("คุณไม่มีสิทธิ์ชำระบิลนี้");
+    }
 
-    /* 4️⃣ ตั้งชื่อไฟล์ */
     const created = new Date(bill.createdAt)
       .toISOString()
       .replace(/[:.]/g, "-");
 
     const filename = `Payment-slips/Payment-slip_${bill.billId}_${created}`;
 
-    /* 5️⃣ Upload slip */
     const { error } = await supabase.storage
       .from(process.env.SUPABASE_BUCKET!)
       .upload(filename, slip.buffer, {
@@ -74,7 +69,7 @@ paymentRouter.post("/create", upload.single("slip"), async (req, res) => {
         upsert: true,
       });
 
-    if (error) throw new Error("อัปโหลดสลิปไม่สำเร็จ");
+    if (error) throw new Error(error.message);
 
     const { data } = supabase.storage
       .from(process.env.SUPABASE_BUCKET!)
@@ -82,7 +77,6 @@ paymentRouter.post("/create", upload.single("slip"), async (req, res) => {
 
     const slipUrl = data.publicUrl;
 
-    /* 6️⃣ บันทึก DB (Transaction) */
     const [payment, updatedBill] = await prisma.$transaction([
       prisma.payment.create({
         data: {
@@ -94,45 +88,39 @@ paymentRouter.post("/create", upload.single("slip"), async (req, res) => {
       prisma.bill.update({
         where: { billId },
         data: {
-          status: BillStatus.VERIFYING,
+          status: 2, // VERIFYING
           slipUrl,
         },
       }),
     ]);
 
-    const billUrl = `https://smartdorm-detail.biwbong.shop/bill/${bill.billId}`;
+    const customerUrl = `https://smartdorm-detail.biwbong.shop/bill/${bill.billId}`;
 
-    /* 🔔 แจ้งลูกค้า */
+    // แจ้งลูกค้า
     if (bill.customer?.userId) {
       await sendFlexMessage(
         bill.customer.userId,
-        "💰 SmartDorm รับสลิปชำระเงินแล้ว",
+        "💰 รับสลิปการชำระเงินแล้ว",
         [
           { label: "รหัสบิล", value: bill.billId },
-          { label: "🏠 ห้อง", value: bill.room?.number ?? "-" },
-          { label: "ยอดชำระ", value: `${bill.total.toLocaleString()} บาท` },
-          { label: "วันที่ชำระ", value: formatThaiDate(payment.createdAt) },
-          {
-            label: "สถานะ",
-            value: "รอตรวจสอบ",
-            color: "#f1c40f",
-          },
+          { label: "ห้อง", value: bill.room?.number ?? "-" },
+          { label: "ยอด", value: `${bill.total.toLocaleString()} บาท` },
+          { label: "สถานะ", value: "รอตรวจสอบ", color: "#f1c40f" },
         ],
-        [{ label: "ดูบิล", url: billUrl, style: "primary" }]
+        [{ label: "ดูบิล", url: customerUrl, style: "primary" }]
       );
     }
 
-    /* 🔔 แจ้งแอดมิน */
+    // แจ้งแอดมิน
     if (process.env.ADMIN_LINE_ID) {
       await sendFlexMessage(
         process.env.ADMIN_LINE_ID,
-        "📢 มีการชำระบิลใหม่",
+        "📢 มีการชำระเงินใหม่",
         [
           { label: "รหัสบิล", value: bill.billId },
           { label: "ผู้เช่า", value: bill.booking?.fullName ?? "-" },
-          { label: "🏠 ห้อง", value: bill.room?.number ?? "-" },
+          { label: "ห้อง", value: bill.room?.number ?? "-" },
           { label: "ยอด", value: `${bill.total.toLocaleString()} บาท` },
-          { label: "วันที่", value: formatThaiDate(payment.createdAt) },
         ],
         [
           {
@@ -144,10 +132,12 @@ paymentRouter.post("/create", upload.single("slip"), async (req, res) => {
       );
     }
 
-    console.log(`[${logTime()}] รับสลิปบิล ${bill.billId} สำเร็จ`);
+    console.log(
+      `[${logTime()}] รับสลิปชำระเงิน บิล ${bill.billId} สำเร็จ`
+    );
+
     res.json({ message: "ส่งสลิปสำเร็จ", payment, bill: updatedBill });
   } catch (err: any) {
-    console.error("❌ [payment/create]", err.message);
     res.status(400).json({ error: err.message });
   }
 });

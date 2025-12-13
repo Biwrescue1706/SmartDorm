@@ -1,4 +1,3 @@
-// src/components/AllBills/AllBillsCard.tsx
 import type { Bill } from "../../types/Bill";
 
 interface Props {
@@ -69,7 +68,7 @@ export default function AllBillsCard({
         <b>ยอดรวม:</b> {bill.total.toLocaleString()} บาท
       </p>
 
-      {/* 🔖 STATUS BADGE */}
+      {/* STATUS */}
       {isPending && (
         <span className="badge bg-warning text-dark p-2">รอตรวจสอบ</span>
       )}
@@ -78,7 +77,9 @@ export default function AllBillsCard({
         <span className="badge bg-danger p-2">ค้างชำระ</span>
       )}
 
-      {/* 🎯 STAFF MODE: เฉพาะดูสลิป */}
+      {/* ================= ACTIONS ================= */}
+
+      {/* 👷 STAFF → ดูสลิปอย่างเดียว */}
       {isStaff ? (
         hasSlip && (
           <button
@@ -89,21 +90,21 @@ export default function AllBillsCard({
           </button>
         )
       ) : (
-        /* 🛠 ADMIN MODE */
+        /* 👑 ADMIN */
         <div className="mt-3 d-flex flex-column gap-2">
-          {/* 🟡 STATUS 2 → APPROVE / REJECT */}
+          {/* STATUS 2 → MANAGE */}
           {bill.status === 2 && (
             <button
-              className="btn btn-info btn-sm fw-semibold w-100 mt-2 text-white"
+              className="btn btn-info btn-sm fw-semibold w-100 text-white"
               onClick={() => onManage(bill)}
             >
               จัดการ
             </button>
           )}
 
-          {/* 🔴 STATUS 0 → EDIT / DELETE */}
+          {/* STATUS 0 → EDIT + DELETE */}
           {bill.status === 0 && role === 0 && (
-            <div className="d-flex gap-2 mt-2">
+            <div className="d-flex gap-2">
               <button
                 className="btn btn-warning btn-sm w-50 fw-semibold"
                 onClick={() => onEdit(bill)}
@@ -120,21 +121,26 @@ export default function AllBillsCard({
             </div>
           )}
 
-          {/* 🟢 STATUS 1 → VIEW SLIP */}
-          {isPaid && hasSlip && (
-            <div className="d-flex gap-2 mt-2">
-              <button
-                className="btn btn-primary btn-sm fw-semibold"
-                onClick={() => onViewSlip(bill)}
-              >
-                ดูสลิป
-              </button>
-              <button
-                className="btn btn-danger btn-sm fw-semibold"
-                onClick={() => onDelete(bill.billId, bill.room.number)}
-              >
-                🗑️
-              </button>
+          {/* STATUS 1 → VIEW SLIP + DELETE (❌ NO EDIT) */}
+          {bill.status === 1 && (
+            <div className="d-flex gap-2">
+              {hasSlip && (
+                <button
+                  className="btn btn-primary btn-sm fw-semibold w-50"
+                  onClick={() => onViewSlip(bill)}
+                >
+                  ดูสลิป
+                </button>
+              )}
+
+              {role === 0 && (
+                <button
+                  className="btn btn-danger btn-sm fw-semibold w-50"
+                  onClick={() => onDelete(bill.billId, bill.room.number)}
+                >
+                  🗑️ ลบ
+                </button>
+              )}
             </div>
           )}
         </div>

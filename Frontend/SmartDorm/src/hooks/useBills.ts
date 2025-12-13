@@ -10,7 +10,7 @@ export function useBills() {
   const [bills, setBills] = useState<Bill[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // ดึงข้อมูลบิลทั้งหมด
+  // ---------------- ดึงข้อมูลบิลทั้งหมด ----------------
   const fetchBills = async () => {
     setLoading(true);
     try {
@@ -26,7 +26,6 @@ export function useBills() {
 
       const data = await res.json();
       setBills(data);
-      // ไม่จำเป็นต้องโชว์ toast เมื่อโหลดสำเร็จทุกครั้ง
     } catch {
       toast("error", "เชื่อมต่อไม่สำเร็จ", "ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์");
     } finally {
@@ -34,10 +33,13 @@ export function useBills() {
     }
   };
 
-  // อัปเดตบิล
+  // ---------------- อัปเดตบิล ----------------
   const updateBill = async (billId: string, formValues: any) => {
     try {
-      Swal.fire({ title: "กำลังอัปเดต...", didOpen: () => Swal.showLoading() });
+      Swal.fire({
+        title: "กำลังอัปเดต...",
+        didOpen: () => Swal.showLoading(),
+      });
 
       const res = await fetch(`${API_BASE}${UpdateBill(billId)}`, {
         method: "PUT",
@@ -55,7 +57,7 @@ export function useBills() {
     }
   };
 
-  // ลบบิล
+  // ---------------- ลบบิล (⭐ แก้ตรงนี้) ----------------
   const deleteBill = async (billId: string, roomNumber: string) => {
     const ok = await Swal.fire({
       title: `ลบบิลห้อง ${roomNumber}?`,
@@ -71,6 +73,11 @@ export function useBills() {
       const res = await fetch(`${API_BASE}${DeleteBill(billId)}`, {
         method: "DELETE",
         credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        // ⭐ สำคัญ: ส่ง billId ไปใน body
+        body: JSON.stringify({ billId }),
       });
 
       if (!res.ok) throw new Error();
@@ -82,7 +89,7 @@ export function useBills() {
     }
   };
 
-  // อนุมัติบิล
+  // ---------------- อนุมัติบิล ----------------
   const approveBill = async (billId: string, room: string) => {
     const ok = await Swal.fire({
       title: `อนุมัติบิลห้อง ${room}?`,
@@ -107,7 +114,7 @@ export function useBills() {
     }
   };
 
-  // ปฏิเสธบิล
+  // ---------------- ปฏิเสธบิล ----------------
   const rejectBill = async (billId: string, room: string) => {
     const ok = await Swal.fire({
       title: `ปฏิเสธบิลห้อง ${room}?`,

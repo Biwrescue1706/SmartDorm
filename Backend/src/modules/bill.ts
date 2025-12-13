@@ -355,7 +355,6 @@ billRouter.delete("/:billId", authMiddleware, async (req, res) => {
       return res.status(404).json({ error: "ไม่พบบิลนี้ในระบบ" });
     }
 
-
     // 🔍 ดึง payment เพื่อหา slip
     const payments = await prisma.payment.findMany({
       where: { billId },
@@ -379,6 +378,5 @@ billRouter.delete("/:billId", authMiddleware, async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
-
 
 export default billRouter;

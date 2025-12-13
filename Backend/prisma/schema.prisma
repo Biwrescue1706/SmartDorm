@@ -108,8 +108,14 @@ model Bill {
   fine         Int      @default(0)
   overdueDays  Int      @default(0)
   total        Int      @default(0)
-  status       Int       @default(0) // 0 ค้างชำระ, 1 ชำระแล้ว, 2 รอตรวจสอบ
+  status       Int      @default(0) // 0 ค้างชำระ, 1 ชำระแล้ว, 2 รอตรวจสอบ
   dueDate      DateTime
+
+  ctitle   String? // คำนำหน้าชื่อ
+  cname    String? // ชื่อ
+  csurname String? // นามสกุล
+  fullName String? // ชื่อเต็ม
+  cphone   String? // เบอร์โทร
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

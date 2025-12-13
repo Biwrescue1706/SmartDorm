@@ -22,7 +22,6 @@ export function useAdmins() {
 
       const data = await res.json();
       setAdmins(data);
-      toast("success", "โหลดข้อมูลสำเร็จ", "ดึงข้อมูลผู้ดูแลทั้งหมดแล้ว");
     } catch {
       toast("error", "เชื่อมต่อไม่สำเร็จ", "ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์");
     } finally {

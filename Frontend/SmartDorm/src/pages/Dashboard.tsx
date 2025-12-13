@@ -10,6 +10,7 @@ import DashboardRevenue from "../components/Dashboard/DashboardRevenue";
 
 export default function Dashboard() {
   const { handleLogout, role, adminName, adminUsername } = useAuth();
+
   const { rooms, fetchRooms } = useRooms();
   const { bookings, fetchBookings } = useBookings();
   const { checkouts, fetchCheckouts } = useCheckouts();
@@ -18,23 +19,45 @@ export default function Dashboard() {
   const [pendingBookings, setPendingBookings] = useState(0);
   const [pendingCheckouts, setPendingCheckouts] = useState(0);
 
+  /* =========================
+     LOAD DATA
+  ========================= */
   useEffect(() => {
-    Promise.all([
-      fetchRooms(),
-      fetchBookings(),
-      fetchCheckouts(),
-      fetchBills(),
-    ]);
+    fetchRooms();
+    fetchBookings();
+    fetchCheckouts();
+    fetchBills();
   }, []);
 
+  /* =========================
+     CALCULATE PENDING
+  ========================= */
   useEffect(() => {
-    setPendingBookings(bookings.filter((b) => b.approveStatus === 0).length);
-    setPendingCheckouts(checkouts.filter((c) => c.returnStatus === 0).length);
+    // approveStatus: 0 = PENDING
+    setPendingBookings(
+      Array.isArray(bookings)
+        ? bookings.filter((b) => b.approveStatus === 0).length
+        : 0
+    );
+
+    // status: 0 = PENDING (checkout)
+    setPendingCheckouts(
+      Array.isArray(checkouts)
+        ? checkouts.filter((c) => c.status === 0).length
+        : 0
+    );
   }, [bookings, checkouts]);
 
-  const totalRooms = rooms.length;
-  const availableRooms = rooms.filter((r) => r.status === 0).length;
-  const bookedRooms = rooms.filter((r) => r.status === 1).length;
+  /* =========================
+     ROOM STATS
+  ========================= */
+  const totalRooms = Array.isArray(rooms) ? rooms.length : 0;
+  const availableRooms = Array.isArray(rooms)
+    ? rooms.filter((r) => r.status === 0).length
+    : 0;
+  const bookedRooms = Array.isArray(rooms)
+    ? rooms.filter((r) => r.status === 1).length
+    : 0;
 
   return (
     <div
@@ -44,6 +67,7 @@ export default function Dashboard() {
         fontFamily: "Sarabun, sans-serif",
       }}
     >
+      {/* NAVBAR */}
       <Nav
         onLogout={handleLogout}
         role={role}
@@ -55,7 +79,6 @@ export default function Dashboard() {
       {/* MAIN CONTENT */}
       <main className="main-content flex-grow-1 px-4 py-4 mt-6 mt-lg-6">
         <div className="mx-auto container-max">
-          {/* ⭐ หัวข้อใหญ่ */}
           <h2
             className="fw-bold text-center mb-4 mt-3"
             style={{
@@ -66,7 +89,7 @@ export default function Dashboard() {
             📊 สรุปข้อมูลหอพัก SmartDorm
           </h2>
 
-          {/* 🔥 ส่วนสรุป Dashboard */}
+          {/* SUMMARY */}
           <DashboardSummary
             totalRooms={totalRooms}
             availableRooms={availableRooms}
@@ -75,7 +98,7 @@ export default function Dashboard() {
             pendingCheckouts={pendingCheckouts}
           />
 
-          {/* 💜 รายรับ Dashboard */}
+          {/* REVENUE */}
           <DashboardRevenue bills={bills} bookings={bookings} />
         </div>
       </main>

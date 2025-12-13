@@ -1,34 +1,42 @@
-//src/components/Checkout/CheckoutEditDialog.tsx
+// src/components/Checkout/CheckoutEditDialog.tsx
 import { useState } from "react";
 import Swal from "sweetalert2";
-import type { Booking } from "../../types/Checkout";
+import type { Checkout } from "../../types/Checkout";
 
 interface Props {
-  booking: Booking | null;
-  onSave: (bookingId: string, values: { checkout: string }) => Promise<void>;
+  checkout: Checkout | null;
+  onSave: (
+    checkoutId: string,
+    values: { requestedCheckout: string }
+  ) => Promise<void>;
   onClose: () => void;
 }
 
 export default function CheckoutEditDialog({
-  booking,
+  checkout,
   onSave,
   onClose,
 }: Props) {
   const [checkoutDate, setCheckoutDate] = useState<string>(
-    booking?.checkout
-      ? new Date(booking.checkout).toISOString().split("T")[0]
+    checkout?.requestedCheckout
+      ? new Date(checkout.requestedCheckout).toISOString().split("T")[0]
       : ""
   );
 
-  if (!booking) return null;
+  if (!checkout) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
     if (!checkoutDate) {
       Swal.fire("โปรดเลือกวันที่คืนห้อง", "", "warning");
       return;
     }
-    await onSave(booking.bookingId, { checkout: checkoutDate });
+
+    await onSave(checkout.checkoutId, {
+      requestedCheckout: checkoutDate,
+    });
+
     onClose();
   };
 
@@ -53,7 +61,7 @@ export default function CheckoutEditDialog({
               type="button"
               className="btn-close btn-close-white"
               onClick={onClose}
-            ></button>
+            />
           </div>
 
           {/* Body */}
@@ -64,7 +72,7 @@ export default function CheckoutEditDialog({
                 <input
                   type="text"
                   className="form-control text-center"
-                  value={booking.room?.number || ""}
+                  value={checkout.room?.number || ""}
                   disabled
                 />
               </div>

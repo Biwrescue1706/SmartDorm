@@ -1,99 +1,66 @@
-// src/components/Checkout/CheckoutRow.tsx
-import type { Booking } from "../../types/Checkout";
+import type { Checkout } from "../../types/Checkout";
 
 interface Props {
-  booking: Booking;
+  checkout: Checkout;
   index: number;
   onApprove: (id: string) => void;
   onReject: (id: string) => void;
-  onEdit: (booking: Booking) => void;
-  onDelete: (id: string, roomNum: string) => void;
-  onConfirmReturn: (id: string) => void; // ✅ เพิ่ม prop ใหม่
+  onDelete: (id: string) => void;
 }
 
 export default function CheckoutRow({
-  booking,
+  checkout,
   index,
   onApprove,
   onReject,
-  onEdit,
   onDelete,
-  onConfirmReturn, // ✅ รับ prop
 }: Props) {
-  const renderStatus = (status: number | null) => {
-    switch (status) {
-      case 0:
-        return <span className="badge bg-warning text-dark">รออนุมัติ</span>;
-      case 1:
-        return <span className="badge bg-success">อนุมัติแล้ว</span>;
-      case 2:
-        return <span className="badge bg-danger">ถูกปฏิเสธ</span>;
-      default:
-        return <span className="text-muted">-</span>;
-    }
+  const renderStatus = () => {
+    if (checkout.status === 0)
+      return <span className="badge bg-warning">รออนุมัติ</span>;
+    if (checkout.status === 1)
+      return <span className="badge bg-success">อนุมัติแล้ว</span>;
+    if (checkout.status === 2)
+      return <span className="badge bg-info">คืนแล้ว</span>;
+    if (checkout.status === 3)
+      return <span className="badge bg-danger">ปฏิเสธ</span>;
+    return "-";
   };
 
   return (
     <tr>
       <td>{index}</td>
-      <td>{booking.room.number}</td>
-      <td>{booking.fullName}</td>
-      <td>{booking.cphone}</td>
-      <td>{new Date(booking.checkin).toLocaleDateString("th-TH")}</td>
+      <td>{checkout.room?.number}</td>
+      <td>{checkout.booking?.fullName}</td>
+      <td>{checkout.booking?.cphone}</td>
       <td>
-        {booking.checkout
-          ? new Date(booking.checkout).toLocaleDateString("th-TH")
+        {checkout.requestedCheckout
+          ? new Date(checkout.requestedCheckout).toLocaleDateString("th-TH")
           : "-"}
       </td>
-      <td>{renderStatus(booking.returnStatus)}</td>
-
-      {/* ✅ ปุ่ม "จัดการ" หรือแสดงวันคืนจริง */}
+      <td>{renderStatus()}</td>
       <td>
-        {booking.checkoutStatus === 0 ? (
-          <button
-            className="btn btn-warning btn-sm fw-semibold"
-            onClick={() => onConfirmReturn(booking.bookingId)}
-          >
-            จัดการ
-          </button>
-        ) : (
-          <span className="text-success fw-semibold">
-            {booking.actualCheckout
-              ? new Date(booking.actualCheckout).toLocaleDateString("th-TH")
-              : "คืนแล้ว"}
-          </span>
-        )}
-      </td>
-
-      {/* ปุ่มอนุมัติ/ปฏิเสธ/แก้ไข/ลบ */}
-      <td>
-        {booking.returnStatus === 0 && (
+        {checkout.status === 0 && (
           <>
             <button
               className="btn btn-success btn-sm me-1"
-              onClick={() => onApprove(booking.bookingId)}
+              onClick={() => onApprove(checkout.checkoutId)}
             >
               อนุมัติ
             </button>
             <button
               className="btn btn-danger btn-sm me-1"
-              onClick={() => onReject(booking.bookingId)}
+              onClick={() => onReject(checkout.checkoutId)}
             >
               ปฏิเสธ
             </button>
           </>
         )}
         <button
-          className="btn btn-outline-primary btn-sm me-1"
-          onClick={() => onEdit(booking)}
-        >
-          ✏️
-        </button>
-        <button
           className="btn btn-outline-danger btn-sm"
-          onClick={() => onDelete(booking.bookingId, booking.room.number)}
+          onClick={() => onDelete(checkout.checkoutId)}
         >
-          🗑️
+          ลบ
         </button>
       </td>
     </tr>

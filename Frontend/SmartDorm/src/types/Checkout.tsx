@@ -1,24 +1,23 @@
-export interface Customer {
-  customerId: string;
-  userId: string;
-  userName: string;
-}
+export interface Checkout {
+  checkoutId: string;
+  status: number; // 0=PENDING, 1=APPROVED, 2=COMPLETED, 3=REJECTED
 
-export interface Room {
-  roomId: string;
-  number: string;
-}
+  requestedCheckout?: string;
+  approvedAt?: string;
+  actualCheckout?: string;
+  createdAt?: string;
 
-export interface Booking {
-  fullName: string;
-  cphone: string;
-  checkin: string;
-  checkout: string | null;
-  actualCheckout?: string | null; // ✅ วันที่เช็คเอาท์จริง
-  checkoutStatus: number; // ✅ 0=ยังไม่เช็คเอาท์, 1=เช็คเอาท์แล้ว
-  returnStatus: number | null; // ✅ 0=รออนุมัติ, 1=อนุมัติ, 2=ปฏิเสธ
-  createdAt: string;
-  bookingId: string;
-  room: Room;
-  customer: Customer;
+  booking?: {
+    bookingId: string;
+    fullName?: string;
+    cphone?: string;
+  };
+
+  room?: {
+    number: string;
+  };
+
+  customer?: {
+    userName?: string;
+  };
 }

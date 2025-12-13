@@ -4,135 +4,203 @@ generator client {
 
 datasource db {
   provider = "mongodb"
-  url      = env("DATABASE_URL")
 }
 
+// สิทธิ์แอดมิน
+enum AdminRole {
+  SUPER_ADMIN
+  STAFF
+}
+
+// สถานะห้อง
+enum RoomStatus {
+  AVAILABLE // ว่าง
+  OCCUPIED // ไม่ว่าง
+}
+
+// สถานะการอนุมัติการจอง
+enum BookingApproveStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+// สถานะการเช็คอิน
+enum CheckinStatus {
+  NOT_CHECKED_IN
+  CHECKED_IN
+  FAILED
+}
+
+// สถานะการคืนห้อง
+enum CheckoutStatus {
+  PENDING // รออนุมัติคืน
+  APPROVED // อนุมัติแล้ว (รอมาเช็คเอาท์)
+  COMPLETED // เช็คเอาท์แล้ว
+  REJECTED // ปฏิเสธ
+}
+
+// สถานะบิล
+enum BillStatus {
+  UNPAID
+  PAID
+  VERIFYING
+}
+
+// Admin
 model Admin {
-  adminId   String   @id @default(auto()) @map("_id") @db.ObjectId
-  username  String   @unique // ชื่อผู้ใช้
-  name      String // ชื่อจริง
-  password  String // รหัสผ่าน
-  role      Int      @default(1) // ✅ 0 = แอดมินหลัก, 1 = พนักงาน
+  adminId  String    @id @default(auto()) @map("_id") @db.ObjectId
+  username String    @unique
+  name     String
+  password String
+  role     AdminRole @default(STAFF)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  // ความสัมพันธ์กับ Room / Bill
   roomsCreated Room[] @relation("RoomCreatedBy")
   roomsUpdated Room[] @relation("RoomUpdatedBy")
   billsCreated Bill[] @relation("BillCreatedBy")
   billsUpdated Bill[] @relation("BillUpdatedBy")
 }
 
+//Room
 model Room {
-  roomId     String   @id @default(auto()) @map("_id") @db.ObjectId
-  number     String   @unique //เลขห้อง
-  size       String //ขนาดของห้อง
-  rent       Int //ค่าเช่าห้อง
-  deposit    Int //ค่าประกันห้อง
-  bookingFee Int //ค่าจองห้อง
-  status     Int // 0 = ว่าง, 1 = ไม่ว่าง
-  createdAt  DateTime @default(now())
-  createdBy  String   @db.ObjectId //สร้างโดยใคร
-  updatedAt  DateTime @updatedAt
-  updatedBy  String?  @db.ObjectId //แก้ไขโดยใคร
+  roomId     String @id @default(auto()) @map("_id") @db.ObjectId
+  number     String @unique
+  size       String
+  rent       Int
+  deposit    Int
+  bookingFee Int
 
-  // ความสัมพันธ์กับแอดมิน
+  status RoomStatus @default(AVAILABLE)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  createdBy String  @db.ObjectId
+  updatedBy String? @db.ObjectId
+
   adminCreated Admin? @relation("RoomCreatedBy", fields: [createdBy], references: [adminId])
   adminUpdated Admin? @relation("RoomUpdatedBy", fields: [updatedBy], references: [adminId])
 
-  // ความสัมพันธ์กับ Booking / Bill
-  bookings Booking[]
-  bills    Bill[]
+  bookings  Booking[]
+  bills     Bill[]
+  checkouts Checkout[]
 }
 
+//Customer
 model Customer {
-  customerId String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId     String // LINE LIFF userId
-  userName   String // LINE LIFF displayName
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  customerId String @id @default(auto()) @map("_id") @db.ObjectId
+  userId     String
+  userName   String
 
-  bookings Booking[]
-  bills    Bill[]
-  Payment  Payment[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  bookings  Booking[]
+  bills     Bill[]
+  payments  Payment[]
+  checkouts Checkout[]
 }
 
+// Booking (การเข้าพัก)
 model Booking {
   bookingId  String @id @default(auto()) @map("_id") @db.ObjectId
   roomId     String @db.ObjectId
   customerId String @db.ObjectId
 
-  // ✅ snapshot ข้อมูลลูกค้า
-  ctitle   String? // คำนำหน้าชื่อ
-  cname    String? //ชื่อ
-  csurname String? //นามสกุล
-  fullName String? // ชื่อเต็ม ctitle + cname + csurname
-  cphone   String? //เบอรโทร
-  cmumId   String? //บัตรประชาชน
+  // snapshot ลูกค้า
+  ctitle   String?
+  cname    String?
+  csurname String?
+  fullName String?
+  cphone   String?
+  cmumId   String?
 
-  slipUrl        String?
-  checkin        DateTime // วันที่ลูกค้าระบุว่าจะเช็คอิน
-  actualCheckin  DateTime? // วันที่เช็คอินจริง
-  approveStatus  Int       @default(0) // 0=รออนุมัติ, 1=อนุมัติแล้ว
-  checkinStatus  Int       @default(0) // 0=ยังไม่เช็คอิน, 1=เช็คอินแล้ว ,2=เช็คอินไม่สำเร็จ
-  checkout       DateTime? // วันที่ลูกค้าระบุว่าจะเช็คเอาท์
-  actualCheckout DateTime? // วันที่เช็คเอาท์จริง
-  checkoutStatus Int       @default(0) // 0=ยังไม่เช็คเอาท์, 1=เช็คเอาท์แล้ว ,2=เช็คเอาท์ไม่สำเร็จ
-  returnStatus   Int? // สำหรับคืนห้อง (ถ้ายังใช้)
+  checkin       DateTime
+  actualCheckin DateTime?
+
+  approveStatus BookingApproveStatus @default(PENDING)
+  checkinStatus CheckinStatus        @default(NOT_CHECKED_IN)
+
+  slipUrl String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   room     Room     @relation(fields: [roomId], references: [roomId])
   customer Customer @relation(fields: [customerId], references: [customerId])
-  Bill     Bill[]
+
+  checkout Checkout?
+  bills    Bill[]
 }
 
+//Checkout (การคืนห้อง)
+model Checkout {
+  checkoutId String @id @default(auto()) @map("_id") @db.ObjectId
+
+  bookingId  String @unique @db.ObjectId
+  roomId     String @db.ObjectId
+  customerId String @db.ObjectId
+
+  requestedCheckout DateTime
+  approvedAt        DateTime?
+  actualCheckout    DateTime?
+
+  status CheckoutStatus @default(PENDING)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  booking  Booking  @relation(fields: [bookingId], references: [bookingId])
+  room     Room     @relation(fields: [roomId], references: [roomId])
+  customer Customer @relation(fields: [customerId], references: [customerId])
+}
+
+//Bill
 model Bill {
   billId String   @id @default(auto()) @map("_id") @db.ObjectId
   month  DateTime
 
   rent         Int
-  service      Int      @default(50)
+  service      Int @default(50)
   wBefore      Int
   wAfter       Int
   wUnits       Int
-  wPrice       Int      @default(19)
-  waterCost    Int      @default(0)
+  wPrice       Int @default(19)
+  waterCost    Int @default(0)
   eBefore      Int
   eAfter       Int
   eUnits       Int
-  ePrice       Int      @default(7)
-  electricCost Int      @default(0)
-  slipUrl      String? // ✅ เพิ่ม default ค่าว่าง
-  fine         Int      @default(0)
-  overdueDays  Int      @default(0)
-  total        Int      @default(0)
-  status       Int      @default(0) // 0 ค้างชำระ, 1 ชำระแล้ว, 2 รอตรวจสอบ
-  dueDate      DateTime
+  ePrice       Int @default(7)
+  electricCost Int @default(0)
+  fine         Int @default(0)
+  overdueDays  Int @default(0)
+  total        Int @default(0)
 
-  ctitle   String? // คำนำหน้าชื่อ
-  cname    String? // ชื่อ
-  csurname String? // นามสกุล
-  fullName String? // ชื่อเต็ม
-  cphone   String? // เบอร์โทร
+  status  BillStatus @default(UNPAID)
+  dueDate DateTime
+
+  ctitle   String?
+  cname    String?
+  csurname String?
+  fullName String?
+  cphone   String?
+  slipUrl  String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  // ✅ ความสัมพันธ์
   roomId String @db.ObjectId
   room   Room   @relation(fields: [roomId], references: [roomId])
 
-  // ✅ เก็บลูกค้า
   customerId String?   @db.ObjectId
   customer   Customer? @relation(fields: [customerId], references: [customerId])
 
-  // ✅ เก็บการจอง
   bookingId String?  @db.ObjectId
   booking   Booking? @relation(fields: [bookingId], references: [bookingId])
 
-  // ✅ แอดมินที่สร้างและอัปเดต
   createdBy    String  @db.ObjectId
   updatedBy    String? @db.ObjectId
   adminCreated Admin?  @relation("BillCreatedBy", fields: [createdBy], references: [adminId])
@@ -141,13 +209,15 @@ model Bill {
   payment Payment?
 }
 
+// Payment
 model Payment {
-  paymentId  String   @id @default(auto()) @map("_id") @db.ObjectId
-  billId     String   @unique @db.ObjectId
-  customerId String   @db.ObjectId
+  paymentId  String  @id @default(auto()) @map("_id") @db.ObjectId
+  billId     String  @unique @db.ObjectId
+  customerId String  @db.ObjectId
   slipUrl    String?
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   bill     Bill     @relation(fields: [billId], references: [billId])
   customer Customer @relation(fields: [customerId], references: [customerId])

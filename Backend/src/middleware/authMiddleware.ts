@@ -1,13 +1,15 @@
-// src/middleware/authMiddleware.ts
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
+import { AdminRole } from "@prisma/client";
 
 const JWT_SECRET = process.env.JWT_SECRET as string;
 if (!JWT_SECRET) {
   throw new Error("❌ JWT_SECRET must be defined in .env file");
 }
 
-// ✅ เพิ่ม role เข้าใน type ของ req.admin
+/* =====================================================
+   Extend Express Request Type
+===================================================== */
 declare global {
   namespace Express {
     interface Request {
@@ -15,14 +17,20 @@ declare global {
         adminId: string;
         username: string;
         name: string;
-        role: number; // ✅ เพิ่ม role
+        role: AdminRole;
       };
     }
   }
 }
 
-// ✅ ตรวจสอบว่ามี token และถูกต้องหรือไม่
-export function authMiddleware(req: Request, res: Response, next: NextFunction) {
+/* =====================================================
+   Auth Middleware (ตรวจ Token)
+===================================================== */
+export function authMiddleware(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
   const token =
     req.cookies?.token ||
     (req.headers.authorization?.startsWith("Bearer ")
@@ -42,7 +50,7 @@ export function authMiddleware(req: Request, res: Response, next: NextFunction) 
       adminId: decoded.adminId,
       username: decoded.username,
       name: decoded.name,
-      role: decoded.role, // ✅ เพิ่ม role
+      role: decoded.role as AdminRole,
     };
 
     next();
@@ -52,8 +60,10 @@ export function authMiddleware(req: Request, res: Response, next: NextFunction) 
   }
 }
 
-// ✅ Middleware ตรวจ role เฉพาะ
-export function roleMiddleware(requiredRole: number) {
+/* =====================================================
+   Role Middleware (ตรวจสิทธิ์)
+===================================================== */
+export function roleMiddleware(requiredRole: AdminRole) {
   return (req: Request, res: Response, next: NextFunction) => {
     if (!req.admin) {
       return res.status(401).json({ error: "ยังไม่ได้เข้าสู่ระบบ" });

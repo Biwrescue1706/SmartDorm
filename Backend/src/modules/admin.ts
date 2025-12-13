@@ -1,15 +1,16 @@
 // src/modules/admin.ts
-// 🚚 Imports
 import { Router } from "express";
-import prisma  from "../prisma";
+import prisma from "../prisma";
 import { authMiddleware, roleMiddleware } from "../middleware/authMiddleware";
 import bcrypt from "bcryptjs";
+import { AdminRole } from "@prisma/client";
 
-// 🌐 Router
 const adminRouter = Router();
 
-// 📋 ดึงผู้ดูแลระบบทั้งหมด
-adminRouter.get("/getall", async (_req, res) => {
+/* =====================================================
+   📋 ดึงผู้ดูแลระบบทั้งหมด
+===================================================== */
+adminRouter.get("/getall", authMiddleware, async (_req, res) => {
   try {
     const admins = await prisma.admin.findMany({
       select: {
@@ -22,15 +23,17 @@ adminRouter.get("/getall", async (_req, res) => {
       },
       orderBy: { createdAt: "desc" },
     });
+
     res.json(admins);
   } catch (err: any) {
-    console.error("❌ [getall] Error:", err);
-    res.status(500).json({ error: "เกิดข้อผิดพลาดในการดึงข้อมูล" });
+    res.status(500).json({ error: err.message });
   }
 });
 
-// 🔍 ดึงข้อมูลแอดมินรายตัว
-adminRouter.get("/:adminId", async (req, res) => {
+/* =====================================================
+   🔍 ดึงแอดมินรายตัว
+===================================================== */
+adminRouter.get("/:adminId", authMiddleware, async (req, res) => {
   try {
     const admin = await prisma.admin.findUnique({
       where: { adminId: req.params.adminId },
@@ -51,20 +54,27 @@ adminRouter.get("/:adminId", async (req, res) => {
   }
 });
 
-// ✏️ อัปเดตข้อมูลผู้ดูแลระบบ (เฉพาะ Super Admin)
+/* =====================================================
+   ✏️ อัปเดตผู้ดูแลระบบ (SUPER_ADMIN เท่านั้น)
+===================================================== */
 adminRouter.put(
   "/:adminId",
   authMiddleware,
-  roleMiddleware(0),
+  roleMiddleware("SUPER_ADMIN"),
   async (req, res) => {
     try {
       const { username, name, password, role } = req.body;
-      const updateData: Record<string, any> = {};
+
+      const updateData: any = {};
 
       if (username) updateData.username = username.trim();
       if (name) updateData.name = name.trim();
       if (password) updateData.password = await bcrypt.hash(password, 10);
-      if (role !== undefined) updateData.role = Number(role);
+
+      // ✅ role ต้องเป็น enum เท่านั้น
+      if (role && Object.values(AdminRole).includes(role)) {
+        updateData.role = role;
+      }
 
       const updated = await prisma.admin.update({
         where: { adminId: req.params.adminId },
@@ -80,50 +90,60 @@ adminRouter.put(
 
       res.json({ message: "อัปเดตข้อมูลผู้ดูแลระบบสำเร็จ", updated });
     } catch (err: any) {
-      console.error("❌ [updateAdmin] Error:", err.message);
-      res.status(500).json({ error: "เกิดข้อผิดพลาดในการอัปเดตข้อมูล" });
+      res.status(500).json({ error: err.message });
     }
   }
 );
 
-// 🗑️ ลบผู้ดูแลระบบ (เฉพาะ Super Admin)
+/* =====================================================
+   🗑️ ลบผู้ดูแลระบบ (SUPER_ADMIN)
+===================================================== */
 adminRouter.delete(
   "/:adminId",
   authMiddleware,
-  roleMiddleware(0),
+  roleMiddleware("SUPER_ADMIN"),
   async (req, res) => {
     try {
-      const { adminId } = req.params;
-      await prisma.admin.delete({ where: { adminId } });
+      await prisma.admin.delete({
+        where: { adminId: req.params.adminId },
+      });
       res.json({ message: "ลบผู้ดูแลระบบสำเร็จ" });
     } catch (err: any) {
-      console.error("❌ [deleteAdmin] Error:", err.message);
-      res.status(500).json({ error: "เกิดข้อผิดพลาดในการลบข้อมูล" });
+      res.status(500).json({ error: err.message });
     }
   }
 );
 
-// ➕ เพิ่มผู้ดูแลระบบใหม่ (เฉพาะ Super Admin)
+/* =====================================================
+   ➕ เพิ่มผู้ดูแลระบบใหม่ (SUPER_ADMIN)
+===================================================== */
 adminRouter.post(
   "/create",
   authMiddleware,
-  roleMiddleware(0),
+  roleMiddleware("SUPER_ADMIN"),
   async (req, res) => {
     try {
       const { username, name, password, role } = req.body;
+
       if (!username || !name || !password)
         throw new Error("กรุณากรอกข้อมูลให้ครบ");
 
-      const exists = await prisma.admin.findUnique({ where: { username } });
-      if (exists) throw new Error("ชื่อผู้ใช้นี้มีอยู่แล้วในระบบ");
+      const exists = await prisma.admin.findUnique({
+        where: { username },
+      });
+      if (exists) throw new Error("ชื่อผู้ใช้นี้มีอยู่แล้ว");
 
       const hashed = await bcrypt.hash(password, 10);
+
       const admin = await prisma.admin.create({
         data: {
           username,
           name,
           password: hashed,
-          role: role ?? 1,
+          role:
+            role && Object.values(AdminRole).includes(role)
+              ? role
+              : AdminRole.STAFF,
         },
         select: {
           adminId: true,
@@ -136,7 +156,6 @@ adminRouter.post(
 
       res.status(201).json({ message: "สร้างผู้ดูแลระบบสำเร็จ", admin });
     } catch (err: any) {
-      console.error("❌ [createAdmin] Error:", err.message);
       res.status(400).json({ error: err.message });
     }
   }

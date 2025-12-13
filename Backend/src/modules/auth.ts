@@ -1,31 +1,44 @@
 // src/modules/Auths/auth.ts
-// 🚚 Imports
 import { Router } from "express";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import prisma  from "../prisma";
+import prisma from "../prisma";
 import { authMiddleware } from "../middleware/authMiddleware";
+import { AdminRole } from "@prisma/client";
 
 // ⚙️ Config
 const JWT_SECRET = process.env.JWT_SECRET!;
-if (!JWT_SECRET) throw new Error("❌ JWT_SECRET must be defined in .env file");
+if (!JWT_SECRET) throw new Error("JWT_SECRET is missing");
 
 const authRouter = Router();
 
-// 🌐 Routes
-// 🧾 สมัครสมาชิก
+/* =====================================================
+   🧾 REGISTER (สมัครสมาชิก)
+===================================================== */
 authRouter.post("/register", async (req, res) => {
   try {
     const { username, name, password, role } = req.body;
+
     if (!username || !name || !password)
       throw new Error("กรุณากรอกข้อมูลให้ครบ");
 
-    const existing = await prisma.admin.findUnique({ where: { username } });
-    if (existing) throw new Error("Username นี้ถูกใช้ไปแล้ว");
+    const exists = await prisma.admin.findUnique({ where: { username } });
+    if (exists) throw new Error("Username นี้ถูกใช้ไปแล้ว");
 
     const hashed = await bcrypt.hash(password, 10);
+
     const admin = await prisma.admin.create({
-      data: { username, name, password: hashed, role: role ?? 1 },
+      data: {
+        username,
+        name,
+        password: hashed,
+
+        // ✅ ใช้ enum เท่านั้น
+        role:
+          role && Object.values(AdminRole).includes(role)
+            ? role
+            : AdminRole.STAFF,
+      },
     });
 
     res.status(201).json({
@@ -42,10 +55,13 @@ authRouter.post("/register", async (req, res) => {
   }
 });
 
-// 🔐 เข้าสู่ระบบ
+/* =====================================================
+   🔐 LOGIN
+===================================================== */
 authRouter.post("/login", async (req, res) => {
   try {
     const { username, password } = req.body;
+
     const admin = await prisma.admin.findUnique({ where: { username } });
     if (!admin) throw new Error("ไม่พบบัญชีผู้ใช้");
 
@@ -57,7 +73,7 @@ authRouter.post("/login", async (req, res) => {
         adminId: admin.adminId,
         username: admin.username,
         name: admin.name,
-        role: admin.role,
+        role: admin.role, // ✅ enum
       },
       JWT_SECRET,
       { expiresIn: "2h", algorithm: "HS256" }
@@ -86,7 +102,9 @@ authRouter.post("/login", async (req, res) => {
   }
 });
 
-// 🚪 ออกจากระบบ
+/* =====================================================
+   🚪 LOGOUT
+===================================================== */
 authRouter.post("/logout", (_req, res) => {
   const isProd = process.env.NODE_ENV === "production";
   res.clearCookie("token", {
@@ -98,7 +116,9 @@ authRouter.post("/logout", (_req, res) => {
   res.json({ message: "ออกจากระบบสำเร็จ" });
 });
 
-//  ตรวจสอบ token
+/* =====================================================
+   🔍 VERIFY TOKEN
+===================================================== */
 authRouter.get("/verify", (req, res) => {
   const token = req.cookies?.token;
   if (!token)
@@ -108,13 +128,15 @@ authRouter.get("/verify", (req, res) => {
     const decoded = jwt.verify(token, JWT_SECRET, {
       algorithms: ["HS256"],
     });
-    res.status(200).json({ valid: true, admin: decoded });
+    res.json({ valid: true, admin: decoded });
   } catch (err: any) {
     res.status(401).json({ valid: false, error: err.message });
   }
 });
 
-// 👤 ข้อมูลโปรไฟล์
+/* =====================================================
+   👤 PROFILE
+===================================================== */
 authRouter.get("/profile", authMiddleware, async (req, res) => {
   try {
     const admin = await prisma.admin.findUnique({
@@ -127,7 +149,9 @@ authRouter.get("/profile", authMiddleware, async (req, res) => {
   }
 });
 
-// ✏️ อัปเดตชื่อ
+/* =====================================================
+   ✏️ UPDATE PROFILE NAME
+===================================================== */
 authRouter.put("/profile", authMiddleware, async (req, res) => {
   try {
     const { name } = req.body;
@@ -144,7 +168,9 @@ authRouter.put("/profile", authMiddleware, async (req, res) => {
   }
 });
 
-// 🔑 ลืมรหัสผ่าน - ตรวจสอบผู้ใช้
+/* =====================================================
+   🔑 FORGOT PASSWORD
+===================================================== */
 authRouter.post("/forgot/check", async (req, res) => {
   try {
     const { username } = req.body;
@@ -156,7 +182,6 @@ authRouter.post("/forgot/check", async (req, res) => {
   }
 });
 
-// 🔑 ลืมรหัสผ่าน - รีเซ็ต
 authRouter.put("/forgot/reset", async (req, res) => {
   try {
     const { username, newPassword } = req.body;
@@ -175,21 +200,23 @@ authRouter.put("/forgot/reset", async (req, res) => {
   }
 });
 
-// 🔒 เปลี่ยนรหัสผ่าน
+/* =====================================================
+   🔒 CHANGE PASSWORD
+===================================================== */
 authRouter.put("/change-password", authMiddleware, async (req, res) => {
   try {
     const { oldPassword, newPassword } = req.body;
     const admin = await prisma.admin.findUnique({
       where: { adminId: req.admin!.adminId },
     });
-    if (!admin) throw new Error("ไม่พบผู้ใช้ในระบบ");
+    if (!admin) throw new Error("ไม่พบผู้ใช้");
 
     const valid = await bcrypt.compare(oldPassword, admin.password);
     if (!valid) throw new Error("รหัสผ่านเดิมไม่ถูกต้อง");
 
     const hashed = await bcrypt.hash(newPassword, 10);
     await prisma.admin.update({
-      where: { adminId: req.admin!.adminId },
+      where: { adminId: admin.adminId },
       data: { password: hashed },
     });
 

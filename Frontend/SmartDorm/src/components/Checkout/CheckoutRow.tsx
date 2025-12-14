@@ -1,14 +1,17 @@
 import type { Checkout } from "../../types/Checkout";
 
 interface Props {
-  checkout: Checkout;
+  checkout: Checkout & {
+    requestedCheckoutFormatted?: string;
+    actualCheckoutFormatted?: string | null;
+  };
   index: number;
   role: number | null;
 
-  onView: (checkout: Checkout) => void;      // ดูรายละเอียด + อนุมัติ/ปฏิเสธ
-  onCheckout: (checkout: Checkout) => void;  // ยืนยันเช็คเอาท์
-  onEdit: (checkout: Checkout) => void;      // แก้ไขวันที่คืน
-  onDelete: (id: string) => void;             // ลบ
+  onView: (checkout: Checkout) => void;
+  onCheckout: (checkout: Checkout) => void;
+  onEdit: (checkout: Checkout) => void;
+  onDelete: (id: string) => void;
 }
 
 export default function CheckoutRow({
@@ -21,10 +24,10 @@ export default function CheckoutRow({
   onDelete,
 }: Props) {
   const isSuperAdmin = role === 0;
-  const canEditOrDelete = isSuperAdmin;
+  const canEditOrDelete = isSuperAdmin && checkout.checkoutStatus === 0;
 
   const renderStatus = () => {
-    // 🔶 รออนุมัติ
+    // 🟡 รออนุมัติ → เปิด dialog ดูรายละเอียด
     if (checkout.status === 0)
       return (
         <button
@@ -35,7 +38,7 @@ export default function CheckoutRow({
         </button>
       );
 
-    // 🔵 รอการเช็คเอาท์
+    // 🔵 รอการเช็คเอาท์ → confirm 2 ชั้น
     if (checkout.status === 1 && checkout.checkoutStatus === 0)
       return (
         <button
@@ -61,40 +64,51 @@ export default function CheckoutRow({
     <tr>
       <td>{index}</td>
       <td>{checkout.room?.number}</td>
-      <td>{checkout.booking?.fullName}</td>
-      <td>{checkout.booking?.cphone}</td>
+      <td>{checkout.customer?.userName || "-"}</td>
+      <td>{checkout.booking?.fullName || "-"}</td>
+      <td>{checkout.booking?.cphone || "-"}</td>
+
+      {/* วันที่ขอคืน */}
+      <td>{checkout.requestedCheckoutFormatted || "-"}</td>
+
+      {/* วันที่เช็คเอาท์จริง
+          แสดงเฉพาะ status === 1 */}
       <td>
-        {checkout.requestedCheckout
-          ? new Date(checkout.requestedCheckout).toLocaleDateString("th-TH")
+        {checkout.status === 1
+          ? checkout.actualCheckoutFormatted || "-"
           : "-"}
       </td>
 
-      {/* 🔹 สถานะ (อนุมัติ / เช็คเอาท์ / badge) */}
+      {/* สถานะ */}
       <td>{renderStatus()}</td>
 
-      {/* 🔹 แก้ไข */}
-      <td>
-        {canEditOrDelete && (
-          <button
-            className="btn btn-outline-primary btn-sm"
-            onClick={() => onEdit(checkout)}
-          >
-            แก้ไข
-          </button>
-        )}
-      </td>
+      {/* แก้ไข */}
+      {role === 0 && (
+        <td>
+          {canEditOrDelete && (
+            <button
+              className="btn btn-outline-primary btn-sm"
+              onClick={() => onEdit(checkout)}
+            >
+              แก้ไข
+            </button>
+          )}
+        </td>
+      )}
 
-      {/* 🔹 ลบ */}
-      <td>
-        {canEditOrDelete && (
-          <button
-            className="btn btn-outline-danger btn-sm"
-            onClick={() => onDelete(checkout.checkoutId)}
-          >
-            ลบ
-          </button>
-        )}
-      </td>
+      {/* ลบ */}
+      {role === 0 && (
+        <td>
+          {canEditOrDelete && (
+            <button
+              className="btn btn-outline-danger btn-sm"
+              onClick={() => onDelete(checkout.checkoutId)}
+            >
+              ลบ
+            </button>
+          )}
+        </td>
+      )}
     </tr>
   );
 }

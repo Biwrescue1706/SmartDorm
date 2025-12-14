@@ -5,6 +5,7 @@ import { useCheckouts } from "../hooks/useCheckouts";
 import CheckoutTable from "../components/Checkout/CheckoutTable";
 import CheckoutFilter from "../components/Checkout/CheckoutFilter";
 import CheckoutApproveDialog from "../components/Checkout/CheckoutApproveDialog";
+import CheckoutEditDialog from "../components/Checkout/CheckoutEditDialog";
 import Swal from "sweetalert2";
 import type { Checkout } from "../types/Checkout";
 
@@ -19,6 +20,7 @@ export default function Checkout() {
     rejectCheckout,
     checkoutConfirm,
     deleteCheckout,
+    updateCheckoutDate,
   } = useCheckouts();
 
   const [filter, setFilter] = useState<
@@ -26,6 +28,7 @@ export default function Checkout() {
   >("all");
 
   const [viewing, setViewing] = useState<Checkout | null>(null);
+  const [editing, setEditing] = useState<Checkout | null>(null);
 
   useEffect(() => {
     fetchCheckouts();
@@ -41,12 +44,17 @@ export default function Checkout() {
     return true;
   });
 
+  /* =======================
+     เช็คเอาท์ (confirm 2 ชั้น)
+  ======================= */
   const confirmCheckout = async (checkout: Checkout) => {
     const first = await Swal.fire({
       title: "ยืนยันการเช็คเอาท์",
       text: `คุณต้องการเช็คเอาท์ ห้อง ${checkout.room?.number} ใช่หรือไม่`,
       icon: "warning",
       showCancelButton: true,
+      confirmButtonText: "ยืนยัน",
+      cancelButtonText: "ยกเลิก",
     });
 
     if (!first.isConfirmed) return;
@@ -56,12 +64,14 @@ export default function Checkout() {
       text: "การเช็คเอาท์ไม่สามารถย้อนกลับได้",
       icon: "question",
       showCancelButton: true,
+      confirmButtonText: "เช็คเอาท์",
+      cancelButtonText: "ยกเลิก",
     });
 
     if (!second.isConfirmed) return;
 
     await checkoutConfirm(checkout.checkoutId);
-    fetchCheckouts();
+    await fetchCheckouts();
   };
 
   return (
@@ -89,11 +99,13 @@ export default function Checkout() {
             role={role}
             onView={setViewing}
             onCheckout={confirmCheckout}
+            onEdit={setEditing}
             onDelete={deleteCheckout}
           />
         </div>
       </main>
 
+      {/* 🔍 ดูรายละเอียด + อนุมัติ / ปฏิเสธ */}
       {viewing && (
         <CheckoutApproveDialog
           checkout={viewing}
@@ -108,6 +120,19 @@ export default function Checkout() {
             fetchCheckouts();
           }}
           onClose={() => setViewing(null)}
+        />
+      )}
+
+      {/* ✏️ แก้ไขวันที่คืน */}
+      {editing && (
+        <CheckoutEditDialog
+          checkout={editing}
+          onSave={async (id, values) => {
+            await updateCheckoutDate(id, values);
+            setEditing(null);
+            fetchCheckouts();
+          }}
+          onClose={() => setEditing(null)}
         />
       )}
     </div>

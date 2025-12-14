@@ -1,15 +1,28 @@
 import CheckoutRow from "./CheckoutRow";
 import type { Checkout } from "../../types/Checkout";
 
+/* =======================
+   Helper: format Thai date (พ.ศ.)
+   ตัวอย่าง: 15 ธ.ค. 2568
+======================= */
+const formatThaiDate = (d?: string | null) => {
+  if (!d) return "-";
+  return new Date(d).toLocaleDateString("th-TH", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+};
+
 interface Props {
   checkouts: Checkout[];
   loading: boolean;
   role: number | null;
 
-  onView: (checkout: Checkout) => void;      // ดูรายละเอียด + อนุมัติ/ปฏิเสธ
-  onCheckout: (checkout: Checkout) => void;  // ยืนยันเช็คเอาท์
-  onEdit: (checkout: Checkout) => void;      // แก้ไขวันที่
-  onDelete: (id: string) => void;             // ลบ
+  onView: (checkout: Checkout) => void;
+  onCheckout: (checkout: Checkout) => void;
+  onEdit: (checkout: Checkout) => void;
+  onDelete: (id: string) => void;
 }
 
 export default function CheckoutTable({
@@ -29,17 +42,19 @@ export default function CheckoutTable({
 
   return (
     <div className="table-responsive">
-      <table className="table table-sm table-striped text-center">
+      <table className="table table-sm table-striped text-center align-middle">
         <thead className="table-dark">
           <tr>
             <th>#</th>
             <th>ห้อง</th>
+            <th>LINE</th>
             <th>ชื่อ</th>
             <th>เบอร์</th>
             <th>วันที่ขอคืน</th>
+            <th>วันที่เช็คเอาท์จริง</th>
             <th>สถานะ</th>
-            <th>แก้ไข</th>
-            <th>ลบ</th>
+            {role === 0 && <th>แก้ไข</th>}
+            {role === 0 && <th>ลบ</th>}
           </tr>
         </thead>
 
@@ -47,7 +62,16 @@ export default function CheckoutTable({
           {checkouts.map((c, i) => (
             <CheckoutRow
               key={c.checkoutId}
-              checkout={c}
+              checkout={{
+                ...c,
+                requestedCheckoutFormatted: formatThaiDate(
+                  c.requestedCheckout
+                ),
+                actualCheckoutFormatted:
+                  c.status === 1
+                    ? formatThaiDate(c.actualCheckout)
+                    : null,
+              }}
               index={i + 1}
               role={role}
               onView={onView}

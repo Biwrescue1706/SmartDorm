@@ -4,16 +4,17 @@ import type { Checkout } from "../../types/Checkout";
 interface Props {
   checkouts: Checkout[];
   loading: boolean;
-  onApprove: (id: string) => void;
-  onReject: (id: string) => void;
+  role: number | null;
+
+  onEdit: (checkout: Checkout) => void;
   onDelete: (id: string) => void;
 }
 
 export default function CheckoutTable({
   checkouts,
   loading,
-  onApprove,
-  onReject,
+  role,
+  onEdit,
   onDelete,
 }: Props) {
   if (loading)
@@ -33,17 +34,19 @@ export default function CheckoutTable({
             <th>เบอร์</th>
             <th>วันที่ขอคืน</th>
             <th>สถานะ</th>
-            <th>จัดการ</th>
+            <th>แก้ไข</th>
+            <th>ลบ</th>
           </tr>
         </thead>
+
         <tbody>
           {checkouts.map((c, i) => (
             <CheckoutRow
               key={c.checkoutId}
               checkout={c}
               index={i + 1}
-              onApprove={onApprove}
-              onReject={onReject}
+              role={role}
+              onEdit={onEdit}
               onDelete={onDelete}
             />
           ))}

@@ -26,9 +26,11 @@ export default function Checkout() {
 
   const filteredCheckouts = checkouts.filter((c) => {
     if (filter === "pending") return c.status === 0;
-    if (filter === "approved") return c.status === 1;
-    if (filter === "completed") return c.status === 2;
-    if (filter === "rejected") return c.status === 3;
+    if (filter === "approved")
+      return c.status === 1 && c.checkoutStatus === 0;
+    if (filter === "completed")
+      return c.status === 1 && c.checkoutStatus === 1;
+    if (filter === "rejected") return c.status === 2;
     return true;
   });
 

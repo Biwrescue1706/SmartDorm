@@ -1,6 +1,6 @@
-// Booking/src/components/BookingNav.tsx
+// Booking/src/components/CheckoutNav.tsx
 
-export default function BookingNav() {
+export default function CheckoutNav() {
   return (
     <nav
       className="navbar navbar-expand-lg shadow-sm px-3 py-2"

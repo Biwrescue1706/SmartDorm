@@ -17,7 +17,7 @@ export default function App() {
       <Route path="/return" element={<ReturnSearch />} />
       <Route path="/bill" element={<PaymentSearch />} />
       <Route path="/booking/:bookingId" element={<BookingDetail />} />
-      <Route path="/checkout/:bookingId" element={<CheckoutDetail />} />
+      <Route path="/checkout/:checkoutId" element={<CheckoutDetail />} />
       <Route path="/bill/:billId" element={<BillDetail />} />
     </Routes>
   );

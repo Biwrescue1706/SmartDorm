@@ -1,73 +1,164 @@
+// src/pages/CheckoutDetail.tsx
 import { useParams } from "react-router-dom";
-import { useCheckoutDetail } from "../hooks/useCheckoutDetail";
-import CustomerInfoTable from "../components/Checkout/CustomerInfoTable";
-import CheckoutInfoTable from "../components/Checkout/CheckoutInfoTable";
+import CheckoutNav from "../components/CheckoutNav";
+import { useCheckoutDetail } from "../hooks/Checkout/useCheckoutDetail";
+
+/* utils */
+const formatThaiDate = (d?: string | null) =>
+  d
+    ? new Date(d).toLocaleDateString("th-TH", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      })
+    : "-";
+
+/* Badge */
+const StatusBadge = ({ text, color }: { text: string; color: string }) => (
+  <span
+    className="px-3 py-1 fw-semibold rounded-pill"
+    style={{ background: color, color: "#fff", fontSize: "0.8rem" }}
+  >
+    {text}
+  </span>
+);
 
 export default function CheckoutDetail() {
-  const { bookingId } = useParams();
-  const { booking, loading } = useCheckoutDetail(bookingId);
+  const { checkoutId } = useParams();
+  const { checkout, loading } = useCheckoutDetail(checkoutId);
 
+  /* Loading */
   if (loading) {
     return (
-      <div className="container text-center py-5">
-        <div className="spinner-border text-success" role="status"></div>
-        <p className="mt-3">กำลังโหลดข้อมูลการคืนห้อง...</p>
-      </div>
+      <>
+        <CheckoutNav />
+        <div className="container text-center py-5 mt-5">
+          <div className="spinner-border text-primary" />
+          <p className="mt-3 fw-semibold text-black">
+            กำลังโหลดข้อมูลการคืนห้อง...
+          </p>
+        </div>
+      </>
     );
   }
 
-  if (!booking) {
+  /* Not found */
+  if (!checkout) {
     return (
-      <div className="container text-center py-5">
-        <h5 className="text-danger">ไม่พบข้อมูลการคืนห้อง</h5>
-      </div>
+      <>
+        <CheckoutNav />
+        <div className="container text-center py-5 mt-5">
+          <h5 className="fw-bold text-danger">ไม่พบข้อมูลการคืนห้อง</h5>
+        </div>
+      </>
     );
   }
 
   return (
-    <div className="container my-4 text-center position-relative">
-      {/* ✅ ลายน้ำ “คืนห้องแล้ว” */}
-      {booking.returnStatus === 1 && (
+    <>
+      <CheckoutNav />
+
+      {/* Watermark เช็คเอาท์แล้ว */}
+      {checkout.checkoutStatus === 1 && (
         <div
+          className="position-fixed top-50 start-50 fw-bold text-danger"
           style={{
-            position: "fixed",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%) rotate(-25deg)",
-            fontSize: "5rem",
-            fontWeight: "bold",
-            color: "rgba(25, 135, 84, 0.15)",
-            userSelect: "none",
+            fontSize: "clamp(2.5rem, 6vw, 4.5rem)",
+            opacity: 0.2,
+            transform: "translate(-50%, -50%) rotate(-30deg)",
             pointerEvents: "none",
-            zIndex: 999,
+            userSelect: "none",
+            zIndex: 1,
             whiteSpace: "nowrap",
           }}
         >
-          คืนห้องแล้ว
+          เช็คเอาท์แล้ว
         </div>
       )}
 
-      <div
-        className="card shadow-lg border-0 rounded-4 mx-auto"
-        style={{ maxWidth: "480px", background: "white" }}
-      >
-                {/* Header */}
-        <div className="card-header text-white text-center fw-bold fs-5">
-          <img
-            src="https://smartdorm-admin.biwbong.shop/assets/SmartDorm.png"
-            alt="SmartDorm Logo"
-            className="mb-0"
-            style={{ width: "80px", height: "80px" }}
-          />
-          <h4 className="mt-2 fw-bold text-success">🏫 SmartDorm 🎉</h4>
-          <h5 className="mt-2 fw-bold text-secondary">รายละเอียดการคืนห้องพัก</h5>
-        </div>
+      <div className="container-fluid pt-5 mt-4 mb-5">
+        <div
+          className="card shadow-lg border-0 rounded-4 mx-auto"
+          style={{ maxWidth: "720px" }}
+        >
+          <div className="card-body p-4">
+            <h4 className="fw-bold text-center text-success mb-3">
+              🧾 รายละเอียดการคืนห้อง
+            </h4>
 
-        <div className="card-body p-3 text-center">
-          <CustomerInfoTable booking={booking} customer={booking.customer} />
-          <CheckoutInfoTable booking={booking} />
+            {/* ข้อมูลผู้เช่า */}
+            <table className="table table-sm text-center align-middle mb-4">
+              <tbody>
+                <tr>
+                  <td className="fw-semibold text-black">รหัสการจอง</td>
+                  <td className="fw-semibold text-black">
+                    {checkout.booking.bookingId}
+                  </td>
+                </tr>
+                <tr>
+                  <td className="fw-semibold text-black">ห้อง</td>
+                  <td className="fw-semibold text-black">
+                    {checkout.room.number}
+                  </td>
+                </tr>
+                <tr>
+                  <td className="fw-semibold text-black">ชื่อผู้เช่า</td>
+                  <td className="fw-semibold text-black">
+                    {checkout.booking.fullName || "-"}
+                  </td>
+                </tr>
+                <tr>
+                  <td className="fw-semibold text-black">เบอร์โทร</td>
+                  <td className="fw-semibold text-black">
+                    {checkout.booking.cphone || "-"}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+
+            {/* สถานะ */}
+            <table className="table table-sm text-center align-middle">
+              <tbody>
+                <tr>
+                  <td className="fw-semibold text-black">วันที่ขอคืน</td>
+                  <td className="fw-semibold text-black">
+                    {formatThaiDate(checkout.requestedCheckout)}
+                  </td>
+                </tr>
+                <tr>
+                  <td className="fw-semibold text-black">สถานะคำขอ</td>
+                  <td>
+                    {checkout.status === 0 && (
+                      <StatusBadge text="รออนุมัติ" color="#F9A825" />
+                    )}
+                    {checkout.status === 1 && (
+                      <StatusBadge text="อนุมัติแล้ว" color="#2E7D32" />
+                    )}
+                    {checkout.status === 2 && (
+                      <StatusBadge text="ปฏิเสธ" color="#C62828" />
+                    )}
+                  </td>
+                </tr>
+                <tr>
+                  <td className="fw-semibold text-black">สถานะเช็คเอาท์</td>
+                  <td>
+                    {checkout.checkoutStatus === 0 && (
+                      <StatusBadge text="ยังไม่เช็คเอาท์" color="#F9A825" />
+                    )}
+                    {checkout.checkoutStatus === 1 && (
+                      <StatusBadge text="เช็คเอาท์แล้ว" color="#2E7D32" />
+                    )}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+
+            <div className="text-center fw-semibold text-black mt-3">
+              หากข้อมูลไม่ถูกต้อง กรุณาติดต่อเจ้าหน้าที่
+            </div>
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }

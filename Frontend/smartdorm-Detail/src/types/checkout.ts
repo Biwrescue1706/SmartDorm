@@ -1,25 +1,34 @@
-export interface Room {
-  number: string;
-  size: string;
-}
+// src/types/checkout.ts
 
-export interface Customer {
-  userName: string;
-}
-
-export interface Booking {
+export type CheckoutBooking = {
   bookingId: string;
-  room: Room;
-  fullName: string;
-  cphone: string;
-  slipUrl?: string;
-  checkin: string;
-  checkout?: string;
-  actualCheckout?: string;
-  actualCheckin?: string;
-  approveStatus: number;
-  returnStatus: number | null;
-  checkoutStatus?: number | null;
   createdAt: string;
-    customer: Customer;
-}
+  checkin: string;
+  actualCheckin?: string | null;
+  fullName?: string;
+  cphone?: string;
+  approveStatus: number;
+  checkinStatus: number;
+};
+
+export type CheckoutRoom = {
+  number: string;
+};
+
+export type CheckoutCustomer = {
+  userName?: string;
+};
+
+export type Checkout = {
+  checkoutId: string;
+
+  status: number;         // 0 = รอ | 1 = อนุมัติ | 2 = ปฏิเสธ
+  checkoutStatus: number; // 0 = ยังไม่ | 1 = เช็คเอาท์แล้ว
+
+  requestedCheckout: string;
+  actualCheckout?: string | null;
+
+  booking: CheckoutBooking;
+  room: CheckoutRoom;
+  customer: CheckoutCustomer;
+};

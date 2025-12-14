@@ -1,36 +1,38 @@
 import { useParams } from "react-router-dom";
-import { useBookingDetail } from "../hooks/useBookingDetail";
-import CustomerInfoTable from "../components/Booking/CustomerInfoTable";
-import BookingInfoTable from "../components/Booking/BookingInfoTable";
 import BookingNav from "../components/BookingNav";
+import { useBookingDetail } from "../hooks/Booking/useBookingDetail";
+
+/* utils */
+const formatThaiDate = (d?: string | null) =>
+  d
+    ? new Date(d).toLocaleDateString("th-TH", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      })
+    : "-";
 
 export default function BookingDetail() {
   const { bookingId } = useParams();
   const { booking, loading } = useBookingDetail(bookingId);
 
-  /* =======================
-     Loading
-  ======================= */
   if (loading) {
     return (
       <>
         <BookingNav />
-        <div className="container text-center py-5 mt-4">
-          <div className="spinner-border text-primary" role="status" />
+        <div className="container text-center py-5 mt-5">
+          <div className="spinner-border text-primary" />
           <p className="mt-3">กำลังโหลดข้อมูลการจอง...</p>
         </div>
       </>
     );
   }
 
-  /* =======================
-     Not found
-  ======================= */
   if (!booking) {
     return (
       <>
         <BookingNav />
-        <div className="container text-center py-5 mt-4">
+        <div className="container text-center py-5 mt-5">
           <h5 className="text-danger">ไม่พบข้อมูลการจอง</h5>
         </div>
       </>
@@ -41,19 +43,17 @@ export default function BookingDetail() {
     <>
       <BookingNav />
 
-      {/* =======================
-         Watermark (เฉียง / ทุกขนาดจอ)
-      ======================= */}
+      {/* Watermark ทุกขนาดจอ */}
       {booking.checkinStatus === 1 && (
         <div
           className="position-fixed top-50 start-50 fw-bold text-danger"
           style={{
-            transform: "translate(-50%, -50%) rotate(-25deg)",
-            fontSize: "clamp(3rem, 6vw, 4.2rem)",
-            opacity: 0.18,
+            fontSize: "clamp(2.5rem, 6vw, 4.5rem)",
+            opacity: 0.25,
+            transform: "translate(-50%, -50%) rotate(-30deg)",
             pointerEvents: "none",
             userSelect: "none",
-            zIndex: 2,
+            zIndex: 1,
             whiteSpace: "nowrap",
           }}
         >
@@ -61,63 +61,105 @@ export default function BookingDetail() {
         </div>
       )}
 
-      {/* =======================
-         Content (การ์ดใบเดียว)
-      ======================= */}
-      <div className="container-fluid pt-5 mt-3 mb-5">
+      <div className="container-fluid pt-5 mt-4 mb-5">
         <div
           className="card shadow-lg border-0 rounded-4 mx-auto"
           style={{
+            maxWidth:
+              window.innerWidth < 600
+                ? "480px"
+                : window.innerWidth < 1400
+                ? "580px"
+                : "680px",
             width: "100%",
-            maxWidth: "680px", // default ≥1400
           }}
         >
-          <div
-            className="card-body p-3 p-sm-4"
-            style={{
-              /* คุมขนาดการ์ดตามหน้าจอแบบไม่แยก JSX */
-              maxWidth: "100%",
-            }}
-          >
-            <h4 className="fw-bold text-success text-center">🏫 SmartDorm</h4>
-            <h6 className="text-secondary text-center mb-3">
-              รายละเอียดการจองหอพัก
+          <div className="card-body p-3 p-sm-4">
+            <h4 className="fw-bold text-success text-center">
+              🧾 รายละเอียดการจองหอพัก
+            </h4>
+            <h6 className="text-secondary text-center mb-4">Bookings Detail</h6>
+
+            {/* ข้อมูลผู้จอง */}
+            <h6 className="fw-bold text-primary text-center mb-2">
+              ข้อมูลผู้จอง
             </h6>
 
-            <CustomerInfoTable booking={booking} customer={booking.customer} />
+            <table className="table table-bordered table-sm text-center align-middle mb-4">
+              <tbody>
+                <tr>
+                  <td>รหัสการจอง</td>
+                  <td>{booking.bookingId}</td>
+                </tr>
+                <tr>
+                  <td>ห้อง</td>
+                  <td>{booking.room.number}</td>
+                </tr>
+                <tr>
+                  <td>ชื่อ-สกุล</td>
+                  <td>{booking.fullName ?? "-"}</td>
+                </tr>
+                <tr>
+                  <td>เบอร์โทร</td>
+                  <td>{booking.cphone ?? "-"}</td>
+                </tr>
+                <tr>
+                  <td>LINE ผู้ใช้</td>
+                  <td>{booking.customer.userName ?? "-"}</td>
+                </tr>
+              </tbody>
+            </table>
 
-            <BookingInfoTable booking={booking} />
+            {/* รายละเอียดการจอง */}
+            <h6 className="fw-bold text-primary text-center mb-2">
+              รายละเอียดการจอง
+            </h6>
 
-            <div className="small text-muted text-center mt-3">
-              📌 กรุณาติดต่อเจ้าหน้าที่ หากข้อมูลไม่ถูกต้อง
+            <table className="table table-bordered table-sm text-center align-middle">
+              <tbody>
+                <tr>
+                  <td>วันจอง</td>
+                  <td>{formatThaiDate(booking.createdAt)}</td>
+                </tr>
+                <tr>
+                  <td>วันที่แจ้งเข้าพัก</td>
+                  <td>{formatThaiDate(booking.checkin)}</td>
+                </tr>
+                <tr>
+                  <td>สถานะการจอง</td>
+                  <td>
+                    {booking.approveStatus === 0 && "รออนุมัติ"}
+                    {booking.approveStatus === 1 && "อนุมัติแล้ว"}
+                    {booking.approveStatus === 2 && "ไม่อนุมัติ"}
+                  </td>
+                </tr>
+
+                {booking.approveStatus === 1 && (
+                  <tr>
+                    <td>สถานะเช็คอิน</td>
+                    <td>
+                      {booking.checkinStatus === 1
+                        ? "เช็คอินแล้ว"
+                        : "ยังไม่เช็คอิน"}
+                    </td>
+                  </tr>
+                )}
+
+                {booking.actualCheckin && (
+                  <tr>
+                    <td>วันเข้าเช็คอิน</td>
+                    <td>{formatThaiDate(booking.actualCheckin)}</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+
+            <div className="text-center small text-muted mt-3">
+              📌 หากข้อมูลไม่ถูกต้อง กรุณาติดต่อเจ้าหน้าที่
             </div>
           </div>
         </div>
       </div>
-
-      {/* =======================
-         Responsive Width (inline CSS)
-         - <600   → 480px
-         - <1400  → 580px
-         - ≥1400  → 680px
-      ======================= */}
-      <style>{`
-        @media (max-width: 599px) {
-          .card {
-            max-width: 480px !important;
-          }
-        }
-        @media (min-width: 600px) and (max-width: 1399px) {
-          .card {
-            max-width: 580px !important;
-          }
-        }
-        @media (min-width: 1400px) {
-          .card {
-            max-width: 680px !important;
-          }
-        }
-      `}</style>
     </>
   );
 }

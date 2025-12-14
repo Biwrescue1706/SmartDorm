@@ -1,26 +1,26 @@
-export interface Room {
+//src/types/booking.ts
+export type Room = {
+  roomId: string;
   number: string;
-  size: string;
-  rent: number;
-  deposit: number;
-  bookingFee: number;
-}
+};
 
-export interface Customer {
-  userName: string;
-}
+export type Customer = {
+  customerId: string;
+  userName?: string;
+};
 
-export interface Booking {
+export type Booking = {
   bookingId: string;
-  fullName: string;
-  cphone: string;
-  slipUrl?: string;
-  checkin: string;
-  actualCheckin?: string;
-  checkout?: string;
-  approveStatus: number;
+  fullName?: string;
+  cphone?: string;
+
   createdAt: string;
-  checkinStatus: number;
+  checkin: string;
+  actualCheckin?: string | null;
+
+  approveStatus: number;   // 0 รอ / 1 อนุมัติ / 2 ปฏิเสธ
+  checkinStatus: number;   // 0 ยังไม่เข้า / 1 เช็คอินแล้ว
+
   room: Room;
   customer: Customer;
-}
+};

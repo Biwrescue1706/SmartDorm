@@ -17,44 +17,86 @@ export default function CheckoutFilter({
   checkouts,
 }: Props) {
   const counts = {
-    // status = 0
     pending: checkouts.filter((c) => c.status === 0).length,
-
-    // status = 1 && checkoutStatus = 0
     approved: checkouts.filter(
       (c) => c.status === 1 && c.checkoutStatus === 0
     ).length,
-
-    // status = 1 && checkoutStatus = 1
     completed: checkouts.filter(
       (c) => c.status === 1 && c.checkoutStatus === 1
     ).length,
-
-    // status = 2
     rejected: checkouts.filter((c) => c.status === 2).length,
   };
 
-  const items = [
-    { key: "pending", label: "รออนุมัติ", color: "warning" },
-    { key: "approved", label: "รอการเช็คเอาท์", color: "primary" },
-    { key: "completed", label: "คืนแล้ว", color: "info" },
-    { key: "rejected", label: "ปฏิเสธ", color: "danger" },
+  const cards = [
+    {
+      key: "pending",
+      label: "รออนุมัติ",
+      count: counts.pending,
+      bg: "#FFF3CD",
+      color: "#856404",
+    },
+    {
+      key: "approved",
+      label: "รอการเช็คเอาท์",
+      count: counts.approved,
+      bg: "#E7F1FF",
+      color: "#0D6EFD",
+    },
+    {
+      key: "completed",
+      label: "คืนแล้ว",
+      count: counts.completed,
+      bg: "#E8F6F3",
+      color: "#0F5132",
+    },
+    {
+      key: "rejected",
+      label: "ปฏิเสธ",
+      count: counts.rejected,
+      bg: "#F8D7DA",
+      color: "#842029",
+    },
   ] as const;
 
   return (
-    <div className="d-flex justify-content-center gap-3 flex-wrap mb-3">
-      {items.map((i) => (
-        <button
-          key={i.key}
-          type="button"
-          className={`btn btn-${i.color} ${
-            active === i.key ? "" : "btn-outline"
-          }`}
-          onClick={() => onChange(i.key)}
-        >
-          {i.label} ({counts[i.key]})
-        </button>
-      ))}
+    <div className="row g-3 mb-4">
+      {cards.map((c) => {
+        const isActive = active === c.key;
+
+        return (
+          <div key={c.key} className="col-6 col-md-3">
+            <div
+              className="card h-100 shadow-sm cursor-pointer"
+              onClick={() => onChange(c.key)}
+              style={{
+                background: c.bg,
+                border: isActive
+                  ? `2px solid ${c.color}`
+                  : "1px solid #e0e0e0",
+                transform: isActive ? "scale(1.03)" : "scale(1)",
+                transition: "all .15s ease-in-out",
+                cursor: "pointer",
+              }}
+            >
+              <div className="card-body text-center">
+                <div
+                  className="fw-bold mb-1"
+                  style={{ color: c.color }}
+                >
+                  {c.label}
+                </div>
+
+                <div
+                  className="display-6 fw-bold"
+                  style={{ color: c.color }}
+                >
+                  {c.count}
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 }

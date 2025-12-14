@@ -5,5 +5,5 @@
 export const checkinBookings = (id: string) => `/booking/${id}`;
 
 /* ==================== 🚪 CHECKOUT ==================== */
-export const checkoutBooking = (id: string) => `/booking/${id}`;
+export const checkoutBooking = (id: string) => `/checkout/${id}`;
 

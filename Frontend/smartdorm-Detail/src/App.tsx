@@ -4,7 +4,7 @@ import CheckoutDetail from "./pages/CheckoutDetail";
 import BillDetail from "./pages/BillDetail";
 
 import Home from "./pages/Home";
-import BookingViewSearch from "./pages/BookingViewSearch";
+import BookingViewSearch from "./pages/BookingSearch";
 import ReturnSearch from "./pages/ReturnSearch";
 import PaymentSearch  from "./pages/PaymentSearch";
 

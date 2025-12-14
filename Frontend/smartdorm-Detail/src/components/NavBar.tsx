@@ -25,13 +25,13 @@ export default function NavBar() {
             boxShadow: "0 2px 6px rgba(0,0,0,0.15)",
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.background = "#e2e8f0";
+            e.currentTarget.style.background = "#ffffffff";
           }}
           onMouseLeave={(e) => {
             e.currentTarget.style.background = "white";
           }}
         >
-          ← กลับ
+          ←
         </button>
 
         {/* โลโก้ + ชื่อระบบ */}
@@ -42,16 +42,16 @@ export default function NavBar() {
         >
           <span
             className="fw-bold text-white"
-            style={{ fontSize: "1.2rem", lineHeight: "1" }}
+            style={{ fontSize: "1.3rem", lineHeight: "1" }}
           >
             🏫 SmartDorm
           </span>
-          <small
-            className="text-white-50"
-            style={{ fontSize: "0.72rem", marginTop: "-3px" }}
+          <span
+            className="fw-bold text-white"
+            style={{ fontSize: "1.2rem", lineHeight: "1" }}
           >
             ระบบจัดการหอพัก
-          </small>
+          </span>
         </div>
 
         {/* โลโก้หรือช่องว่างฝั่งขวา */}
@@ -59,8 +59,8 @@ export default function NavBar() {
           src="https://smartdorm-admin.biwbong.shop/assets/SmartDorm.png"
           alt="SmartDorm Logo"
           style={{
-            width: "34px",
-            height: "34px",
+            width: "25px",
+            height: "25px",
             borderRadius: "8px",
             background: "white",
             padding: "2px",

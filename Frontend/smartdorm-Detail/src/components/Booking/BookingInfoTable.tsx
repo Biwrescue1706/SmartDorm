@@ -1,6 +1,5 @@
-// Booking/components/Booking/BookingInfoTable.tsx
+//src/components/Booking/BookingInfoTable.tsx
 import type { Booking } from "../../types/booking";
-import BookingInfoRow from "./BookingInfoRow";
 import StatusBadge from "./StatusBadge";
 
 const formatThaiDate = (d?: string) =>
@@ -15,36 +14,95 @@ const formatThaiDate = (d?: string) =>
 export default function BookingInfoTable({ booking }: { booking: Booking }) {
   return (
     <div>
-      <h5 className="fw-bold text-primary text-center mb-3">รายละเอียดการจอง</h5>
+      <h5 className="fw-bold text-primary text-center mb-3">
+        รายละเอียดการจอง
+      </h5>
 
-      <table className="table table-sm table-bordered text-center align-middle shadow-sm">
-        <thead className="table-light">
-          <tr>
-            <th>รายการ</th>
-            <th>ข้อมูล</th>
-          </tr>
-        </thead>
+      {/* =====================
+          CARD (<1400)
+      ====================== */}
+      <div className="d-xxl-none">
+        <div className="card shadow-sm">
+          <div className="card-body p-3">
+            <p>
+              <strong>วันจอง : </strong> {formatThaiDate(booking.createdAt)}
+            </p>
+            <p>
+              <strong>วันที่ขอเข้าพัก : </strong>{" "}
+              {formatThaiDate(booking.checkin)}
+            </p>
+            <p>
+              <strong>สถานะการจอง : </strong>{" "}
+              <StatusBadge type="approve" status={booking.approveStatus} />
+            </p>
 
-        <tbody>
-          <BookingInfoRow label="วันจอง" value={formatThaiDate(booking.createdAt)} />
-          <BookingInfoRow label="วันที่ขอเข้าพัก" value={formatThaiDate(booking.checkin)} />
-          
-          <BookingInfoRow
-            label="สถานะการจอง"
-            value={<StatusBadge type="approve" status={booking.approveStatus} />}
-          />
+            {booking.approveStatus === 1 && (
+              <p>
+                <strong>สถานะเช็คอิน : </strong>{" "}
+                <StatusBadge type="checkin" status={booking.checkinStatus} />
+              </p>
+            )}
 
-          {booking.approveStatus === 1 && (
-            <BookingInfoRow
-              label="สถานะเช็คอิน"
-              value={<StatusBadge type="checkin" status={booking.checkinStatus} />}
-            />
-          )}
-{booking.actualCheckin !== null &&(
-          <BookingInfoRow label="วันเข้าเช็คอิน" value={formatThaiDate(booking.actualCheckin)} />
-)}
-        </tbody>
-      </table>
+            {booking.actualCheckin && (
+              <p className="mb-0">
+                <strong>วันเข้าเช็คอิน : </strong>{" "}
+                {formatThaiDate(booking.actualCheckin)}
+              </p>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* =====================
+          TABLE (≥1400)
+      ====================== */}
+      <div className="d-none d-xxl-block">
+        <div className="table-responsive">
+          <table className="table table-sm table-bordered text-center align-middle shadow-sm mb-0">
+            <thead className="table-light">
+              <tr>
+                <th style={{ width: "35%" }}>รายการ</th>
+                <th>ข้อมูล</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>วันจอง</td>
+                <td>{formatThaiDate(booking.createdAt)}</td>
+              </tr>
+              <tr>
+                <td>วันที่ขอเข้าพัก</td>
+                <td>{formatThaiDate(booking.checkin)}</td>
+              </tr>
+              <tr>
+                <td>สถานะการจอง</td>
+                <td>
+                  <StatusBadge type="approve" status={booking.approveStatus} />
+                </td>
+              </tr>
+
+              {booking.approveStatus === 1 && (
+                <tr>
+                  <td>สถานะเช็คอิน</td>
+                  <td>
+                    <StatusBadge
+                      type="checkin"
+                      status={booking.checkinStatus}
+                    />
+                  </td>
+                </tr>
+              )}
+
+              {booking.actualCheckin && (
+                <tr>
+                  <td>วันเข้าเช็คอิน</td>
+                  <td>{formatThaiDate(booking.actualCheckin)}</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   );
 }

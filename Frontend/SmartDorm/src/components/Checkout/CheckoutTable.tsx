@@ -6,14 +6,18 @@ interface Props {
   loading: boolean;
   role: number | null;
 
-  onEdit: (checkout: Checkout) => void;
-  onDelete: (id: string) => void;
+  onView: (checkout: Checkout) => void;      // ดูรายละเอียด + อนุมัติ/ปฏิเสธ
+  onCheckout: (checkout: Checkout) => void;  // ยืนยันเช็คเอาท์
+  onEdit: (checkout: Checkout) => void;      // แก้ไขวันที่
+  onDelete: (id: string) => void;             // ลบ
 }
 
 export default function CheckoutTable({
   checkouts,
   loading,
   role,
+  onView,
+  onCheckout,
   onEdit,
   onDelete,
 }: Props) {
@@ -46,6 +50,8 @@ export default function CheckoutTable({
               checkout={c}
               index={i + 1}
               role={role}
+              onView={onView}
+              onCheckout={onCheckout}
               onEdit={onEdit}
               onDelete={onDelete}
             />

@@ -18,12 +18,16 @@ export default function CheckoutRow({
   const renderStatus = () => {
     if (checkout.status === 0)
       return <span className="badge bg-warning">รออนุมัติ</span>;
-    if (checkout.status === 1)
-      return <span className="badge bg-success">อนุมัติแล้ว</span>;
-    if (checkout.status === 2)
+
+    if (checkout.status === 1 && checkout.checkoutStatus === 0)
+      return <span className="badge bg-primary">รอการเช็คเอาท์</span>;
+
+    if (checkout.status === 1 && checkout.checkoutStatus === 1)
       return <span className="badge bg-info">คืนแล้ว</span>;
-    if (checkout.status === 3)
+
+    if (checkout.status === 2)
       return <span className="badge bg-danger">ปฏิเสธ</span>;
+
     return "-";
   };
 
@@ -56,12 +60,15 @@ export default function CheckoutRow({
             </button>
           </>
         )}
-        <button
-          className="btn btn-outline-danger btn-sm"
-          onClick={() => onDelete(checkout.checkoutId)}
-        >
-          ลบ
-        </button>
+
+        {checkout.checkoutStatus === 0 && (
+          <button
+            className="btn btn-outline-danger btn-sm"
+            onClick={() => onDelete(checkout.checkoutId)}
+          >
+            ลบ
+          </button>
+        )}
       </td>
     </tr>
   );

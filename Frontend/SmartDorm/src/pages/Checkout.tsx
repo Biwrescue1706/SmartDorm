@@ -64,12 +64,13 @@ export default function Checkout() {
           />
 
           <CheckoutTable
-            checkouts={filteredCheckouts}
-            loading={loading}
-            onApprove={approveCheckout}
-            onReject={rejectCheckout}
-            onDelete={deleteCheckout}
-          />
+  checkouts={filteredCheckouts}
+  loading={loading}
+  onApprove={approveCheckout}
+  onReject={rejectCheckout}
+  onDelete={deleteCheckout}
+  role={role}
+/>
         </div>
       </main>
     </div>

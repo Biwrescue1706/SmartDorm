@@ -118,7 +118,7 @@ checkoutRouter.put("/:bookingId/request", async (req, res) => {
       },
       include: { room: true, customer: true },
     });
-
+    const detailUrl = `https://smartdorm-detail.biwbong.shop/checkout/${checkout.checkoutId}`;
     await sendFlexMessage(
       customer.userId,
       "📤 ส่งคำขอคืนห้องแล้ว",
@@ -130,7 +130,7 @@ checkoutRouter.put("/:bookingId/request", async (req, res) => {
         },
         { label: "สถานะ", value: "รออนุมัติ" },
       ],
-      []
+      [{ label: "เปิดดูรายการ", url: detailUrl, style: "primary" }]
     );
 
     res.json({ checkout });
@@ -140,83 +140,77 @@ checkoutRouter.put("/:bookingId/request", async (req, res) => {
 });
 
 // admin: อนุมัติคำขอคืน (ยังไม่เช็คเอาท์)
-checkoutRouter.put(
-  "/:checkoutId/approve",
-  authMiddleware,
-  async (req, res) => {
-    try {
-      const { checkoutId } = req.params;
+checkoutRouter.put("/:checkoutId/approve", authMiddleware, async (req, res) => {
+  try {
+    const { checkoutId } = req.params;
 
-      const checkout = await prisma.checkout.findUnique({
-        where: { checkoutId },
-        include: { room: true, customer: true },
-      });
-      if (!checkout) throw new Error("ไม่พบข้อมูล");
-      if (checkout.status !== 0)
-        throw new Error("คำขอถูกดำเนินการแล้ว");
+    const checkout = await prisma.checkout.findUnique({
+      where: { checkoutId },
+      include: { room: true, customer: true },
+    });
+    if (!checkout) throw new Error("ไม่พบข้อมูล");
+    if (checkout.status !== 0) throw new Error("คำขอถูกดำเนินการแล้ว");
 
-      const updated = await prisma.checkout.update({
-        where: { checkoutId },
-        data: {
-          status: 1,
-          approvedAt: new Date(),
-        },
-      });
+    const updated = await prisma.checkout.update({
+      where: { checkoutId },
+      data: {
+        status: 1,
+        approvedAt: new Date(),
+      },
+    });
 
-      await sendFlexMessage(
-        checkout.customer.userId,
-        "✅ อนุมัติคำขอคืนห้อง",
-        [
-          { label: "ห้อง", value: checkout.room.number },
-          { label: "สถานะ", value: "รอวันเช็คเอาท์" },
-        ],
-        []
-      );
+    const detailUrl = `https://smartdorm-detail.biwbong.shop/checkout/${checkout.checkoutId}`;
 
-      res.json({ checkout: updated });
-    } catch (err: any) {
-      res.status(400).json({ error: err.message });
-    }
+    await sendFlexMessage(
+      checkout.customer.userId,
+      "✅ อนุมัติคำขอคืนห้อง",
+      [
+        { label: "ห้อง", value: checkout.room.number },
+        { label: "สถานะ", value: "รอวันเช็คเอาท์" },
+      ],
+      [{ label: "เปิดดูรายการ", url: detailUrl, style: "primary" }]
+    );
+
+    res.json({ checkout: updated });
+  } catch (err: any) {
+    res.status(400).json({ error: err.message });
   }
-);
+});
 
 // admin: ไม่อนุมัติคำขอคืน
-checkoutRouter.put(
-  "/:checkoutId/reject",
-  authMiddleware,
-  async (req, res) => {
-    try {
-      const { checkoutId } = req.params;
+checkoutRouter.put("/:checkoutId/reject", authMiddleware, async (req, res) => {
+  try {
+    const { checkoutId } = req.params;
 
-      const checkout = await prisma.checkout.findUnique({
-        where: { checkoutId },
-        include: { room: true, customer: true },
-      });
-      if (!checkout) throw new Error("ไม่พบข้อมูล");
-      if (checkout.status !== 0)
-        throw new Error("คำขอถูกดำเนินการแล้ว");
+    const checkout = await prisma.checkout.findUnique({
+      where: { checkoutId },
+      include: { room: true, customer: true },
+    });
+    if (!checkout) throw new Error("ไม่พบข้อมูล");
+    if (checkout.status !== 0) throw new Error("คำขอถูกดำเนินการแล้ว");
 
-      const updated = await prisma.checkout.update({
-        where: { checkoutId },
-        data: { status: 2 },
-      });
+    const updated = await prisma.checkout.update({
+      where: { checkoutId },
+      data: { status: 2 },
+    });
+    
+    const detailUrl = `https://smartdorm-detail.biwbong.shop/checkout/${checkout.checkoutId}`;
 
-      await sendFlexMessage(
-        checkout.customer.userId,
-        "❌ ไม่อนุมัติการคืนห้อง",
-        [
-          { label: "ห้อง", value: checkout.room.number },
-          { label: "สถานะ", value: "ถูกปฏิเสธ" },
-        ],
-        []
-      );
+    await sendFlexMessage(
+      checkout.customer.userId,
+      "❌ ไม่อนุมัติการคืนห้อง",
+      [
+        { label: "ห้อง", value: checkout.room.number },
+        { label: "สถานะ", value: "ถูกปฏิเสธ" },
+      ],
+      [{ label: "เปิดดูรายการ", url: detailUrl, style: "primary" }]
+    );
 
-      res.json({ checkout: updated });
-    } catch (err: any) {
-      res.status(400).json({ error: err.message });
-    }
+    res.json({ checkout: updated });
+  } catch (err: any) {
+    res.status(400).json({ error: err.message });
   }
-);
+});
 
 // admin: เช็คเอาท์จริง
 checkoutRouter.put(
@@ -231,10 +225,8 @@ checkoutRouter.put(
         include: { room: true },
       });
       if (!checkout) throw new Error("ไม่พบข้อมูล");
-      if (checkout.status !== 1)
-        throw new Error("ยังไม่ได้อนุมัติ");
-      if (checkout.checkoutStatus === 1)
-        throw new Error("เช็คเอาท์ไปแล้ว");
+      if (checkout.status !== 1) throw new Error("ยังไม่ได้อนุมัติ");
+      if (checkout.checkoutStatus === 1) throw new Error("เช็คเอาท์ไปแล้ว");
 
       await prisma.$transaction([
         prisma.checkout.update({
@@ -258,57 +250,49 @@ checkoutRouter.put(
 );
 
 // admin: แก้ไขวันที่ขอคืน
-checkoutRouter.put(
-  "/:checkoutId/date",
-  authMiddleware,
-  async (req, res) => {
-    try {
-      const { checkoutId } = req.params;
-      const { requestedCheckout } = req.body;
+checkoutRouter.put("/:checkoutId/date", authMiddleware, async (req, res) => {
+  try {
+    const { checkoutId } = req.params;
+    const { requestedCheckout } = req.body;
 
-      if (!requestedCheckout) throw new Error("ต้องระบุวันที่คืน");
+    if (!requestedCheckout) throw new Error("ต้องระบุวันที่คืน");
 
-      const checkout = await prisma.checkout.findUnique({
-        where: { checkoutId },
-      });
-      if (!checkout) throw new Error("ไม่พบข้อมูล");
-      if (checkout.checkoutStatus === 1)
-        throw new Error("เช็คเอาท์แล้ว แก้ไม่ได้");
+    const checkout = await prisma.checkout.findUnique({
+      where: { checkoutId },
+    });
+    if (!checkout) throw new Error("ไม่พบข้อมูล");
+    if (checkout.checkoutStatus === 1)
+      throw new Error("เช็คเอาท์แล้ว แก้ไม่ได้");
 
-      const updated = await prisma.checkout.update({
-        where: { checkoutId },
-        data: { requestedCheckout: new Date(requestedCheckout) },
-      });
+    const updated = await prisma.checkout.update({
+      where: { checkoutId },
+      data: { requestedCheckout: new Date(requestedCheckout) },
+    });
 
-      res.json({ checkout: updated });
-    } catch (err: any) {
-      res.status(400).json({ error: err.message });
-    }
+    res.json({ checkout: updated });
+  } catch (err: any) {
+    res.status(400).json({ error: err.message });
   }
-);
+});
 
 // admin: ลบ checkout
-checkoutRouter.delete(
-  "/:checkoutId",
-  authMiddleware,
-  async (req, res) => {
-    try {
-      const { checkoutId } = req.params;
+checkoutRouter.delete("/:checkoutId", authMiddleware, async (req, res) => {
+  try {
+    const { checkoutId } = req.params;
 
-      const checkout = await prisma.checkout.findUnique({
-        where: { checkoutId },
-      });
-      if (!checkout) throw new Error("ไม่พบข้อมูล");
-      if (checkout.checkoutStatus === 1)
-        throw new Error("เช็คเอาท์แล้ว ลบไม่ได้");
+    const checkout = await prisma.checkout.findUnique({
+      where: { checkoutId },
+    });
+    if (!checkout) throw new Error("ไม่พบข้อมูล");
+    if (checkout.checkoutStatus === 1)
+      throw new Error("เช็คเอาท์แล้ว ลบไม่ได้");
 
-      await prisma.checkout.delete({ where: { checkoutId } });
+    await prisma.checkout.delete({ where: { checkoutId } });
 
-      res.json({ message: "ลบ checkout สำเร็จ" });
-    } catch (err: any) {
-      res.status(400).json({ error: err.message });
-    }
+    res.json({ message: "ลบ checkout สำเร็จ" });
+  } catch (err: any) {
+    res.status(400).json({ error: err.message });
   }
-);
+});
 
 export default checkoutRouter;

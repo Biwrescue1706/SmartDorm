@@ -5,8 +5,11 @@ import { verifyLineToken } from "../utils/verifyLineToken";
 import { sendFlexMessage } from "../utils/lineFlex";
 
 const checkoutRouter = Router();
+const adminId = process.env.ADMIN_LINE_ID;
 
-// format วันที่เป็นภาษาไทย
+/* =======================
+   Utils
+======================= */
 const formatThaiDate = (d?: string | Date | null) =>
   d
     ? new Date(d).toLocaleDateString("th-TH", {
@@ -16,21 +19,24 @@ const formatThaiDate = (d?: string | Date | null) =>
       })
     : "-";
 
-// admin: ดู checkout ทั้งหมด
+/* =====================================================
+   Admin: ดู checkout ทั้งหมด
+===================================================== */
 checkoutRouter.get("/getall", async (_req, res) => {
   try {
     const checkouts = await prisma.checkout.findMany({
       orderBy: { createdAt: "desc" },
       include: { booking: true, room: true, customer: true },
     });
-
     res.json({ checkouts });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
 });
 
-// admin: ดู checkout รายตัว
+/* =====================================================
+   Admin: ดู checkout รายตัว
+===================================================== */
 checkoutRouter.get("/:checkoutId", async (req, res) => {
   try {
     const { checkoutId } = req.params;
@@ -41,14 +47,15 @@ checkoutRouter.get("/:checkoutId", async (req, res) => {
     });
 
     if (!checkout) throw new Error("ไม่พบข้อมูล checkout");
-
     res.json({ checkout });
   } catch (err: any) {
     res.status(400).json({ error: err.message });
   }
 });
 
-// ลูกค้า: booking ที่ยังสามารถขอคืนได้
+/* =====================================================
+   ลูกค้า: booking ที่ยังขอคืนได้
+===================================================== */
 checkoutRouter.post("/myBookings", async (req, res) => {
   try {
     const { accessToken } = req.body;
@@ -78,12 +85,13 @@ checkoutRouter.post("/myBookings", async (req, res) => {
   }
 });
 
-// ลูกค้า: ส่งคำขอคืนห้อง
+/* =====================================================
+   ลูกค้า: ส่งคำขอคืนห้อง (แจ้ง Admin + ลูกค้า)
+===================================================== */
 checkoutRouter.put("/:bookingId/request", async (req, res) => {
   try {
     const { bookingId } = req.params;
     const { accessToken, requestedCheckout } = req.body;
-
     if (!requestedCheckout) throw new Error("ต้องระบุวันที่ขอคืน");
 
     const { userId } = await verifyLineToken(accessToken);
@@ -118,7 +126,30 @@ checkoutRouter.put("/:bookingId/request", async (req, res) => {
       },
       include: { room: true, customer: true },
     });
+
     const detailUrl = `https://smartdorm-detail.biwbong.shop/checkout/${checkout.checkoutId}`;
+
+    // 🔔 แจ้ง Admin
+    if (adminId) {
+      await sendFlexMessage(
+        adminId,
+        "📥 มีคำขอคืนห้องใหม่",
+        [
+          { label: "ห้อง", value: checkout.room.number },
+          {
+            label: "วันที่ขอคืน",
+            value: formatThaiDate(checkout.requestedCheckout),
+          },
+          {
+            label: "ผู้เช่า",
+            value: checkout.customer.userName || "-",
+          },
+        ],
+        [{ label: "เปิดดูรายการ", url: detailUrl, style: "primary" }]
+      );
+    }
+
+    // 🔔 แจ้ง ลูกค้า
     await sendFlexMessage(
       customer.userId,
       "📤 ส่งคำขอคืนห้องแล้ว",
@@ -128,18 +159,23 @@ checkoutRouter.put("/:bookingId/request", async (req, res) => {
           label: "วันที่ขอคืน",
           value: formatThaiDate(checkout.requestedCheckout),
         },
-        { label: "สถานะ", value: "รออนุมัติ" },
+        { label: "สถานะ", value: "รอการตรวจสอบจากแอดมิน" },
       ],
-      [{ label: "เปิดดูรายการ", url: detailUrl, style: "primary" }]
+      [{ label: "ดูสถานะคำขอ", url: detailUrl, style: "primary" }]
     );
 
-    res.json({ checkout });
+    res.json({
+      checkout,
+      message: "ส่งคำขอคืนห้องเรียบร้อย",
+    });
   } catch (err: any) {
     res.status(400).json({ error: err.message });
   }
 });
 
-// admin: อนุมัติคำขอคืน (ยังไม่เช็คเอาท์)
+/* =====================================================
+   Admin: อนุมัติคำขอคืน (แจ้งลูกค้า)
+===================================================== */
 checkoutRouter.put("/:checkoutId/approve", authMiddleware, async (req, res) => {
   try {
     const { checkoutId } = req.params;
@@ -153,10 +189,7 @@ checkoutRouter.put("/:checkoutId/approve", authMiddleware, async (req, res) => {
 
     const updated = await prisma.checkout.update({
       where: { checkoutId },
-      data: {
-        status: 1,
-        approvedAt: new Date(),
-      },
+      data: { status: 1, approvedAt: new Date() },
     });
 
     const detailUrl = `https://smartdorm-detail.biwbong.shop/checkout/${checkout.checkoutId}`;
@@ -177,7 +210,9 @@ checkoutRouter.put("/:checkoutId/approve", authMiddleware, async (req, res) => {
   }
 });
 
-// admin: ไม่อนุมัติคำขอคืน
+/* =====================================================
+   Admin: ปฏิเสธคำขอคืน (แจ้งลูกค้า)
+===================================================== */
 checkoutRouter.put("/:checkoutId/reject", authMiddleware, async (req, res) => {
   try {
     const { checkoutId } = req.params;
@@ -193,7 +228,7 @@ checkoutRouter.put("/:checkoutId/reject", authMiddleware, async (req, res) => {
       where: { checkoutId },
       data: { status: 2 },
     });
-    
+
     const detailUrl = `https://smartdorm-detail.biwbong.shop/checkout/${checkout.checkoutId}`;
 
     await sendFlexMessage(
@@ -212,7 +247,9 @@ checkoutRouter.put("/:checkoutId/reject", authMiddleware, async (req, res) => {
   }
 });
 
-// admin: เช็คเอาท์จริง
+/* =====================================================
+   Admin: เช็คเอาท์จริง (แจ้งลูกค้า)
+===================================================== */
 checkoutRouter.put(
   "/:checkoutId/checkout",
   authMiddleware,
@@ -222,7 +259,7 @@ checkoutRouter.put(
 
       const checkout = await prisma.checkout.findUnique({
         where: { checkoutId },
-        include: { room: true },
+        include: { room: true, customer: true },
       });
       if (!checkout) throw new Error("ไม่พบข้อมูล");
       if (checkout.status !== 1) throw new Error("ยังไม่ได้อนุมัติ");
@@ -242,6 +279,19 @@ checkoutRouter.put(
         }),
       ]);
 
+      const detailUrl = `https://smartdorm-detail.biwbong.shop/checkout/${checkout.checkoutId}`;
+
+      await sendFlexMessage(
+        checkout.customer.userId,
+        "🚪 เช็คเอาท์เรียบร้อยแล้ว",
+        [
+          { label: "ห้อง", value: checkout.room.number },
+          { label: "วันที่เช็คเอาท์", value: formatThaiDate(new Date()) },
+          { label: "สถานะ", value: "คืนห้องเสร็จสิ้น" },
+        ],
+        [{ label: "ดูรายละเอียด", url: detailUrl, style: "primary" }]
+      );
+
       res.json({ message: "เช็คเอาท์สำเร็จ" });
     } catch (err: any) {
       res.status(400).json({ error: err.message });
@@ -249,12 +299,13 @@ checkoutRouter.put(
   }
 );
 
-// admin: แก้ไขวันที่ขอคืน
+/* =====================================================
+   Admin: แก้ไขวันที่ขอคืน (ไม่แจ้งเตือน)
+===================================================== */
 checkoutRouter.put("/:checkoutId/date", authMiddleware, async (req, res) => {
   try {
     const { checkoutId } = req.params;
     const { requestedCheckout } = req.body;
-
     if (!requestedCheckout) throw new Error("ต้องระบุวันที่คืน");
 
     const checkout = await prisma.checkout.findUnique({
@@ -275,7 +326,9 @@ checkoutRouter.put("/:checkoutId/date", authMiddleware, async (req, res) => {
   }
 });
 
-// admin: ลบ checkout
+/* =====================================================
+   Admin: ลบ checkout (ไม่แจ้งเตือน)
+===================================================== */
 checkoutRouter.delete("/:checkoutId", authMiddleware, async (req, res) => {
   try {
     const { checkoutId } = req.params;
@@ -288,7 +341,6 @@ checkoutRouter.delete("/:checkoutId", authMiddleware, async (req, res) => {
       throw new Error("เช็คเอาท์แล้ว ลบไม่ได้");
 
     await prisma.checkout.delete({ where: { checkoutId } });
-
     res.json({ message: "ลบ checkout สำเร็จ" });
   } catch (err: any) {
     res.status(400).json({ error: err.message });

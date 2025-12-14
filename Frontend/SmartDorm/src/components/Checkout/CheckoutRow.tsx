@@ -3,16 +3,17 @@ import type { Checkout } from "../../types/Checkout";
 interface Props {
   checkout: Checkout;
   index: number;
-  onApprove: (id: string) => void;
-  onReject: (id: string) => void;
+  role: number | null;
+
+  onEdit: (checkout: Checkout) => void;
   onDelete: (id: string) => void;
 }
 
 export default function CheckoutRow({
   checkout,
   index,
-  onApprove,
-  onReject,
+  role,
+  onEdit,
   onDelete,
 }: Props) {
   const renderStatus = () => {
@@ -31,6 +32,9 @@ export default function CheckoutRow({
     return "-";
   };
 
+  const isSuperAdmin = role === 0;
+  const canEditOrDelete = isSuperAdmin && checkout.checkoutStatus === 0;
+
   return (
     <tr>
       <td>{index}</td>
@@ -43,25 +47,22 @@ export default function CheckoutRow({
           : "-"}
       </td>
       <td>{renderStatus()}</td>
-      <td>
-        {checkout.status === 0 && (
-          <>
-            <button
-              className="btn btn-success btn-sm me-1"
-              onClick={() => onApprove(checkout.checkoutId)}
-            >
-              อนุมัติ
-            </button>
-            <button
-              className="btn btn-danger btn-sm me-1"
-              onClick={() => onReject(checkout.checkoutId)}
-            >
-              ปฏิเสธ
-            </button>
-          </>
-        )}
 
-        {checkout.checkoutStatus === 0 && (
+      {/* ตารางแก้ไข */}
+      <td>
+        {canEditOrDelete && (
+          <button
+            className="btn btn-outline-primary btn-sm"
+            onClick={() => onEdit(checkout)}
+          >
+            แก้ไข
+          </button>
+        )}
+      </td>
+
+      {/* ตารางลบ */}
+      <td>
+        {canEditOrDelete && (
           <button
             className="btn btn-outline-danger btn-sm"
             onClick={() => onDelete(checkout.checkoutId)}

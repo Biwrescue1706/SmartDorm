@@ -7,7 +7,9 @@ export function useCheckouts() {
   const [checkouts, setCheckouts] = useState<Checkout[]>([]);
   const [loading, setLoading] = useState(false);
 
-  //📦 GET ALL
+  /* =======================
+     📦 GET ALL
+  ======================= */
   const fetchCheckouts = async () => {
     try {
       setLoading(true);
@@ -28,8 +30,9 @@ export function useCheckouts() {
     }
   };
 
-  //   ✅ APPROVE
-
+  /* =======================
+     ✅ APPROVE
+  ======================= */
   const approveCheckout = async (checkoutId: string) => {
     await fetch(`${API_BASE}/checkout/${checkoutId}/approve`, {
       method: "PUT",
@@ -38,7 +41,9 @@ export function useCheckouts() {
     fetchCheckouts();
   };
 
-  //   ❌ REJECT
+  /* =======================
+     ❌ REJECT
+  ======================= */
   const rejectCheckout = async (checkoutId: string) => {
     await fetch(`${API_BASE}/checkout/${checkoutId}/reject`, {
       method: "PUT",
@@ -47,7 +52,39 @@ export function useCheckouts() {
     fetchCheckouts();
   };
 
-  //   🗑️ DELETE
+  /* =======================
+     🚪 CONFIRM CHECKOUT
+     status === 1 && checkoutStatus === 0
+  ======================= */
+  const checkoutConfirm = async (checkoutId: string) => {
+    await fetch(`${API_BASE}/checkout/${checkoutId}/checkout`, {
+      method: "PUT",
+      credentials: "include",
+    });
+    fetchCheckouts();
+  };
+
+  /* =======================
+     ✏️ UPDATE REQUESTED CHECKOUT DATE
+  ======================= */
+  const updateCheckoutDate = async (
+    checkoutId: string,
+    values: { requestedCheckout: string }
+  ) => {
+    await fetch(`${API_BASE}/checkout/${checkoutId}/date`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+      body: JSON.stringify(values),
+    });
+    fetchCheckouts();
+  };
+
+  /* =======================
+     🗑️ DELETE
+  ======================= */
   const deleteCheckout = async (checkoutId: string) => {
     const ok = await Swal.fire({
       title: "ยืนยันลบข้อมูล?",
@@ -71,8 +108,12 @@ export function useCheckouts() {
     checkouts,
     loading,
     fetchCheckouts,
+
+    // 🔹 actions
     approveCheckout,
     rejectCheckout,
+    checkoutConfirm,
+    updateCheckoutDate,
     deleteCheckout,
   };
 }

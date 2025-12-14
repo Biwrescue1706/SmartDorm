@@ -21,7 +21,7 @@ export default function CheckoutRow({
   onDelete,
 }: Props) {
   const isSuperAdmin = role === 0;
-  const canEditOrDelete = isSuperAdmin && checkout.checkoutStatus === 0;
+  const canEditOrDelete = isSuperAdmin;
 
   const renderStatus = () => {
     // 🔶 รออนุมัติ

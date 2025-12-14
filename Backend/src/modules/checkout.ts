@@ -17,7 +17,7 @@ const formatThaiDate = (d?: string | Date | null) =>
     : "-";
 
 // admin: ดู checkout ทั้งหมด
-checkoutRouter.get("/getall", authMiddleware, async (_req, res) => {
+checkoutRouter.get("/getall", async (_req, res) => {
   try {
     const checkouts = await prisma.checkout.findMany({
       orderBy: { createdAt: "desc" },
@@ -31,7 +31,7 @@ checkoutRouter.get("/getall", authMiddleware, async (_req, res) => {
 });
 
 // admin: ดู checkout รายตัว
-checkoutRouter.get("/:checkoutId", authMiddleware, async (req, res) => {
+checkoutRouter.get("/:checkoutId", async (req, res) => {
   try {
     const { checkoutId } = req.params;
 

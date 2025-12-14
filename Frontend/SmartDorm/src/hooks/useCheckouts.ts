@@ -7,100 +7,68 @@ export function useCheckouts() {
   const [checkouts, setCheckouts] = useState<Checkout[]>([]);
   const [loading, setLoading] = useState(false);
 
-  /* =======================
-     📦 GET ALL
-  ======================= */
   const fetchCheckouts = async () => {
     try {
       setLoading(true);
       const res = await fetch(`${API_BASE}/checkout/getall`, {
         credentials: "include",
       });
-
-      if (!res.ok) throw new Error("โหลดข้อมูลการคืนไม่สำเร็จ");
       const data = await res.json();
-
-      if (Array.isArray(data)) setCheckouts(data);
-      else if (Array.isArray(data?.checkouts)) setCheckouts(data.checkouts);
-      else setCheckouts([]);
-    } catch (err: any) {
-      Swal.fire("ผิดพลาด", err.message, "error");
+      setCheckouts(Array.isArray(data?.checkouts) ? data.checkouts : []);
     } finally {
       setLoading(false);
     }
   };
 
-  /* =======================
-     ✅ APPROVE
-  ======================= */
-  const approveCheckout = async (checkoutId: string) => {
-    await fetch(`${API_BASE}/checkout/${checkoutId}/approve`, {
+  const approveCheckout = async (id: string) => {
+    await fetch(`${API_BASE}/checkout/${id}/approve`, {
       method: "PUT",
       credentials: "include",
     });
     fetchCheckouts();
   };
 
-  /* =======================
-     ❌ REJECT
-  ======================= */
-  const rejectCheckout = async (checkoutId: string) => {
-    await fetch(`${API_BASE}/checkout/${checkoutId}/reject`, {
+  const rejectCheckout = async (id: string) => {
+    await fetch(`${API_BASE}/checkout/${id}/reject`, {
       method: "PUT",
       credentials: "include",
     });
     fetchCheckouts();
   };
 
-  /* =======================
-     🚪 CONFIRM CHECKOUT
-     status === 1 && checkoutStatus === 0
-  ======================= */
-  const checkoutConfirm = async (checkoutId: string) => {
-    await fetch(`${API_BASE}/checkout/${checkoutId}/checkout`, {
+  const checkoutConfirm = async (id: string) => {
+    await fetch(`${API_BASE}/checkout/${id}/checkout`, {
       method: "PUT",
       credentials: "include",
     });
     fetchCheckouts();
   };
 
-  /* =======================
-     ✏️ UPDATE REQUESTED CHECKOUT DATE
-  ======================= */
   const updateCheckoutDate = async (
-    checkoutId: string,
+    id: string,
     values: { requestedCheckout: string }
   ) => {
-    await fetch(`${API_BASE}/checkout/${checkoutId}/date`, {
+    await fetch(`${API_BASE}/checkout/${id}/date`, {
       method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: { "Content-Type": "application/json" },
       credentials: "include",
       body: JSON.stringify(values),
     });
     fetchCheckouts();
   };
 
-  /* =======================
-     🗑️ DELETE
-  ======================= */
-  const deleteCheckout = async (checkoutId: string) => {
+  const deleteCheckout = async (id: string) => {
     const ok = await Swal.fire({
       title: "ยืนยันลบข้อมูล?",
       icon: "warning",
       showCancelButton: true,
-      confirmButtonText: "ลบ",
-      cancelButtonText: "ยกเลิก",
     });
-
     if (!ok.isConfirmed) return;
 
-    await fetch(`${API_BASE}/checkout/${checkoutId}`, {
+    await fetch(`${API_BASE}/checkout/${id}`, {
       method: "DELETE",
       credentials: "include",
     });
-
     fetchCheckouts();
   };
 
@@ -108,8 +76,6 @@ export function useCheckouts() {
     checkouts,
     loading,
     fetchCheckouts,
-
-    // 🔹 actions
     approveCheckout,
     rejectCheckout,
     checkoutConfirm,

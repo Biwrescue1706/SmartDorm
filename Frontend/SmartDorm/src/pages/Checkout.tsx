@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Nav from "../components/Nav";
 import { useAuth } from "../hooks/useAuth";
 import { useCheckouts } from "../hooks/useCheckouts";
@@ -7,6 +7,7 @@ import CheckoutTable from "../components/Checkout/CheckoutTable";
 import CheckoutFilter from "../components/Checkout/CheckoutFilter";
 import CheckoutApproveDialog from "../components/Checkout/CheckoutApproveDialog";
 import CheckoutEditDialog from "../components/Checkout/CheckoutEditDialog";
+import Pagination from "../components/Pagination";
 
 import Swal from "sweetalert2";
 import type { Checkout } from "../types/Checkout";
@@ -25,32 +26,62 @@ export default function Checkout() {
     updateCheckoutDate,
   } = useCheckouts();
 
+  /* =======================
+     Filter
+  ======================= */
   const [filter, setFilter] = useState<
     "all" | "pending" | "approved" | "completed" | "rejected"
   >("all");
 
+  /* =======================
+     Pagination
+  ======================= */
+  const [currentPage, setCurrentPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+
+  /* =======================
+     Dialog state
+  ======================= */
   const [viewing, setViewing] = useState<Checkout | null>(null);
   const [editing, setEditing] = useState<Checkout | null>(null);
 
+  /* =======================
+     Initial load
+  ======================= */
   useEffect(() => {
     fetchCheckouts();
   }, []);
 
   /* =======================
-     FILTER
+     Filtered data
   ======================= */
-  const filteredCheckouts = checkouts.filter((c) => {
-    if (filter === "pending") return c.status === 0;
-    if (filter === "approved")
-      return c.status === 1 && c.checkoutStatus === 0;
-    if (filter === "completed")
-      return c.status === 1 && c.checkoutStatus === 1;
-    if (filter === "rejected") return c.status === 2;
-    return true;
-  });
+  const filteredCheckouts = useMemo(() => {
+    const result = checkouts.filter((c) => {
+      if (filter === "pending") return c.status === 0;
+      if (filter === "approved")
+        return c.status === 1 && c.checkoutStatus === 0;
+      if (filter === "completed")
+        return c.status === 1 && c.checkoutStatus === 1;
+      if (filter === "rejected") return c.status === 2;
+      return true;
+    });
+
+    // เปลี่ยน filter → กลับหน้าแรก
+    setCurrentPage(1);
+    return result;
+  }, [checkouts, filter]);
 
   /* =======================
-     CONFIRM CHECKOUT (2 STEP)
+     Pagination slice
+  ======================= */
+  const paginatedCheckouts = useMemo(() => {
+    const start = (currentPage - 1) * rowsPerPage;
+    const end = start + rowsPerPage;
+    return filteredCheckouts.slice(start, end);
+  }, [filteredCheckouts, currentPage, rowsPerPage]);
+
+  /* =======================
+     Confirm checkout (2 steps)
   ======================= */
   const confirmCheckout = async (checkout: Checkout) => {
     const first = await Swal.fire({
@@ -90,16 +121,31 @@ export default function Checkout() {
 
       <main className="main-content flex-grow-1 px-2 py-3 mt-6 mt-lg-7">
         <div className="container-max mx-auto">
-          <h2 className="text-center fw-bold mb-3">จัดการการคืนห้อง</h2>
 
+          {/* ===== Header + Refresh ===== */}
+          <div className="d-flex justify-content-between align-items-center mb-3">
+            <h2 className="fw-bold mb-0">จัดการการคืนห้อง</h2>
+
+            <button
+              className="btn btn-outline-secondary btn-sm fw-semibold"
+              onClick={fetchCheckouts}
+              disabled={loading}
+              title="รีเฟรชข้อมูล (เหมือนกด F5)"
+            >
+              {loading ? "กำลังโหลด..." : "🔄 รีเฟรชข้อมูล"}
+            </button>
+          </div>
+
+          {/* ===== Filter (Cards) ===== */}
           <CheckoutFilter
             active={filter}
             onChange={setFilter}
             checkouts={checkouts}
           />
 
+          {/* ===== Table ===== */}
           <CheckoutTable
-            checkouts={filteredCheckouts}
+            checkouts={paginatedCheckouts}
             loading={loading}
             role={role}
             onView={setViewing}
@@ -107,10 +153,22 @@ export default function Checkout() {
             onEdit={setEditing}
             onDelete={deleteCheckout}
           />
+
+          {/* ===== Pagination ===== */}
+          <Pagination
+            currentPage={currentPage}
+            totalItems={filteredCheckouts.length}
+            rowsPerPage={rowsPerPage}
+            onPageChange={setCurrentPage}
+            onRowsPerPageChange={(rows) => {
+              setRowsPerPage(rows);
+              setCurrentPage(1);
+            }}
+          />
         </div>
       </main>
 
-      {/* 🔍 ดูรายละเอียด + อนุมัติ / ปฏิเสธ */}
+      {/* ===== Approve / Reject Dialog ===== */}
       {viewing && (
         <CheckoutApproveDialog
           checkout={viewing}
@@ -128,7 +186,7 @@ export default function Checkout() {
         />
       )}
 
-      {/* ✏️ แก้ไขวันที่คืน */}
+      {/* ===== Edit Date Dialog ===== */}
       {editing && (
         <CheckoutEditDialog
           checkout={editing}

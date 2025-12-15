@@ -237,6 +237,9 @@ export default function BookingHistory() {
                         <b>LINE : </b> {b.customer?.userName || "-"}
                       </div>
                       <div className="small">
+                        <b>เบอร์โทร : </b> {b.cphone || "-"}
+                      </div>
+<div className="small">
                         <b>จอง : </b> {formatThaiDate(b.createdAt)}
                       </div>
                       <div className="small">

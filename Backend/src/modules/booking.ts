@@ -4,6 +4,7 @@ import prisma from "../prisma";
 import { createClient } from "@supabase/supabase-js";
 import { verifyLineToken } from "../utils/verifyLineToken";
 import { sendFlexMessage } from "../utils/lineFlex";
+import { authMiddleware } from "../middleware/authMiddleware";
 
 // ---------------- Supabase ----------------
 const supabase = createClient(
@@ -38,7 +39,6 @@ const formatThai = (d?: Date | string | null) =>
     : "-";
 
 // 📋 GET ALL
-
 bookingRouter.get("/getall", async (_req, res) => {
   try {
     const bookings = await prisma.booking.findMany({
@@ -52,7 +52,6 @@ bookingRouter.get("/getall", async (_req, res) => {
 });
 
 // 🔍 SEARCH
-
 bookingRouter.get("/search", async (req, res) => {
   try {
     const keyword = (req.query.keyword as string)?.trim();
@@ -78,8 +77,54 @@ bookingRouter.get("/search", async (req, res) => {
   }
 });
 
-// 🔎 GET BY ID
+bookingRouter.get("/history", authMiddleware, async (_req, res) => {
+  try {
+    const bookings = await prisma.booking.findMany({
+      orderBy: { createdAt: "desc" },
+      include: {
+        room: { select: { number: true } },
+        customer: {
+          select: {
+            userName: true,
+          },
+        },
+      },
+    });
 
+    const checkouts = await prisma.checkout.findMany({
+      select: {
+        bookingId: true,
+        requestedCheckout: true,
+        actualCheckout: true,
+      },
+    });
+
+    // map checkout by bookingId
+    const checkoutMap = new Map(checkouts.map((c) => [c.bookingId, c]));
+
+    const history = bookings.map((b: any) => {
+      const c = checkoutMap.get(b.bookingId);
+
+      return {
+        bookingId: b.bookingId,
+        room: b.room,
+        customer: b.customer,
+        createdAt: b.createdAt,
+        checkin: b.checkin,
+        actualCheckin: b.actualCheckin,
+        requestedCheckout: c?.requestedCheckout || null,
+        actualCheckout: c?.actualCheckout || null,
+      };
+    });
+
+    res.json({ bookings: history });
+  } catch (err) {
+    console.error("❌ booking/history error:", err);
+    res.status(500).json({ message: "server error" });
+  }
+});
+
+// 🔎 GET BY ID
 bookingRouter.get("/:bookingId", async (req, res) => {
   try {
     const booking = await prisma.booking.findUnique({
@@ -95,7 +140,6 @@ bookingRouter.get("/:bookingId", async (req, res) => {
 });
 
 // ➕ CREATE
-
 bookingRouter.post("/create", async (req, res) => {
   try {
     const {
@@ -203,7 +247,6 @@ bookingRouter.post("/create", async (req, res) => {
 });
 
 // 📤 UPLOAD SLIP
-
 bookingRouter.post(
   "/:bookingId/uploadSlip",
   upload.single("slip"),
@@ -437,7 +480,6 @@ bookingRouter.put("/:bookingId", async (req, res) => {
 });
 
 // 🗑️ DELETE
-
 bookingRouter.delete("/:bookingId", async (req, res) => {
   try {
     const existing = await prisma.booking.findUnique({

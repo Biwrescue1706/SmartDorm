@@ -1,13 +1,13 @@
 // src/pages/Rooms.tsx
 import { useState, useEffect } from "react";
-import RoomTable from "../components/Room/RoomTable";
-import RoomCard from "../components/Room/RoomCard";
-import AddRoomDialog from "../components/Room/AddRoomDialog";
-import Pagination from "../components/Pagination";
-import Nav from "../components/Nav";
-import RoomFilter from "../components/Room/RoomFilter";
-import { useAuth } from "../hooks/useAuth";
-import { useRooms } from "../hooks/useRooms";
+import RoomTable from "../../components/Room/RoomTable";
+import RoomCard from "../../components/Room/RoomCard";
+import AddRoomDialog from "../../components/Room/AddRoomDialog";
+import Pagination from "../../components/Pagination";
+import Nav from "../../components/Nav";
+import RoomFilter from "../../components/Room/RoomFilter";
+import { useAuth } from "../../hooks/useAuth";
+import { useRooms } from "../../hooks/useRooms";
 
 /* -------------------------------------------
    🎨 SCB THEME สำหรับหน้า Rooms

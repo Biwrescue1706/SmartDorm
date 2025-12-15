@@ -1,27 +1,13 @@
 import CheckoutRow from "./CheckoutRow";
 import type { Checkout } from "../../types/Checkout";
 
-/* =======================
-   Helper: format Thai date (พ.ศ.)
-   ตัวอย่าง: 15 ธ.ค. 2568
-======================= */
-const formatThaiDate = (d?: string | null) => {
-  if (!d) return "-";
-  return new Date(d).toLocaleDateString("th-TH", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  });
-};
-
 interface Props {
   checkouts: Checkout[];
   loading: boolean;
   role: number | null;
-
-  onView: (checkout: Checkout) => void;
-  onCheckout: (checkout: Checkout) => void;
-  onEdit: (checkout: Checkout) => void;
+  onView: (c: Checkout) => void;
+  onCheckout: (c: Checkout) => void;
+  onEdit: (c: Checkout) => void;
   onDelete: (id: string) => void;
 }
 
@@ -34,15 +20,16 @@ export default function CheckoutTable({
   onEdit,
   onDelete,
 }: Props) {
-  if (loading)
-    return <p className="text-center text-muted">กำลังโหลด...</p>;
+  if (loading) return <p className="text-center">กำลังโหลด...</p>;
+  if (!checkouts.length) return <p className="text-center">ไม่มีข้อมูล</p>;
 
-  if (checkouts.length === 0)
-    return <p className="text-center text-muted">ไม่มีข้อมูล</p>;
+  // ❗ ถ้ามีรายการใด checkoutStatus === 1 → ห้ามแสดงคอลัมน์แก้ไข
+  const canShowEditColumn =
+    role === 0 && !checkouts.some((c) => c.checkoutStatus === 1);
 
   return (
     <div className="table-responsive">
-      <table className="table table-sm table-striped text-center align-middle">
+      <table className="table table-striped text-center">
         <thead className="table-dark">
           <tr>
             <th>#</th>
@@ -51,9 +38,10 @@ export default function CheckoutTable({
             <th>ชื่อ</th>
             <th>เบอร์</th>
             <th>วันที่ขอคืน</th>
-            <th>วันที่เช็คเอาท์จริง</th>
+            <th>เช็คเอาท์จริง</th>
             <th>สถานะ</th>
-            {role === 0 && <th>แก้ไข</th>}
+
+            {canShowEditColumn && <th>แก้ไข</th>}
             {role === 0 && <th>ลบ</th>}
           </tr>
         </thead>
@@ -62,18 +50,10 @@ export default function CheckoutTable({
           {checkouts.map((c, i) => (
             <CheckoutRow
               key={c.checkoutId}
-              checkout={{
-                ...c,
-                requestedCheckoutFormatted: formatThaiDate(
-                  c.requestedCheckout
-                ),
-                actualCheckoutFormatted:
-                  c.status === 1
-                    ? formatThaiDate(c.actualCheckout)
-                    : null,
-              }}
+              checkout={c}
               index={i + 1}
               role={role}
+              canEdit={canShowEditColumn}
               onView={onView}
               onCheckout={onCheckout}
               onEdit={onEdit}

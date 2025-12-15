@@ -196,6 +196,16 @@ export default function Nav({
               >
                 🔄 หน้าคืน
               </button>
+              <button
+                className={`btn text-start ${
+                  isActive("/booking-history")
+                    ? "btn-warning text-dark fw-bold"
+                    : "btn-outline-warning"
+                }`}
+                onClick={() => navigate("/booking-history")}
+              >
+                📑 ประวัติการจอง
+              </button>
             </div>
           )}
 
@@ -330,6 +340,15 @@ export default function Nav({
                   >
                     🔄 หน้าคืน
                   </button>
+                  <button
+                    className="btn btn-outline-warning text-start"
+                    onClick={() => {
+                      navigate("/booking-history");
+                      setMenuOpen(false);
+                    }}
+                  >
+                    📑 ประวัติการจอง
+                  </button>
                 </div>
               )}
 
@@ -364,16 +383,6 @@ export default function Nav({
                 </div>
               )}
 
-              <button
-                className="btn btn-outline-warning text-start"
-                onClick={() => {
-                  navigate("/users");
-                  setMenuOpen(false);
-                }}
-              >
-                👤 ข้อมูลลูกค้า
-              </button>
-
               {role === 0 && (
                 <button
                   className="btn btn-outline-warning text-start"
@@ -385,6 +394,15 @@ export default function Nav({
                   👥 จัดการสมาชิก
                 </button>
               )}
+              <button
+                className="btn btn-outline-warning text-start"
+                onClick={() => {
+                  navigate("/users");
+                  setMenuOpen(false);
+                }}
+              >
+                👤 ข้อมูลลูกค้า
+              </button>
             </div>
           </div>
 

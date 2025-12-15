@@ -1,10 +1,10 @@
 // src/pages/ChangePassword.tsx
 import { useState } from "react";
-import Nav from "../components/Nav";
-import { useAuth } from "../hooks/useAuth";
-import { useChangePassword } from "../hooks/useChangePassword";
+import Nav from "../../components/Nav";
+import { useAuth } from "../../hooks/useAuth";
+import { useChangePassword } from "../../hooks/useChangePassword";
 import Swal from "sweetalert2";
-import { API_BASE } from "../config";
+import { API_BASE } from "../../config";
 
 export default function ChangePassword() {
   const { handleLogout, role, adminName, adminUsername } = useAuth();

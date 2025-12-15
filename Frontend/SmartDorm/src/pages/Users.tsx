@@ -322,9 +322,9 @@ export default function Users() {
                       <hr />
                       <h6 className="fw-bold">ชื่อผู้จอง</h6>
                       <p>{card.fullName}</p>
-                      {role === 0 && (
+                      <div className="d-flex justify-content-between gap-2 mt-2">
                         <button
-                          className="btn btn-danger btn-sm w-100 mb-2"
+                          className="btn btn-info btn-sm text-white flex-fill"
                           onClick={() => {
                             setSelectedUser({
                               ...users.find(
@@ -332,27 +332,29 @@ export default function Users() {
                               )!,
                               bookings: card.bookings,
                             });
-                            handleDeleteUser();
+                            setShowDialog(true);
                           }}
                         >
-                          ลบลูกค้า
+                          ดูประวัติ
                         </button>
-                      )}
 
-                      <button
-                        className="btn btn-info btn-sm w-100 text-white"
-                        onClick={() => {
-                          setSelectedUser({
-                            ...users.find(
-                              (u) => u.customerId === card.customerId
-                            )!,
-                            bookings: card.bookings,
-                          });
-                          setShowDialog(true);
-                        }}
-                      >
-                        ดูประวัติ
-                      </button>
+                        {role === 0 && (
+                          <button
+                            className="btn btn-danger btn-sm flex-fill"
+                            onClick={() => {
+                              setSelectedUser({
+                                ...users.find(
+                                  (u) => u.customerId === card.customerId
+                                )!,
+                                bookings: card.bookings,
+                              });
+                              handleDeleteUser();
+                            }}
+                          >
+                            🗑️
+                          </button>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>

@@ -4,18 +4,19 @@ import GuestRoute from "./components/GuestRoute";
 
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
-import Rooms from "./pages/Rooms";
-import Bills from "./pages/Bills";
-import Booking from "./pages/Booking"; //  เพิ่ม
+import Rooms from "./pages/ManageRooms/Rooms";
+import Bills from "./pages/Bills/Bills";
+import Booking from "./pages/ManageRooms/Booking"; //  เพิ่ม
 import NotFound from "./pages/NotFound"; //  หน้า 404
-import Checkout from "./pages/Checkout";
-import AllBills from "./pages/AllBills";
+import Checkout from "./pages/ManageRooms/Checkout";
+import AllBills from "./pages/Bills/AllBills";
 import AdminManagement from "./pages/AdminManagement";
 import Users from "./pages/Users";
-import Profile from "./pages/Profile";
-import ChangePassword from "./pages/ChangePassword";
-import ForgotUsername from "./pages/ForgotUsername";
-import ResetPassword from "./pages/ResetPassword";
+import Profile from "./pages/Profile/Profile";
+import ChangePassword from "./pages/Profile/ChangePassword";
+import ForgotUsername from "./pages/ForgotPassword/ForgotUsername";
+import ResetPassword from "./pages/ForgotPassword/ResetPassword";
+import BookingHistory from "./pages/BookingHistory";
 
 function App() {
   return (
@@ -136,6 +137,15 @@ function App() {
         element={
           <ProtectedRoute>
             <ChangePassword />
+          </ProtectedRoute>
+        }
+      />
+      
+      <Route
+        path="/booking-history"
+        element={
+          <ProtectedRoute>
+            <BookingHistory />
           </ProtectedRoute>
         }
       />

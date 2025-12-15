@@ -1,11 +1,11 @@
 import { useState, type ReactNode } from "react";
-import Nav from "../components/Nav";
-import { useAuth } from "../hooks/useAuth";
-import { useProfile } from "../hooks/useProfile";
-import { useChangePassword } from "../hooks/useChangePassword";
+import Nav from "../../components/Nav";
+import { useAuth } from "../../hooks/useAuth";
+import { useProfile } from "../../hooks/useProfile";
+import { useChangePassword } from "../../hooks/useChangePassword";
 import Swal from "sweetalert2";
-import type { Admin } from "../types/Auth";
-import { API_BASE } from "../config";
+import type { Admin } from "../../types/Auth";
+import { API_BASE } from "../../config";
 
 const SCB_PURPLE = "#4A0080";
 const SCB_GOLD = "#D4AF37";

@@ -1,10 +1,10 @@
 // src/pages/Booking.tsx
 import { useState, useEffect } from "react";
-import BookingFilter from "../components/Booking/BookingFilter";
-import BookingTable from "../components/Booking/BookingTable";
-import { useBookings } from "../hooks/useBookings";
-import Nav from "../components/Nav";
-import { useAuth } from "../hooks/useAuth";
+import BookingFilter from "../../components/Booking/BookingFilter";
+import BookingTable from "../../components/Booking/BookingTable";
+import { useBookings } from "../../hooks/useBookings";
+import Nav from "../../components/Nav";
+import { useAuth } from "../../hooks/useAuth";
 
 export default function Booking() {
   const { handleLogout, role, adminName, adminUsername } = useAuth();

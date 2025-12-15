@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { useForgotPassword } from "../hooks/useForgotPassword";
+import { useForgotPassword } from "../../hooks/useForgotPassword";
 import Swal from "sweetalert2";
 
 interface LocationState {

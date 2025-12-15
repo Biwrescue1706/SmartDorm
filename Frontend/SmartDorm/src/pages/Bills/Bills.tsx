@@ -1,12 +1,12 @@
 // src/pages/Bills.tsx
 import { useState, useEffect } from "react";
-import Nav from "../components/Nav";
-import { useAuth } from "../hooks/useAuth";
-import { useCreateBill } from "../hooks/useCreateBill";
-import BillTable from "../components/Bills/BillTable";
-import BillCard from "../components/Bills/BillCard";
-import BillDialog from "../components/Bills/BillDialog";
-import Pagination from "../components/Pagination";
+import Nav from "../../components/Nav";
+import { useAuth } from "../../hooks/useAuth";
+import { useCreateBill } from "../../hooks/useCreateBill";
+import BillTable from "../../components/Bills/BillTable";
+import BillCard from "../../components/Bills/BillCard";
+import BillDialog from "../../components/Bills/BillDialog";
+import Pagination from "../../components/Pagination";
 import "bootstrap/dist/css/bootstrap.min.css";
 
 export default function Bills() {

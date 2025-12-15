@@ -112,6 +112,7 @@ bookingRouter.get("/history", authMiddleware, async (_req, res) => {
         fullName: b.fullName,
         cphone: b.cphone,
         createdAt: b.createdAt,
+        checkin : b.checkin,
         actualCheckin: b.actualCheckin,
 
         // 🔹 ความสัมพันธ์

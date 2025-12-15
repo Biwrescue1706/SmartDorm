@@ -1,16 +1,16 @@
 // src/pages/AllBills.tsx
 import { useState, useEffect } from "react";
-import Nav from "../components/Nav";
-import { useAuth } from "../hooks/useAuth";
-import { useBills } from "../hooks/useBills";
-import AllBillsCard from "../components/AllBills/AllBillsCard";
-import AllBillsTable from "../components/AllBills/AllBillsTable";
-import Pagination from "../components/Pagination";
-import BillStatusCardFilter from "../components/AllBills/BillStatusCardFilter";
-import AllBillsEditDialog from "../components/AllBills/AllBillsEditDialog";
-import BillManageDialog from "../components/AllBills/BillManageDialog";
+import Nav from "../../components/Nav";
+import { useAuth } from "../../hooks/useAuth";
+import { useBills } from "../../hooks/useBills";
+import AllBillsCard from "../../components/AllBills/AllBillsCard";
+import AllBillsTable from "../../components/AllBills/AllBillsTable";
+import Pagination from "../../components/Pagination";
+import BillStatusCardFilter from "../../components/AllBills/BillStatusCardFilter";
+import AllBillsEditDialog from "../../components/AllBills/AllBillsEditDialog";
+import BillManageDialog from "../../components/AllBills/BillManageDialog";
 import Swal from "sweetalert2";
-import type { Bill } from "../types/Bill";
+import type { Bill } from "../../types/Bill";
 
 export default function AllBills() {
   const { handleLogout, role, adminName, adminUsername } = useAuth();

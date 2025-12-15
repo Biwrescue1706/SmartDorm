@@ -2,7 +2,6 @@ import type { Checkout } from "../../types/Checkout";
 
 interface Props {
   active:
-    | "all"
     | "pending"    // รออนุมัติ
     | "approved"   // รอการเช็คเอาท์
     | "completed"  // คืนแล้ว

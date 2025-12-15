@@ -107,11 +107,20 @@ bookingRouter.get("/history", authMiddleware, async (_req, res) => {
 
       return {
         bookingId: b.bookingId,
-        room: b.room,
-        customer: b.customer,
+
+        // 🔹 ดึงจาก Booking (ตามที่คุณต้องการ)
+        fullName: b.fullName,
+        cphone: b.cphone,
         createdAt: b.createdAt,
-        checkin: b.checkin,
         actualCheckin: b.actualCheckin,
+
+        // 🔹 ความสัมพันธ์
+        room: b.room,
+        customer: {
+          userName: b.customer?.userName,
+        },
+
+        // 🔹 Checkout
         requestedCheckout: c?.requestedCheckout || null,
         actualCheckout: c?.actualCheckout || null,
       };

@@ -122,10 +122,13 @@ export default function Checkout() {
       <main className="main-content flex-grow-1 px-2 py-3 mt-6 mt-lg-7">
         <div className="container-max mx-auto">
 
-          {/* ===== Header + Refresh ===== */}
-          <div className="d-flex justify-content-between align-items-center mb-3">
-            <h2 className="fw-bold mb-0">จัดการการคืนห้อง</h2>
+          {/* ===== Title ===== */}
+          <h2 className="text-center fw-bold mb-2">
+            จัดการการคืนห้อง
+          </h2>
 
+          {/* ===== Refresh Button (ใต้หัวข้อ) ===== */}
+          <div className="text-center mb-3">
             <button
               className="btn btn-outline-secondary btn-sm fw-semibold"
               onClick={fetchCheckouts}

@@ -136,7 +136,7 @@ export default function BookingHistory() {
           <div className="row g-3 justify-content-center mb-3">
             {[
               { key: "all", label: "ทั้งหมด", color: "warning" },
-              { key: "booked", label: "จอง", color: "primary" },
+              { key: "booked", label: "เช่าอยู่", color: "primary" },
               { key: "returned", label: "คืนแล้ว", color: "success" },
             ].map((s: any) => (
               <div key={s.key} className="col-12 col-sm-4 col-lg-3">
@@ -190,8 +190,9 @@ export default function BookingHistory() {
                     <th>ชื่อ</th>
                     <th>เบอร์</th>
                     <th>วันที่จอง</th>
+                    <th>วันทีแจ้งเข้าพัก</th>
                     <th>เข้าพักจริง</th>
-                    <th>ขอคืน</th>
+                    <th>วันที่ขอคืน</th>
                     <th>เช็คเอาท์จริง</th>
                   </tr>
                 </thead>
@@ -204,6 +205,7 @@ export default function BookingHistory() {
                       <td>{b.fullName || "-"}</td>
                       <td>{b.cphone || "-"}</td>
                       <td>{formatThaiDate(b.createdAt)}</td>
+                      <td>{formatThaiDate(b.checkin)}</td>
                       <td>{formatThaiDate(b.actualCheckin)}</td>
                       <td>{formatThaiDate(b.requestedCheckout)}</td>
                       <td>{formatThaiDate(b.actualCheckout)}</td>
@@ -238,7 +240,18 @@ export default function BookingHistory() {
                         <b>จอง : </b> {formatThaiDate(b.createdAt)}
                       </div>
                       <div className="small">
+                        <b>วันทีแจ้งเข้าพัก : </b> {formatThaiDate(b.checkin)}
+                      </div>
+                      <div className="small">
                         <b>เข้าพักจริง : </b> {formatThaiDate(b.actualCheckin)}
+                      </div>
+                      <div className="small">
+                        <b>วันที่ขอคืน : </b>{" "}
+                        {formatThaiDate(b.requestedCheckout)}
+                      </div>
+                      <div className="small">
+                        <b>เช็คเอาท์จริง : </b>{" "}
+                        {formatThaiDate(b.actualCheckout)}
                       </div>
                     </div>
                   </div>

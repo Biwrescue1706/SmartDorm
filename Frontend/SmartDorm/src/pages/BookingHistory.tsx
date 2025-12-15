@@ -124,7 +124,13 @@ export default function BookingHistory() {
                 />
                 <button
                   className="btn btn-outline-secondary fw-semibold"
-                  onClick={refetch}
+                  onClick={() => {
+  setSearch("");
+  setStatus("all");
+  setYear("all");
+  setCurrentPage(1);
+  refetch();
+}}
                 >
                   รีเฟรช
                 </button>

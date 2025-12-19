@@ -80,75 +80,6 @@ billRouter.get(
 );
 
 // =================================================
-// ➕ สร้างบิลใหม่ (Admin)
-// =================================================
-billRouter.post(
-  "/create",
-  authMiddleware,
-  roleMiddleware(0),
-  async (req, res) => {
-    try {
-      const {
-        roomId,
-        bookingId,
-        customerId,
-        month,
-        dueDate,
-        rent,
-        wBefore,
-        wAfter,
-        eBefore,
-        eAfter,
-        total,
-      } = req.body;
-
-      if (!roomId || !bookingId || !month || total == null) {
-        throw new Error("ข้อมูลไม่ครบ");
-      }
-
-      const bill = await prisma.bill.create({
-        data: {
-          roomId,
-          bookingId,
-          customerId,
-
-          month: new Date(month),
-          dueDate: dueDate ? new Date(dueDate) : new Date(),
-
-          rent: Number(rent ?? 0),
-          service: 50,
-
-          wBefore: Number(wBefore ?? 0),
-          wAfter: Number(wAfter ?? 0),
-          wUnits: Number(wAfter ?? 0) - Number(wBefore ?? 0),
-          wPrice: 19,
-          waterCost:
-            (Number(wAfter ?? 0) - Number(wBefore ?? 0)) * 19,
-
-          eBefore: Number(eBefore ?? 0),
-          eAfter: Number(eAfter ?? 0),
-          eUnits: Number(eAfter ?? 0) - Number(eBefore ?? 0),
-          ePrice: 7,
-          electricCost:
-            (Number(eAfter ?? 0) - Number(eBefore ?? 0)) * 7,
-
-          fine: 0,
-          overdueDays: 0,
-          total: Number(total),
-
-          status: 0,
-          createdBy: req.admin!.adminId,
-        },
-      });
-
-      res.json({ message: "สร้างบิลสำเร็จ", bill });
-    } catch (err: any) {
-      res.status(400).json({ error: err.message });
-    }
-  }
-);
-
-// =================================================
 // ➕ สร้างบิลจากห้อง (Admin)
 // =================================================
 billRouter.post(
@@ -161,7 +92,6 @@ billRouter.post(
       const {
         month,
         dueDate,
-        rent,
         wBefore,
         wAfter,
         eBefore,
@@ -176,11 +106,19 @@ billRouter.post(
           checkinStatus: 1,
         },
         orderBy: { createdAt: "desc" },
+        include: {
+          customer: true,
+          room: true,
+        },
       });
 
       if (!booking) {
         throw new Error("ไม่พบผู้เข้าพักในห้องนี้");
       }
+
+      // ✅ rent มาจาก booking
+      const rent = Number(booking.rent ?? 0);
+      const service = 50;
 
       const wUnits = Number(wAfter ?? 0) - Number(wBefore ?? 0);
       const eUnits = Number(eAfter ?? 0) - Number(eBefore ?? 0);
@@ -189,8 +127,8 @@ billRouter.post(
       const electricCost = eUnits * 7;
 
       const total =
-        Number(rent ?? 0) +
-        50 +
+        rent +
+        service +
         waterCost +
         electricCost;
 
@@ -203,8 +141,8 @@ billRouter.post(
           month: new Date(month),
           dueDate: dueDate ? new Date(dueDate) : new Date(),
 
-          rent: Number(rent ?? 0),
-          service: 50,
+          rent,
+          service,
 
           wBefore: Number(wBefore ?? 0),
           wAfter: Number(wAfter ?? 0),
@@ -230,7 +168,7 @@ billRouter.post(
       });
 
       // ===============================
-      // 📲 แจ้งเตือน LINE (ตามรูป)
+      // 📲 แจ้งเตือน LINE
       // ===============================
       if (bill.customer?.userId) {
         await sendFlexMessage(
@@ -238,6 +176,7 @@ billRouter.post(
           `📄 แจ้งบิลค่าเช่าห้อง ประจำเดือน ${formatThaiMonth(bill.month)}`,
           [
             { label: "ห้อง", value: bill.room.number },
+            { label: "ค่าเช่าห้อง", value: `${rent} บาท` },
             {
               label: "ค่าน้ำ",
               value: `${bill.wUnits} หน่วย (${bill.waterCost} บาท)`,
@@ -248,11 +187,7 @@ billRouter.post(
             },
             {
               label: "ค่าส่วนกลาง",
-              value: `${bill.service} บาท`,
-            },
-            {
-              label: "ค่าเช่าห้อง",
-              value: `${bill.rent} บาท`,
+              value: `${service} บาท`,
             },
             {
               label: "ยอดรวมทั้งหมด",

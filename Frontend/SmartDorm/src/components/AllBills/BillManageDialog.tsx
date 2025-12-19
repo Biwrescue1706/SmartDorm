@@ -36,7 +36,7 @@ export default function BillManageDialog({
         className="modal-dialog modal-dialog-centered"
         style={{
           maxWidth: "640px",
-          margin: "130px auto 0 auto", // ⭐ ชน navbar จะไม่ติดอีกแล้ว
+          margin: "5px auto 0 auto", // ⭐ ชน navbar จะไม่ติดอีกแล้ว
         }}
       >
         <div className="modal-content rounded-4 shadow-lg border-0">
@@ -62,7 +62,6 @@ export default function BillManageDialog({
           <div
             className="modal-body text-center"
             style={{
-              paddingTop: "25px", // ⭐ กันหัว slip ไม่ชิดเพดาน
               paddingBottom: "10px",
               overflowY: "auto",
               maxHeight: "65vh", // ⭐ scroll เฉพาะภาพ
@@ -76,8 +75,8 @@ export default function BillManageDialog({
                 alt="slip"
                 style={{
                   width: "360px", // ⭐ ฟิกขนาดความกว้าง
-                  maxWidth: "90%", // ⭐ ถ้าจอแคบลง ให้ลดได้
-                  height: "auto", // ⭐ รักษาสัดส่วน ไม่บีบภาพ
+                  maxWidth: "70%", // ⭐ ถ้าจอแคบลง ให้ลดได้
+                  height: "180px", // ⭐ รักษาสัดส่วน ไม่บีบภาพ
                   maxHeight: "65vh", // ⭐ ไม่ล้นจอ
                   objectFit: "contain",
                   borderRadius: "14px",

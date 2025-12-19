@@ -24,11 +24,11 @@ export default function BillManageDialog({
       style={{
         background: "#00000080", // โปร่งแสงกำลังดี
         position: "fixed",
-        top: 0,
+        top: 50,
         left: 0,
         width: "100vw",
         height: "100vh",
-        zIndex: 5000, // ⭐ สูงสุดในระบบ ลอยเหนือ nav + sidebar
+        zIndex: 1000, // ⭐ สูงสุดในระบบ ลอยเหนือ nav + sidebar
       }}
     >
       {/* DIALOG WRAPPER */}

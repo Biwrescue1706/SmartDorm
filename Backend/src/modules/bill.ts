@@ -62,7 +62,6 @@ const deleteSlip = async (url?: string | null) => {
 // =================================================
 billRouter.get(
   "/getall",
-  authMiddleware,
   roleMiddleware(0),
   async (_req, res) => {
     try {
@@ -88,7 +87,6 @@ billRouter.get(
 // =================================================
 billRouter.get(
   "/:billId",
-  authMiddleware,
   async (req, res) => {
     try {
       const { billId } = req.params;

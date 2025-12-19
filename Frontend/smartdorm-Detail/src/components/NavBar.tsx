@@ -56,7 +56,7 @@ export default function NavBar() {
 
         {/* โลโก้หรือช่องว่างฝั่งขวา */}
         <img
-          src="https://smartdorm-admin.biwbong.shop/assets/SmartDorm.png"
+          src="https://smartdorm-admin.biwbong.shop/assets/SmartDorm.webp"
           alt="SmartDorm Logo"
           style={{
             width: "25px",

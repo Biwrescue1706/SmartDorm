@@ -258,7 +258,7 @@ billRouter.post(
           [
             {
               label: "ดูรายละเอียดและชำระเงิน",
-              uri: `https://smartdorm-detail.biwbong.shop/bill/${bill.billId}`,
+              url: `https://smartdorm-detail.biwbong.shop/bill/${bill.billId}`,
             },
           ]
         );

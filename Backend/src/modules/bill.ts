@@ -30,6 +30,14 @@ const formatThaiDate = (d?: string | Date | null) =>
       })
     : "-";
 
+const formatThaiMonth = (d?: string | Date | null) =>
+  d
+    ? new Date(d).toLocaleDateString("th-TH", {
+        month: "long",
+        year: "numeric",
+      })
+    : "-";
+
 const deleteSlip = async (url?: string | null) => {
   try {
     if (!url) return;

@@ -116,8 +116,8 @@ billRouter.post(
         throw new Error("ไม่พบผู้เข้าพักในห้องนี้");
       }
 
-      // ✅ rent มาจาก booking
-      const rent = Number(booking.rent ?? 0);
+      // ✅ rent มาจาก room
+const rent = Number(booking.room.rent ?? 0);
       const service = 50;
 
       const wUnits = Number(wAfter ?? 0) - Number(wBefore ?? 0);

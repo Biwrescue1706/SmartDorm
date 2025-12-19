@@ -221,47 +221,48 @@ billRouter.post(
         },
       });
 
+      // ===============================
+      // 📲 แจ้งเตือน LINE (ตามรูป)
+      // ===============================
       if (bill.customer?.userId) {
-  await sendFlexMessage(
-    bill.customer.userId,
-    `📄 แจ้งบิลค่าเช่าห้อง ประจำเดือน ${formatThaiMonth(bill.month)}`,
-    [
-      { label: "ห้อง", value: bill.room.number },
-
-      {
-        label: "ค่าน้ำ",
-        value: `${bill.wUnits} หน่วย (${bill.waterCost} บาท)`,
-      },
-      {
-        label: "ค่าไฟ",
-        value: `${bill.eUnits} หน่วย (${bill.electricCost} บาท)`,
-      },
-      {
-        label: "ค่าส่วนกลาง",
-        value: `${bill.service} บาท`,
-      },
-      {
-        label: "ค่าเช่าห้อง",
-        value: `${bill.rent} บาท`,
-      },
-      {
-        label: "ยอดรวมทั้งหมด",
-        value: `${bill.total.toLocaleString()} บาท`,
-      },
-      {
-        label: "ครบกำหนดชำระ",
-        value: formatThaiDate(bill.dueDate),
-      },
-    ],
-    [
-      {
-        type: "uri",
-        label: "ดูรายละเอียดและชำระเงิน",
-        uri: `https://smartdorm-detail.biwbong.shop/bill/${bill.billId}`,
-      },
-    ]
-  );
-}
+        await sendFlexMessage(
+          bill.customer.userId,
+          `📄 แจ้งบิลค่าเช่าห้อง ประจำเดือน ${formatThaiMonth(bill.month)}`,
+          [
+            { label: "ห้อง", value: bill.room.number },
+            {
+              label: "ค่าน้ำ",
+              value: `${bill.wUnits} หน่วย (${bill.waterCost} บาท)`,
+            },
+            {
+              label: "ค่าไฟ",
+              value: `${bill.eUnits} หน่วย (${bill.electricCost} บาท)`,
+            },
+            {
+              label: "ค่าส่วนกลาง",
+              value: `${bill.service} บาท`,
+            },
+            {
+              label: "ค่าเช่าห้อง",
+              value: `${bill.rent} บาท`,
+            },
+            {
+              label: "ยอดรวมทั้งหมด",
+              value: `${bill.total.toLocaleString()} บาท`,
+            },
+            {
+              label: "ครบกำหนดชำระ",
+              value: formatThaiDate(bill.dueDate),
+            },
+          ],
+          [
+            {
+              label: "ดูรายละเอียดและชำระเงิน",
+              uri: `https://smartdorm-detail.biwbong.shop/bill/${bill.billId}`,
+            },
+          ]
+        );
+      }
 
       res.json({
         message: "สร้างบิลจากห้องสำเร็จ",

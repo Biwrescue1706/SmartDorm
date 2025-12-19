@@ -140,6 +140,93 @@ billRouter.post(
 );
 
 // =================================================
+// ➕ สร้างบิลจากห้อง (Admin)
+// =================================================
+billRouter.post(
+  "/createFromRoom/:roomId",
+  authMiddleware,
+  roleMiddleware(0),
+  async (req, res) => {
+    try {
+      const { roomId } = req.params;
+      const { month, wBefore, wAfter, eBefore, eAfter } = req.body;
+
+      if (!roomId || !month)
+        throw new Error("ข้อมูลไม่ครบ");
+
+      // 1. หา booking ล่าสุดที่อนุมัติแล้ว + เข้าพักจริง
+      const booking = await prisma.booking.findFirst({
+        where: {
+          roomId,
+          approveStatus: 1,
+          actualCheckin: { not: 0 },
+        },
+        orderBy: { createdAt: "desc" },
+        include: {
+          customer: true,
+          room: true,
+        },
+      });
+
+      if (!booking) throw new Error("ไม่พบการจองที่สามารถออกบิลได้");
+
+      // 2. คำนวณหน่วย
+      const wUnits = Number(wAfter ?? 0) - Number(wBefore ?? 0);
+      const eUnits = Number(eAfter ?? 0) - Number(eBefore ?? 0);
+
+      if (wUnits < 0 || eUnits < 0)
+        throw new Error("เลขมิเตอร์ไม่ถูกต้อง");
+
+      const waterCost = wUnits * 19;
+      const electricCost = eUnits * 7;
+      const service = 50;
+      const rent = booking.room.rent;
+
+      const total =
+        rent + service + waterCost + electricCost;
+
+      // 3. สร้างบิล
+      const bill = await prisma.bill.create({
+        data: {
+          roomId,
+          bookingId: booking.bookingId,
+          customerId: booking.customerId,
+
+          month: new Date(month),
+          dueDate: new Date(),
+
+          rent,
+          service,
+
+          wBefore: Number(wBefore ?? 0),
+          wAfter: Number(wAfter ?? 0),
+          wUnits,
+          wPrice: 19,
+          waterCost,
+
+          eBefore: Number(eBefore ?? 0),
+          eAfter: Number(eAfter ?? 0),
+          eUnits,
+          ePrice: 7,
+          electricCost,
+
+          fine: 0,
+          overdueDays: 0,
+          total,
+
+          status: 0,
+          createdBy: req.admin!.adminId,
+        },
+      });
+
+      res.json({ message: "สร้างบิลสำเร็จ", bill });
+    } catch (err: any) {
+      res.status(400).json({ error: err.message });
+    }
+  }
+);
+
+// =================================================
 // ✅ อนุมัติการชำระเงิน (Admin)
 // =================================================
 billRouter.put(

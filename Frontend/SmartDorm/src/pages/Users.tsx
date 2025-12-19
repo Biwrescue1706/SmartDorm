@@ -379,24 +379,24 @@ export default function Users() {
       <Dialog.Root open={showDialog} onOpenChange={setShowDialog}>
         <Dialog.Portal>
           <Dialog.Overlay
-            className="position-fixed top-0 start-0 w-100 h-100"
+            className="position-fixed top-50 start-0 w-100 h-100"
             style={{
               background: "rgba(0,0,0,0.75)",
-              zIndex: 9998,
+              zIndex: 1000,
             }}
           />
 
           <Dialog.Content
             className="position-fixed start-50 bg-white rounded-4 shadow-lg"
             style={{
-              top: "70px",
+              top: "5px",
               transform: "translateX(-50%)",
               width: "95%",
               maxWidth: "650px",
               maxHeight: "calc(100vh - 120px)",
               display: "flex",
               flexDirection: "column",
-              zIndex: 9999,
+              zIndex: 1000,
             }}
           >
             <Dialog.Title className="p-3 border-bottom fw-bold text-center">

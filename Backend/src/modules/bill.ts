@@ -62,7 +62,6 @@ const deleteSlip = async (url?: string | null) => {
 // =================================================
 billRouter.get(
   "/getall",
-  roleMiddleware(0),
   async (_req, res) => {
     try {
       const bills = await prisma.bill.findMany({

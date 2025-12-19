@@ -84,6 +84,37 @@ billRouter.get(
 );
 
 // =================================================
+// 🔍 ดึงบิลตาม ID (Customer / Admin)
+// =================================================
+billRouter.get(
+  "/:billId",
+  authMiddleware,
+  async (req, res) => {
+    try {
+      const { billId } = req.params;
+
+      const bill = await prisma.bill.findUnique({
+        where: { billId },
+        include: {
+          room: true,
+          booking: true,
+          customer: true,
+          payment: true,
+        },
+      });
+
+      if (!bill) {
+        return res.status(404).json({ error: "ไม่พบบิลนี้" });
+      }
+
+      res.json(bill);
+    } catch (err: any) {
+      res.status(400).json({ error: err.message });
+    }
+  }
+);
+
+// =================================================
 // ➕ สร้างบิลจากห้อง (Admin)
 // =================================================
 billRouter.post(

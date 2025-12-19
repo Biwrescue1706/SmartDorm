@@ -103,7 +103,7 @@ export function useBills() {
 
     try {
       await axios.put(
-        `${API_BASE}/bill/${billId}/approve`,
+        `${API_BASE}/bill/approve/${billId}`,
         {},
         { withCredentials: true }
       );
@@ -128,7 +128,7 @@ export function useBills() {
 
     try {
       await axios.put(
-        `${API_BASE}/bill/${billId}/reject`,
+        `${API_BASE}/bill/reject/${billId}`,
         {},
         { withCredentials: true }
       );

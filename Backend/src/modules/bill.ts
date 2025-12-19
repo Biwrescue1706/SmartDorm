@@ -94,8 +94,9 @@ billRouter.post(
         total,
       } = req.body;
 
-      if (!roomId || !bookingId || !month || total == null)
+      if (!roomId || !bookingId || !month || total == null) {
         throw new Error("ข้อมูลไม่ครบ");
+      }
 
       const bill = await prisma.bill.create({
         data: {
@@ -139,6 +140,9 @@ billRouter.post(
   }
 );
 
+// =================================================
+// ➕ สร้างบิลจากห้อง (Admin)
+// =================================================
 billRouter.post(
   "/createFromRoom/:roomId",
   authMiddleware,
@@ -158,7 +162,6 @@ billRouter.post(
 
       if (!month) throw new Error("กรุณาระบุเดือน");
 
-      // หา booking ที่กำลังเข้าพัก
       const booking = await prisma.booking.findFirst({
         where: {
           roomId,
@@ -212,7 +215,37 @@ billRouter.post(
           status: 0,
           createdBy: req.admin!.adminId,
         },
+        include: {
+          customer: true,
+          room: true,
+        },
       });
+
+      if (bill.customer?.userId) {
+        await sendFlexMessage(
+          bill.customer.userId,
+          "📄 มีบิลใหม่ประจำเดือน",
+          [
+            { label: "รหัสบิล", value: bill.billId },
+            { label: "ห้อง", value: bill.room.number },
+            {
+              label: "ยอดที่ต้องชำระ",
+              value: `${bill.total.toLocaleString()} บาท`,
+            },
+            {
+              label: "ครบกำหนด",
+              value: formatThaiDate(bill.dueDate),
+            },
+          ],
+          [
+            {
+              type: "uri",
+              label: "ดูรายละเอียดบิล",
+              uri: `https://smartdorm-detail.biwbong.shop/bill/${bill.billId}`,
+            },
+          ]
+        );
+      }
 
       res.json({
         message: "สร้างบิลจากห้องสำเร็จ",
@@ -240,7 +273,7 @@ billRouter.put(
         include: {
           customer: true,
           room: true,
-          payment: true, // ✅ สำคัญ
+          payment: true,
         },
       });
 
@@ -277,7 +310,7 @@ billRouter.put(
             },
             { label: "วันที่ยืนยัน", value: formatThaiDate(new Date()) },
           ],
-          [] // ✅ ต้องมี
+          []
         );
       }
 
@@ -308,11 +341,9 @@ billRouter.put(
 
       await prisma.$transaction(async (tx) => {
         if (bill.slipUrl) await deleteSlip(bill.slipUrl);
-
         if (bill.payment) {
           await tx.payment.delete({ where: { billId } });
         }
-
         await tx.bill.update({
           where: { billId },
           data: {
@@ -344,6 +375,7 @@ billRouter.delete(
         where: { billId },
         include: { payment: true },
       });
+
       if (!bill) throw new Error("ไม่พบบิล");
 
       await prisma.$transaction(async (tx) => {

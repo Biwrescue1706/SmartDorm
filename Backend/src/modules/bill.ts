@@ -139,9 +139,6 @@ billRouter.post(
   }
 );
 
-// =================================================
-// ➕ สร้างบิลจากห้อง (Admin)
-// =================================================
 billRouter.post(
   "/createFromRoom/:roomId",
   authMiddleware,
@@ -149,43 +146,43 @@ billRouter.post(
   async (req, res) => {
     try {
       const { roomId } = req.params;
-      const { month, wBefore, wAfter, eBefore, eAfter } = req.body;
+      const {
+        month,
+        dueDate,
+        rent,
+        wBefore,
+        wAfter,
+        eBefore,
+        eAfter,
+      } = req.body;
 
-      if (!roomId || !month)
-        throw new Error("ข้อมูลไม่ครบ");
+      if (!month) throw new Error("กรุณาระบุเดือน");
 
-      // 1. หา booking ล่าสุดที่อนุมัติแล้ว + เข้าพักจริง
+      // หา booking ที่กำลังเข้าพัก
       const booking = await prisma.booking.findFirst({
         where: {
           roomId,
-          approveStatus: 1,
-          actualCheckin: { not: 0 },
+          checkinStatus: 1,
         },
         orderBy: { createdAt: "desc" },
-        include: {
-          customer: true,
-          room: true,
-        },
       });
 
-      if (!booking) throw new Error("ไม่พบการจองที่สามารถออกบิลได้");
+      if (!booking) {
+        throw new Error("ไม่พบผู้เข้าพักในห้องนี้");
+      }
 
-      // 2. คำนวณหน่วย
       const wUnits = Number(wAfter ?? 0) - Number(wBefore ?? 0);
       const eUnits = Number(eAfter ?? 0) - Number(eBefore ?? 0);
 
-      if (wUnits < 0 || eUnits < 0)
-        throw new Error("เลขมิเตอร์ไม่ถูกต้อง");
-
       const waterCost = wUnits * 19;
       const electricCost = eUnits * 7;
-      const service = 50;
-      const rent = booking.room.rent;
 
       const total =
-        rent + service + waterCost + electricCost;
+        Number(rent ?? 0) +
+        50 +
+        waterCost +
+        electricCost;
 
-      // 3. สร้างบิล
       const bill = await prisma.bill.create({
         data: {
           roomId,
@@ -193,21 +190,19 @@ billRouter.post(
           customerId: booking.customerId,
 
           month: new Date(month),
-          dueDate: new Date(),
+          dueDate: dueDate ? new Date(dueDate) : new Date(),
 
-          rent,
-          service,
+          rent: Number(rent ?? 0),
+          service: 50,
 
           wBefore: Number(wBefore ?? 0),
           wAfter: Number(wAfter ?? 0),
           wUnits,
-          wPrice: 19,
           waterCost,
 
           eBefore: Number(eBefore ?? 0),
           eAfter: Number(eAfter ?? 0),
           eUnits,
-          ePrice: 7,
           electricCost,
 
           fine: 0,
@@ -219,7 +214,10 @@ billRouter.post(
         },
       });
 
-      res.json({ message: "สร้างบิลสำเร็จ", bill });
+      res.json({
+        message: "สร้างบิลจากห้องสำเร็จ",
+        bill,
+      });
     } catch (err: any) {
       res.status(400).json({ error: err.message });
     }

@@ -38,7 +38,7 @@ export default function BookingNav() {
 
         {/* โลโก้ขวา */}
         <img
-          src="https://smartdorm-admin.biwbong.shop/assets/SmartDorm.png"
+          src="https://smartdorm-admin.biwbong.shop/assets/SmartDorm.webp"
           alt="SmartDorm Logo"
           style={{
             width: "35px",

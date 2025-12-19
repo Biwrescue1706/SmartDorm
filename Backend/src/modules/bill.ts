@@ -21,6 +21,10 @@ const supabase = createClient(
 );
 
 // ---------------- Helpers ----------------
+const getDueDateNextMonth5th = (month: string | Date) => {
+  const d = new Date(month);
+  return new Date(d.getFullYear(), d.getMonth() + 1, 5);
+};
 const formatThaiDate = (d?: string | Date | null) =>
   d
     ? new Date(d).toLocaleDateString("th-TH", {
@@ -139,7 +143,7 @@ const rent = Number(booking.room.rent ?? 0);
           customerId: booking.customerId,
 
           month: new Date(month),
-          dueDate: dueDate ? new Date(dueDate) : new Date(),
+          dueDate: getDueDateNextMonth5th(month),
 
           rent,
           service,

@@ -40,8 +40,9 @@ export default function Nav({
         setProfileOpen(false);
       }
     };
-    document.addEventListener("click", close);
-    return () => document.removeEventListener("click", close);
+
+    document.addEventListener("mousedown", close);
+    return () => document.removeEventListener("mousedown", close);
   }, []);
 
   return (
@@ -69,10 +70,7 @@ export default function Nav({
         </button>
 
         {/* BRAND */}
-        <div
-          className="d-flex align-items-center gap-3 flex-grow-1"
-          style={{ lineHeight: "1.1" }}
-        >
+        <div className="d-flex align-items-center gap-3 flex-grow-1">
           <img
             src="/assets/SmartDorm.webp"
             alt="SmartDorm"
@@ -80,10 +78,7 @@ export default function Nav({
             height={35}
           />
           <div>
-            <h5
-              className="fw-bold text-warning m-0"
-              style={{ lineHeight: "1.1", fontSize: "1rem" }}
-            >
+            <h5 className="fw-bold text-warning m-0" style={{ fontSize: "1rem" }}>
               🏠 SmartDorm
             </h5>
             <small className="text-white opacity-75">
@@ -95,12 +90,13 @@ export default function Nav({
         {/* PROFILE */}
         <div
           className="profile-menu position-relative"
-          style={{ lineHeight: "1.1" }}
+          onClick={(e) => e.stopPropagation()}
         >
           <div
             style={{ cursor: "pointer" }}
             onClick={(e) => {
               e.stopPropagation();
+              if (menuOpen) return;
               setProfileOpen(!profileOpen);
             }}
           >
@@ -316,129 +312,8 @@ export default function Nav({
             >
               ✖ ปิดเมนู
             </button>
-
-            <div className="d-flex flex-column gap-2">
-              <button
-                className="btn btn-outline-warning text-start"
-                onClick={() => {
-                  navigate("/dashboard");
-                  setMenuOpen(false);
-                }}
-              >
-                🏠 หน้าแรก
-              </button>
-
-              <button
-                className="btn btn-outline-warning text-start"
-                onClick={() => {
-                  navigate("/rooms");
-                  setMenuOpen(false);
-                }}
-              >
-                🏘️ จัดการห้องพัก
-              </button>
-
-              <button
-                className="btn btn-outline-warning text-start d-flex justify-content-between"
-                onClick={() =>
-                  setDropdown(dropdown === "room" ? null : "room")
-                }
-              >
-                🛏️ จัดการการจอง {dropdown === "room" ? "▴" : "▾"}
-              </button>
-
-              {dropdown === "room" && (
-                <div className="ps-3 d-flex flex-column gap-2">
-                  <button
-                    className="btn btn-outline-warning text-start"
-                    onClick={() => {
-                      navigate("/bookings");
-                      setMenuOpen(false);
-                    }}
-                  >
-                    📑 การจอง
-                  </button>
-
-                  <button
-                    className="btn btn-outline-warning text-start"
-                    onClick={() => {
-                      navigate("/checkout");
-                      setMenuOpen(false);
-                    }}
-                  >
-                    🔄 หน้าคืน
-                  </button>
-                </div>
-              )}
-
-              <button
-                className="btn btn-outline-warning text-start"
-                onClick={() => {
-                  navigate("/booking-history");
-                  setMenuOpen(false);
-                }}
-              >
-                🕘 ประวัติการจอง
-              </button>
-
-              <button
-                className="btn btn-outline-warning text-start d-flex justify-content-between"
-                onClick={() =>
-                  setDropdown(dropdown === "bill" ? null : "bill")
-                }
-              >
-                💰 บิล {dropdown === "bill" ? "▴" : "▾"}
-              </button>
-
-              {dropdown === "bill" && (
-                <div className="ps-3 d-flex flex-column gap-2">
-                  <button
-                    className="btn btn-outline-warning text-start"
-                    onClick={() => {
-                      navigate("/bills");
-                      setMenuOpen(false);
-                    }}
-                  >
-                    🧾 สร้างบิล
-                  </button>
-
-                  <button
-                    className="btn btn-outline-warning text-start"
-                    onClick={() => {
-                      navigate("/allbills");
-                      setMenuOpen(false);
-                    }}
-                  >
-                    📋 บิลทั้งหมด
-                  </button>
-                </div>
-              )}
-
-              {role === 0 && (
-                <button
-                  className="btn btn-outline-warning text-start"
-                  onClick={() => {
-                    navigate("/admin/manage");
-                    setMenuOpen(false);
-                  }}
-                >
-                  👥 จัดการสมาชิก
-                </button>
-              )}
-
-              <button
-                className="btn btn-outline-warning text-start"
-                onClick={() => {
-                  navigate("/users");
-                  setMenuOpen(false);
-                }}
-              >
-                👤 ข้อมูลลูกค้า
-              </button>
-            </div>
           </div>
 
-          {/* OVERLAY */}
           <div
             className="position-fixed w-100 h-100"
             style={{

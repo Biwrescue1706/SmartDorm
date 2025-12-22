@@ -51,6 +51,10 @@ export default function Nav({
         className="position-fixed top-0 start-0 w-100 d-flex align-items-center shadow px-3"
         style={{
           height: "60px",
+          minHeight: "60px",
+          maxHeight: "60px",
+          overflow: "hidden",
+          lineHeight: "1.1",
           backgroundColor: "#4A0080",
           color: "#F7D53D",
           zIndex: 999,
@@ -65,7 +69,10 @@ export default function Nav({
         </button>
 
         {/* BRAND */}
-        <div className="d-flex align-items-center gap-3 flex-grow-1">
+        <div
+          className="d-flex align-items-center gap-3 flex-grow-1"
+          style={{ lineHeight: "1.1" }}
+        >
           <img
             src="/assets/SmartDorm.webp"
             alt="SmartDorm"
@@ -73,7 +80,12 @@ export default function Nav({
             height={35}
           />
           <div>
-            <h5 className="fw-bold text-warning m-0">🏠 SmartDorm</h5>
+            <h5
+              className="fw-bold text-warning m-0"
+              style={{ lineHeight: "1.1", fontSize: "1rem" }}
+            >
+              🏠 SmartDorm
+            </h5>
             <small className="text-white opacity-75">
               ระบบจัดการหอพัก
             </small>
@@ -81,12 +93,15 @@ export default function Nav({
         </div>
 
         {/* PROFILE */}
-        <div className="profile-menu position-relative">
+        <div
+          className="profile-menu position-relative"
+          style={{ lineHeight: "1.1" }}
+        >
           <div
             style={{ cursor: "pointer" }}
             onClick={() => setProfileOpen(!profileOpen)}
           >
-            <div className="fw-bold text-warning">
+            <div className="fw-bold text-warning small">
               👤 {shortName(adminName)}
             </div>
             <small className="text-white">

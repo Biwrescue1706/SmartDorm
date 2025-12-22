@@ -18,6 +18,7 @@ export default function Nav({
 }: NavProps) {
   const navigate = useNavigate();
   const location = useLocation();
+
   const [menuOpen, setMenuOpen] = useState(false);
   const [dropdown, setDropdown] = useState<string | null>(null);
   const [profileOpen, setProfileOpen] = useState(false);
@@ -31,12 +32,14 @@ export default function Nav({
       : `${name.slice(0, 7)}...`;
   };
 
-  const isActive = (path: string) => location.pathname.startsWith(path);
+  const isActive = (path: string) =>
+    location.pathname.startsWith(path);
 
   useEffect(() => {
     const close = (e: MouseEvent) => {
-      if (!(e.target as HTMLElement).closest(".profile-menu"))
+      if (!(e.target as HTMLElement).closest(".profile-menu")) {
         setProfileOpen(false);
+      }
     };
     document.addEventListener("click", close);
     return () => document.removeEventListener("click", close);
@@ -54,7 +57,6 @@ export default function Nav({
           zIndex: 1000,
         }}
       >
-        {/* MENU BUTTON (MOBILE) */}
         <button
           className="btn btn-warning btn-sm d-xxl-none me-3 fw-bold"
           onClick={() => setMenuOpen(!menuOpen)}
@@ -62,28 +64,26 @@ export default function Nav({
           {menuOpen ? "✖" : "☰"}
         </button>
 
-        {/* BRAND */}
         <div className="d-flex justify-content-center align-items-center gap-3 flex-grow-1">
           <img
             src="/assets/SmartDorm.webp"
             alt="SmartDorm Logo"
             width="35"
             height="35"
-            style={{ filter: "drop-shadow(0 3px 6px rgba(0,0,0,.45))" }}
           />
-          <div className="text-start">
+          <div>
             <h5 className="fw-bold text-warning m-0">SmartDorm</h5>
-            <span className="text-white small opacity-75">ระบบจัดการหอพัก</span>
+            <span className="text-white small opacity-75">
+              ระบบจัดการหอพัก
+            </span>
           </div>
         </div>
 
-        {/* PROFILE */}
-        <div
-          className="profile-menu position-relative"
-          style={{ cursor: "pointer" }}
-        >
+        <div className="profile-menu position-relative">
           <div onClick={() => setProfileOpen(!profileOpen)}>
-            <span className="fw-bold text-warning">{shortName(adminName)}</span>
+            <span className="fw-bold text-warning">
+              {shortName(adminName)}
+            </span>
             <br />
             <span className="text-white">
               {role === 0 ? "แอดมิน" : "พนักงาน"}
@@ -96,7 +96,7 @@ export default function Nav({
               style={{ minWidth: "220px", zIndex: 3000 }}
             >
               <div className="border-bottom pb-2 mb-2 small">
-                <strong className="text-primary">👤 {adminName}</strong>
+                <strong className="text-primary">{adminName}</strong>
                 <br />
                 <span className="text-muted">{adminUsername}</span>
               </div>
@@ -105,28 +105,28 @@ export default function Nav({
                 className="btn btn-light w-100 text-start mb-2"
                 onClick={() => navigate("/profile")}
               >
-                ⚙️ โปรไฟล์
+                โปรไฟล์
               </button>
 
               <button
                 className="btn btn-light w-100 text-start mb-2"
                 onClick={() => navigate("/change-password")}
               >
-                🔑 เปลี่ยนรหัสผ่าน
+                เปลี่ยนรหัสผ่าน
               </button>
 
               <button
                 className="btn btn-light w-100 text-start text-danger fw-bold"
                 onClick={onLogout}
               >
-                🚪 ออกจากระบบ
+                ออกจากระบบ
               </button>
             </div>
           )}
         </div>
       </div>
 
-      {/* SIDEBAR DESKTOP (≥1400px) */}
+      {/* DESKTOP SIDEBAR */}
       <div
         className="d-none d-xxl-flex flex-column position-fixed top-0 start-0 text-white shadow"
         style={{
@@ -134,7 +134,6 @@ export default function Nav({
           height: "100vh",
           paddingTop: "90px",
           backgroundColor: "#4A0080",
-          zIndex: 1050,
         }}
       >
         <div className="px-2 d-flex flex-column gap-2">
@@ -146,30 +145,31 @@ export default function Nav({
             }`}
             onClick={() => navigate("/dashboard")}
           >
-            🏠 หน้าแรก
+            หน้าแรก
           </button>
 
-          {/* ROOM DROPDOWN */}
+          <button
+            className={`btn text-start ${
+              isActive("/rooms")
+                ? "btn-warning text-dark fw-bold"
+                : "btn-outline-warning"
+            }`}
+            onClick={() => navigate("/rooms")}
+          >
+            จัดการห้องพัก
+          </button>
+
           <button
             className="btn btn-outline-warning text-start d-flex justify-content-between"
-            onClick={() => setDropdown(dropdown === "room" ? null : "room")}
+            onClick={() =>
+              setDropdown(dropdown === "room" ? null : "room")
+            }
           >
-            🛏️ ห้อง {dropdown === "room" ? "▴" : "▾"}
+            จัดการการจอง {dropdown === "room" ? "▴" : "▾"}
           </button>
 
           {dropdown === "room" && (
-            <div className="ps-3 d-flex flex-column gap-2">
-              <button
-                className={`btn text-start ${
-                  isActive("/rooms")
-                    ? "btn-warning text-dark fw-bold"
-                    : "btn-outline-warning"
-                }`}
-                onClick={() => navigate("/rooms")}
-              >
-                🏘️ จัดการห้องพัก
-              </button>
-
+            <div className="ps-3 d-flex flex-column gap-2 position-relative">
               <button
                 className={`btn text-start ${
                   isActive("/bookings")
@@ -178,7 +178,7 @@ export default function Nav({
                 }`}
                 onClick={() => navigate("/bookings")}
               >
-                📑 การจอง
+                การจอง
                 {pendingBookings > 0 && (
                   <span className="badge bg-danger position-absolute top-0 end-0">
                     {pendingBookings}
@@ -194,51 +194,45 @@ export default function Nav({
                 }`}
                 onClick={() => navigate("/checkout")}
               >
-                🔄 หน้าคืน
-              </button>
-              <button
-                className={`btn text-start ${
-                  isActive("/booking-history")
-                    ? "btn-warning text-dark fw-bold"
-                    : "btn-outline-warning"
-                }`}
-                onClick={() => navigate("/booking-history")}
-              >
-                📑 ประวัติการจอง
+                หน้าคืน
               </button>
             </div>
           )}
 
-          {/* BILL DROPDOWN */}
+          <button
+            className={`btn text-start ${
+              isActive("/booking-history")
+                ? "btn-warning text-dark fw-bold"
+                : "btn-outline-warning"
+            }`}
+            onClick={() => navigate("/booking-history")}
+          >
+            ประวัติการจอง
+          </button>
+
           <button
             className="btn btn-outline-warning text-start d-flex justify-content-between"
-            onClick={() => setDropdown(dropdown === "bill" ? null : "bill")}
+            onClick={() =>
+              setDropdown(dropdown === "bill" ? null : "bill")
+            }
           >
-            💰 บิล {dropdown === "bill" ? "▴" : "▾"}
+            บิล {dropdown === "bill" ? "▴" : "▾"}
           </button>
 
           {dropdown === "bill" && (
             <div className="ps-3 d-flex flex-column gap-2">
               <button
-                className={`btn text-start ${
-                  isActive("/bills")
-                    ? "btn-warning text-dark fw-bold"
-                    : "btn-outline-warning"
-                }`}
+                className="btn btn-outline-warning text-start"
                 onClick={() => navigate("/bills")}
               >
-                💵 สร้างบิล
+                สร้างบิล
               </button>
 
               <button
-                className={`btn text-start ${
-                  isActive("/allbills")
-                    ? "btn-warning text-dark fw-bold"
-                    : "btn-outline-warning"
-                }`}
+                className="btn btn-outline-warning text-start"
                 onClick={() => navigate("/allbills")}
               >
-                📋 บิลทั้งหมด
+                บิลทั้งหมด
               </button>
             </div>
           )}
@@ -252,7 +246,7 @@ export default function Nav({
               }`}
               onClick={() => navigate("/admin/manage")}
             >
-              👥 จัดการสมาชิก
+              จัดการสมาชิก
             </button>
           )}
 
@@ -264,7 +258,7 @@ export default function Nav({
             }`}
             onClick={() => navigate("/users")}
           >
-            👤 ข้อมูลลูกค้า
+            ข้อมูลลูกค้า
           </button>
         </div>
       </div>
@@ -299,14 +293,26 @@ export default function Nav({
                   setMenuOpen(false);
                 }}
               >
-                🏠 หน้าแรก
+                หน้าแรก
+              </button>
+
+              <button
+                className="btn btn-outline-warning text-start"
+                onClick={() => {
+                  navigate("/rooms");
+                  setMenuOpen(false);
+                }}
+              >
+                จัดการห้องพัก
               </button>
 
               <button
                 className="btn btn-outline-warning text-start d-flex justify-content-between"
-                onClick={() => setDropdown(dropdown === "room" ? null : "room")}
+                onClick={() =>
+                  setDropdown(dropdown === "room" ? null : "room")
+                }
               >
-                🛏️ ห้อง {dropdown === "room" ? "▴" : "▾"}
+                จัดการการจอง {dropdown === "room" ? "▴" : "▾"}
               </button>
 
               {dropdown === "room" && (
@@ -314,21 +320,11 @@ export default function Nav({
                   <button
                     className="btn btn-outline-warning text-start"
                     onClick={() => {
-                      navigate("/rooms");
-                      setMenuOpen(false);
-                    }}
-                  >
-                    🏘️ จัดการห้องพัก
-                  </button>
-
-                  <button
-                    className="btn btn-outline-warning text-start"
-                    onClick={() => {
                       navigate("/bookings");
                       setMenuOpen(false);
                     }}
                   >
-                    📑 การจอง
+                    การจอง
                   </button>
 
                   <button
@@ -338,25 +334,28 @@ export default function Nav({
                       setMenuOpen(false);
                     }}
                   >
-                    🔄 หน้าคืน
-                  </button>
-                  <button
-                    className="btn btn-outline-warning text-start"
-                    onClick={() => {
-                      navigate("/booking-history");
-                      setMenuOpen(false);
-                    }}
-                  >
-                    📑 ประวัติการจอง
+                    หน้าคืน
                   </button>
                 </div>
               )}
 
               <button
-                className="btn btn-outline-warning text-start d-flex justify-content-between"
-                onClick={() => setDropdown(dropdown === "bill" ? null : "bill")}
+                className="btn btn-outline-warning text-start"
+                onClick={() => {
+                  navigate("/booking-history");
+                  setMenuOpen(false);
+                }}
               >
-                💰 บิล {dropdown === "bill" ? "▴" : "▾"}
+                ประวัติการจอง
+              </button>
+
+              <button
+                className="btn btn-outline-warning text-start d-flex justify-content-between"
+                onClick={() =>
+                  setDropdown(dropdown === "bill" ? null : "bill")
+                }
+              >
+                บิล {dropdown === "bill" ? "▴" : "▾"}
               </button>
 
               {dropdown === "bill" && (
@@ -368,7 +367,7 @@ export default function Nav({
                       setMenuOpen(false);
                     }}
                   >
-                    💵 สร้างบิล
+                    สร้างบิล
                   </button>
 
                   <button
@@ -378,7 +377,7 @@ export default function Nav({
                       setMenuOpen(false);
                     }}
                   >
-                    📋 บิลทั้งหมด
+                    บิลทั้งหมด
                   </button>
                 </div>
               )}
@@ -391,9 +390,10 @@ export default function Nav({
                     setMenuOpen(false);
                   }}
                 >
-                  👥 จัดการสมาชิก
+                  จัดการสมาชิก
                 </button>
               )}
+
               <button
                 className="btn btn-outline-warning text-start"
                 onClick={() => {
@@ -401,12 +401,11 @@ export default function Nav({
                   setMenuOpen(false);
                 }}
               >
-                👤 ข้อมูลลูกค้า
+                ข้อมูลลูกค้า
               </button>
             </div>
           </div>
 
-          {/* MOBILE OVERLAY — FIXED VERSION */}
           <div
             className="position-fixed w-100 h-100"
             style={{
@@ -414,7 +413,6 @@ export default function Nav({
               left: 0,
               background: "rgba(0,0,0,.35)",
               zIndex: 1500,
-              pointerEvents: menuOpen ? "auto" : "none",
             }}
             onClick={() => setMenuOpen(false)}
           />

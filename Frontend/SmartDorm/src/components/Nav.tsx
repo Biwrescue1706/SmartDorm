@@ -36,7 +36,8 @@ export default function Nav({
 
   useEffect(() => {
     const close = (e: MouseEvent) => {
-      if (!(e.target as HTMLElement).closest(".profile-menu")) {
+      const target = e.target as HTMLElement;
+      if (!target.closest(".profile-menu")) {
         setProfileOpen(false);
       }
     };
@@ -54,8 +55,6 @@ export default function Nav({
           height: "60px",
           minHeight: "60px",
           maxHeight: "60px",
-          overflow: "hidden",
-          lineHeight: "1.1",
           backgroundColor: "#4A0080",
           color: "#F7D53D",
           zIndex: 999,
@@ -78,7 +77,7 @@ export default function Nav({
             height={35}
           />
           <div>
-            <h5 className="fw-bold text-warning m-0" style={{ fontSize: "1rem" }}>
+            <h5 className="fw-bold text-warning m-0">
               🏠 SmartDorm
             </h5>
             <small className="text-white opacity-75">
@@ -96,7 +95,6 @@ export default function Nav({
             style={{ cursor: "pointer" }}
             onClick={(e) => {
               e.stopPropagation();
-              if (menuOpen) return;
               setProfileOpen(!profileOpen);
             }}
           >
@@ -312,15 +310,18 @@ export default function Nav({
             >
               ✖ ปิดเมนู
             </button>
+
+            {/* เมนูทั้งหมดเหมือน Desktop */}
           </div>
 
+          {/* OVERLAY */}
           <div
             className="position-fixed w-100 h-100"
             style={{
               top: 0,
               left: 0,
               background: "rgba(0,0,0,.35)",
-              zIndex: 999,
+              zIndex: 1700,
             }}
             onClick={() => setMenuOpen(false)}
           />

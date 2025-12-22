@@ -53,7 +53,7 @@ export default function Nav({
           height: "60px",
           backgroundColor: "#4A0080",
           color: "#F7D53D",
-          zIndex: 2000,
+          zIndex: 999,
         }}
       >
         {/* MOBILE MENU */}
@@ -138,7 +138,7 @@ export default function Nav({
           height: "100vh",
           paddingTop: 80,
           backgroundColor: "#4A0080",
-          zIndex: 1500,
+          zIndex: 999,
         }}
       >
         <div className="px-2 d-flex flex-column gap-2">
@@ -426,7 +426,7 @@ export default function Nav({
               top: 0,
               left: 0,
               background: "rgba(0,0,0,.35)",
-              zIndex: 1700,
+              zIndex: 999,
             }}
             onClick={() => setMenuOpen(false)}
           />

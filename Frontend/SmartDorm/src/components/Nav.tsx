@@ -99,7 +99,10 @@ export default function Nav({
         >
           <div
             style={{ cursor: "pointer" }}
-            onClick={() => setProfileOpen(!profileOpen)}
+            onClick={(e) => {
+              e.stopPropagation();
+              setProfileOpen(!profileOpen);
+            }}
           >
             <div className="fw-bold text-warning small">
               👤 {shortName(adminName)}
@@ -113,6 +116,7 @@ export default function Nav({
             <div
               className="position-absolute end-0 mt-2 bg-white shadow p-3 rounded"
               style={{ minWidth: 220, zIndex: 3000 }}
+              onClick={(e) => e.stopPropagation()}
             >
               <div className="border-bottom pb-2 mb-2 small">
                 <strong>👤 {adminName}</strong>
@@ -310,7 +314,7 @@ export default function Nav({
               className="btn btn-warning btn-sm mb-3 fw-bold"
               onClick={() => setMenuOpen(false)}
             >
-              ✖
+              ✖ ปิดเมนู
             </button>
 
             <div className="d-flex flex-column gap-2">

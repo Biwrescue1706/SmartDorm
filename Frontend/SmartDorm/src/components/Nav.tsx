@@ -53,8 +53,6 @@ export default function Nav({
         className="position-fixed top-0 start-0 w-100 d-flex align-items-center shadow px-3"
         style={{
           height: "60px",
-          minHeight: "60px",
-          maxHeight: "60px",
           backgroundColor: "#4A0080",
           color: "#F7D53D",
           zIndex: 999,
@@ -63,9 +61,9 @@ export default function Nav({
         {/* MOBILE MENU */}
         <button
           className="btn btn-warning btn-sm d-xxl-none me-3 fw-bold"
-          onClick={() => setMenuOpen(!menuOpen)}
+          onClick={() => setMenuOpen(true)}
         >
-          {menuOpen ? "✖" : "☰"}
+          ☰
         </button>
 
         {/* BRAND */}
@@ -77,12 +75,8 @@ export default function Nav({
             height={35}
           />
           <div>
-            <h5 className="fw-bold text-warning m-0">
-              🏠 SmartDorm
-            </h5>
-            <small className="text-white opacity-75">
-              ระบบจัดการหอพัก
-            </small>
+            <h5 className="fw-bold text-warning m-0">🏠 SmartDorm</h5>
+            <small className="text-white opacity-75">ระบบจัดการหอพัก</small>
           </div>
         </div>
 
@@ -311,7 +305,20 @@ export default function Nav({
               ✖ ปิดเมนู
             </button>
 
-            {/* เมนูทั้งหมดเหมือน Desktop */}
+            {/* เมนูเหมือน Desktop ทุกปุ่ม */}
+            <div className="d-flex flex-column gap-2">
+              <button className="btn btn-outline-warning text-start" onClick={() => { navigate("/dashboard"); setMenuOpen(false); }}>🏠 หน้าแรก</button>
+              <button className="btn btn-outline-warning text-start" onClick={() => { navigate("/rooms"); setMenuOpen(false); }}>🏘️ จัดการห้องพัก</button>
+              <button className="btn btn-outline-warning text-start" onClick={() => { navigate("/bookings"); setMenuOpen(false); }}>📑 การจอง</button>
+              <button className="btn btn-outline-warning text-start" onClick={() => { navigate("/checkout"); setMenuOpen(false); }}>🔄 หน้าคืน</button>
+              <button className="btn btn-outline-warning text-start" onClick={() => { navigate("/booking-history"); setMenuOpen(false); }}>🕘 ประวัติการจอง</button>
+              <button className="btn btn-outline-warning text-start" onClick={() => { navigate("/bills"); setMenuOpen(false); }}>🧾 สร้างบิล</button>
+              <button className="btn btn-outline-warning text-start" onClick={() => { navigate("/allbills"); setMenuOpen(false); }}>📋 บิลทั้งหมด</button>
+              {role === 0 && (
+                <button className="btn btn-outline-warning text-start" onClick={() => { navigate("/admin/manage"); setMenuOpen(false); }}>👥 จัดการสมาชิก</button>
+              )}
+              <button className="btn btn-outline-warning text-start" onClick={() => { navigate("/users"); setMenuOpen(false); }}>👤 ข้อมูลลูกค้า</button>
+            </div>
           </div>
 
           {/* OVERLAY */}

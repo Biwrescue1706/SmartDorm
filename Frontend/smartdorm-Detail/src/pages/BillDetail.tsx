@@ -6,23 +6,50 @@ import BookingNav from "../components/BookingNav";
 import { API_BASE } from "../config";
 
 /* ===================== TYPES ===================== */
-interface Room { number: string }
-interface Booking { fullName?: string }
-interface Customer { userName: string }
+interface Room {
+  number: string;
+}
+
+interface Booking {
+  fullName?: string;
+}
+
+interface Customer {
+  userName: string;
+}
+
 interface Bill {
   billId: string;
   month: string;
-  rent: number; service: number; fine: number;
-  wBefore: number; wAfter: number; wUnits: number; waterCost: number;
-  eBefore: number; eAfter: number; eUnits: number; electricCost: number;
-  total: number; dueDate: string; status: number;
-  room: Room; booking?: Booking; customer?: Customer;
+  rent: number;
+  service: number;
+  fine: number;
+
+  wBefore: number;
+  wAfter: number;
+  wUnits: number;
+  waterCost: number;
+
+  eBefore: number;
+  eAfter: number;
+  eUnits: number;
+  electricCost: number;
+
+  total: number;
+  dueDate: string;
+  status: number;
+
+  room: Room;
+  booking?: Booking;
+  customer?: Customer;
 }
 
 /* ===================== FORMAT DATE ===================== */
 const formatThai = (d: string) =>
   new Date(d).toLocaleDateString("th-TH", {
-    year: "numeric", month: "long", day: "numeric"
+    year: "numeric",
+    month: "long",
+    day: "numeric",
   });
 
 export default function BillDetail() {
@@ -30,7 +57,10 @@ export default function BillDetail() {
   const [bill, setBill] = useState<Bill | null>(null);
 
   useEffect(() => {
-    axios.get(`${API_BASE}/bill/${billId}`).then((res) => setBill(res.data));
+    if (!billId) return;
+    axios
+      .get(`${API_BASE}/bill/${billId}`)
+      .then((res) => setBill(res.data));
   }, [billId]);
 
   if (!bill)
@@ -38,16 +68,28 @@ export default function BillDetail() {
       <>
         <BookingNav />
         <div className="vh-100 d-flex justify-content-center align-items-center text-danger fw-bold">
-          ❌ ไม่พบบิลนี้
+          ไม่พบบิลนี้
         </div>
       </>
     );
 
-  const fullName = bill.booking?.fullName || bill.customer?.userName || "-";
+  const fullName =
+    bill.booking?.fullName || bill.customer?.userName || "-";
+
+  /* ===================== STATUS ===================== */
   const statusText =
-    bill.status === 1 ? "ชำระแล้ว" : bill.status === 0 ? "รอชำระ" : "เกินกำหนด";
+    bill.status === 1
+      ? "ชำระเงินแล้ว"
+      : bill.status === 2
+      ? "รอการตรวจสอบ"
+      : "รอการชำระ";
+
   const statusColor =
-    bill.status === 1 ? "success" : bill.status === 0 ? "warning" : "danger";
+    bill.status === 1
+      ? "success"
+      : bill.status === 2
+      ? "info"
+      : "warning";
 
   return (
     <>
@@ -61,7 +103,7 @@ export default function BillDetail() {
         }}
       >
         <div
-          className="container shadow-lg rounded-4 p-4 mt-5" // ⭐ ใช้ mt-5 แทน paddingTop
+          className="container shadow-lg rounded-4 p-4 mt-5"
           style={{
             maxWidth: "650px",
             background: "white",
@@ -80,34 +122,44 @@ export default function BillDetail() {
           </div>
 
           <h5 className="fw-bold text-secondary text-center mt-3">
-            🏫 SmartDorm
+            SmartDorm
           </h5>
 
           {/* BILL INFO */}
           <div className="bg-light p-3 rounded border mb-3 mt-2">
-            <p className="mb-1"><strong>ผู้เช่า :</strong> {fullName}</p>
-            <p className="mb-1"><strong>ห้อง :</strong> {bill.room.number}</p>
+            <p className="mb-1">
+              <strong>ผู้เช่า :</strong> {fullName}
+            </p>
+            <p className="mb-1">
+              <strong>ห้อง :</strong> {bill.room.number}
+            </p>
             <p className="mb-1">
               <strong>ประจำเดือน :</strong>{" "}
               {new Date(bill.month).toLocaleDateString("th-TH", {
-                year: "numeric", month: "long"
+                year: "numeric",
+                month: "long",
               })}
             </p>
 
             {bill.status === 0 && (
               <p className="text-danger fw-semibold mb-1">
-                <strong>ครบกำหนดชำระ :</strong> {formatThai(bill.dueDate)}
+                <strong>ครบกำหนดชำระ :</strong>{" "}
+                {formatThai(bill.dueDate)}
               </p>
             )}
 
             <p className="mb-1">
               <strong>สถานะ :</strong>{" "}
-              <span className={`badge bg-${statusColor}`}>{statusText}</span>
+              <span className={`badge bg-${statusColor}`}>
+                {statusText}
+              </span>
             </p>
           </div>
 
           {/* COST TABLE */}
-          <h6 className="fw-bold text-primary text-center">รายละเอียดค่าใช้จ่าย</h6>
+          <h6 className="fw-bold text-primary text-center">
+            รายละเอียดค่าใช้จ่าย
+          </h6>
           <table className="table table-sm table-bordered text-center align-middle">
             <thead className="table-light">
               <tr>
@@ -119,16 +171,50 @@ export default function BillDetail() {
               </tr>
             </thead>
             <tbody>
-              <tr><td>ค่าไฟฟ้า</td><td>{bill.eAfter}</td><td>{bill.eBefore}</td><td>{bill.eUnits}</td><td>{bill.electricCost.toLocaleString()}</td></tr>
-              <tr><td>ค่าน้ำ</td><td>{bill.wAfter}</td><td>{bill.wBefore}</td><td>{bill.wUnits}</td><td>{bill.waterCost.toLocaleString()}</td></tr>
-              <tr><td>ค่าเช่า</td><td>-</td><td>-</td><td>-</td><td>{bill.rent.toLocaleString()}</td></tr>
-              <tr><td>ค่าส่วนกลาง</td><td>-</td><td>-</td><td>-</td><td>{bill.service.toLocaleString()}</td></tr>
-              <tr><td>ค่าปรับ</td><td>-</td><td>-</td><td>-</td><td>{bill.fine.toLocaleString()}</td></tr>
+              <tr>
+                <td>ค่าไฟฟ้า</td>
+                <td>{bill.eAfter}</td>
+                <td>{bill.eBefore}</td>
+                <td>{bill.eUnits}</td>
+                <td>{bill.electricCost.toLocaleString()}</td>
+              </tr>
+              <tr>
+                <td>ค่าน้ำ</td>
+                <td>{bill.wAfter}</td>
+                <td>{bill.wBefore}</td>
+                <td>{bill.wUnits}</td>
+                <td>{bill.waterCost.toLocaleString()}</td>
+              </tr>
+              <tr>
+                <td>ค่าเช่า</td>
+                <td>-</td>
+                <td>-</td>
+                <td>-</td>
+                <td>{bill.rent.toLocaleString()}</td>
+              </tr>
+              <tr>
+                <td>ค่าส่วนกลาง</td>
+                <td>-</td>
+                <td>-</td>
+                <td>-</td>
+                <td>{bill.service.toLocaleString()}</td>
+              </tr>
+              <tr>
+                <td>ค่าปรับ</td>
+                <td>-</td>
+                <td>-</td>
+                <td>-</td>
+                <td>{bill.fine.toLocaleString()}</td>
+              </tr>
             </tbody>
             <tfoot className="table-success fw-bold">
               <tr>
-                <td colSpan={4} className="text-end">รวมทั้งหมด</td>
-                <td className="text-primary fs-5">{bill.total.toLocaleString()}</td>
+                <td colSpan={4} className="text-end">
+                  รวมทั้งหมด
+                </td>
+                <td className="text-primary fs-5">
+                  {bill.total.toLocaleString()}
+                </td>
               </tr>
             </tfoot>
           </table>
@@ -139,7 +225,8 @@ export default function BillDetail() {
               className="btn fw-bold w-100 py-3 mt-3"
               style={{
                 borderRadius: "14px",
-                background: "linear-gradient(135deg,#27C96D,#0AA04F)",
+                background:
+                  "linear-gradient(135deg,#27C96D,#0AA04F)",
                 color: "white",
                 fontSize: "1.15rem",
               }}

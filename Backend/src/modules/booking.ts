@@ -13,7 +13,7 @@ const supabase = createClient(
 );
 
 // ---------------- Utils ----------------
-const deleteSlip = async (url?: string | null) => {
+export const deleteSlip = async (url?: string | null) => {
   try {
     if (!url) return;
 

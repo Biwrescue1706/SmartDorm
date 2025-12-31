@@ -156,11 +156,11 @@ billRouter.post(
           customerId: booking.customerId,
 
           // ===== FIX: ใส่ข้อมูลลูกค้าลง bill =====
-          ctitle: customer?.ctitle ?? null,
-          cname: customer?.cname ?? null,
-          csurname: customer?.csurname ?? null,
-          fullName: customer?.fullName ?? null,
-          cphone: customer?.cphone ?? null,
+          ctitle: booking?.ctitle ?? null,
+          cname: booking?.cname ?? null,
+          csurname: booking?.csurname ?? null,
+          fullName: booking?.fullName ?? null,
+          cphone: booking?.cphone ?? null,
           // =======================================
 
           month: new Date(month),

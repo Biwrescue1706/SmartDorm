@@ -117,7 +117,7 @@ export async function sendFlexMessage(
             type: "image",
             url:
               iconUrl ||
-              "https://smartdorm-admin.biwbong.shop/assets/SmartDorm.png",
+              "https://smartdorm-admin.biwbong.shop/assets/SmartDorm.webp",
             size: "xxs",
             aspectMode: "fit",
             align: "start",

@@ -13,22 +13,23 @@ const supabase = createClient(
 );
 
 // ---------------- Utils ----------------
-export const deleteSlip = async (url: string) => {
-  const bucket = process.env.SUPABASE_BUCKET!;
-  if (!url || !bucket) return;
+const deleteSlip = async (url?: string | null) => {
+  try {
+    if (!url) return;
 
-  // ดึง path ที่อยู่ใน Booking-slips/
-  const match = url.match(/Booking-slips\/[^?]+/);
-  if (!match) return;
+    const publicMarker = "/object/public/";
+    const idx = url.indexOf(publicMarker);
+    if (idx === -1) return;
 
-  const filePath = match[0]; // Booking-slips/xxx.xxx
+    // ได้ path เช่น Booking-slips/xxx.jpg หรือ Payment-slips/xxx.jpg
+    const fullPath = url.substring(idx + publicMarker.length);
 
-  const { error } = await supabase.storage
-    .from(bucket)
-    .remove([filePath]);
+    const bucket = fullPath.split("/")[0];
+    const filePath = fullPath.split("/").slice(1).join("/");
 
-  if (error) {
-    console.error("❌ Delete Slip Error:", error.message);
+    await supabase.storage.from(bucket).remove([filePath]);
+  } catch (err) {
+    console.warn("⚠️ ลบสลิปไม่สำเร็จ", err);
   }
 };
 

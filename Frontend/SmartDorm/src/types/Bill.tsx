@@ -5,11 +5,6 @@ export interface Room {
   number: string;
 }
 
-export interface Booking {
-  bookingId: string;
-  fullName?: string | null; // ✅ snapshot จาก Booking
-  cphone?: string | null;   // ✅ snapshot จาก Booking
-}
 export interface Customer {
   customerId: string;
   userId: string;
@@ -22,30 +17,41 @@ export interface Payment {
 
 export interface Bill {
   billId: string;
-  month: string;           // วันที่ออกบิล (ISO string)
+  month: string;
   rent: number;
   service: number;
+
   wBefore: number;
   wAfter: number;
   eBefore: number;
   eAfter: number;
+
   wUnits: number;
   eUnits: number;
   waterCost: number;
   electricCost: number;
+
   fine: number;
   overdueDays: number;
   total: number;
-  status: number;          // 0 = ค้างชำระ, 1 = ชำระแล้ว
+
+  status: number;
   dueDate: string;
-  slipUrl?: string | null; // ✅ ถ้ามีใน Bill โดยตรง
+
+  // ✅ snapshot ผู้เช่า (อยู่ใน Bill จริง)
+  ctitle?: string | null;
+  cname?: string | null;
+  csurname?: string | null;
+  fullName?: string | null;
+  cphone?: string | null;
+
+  slipUrl?: string | null;
 
   createdAt: string;
   updatedAt: string;
 
-  // ✅ ความสัมพันธ์
+  // relations
   room: Room;
-  booking?: Booking | null;     // ✅ ชื่อและเบอร์โทรจะอยู่ในนี้
-  customer?: Customer | null;   // ใช้ในบางกรณี
-  payment?: Payment | null;     // slip จาก Payment
+  customer?: Customer | null;
+  payment?: Payment | null;
 }

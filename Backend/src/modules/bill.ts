@@ -25,6 +25,7 @@ const getDueDateNextMonth5th = (month: string | Date) => {
   const d = new Date(month);
   return new Date(d.getFullYear(), d.getMonth() + 1, 5);
 };
+
 const formatThaiDate = (d?: string | Date | null) =>
   d
     ? new Date(d).toLocaleDateString("th-TH", {
@@ -60,56 +61,50 @@ const deleteSlip = async (url?: string | null) => {
 // =================================================
 // 📋 ดึงบิลทั้งหมด (Admin)
 // =================================================
-billRouter.get(
-  "/getall",
-  async (_req, res) => {
-    try {
-      const bills = await prisma.bill.findMany({
-        include: {
-          room: true,
-          booking: true,
-          customer: true,
-          payment: true,
-        },
-        orderBy: { createdAt: "desc" },
-      });
+billRouter.get("/getall", async (_req, res) => {
+  try {
+    const bills = await prisma.bill.findMany({
+      include: {
+        room: true,
+        booking: true,
+        customer: true,
+        payment: true,
+      },
+      orderBy: { createdAt: "desc" },
+    });
 
-      res.json(bills);
-    } catch (err: any) {
-      res.status(500).json({ error: err.message });
-    }
+    res.json(bills);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
   }
-);
+});
 
 // =================================================
 // 🔍 ดึงบิลตาม ID (Customer / Admin)
 // =================================================
-billRouter.get(
-  "/:billId",
-  async (req, res) => {
-    try {
-      const { billId } = req.params;
+billRouter.get("/:billId", async (req, res) => {
+  try {
+    const { billId } = req.params;
 
-      const bill = await prisma.bill.findUnique({
-        where: { billId },
-        include: {
-          room: true,
-          booking: true,
-          customer: true,
-          payment: true,
-        },
-      });
+    const bill = await prisma.bill.findUnique({
+      where: { billId },
+      include: {
+        room: true,
+        booking: true,
+        customer: true,
+        payment: true,
+      },
+    });
 
-      if (!bill) {
-        return res.status(404).json({ error: "ไม่พบบิลนี้" });
-      }
-
-      res.json(bill);
-    } catch (err: any) {
-      res.status(400).json({ error: err.message });
+    if (!bill) {
+      return res.status(404).json({ error: "ไม่พบบิลนี้" });
     }
+
+    res.json(bill);
+  } catch (err: any) {
+    res.status(400).json({ error: err.message });
   }
-);
+});
 
 // =================================================
 // ➕ สร้างบิลจากห้อง (Admin)
@@ -121,14 +116,7 @@ billRouter.post(
   async (req, res) => {
     try {
       const { roomId } = req.params;
-      const {
-        month,
-        dueDate,
-        wBefore,
-        wAfter,
-        eBefore,
-        eAfter,
-      } = req.body;
+      const { month, wBefore, wAfter, eBefore, eAfter } = req.body;
 
       if (!month) throw new Error("กรุณาระบุเดือน");
 
@@ -148,8 +136,9 @@ billRouter.post(
         throw new Error("ไม่พบผู้เข้าพักในห้องนี้");
       }
 
-      // ✅ rent มาจาก room
-const rent = Number(booking.room.rent ?? 0);
+      const customer = booking.customer;
+
+      const rent = Number(booking.room.rent ?? 0);
       const service = 50;
 
       const wUnits = Number(wAfter ?? 0) - Number(wBefore ?? 0);
@@ -158,17 +147,21 @@ const rent = Number(booking.room.rent ?? 0);
       const waterCost = wUnits * 19;
       const electricCost = eUnits * 7;
 
-      const total =
-        rent +
-        service +
-        waterCost +
-        electricCost;
+      const total = rent + service + waterCost + electricCost;
 
       const bill = await prisma.bill.create({
         data: {
           roomId,
           bookingId: booking.bookingId,
           customerId: booking.customerId,
+
+          // ===== FIX: ใส่ข้อมูลลูกค้าลง bill =====
+          ctitle: customer?.ctitle ?? null,
+          cname: customer?.cname ?? null,
+          csurname: customer?.csurname ?? null,
+          fullName: customer?.fullName ?? null,
+          cphone: customer?.cphone ?? null,
+          // =======================================
 
           month: new Date(month),
           dueDate: getDueDateNextMonth5th(month),
@@ -217,10 +210,7 @@ const rent = Number(booking.room.rent ?? 0);
               label: "ค่าไฟ",
               value: `${bill.eUnits} หน่วย (${bill.electricCost} บาท)`,
             },
-            {
-              label: "ค่าส่วนกลาง",
-              value: `${service} บาท`,
-            },
+            { label: "ค่าส่วนกลาง", value: `${service} บาท` },
             {
               label: "ยอดรวมทั้งหมด",
               value: `${bill.total.toLocaleString()} บาท`,
@@ -239,10 +229,7 @@ const rent = Number(booking.room.rent ?? 0);
         );
       }
 
-      res.json({
-        message: "สร้างบิลจากห้องสำเร็จ",
-        bill,
-      });
+      res.json({ message: "สร้างบิลจากห้องสำเร็จ", bill });
     } catch (err: any) {
       res.status(400).json({ error: err.message });
     }

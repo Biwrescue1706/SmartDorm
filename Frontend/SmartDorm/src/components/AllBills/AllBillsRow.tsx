@@ -27,8 +27,8 @@ export default function AllBillsRow({
       <td>{index + 1}</td>
       <td>{bill.room?.number}</td>
       <td>{bill.customer?.userName}</td>
-      <td>{bill.booking?.fullName}</td>
-      <td>{bill.booking?.cphone}</td>
+      <td>{bill.fullName}</td>
+      <td>{bill.cphone}</td>
 
       <td>
         {new Date(bill.month).toLocaleDateString("th-TH", {

@@ -17,13 +17,19 @@ export const deleteSlip = async (url: string) => {
   const bucket = process.env.SUPABASE_BUCKET!;
   if (!url || !bucket) return;
 
-  const marker = `/object/public/${bucket}/`;
-  const idx = url.indexOf(marker);
-  if (idx === -1) return;
+  // ดึง path ที่อยู่ใน Booking-slips/
+  const match = url.match(/Booking-slips\/[^?]+/);
+  if (!match) return;
 
-  const path = url.substring(idx + marker.length);
-  const { error } = await supabase.storage.from(bucket).remove([path]);
-  if (error) console.error("❌ Delete Slip Error:", error.message);
+  const filePath = match[0]; // Booking-slips/xxx.xxx
+
+  const { error } = await supabase.storage
+    .from(bucket)
+    .remove([filePath]);
+
+  if (error) {
+    console.error("❌ Delete Slip Error:", error.message);
+  }
 };
 
 const upload = multer({ storage: multer.memoryStorage() });

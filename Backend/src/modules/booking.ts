@@ -492,23 +492,37 @@ bookingRouter.put("/:bookingId", async (req, res) => {
 // 🗑️ DELETE
 bookingRouter.delete("/:bookingId", async (req, res) => {
   try {
+    const { bookingId } = req.params;
+
     const existing = await prisma.booking.findUnique({
-      where: { bookingId: req.params.bookingId },
+      where: { bookingId },
     });
     if (!existing) throw new Error("ไม่พบข้อมูลการจอง");
 
-    if (existing.slipUrl) await deleteSlip(existing.slipUrl);
+    await prisma.$transaction(async (tx) => {
+      // 🔥 ลบ checkout ที่ผูกกับ booking นี้ทั้งหมด
+      await tx.checkout.deleteMany({
+        where: { bookingId },
+      });
 
-    const deleted = await prisma.booking.delete({
-      where: { bookingId: req.params.bookingId },
+      // 🔥 ลบ slip ถ้ามี
+      if (existing.slipUrl) {
+        await deleteSlip(existing.slipUrl);
+      }
+
+      // 🔥 ลบ booking
+      const deleted = await tx.booking.delete({
+        where: { bookingId },
+      });
+
+      // 🔥 คืนสถานะห้อง
+      await tx.room.update({
+        where: { roomId: deleted.roomId },
+        data: { status: 0 },
+      });
     });
 
-    await prisma.room.update({
-      where: { roomId: deleted.roomId },
-      data: { status: 0 },
-    });
-
-    res.json({ message: "ลบการจองสำเร็จ" });
+    res.json({ message: "ลบการจองและข้อมูล checkout สำเร็จ" });
   } catch (err: any) {
     res.status(400).json({ error: err.message });
   }

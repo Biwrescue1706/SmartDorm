@@ -36,13 +36,13 @@ export default function AllBillsCard({
       <h5 className="fw-bold mb-2">ห้อง {bill.room.number}</h5>
 
       <p className="mb-1">
-        <b>ผู้เช่า:</b> {bill.booking?.fullName || "-"}
+        <b>ผู้เช่า:</b> {bill.fullName || "-"}
       </p>
       <p className="mb-1">
         <b>LINE:</b> {bill.customer?.userName || "-"}
       </p>
       <p className="mb-1">
-        <b>เบอร์:</b> {bill.booking?.cphone || "-"}
+        <b>เบอร์:</b> {bill.cphone || "-"}
       </p>
 
       <p className="mb-1">

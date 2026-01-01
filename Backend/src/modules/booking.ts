@@ -268,7 +268,7 @@ try {
           { label: "รหัส", value: updated.bookingId },
           { label: "ชื่อ", value: updated.fullName ?? "-" },
           { label: "ห้อง", value: updated.room.number },
-          { label: "วันจอง", value: formatThai(booking.bookingDate) },
+          { label: "วันจอง", value: formatThai(updated.bookingDate) },
           { label: "วันที่แจ้งเข้าพัก", value: formatThai(updated.checkin) },
           { label: "วันที่อนุมัติ", value: formatThai(updated.checkinAt) },
           { label: "สถานะ", value: "อนุมัติแล้ว", color: "#27ae60" },

@@ -3,7 +3,7 @@ import * as Dialog from "@radix-ui/react-dialog";
 import { useState } from "react";
 import { API_BASE } from "../../config";
 import Swal from "sweetalert2";
-import { UpdateBooking } from "../../apis/endpoint.api"; // ใช้จาก endpoint.api.ts
+import { UpdateBooking } from "../../apis/endpoint.api";
 
 interface Props {
   booking: any;
@@ -13,17 +13,74 @@ interface Props {
 export default function EditBookingDialog({ booking, onSuccess }: Props) {
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({
-    ctitle: booking.ctitle || "นาย",
+    ctitle: booking.ctitle || "",
     cname: booking.cname || "",
     csurname: booking.csurname || "",
     cphone: booking.cphone || "",
     cmumId: booking.cmumId || "",
     approveStatus: booking.approveStatus ?? 0,
-    checkinStatus: booking.checkinStatus ?? 0, // ✅ เพิ่ม
-    checkoutStatus: booking.checkoutStatus ?? 0, // ✅ เพิ่ม
+    checkinStatus: booking.checkinStatus ?? 0,
+    checkoutStatus: booking.checkoutStatus ?? 0,
   });
 
+  // =================== Validation + Save ===================
   const handleSave = async () => {
+    // ตรวจสอบคำนำหน้า
+    if (!form.ctitle) {
+      Swal.fire({
+        icon: "warning",
+        title: "กรุณาเลือกคำนำหน้า",
+        timer: 1500,
+        showConfirmButton: false,
+      });
+      return;
+    }
+
+    // ตรวจสอบชื่อ
+    if (!form.cname || form.cname.trim().length < 1) {
+      Swal.fire({
+        icon: "warning",
+        title: "กรุณากรอกชื่อ",
+        timer: 1500,
+        showConfirmButton: false,
+      });
+      return;
+    }
+
+    // ตรวจสอบนามสกุล
+    if (!form.csurname || form.csurname.trim().length < 1) {
+      Swal.fire({
+        icon: "warning",
+        title: "กรุณากรอกนามสกุล",
+        timer: 1500,
+        showConfirmButton: false,
+      });
+      return;
+    }
+
+    // ตรวจสอบเบอร์โทร 10 หลัก
+    if (!form.cphone || !/^\d{10}$/.test(form.cphone)) {
+      Swal.fire({
+        icon: "warning",
+        title: "กรุณากรอกเบอร์โทร 10 หลัก",
+        timer: 1500,
+        showConfirmButton: false,
+      });
+      return;
+    }
+
+    // ตรวจสอบเลขบัตรประชาชน 13 หลัก
+    if (!form.cmumId || !/^\d{13}$/.test(form.cmumId)) {
+      Swal.fire({
+        icon: "warning",
+        title: "กรุณากรอกเลขบัตรประชาชน 13 หลัก",
+        timer: 1500,
+        showConfirmButton: false,
+      });
+      return;
+    }
+
+    // =================== Save ===================
     try {
       Swal.fire({
         title: "กำลังบันทึก...",
@@ -50,6 +107,7 @@ export default function EditBookingDialog({ booking, onSuccess }: Props) {
         timer: 1500,
         showConfirmButton: false,
       });
+
       setOpen(false);
       onSuccess();
     } catch {
@@ -98,7 +156,7 @@ export default function EditBookingDialog({ booking, onSuccess }: Props) {
             zIndex: 1100,
           }}
         >
-          {/*  เพิ่ม Title & Description เพื่อแก้ Warning */}
+          {/* Title */}
           <Dialog.Title asChild>
             <h3
               className="text-center text-white fw-bold py-2 mb-3 rounded-top-4"
@@ -111,7 +169,6 @@ export default function EditBookingDialog({ booking, onSuccess }: Props) {
             >
               แก้ไขข้อมูลผู้จอง
             </h3>
-          
           </Dialog.Title>
 
           <Dialog.Description asChild>
@@ -120,7 +177,7 @@ export default function EditBookingDialog({ booking, onSuccess }: Props) {
             </p>
           </Dialog.Description>
 
-          {/* ฟอร์มแก้ไขข้อมูล */}
+          {/* ฟอร์ม */}
           <div className="px-4 pb-3">
             {/* คำนำหน้า */}
             <div className="row align-items-center mb-3">
@@ -133,11 +190,12 @@ export default function EditBookingDialog({ booking, onSuccess }: Props) {
                   value={form.ctitle}
                   onChange={(e) => setForm({ ...form, ctitle: e.target.value })}
                 >
-                            <option value="ด.ช.">เด็กชาย</option>
-          <option value="นาย">นาย</option>
-          <option value="ด.ญ.">เด็กหญิง</option>
-          <option value="นาง">นาง</option>
-          <option value="น.ส.">น.ส.</option>
+                  <option value="">-- เลือกคำนำหน้า --</option>
+                  <option value="ด.ช.">เด็กชาย</option>
+                  <option value="นาย">นาย</option>
+                  <option value="ด.ญ.">เด็กหญิง</option>
+                  <option value="นาง">นาง</option>
+                  <option value="น.ส.">น.ส.</option>
                 </select>
               </div>
             </div>
@@ -153,7 +211,9 @@ export default function EditBookingDialog({ booking, onSuccess }: Props) {
                   className="form-control border-0 bg-light shadow-sm rounded-3 text-center"
                   placeholder="ชื่อผู้จอง"
                   value={form.cname}
-                  onChange={(e) => setForm({ ...form, cname: e.target.value })}
+                  onChange={(e) =>
+                    setForm({ ...form, cname: e.target.value })
+                  }
                 />
               </div>
             </div>
@@ -187,7 +247,10 @@ export default function EditBookingDialog({ booking, onSuccess }: Props) {
                   className="form-control border-0 bg-light shadow-sm rounded-3 text-center"
                   placeholder="0xxxxxxxxx"
                   value={form.cphone}
-                  onChange={(e) => setForm({ ...form, cphone: e.target.value })}
+                  onChange={(e) => {
+                    const val = e.target.value.replace(/\D/g, "");
+                    if (val.length <= 10) setForm({ ...form, cphone: val });
+                  }}
                 />
               </div>
             </div>
@@ -203,7 +266,10 @@ export default function EditBookingDialog({ booking, onSuccess }: Props) {
                   className="form-control border-0 bg-light shadow-sm rounded-3 text-center"
                   placeholder="เลข 13 หลัก"
                   value={form.cmumId}
-                  onChange={(e) => setForm({ ...form, cmumId: e.target.value })}
+                  onChange={(e) => {
+                    const val = e.target.value.replace(/\D/g, "");
+                    if (val.length <= 13) setForm({ ...form, cmumId: val });
+                  }}
                 />
               </div>
             </div>

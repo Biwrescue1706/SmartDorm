@@ -21,7 +21,8 @@ export function useCreateBill() {
     const res = await fetch(`${API_BASE}/booking/getall`, { credentials: "include" });
     const data: Booking[] = await res.json();
     setBookings(data.filter((b) => b.approveStatus === 1));
-    setPendingBookings(data.filter((b) => b.actualCheckin === 0).length);
+    // แก้ตรงนี้เป็น checkinAt แทน actualCheckin
+    setPendingBookings(data.filter((b) => !b.checkinAt).length);
   };
 
   const loadExistingBills = async () => {

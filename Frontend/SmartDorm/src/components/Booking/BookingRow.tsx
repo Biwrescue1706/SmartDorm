@@ -32,8 +32,6 @@ export default function BookingRow({
 }: Props) {
   const isSuperAdmin = role === 0;
 
-  const isEmpty = (v: any) => v === null || v === undefined || v === "";
-
   const formatThai = (d?: string | null) =>
     d
       ? new Date(d).toLocaleDateString("th-TH", {

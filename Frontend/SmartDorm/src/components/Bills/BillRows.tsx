@@ -22,31 +22,20 @@ export default function BillRow({
   onCreateBill,
 }: BillRowProps) {
   // 🗓️ แปลงวันที่ ถ้าไม่มีให้แสดง "-"
-  const checkin =
-    booking?.checkin && booking.checkin !== "0"
-      ? formatThaiDate(booking.checkin)
-      : "-";
+  const checkin = booking?.checkin ? formatThaiDate(booking.checkin) : "-";
+  const actualCheckin = booking?.checkinAt ? formatThaiDate(booking.checkinAt) : "-";
 
-  const actual =
-    booking?.actualCheckin && booking.actualCheckin !== 0
-      ? formatThaiDate(booking.actualCheckin)
-      : "-";
-
-  // ✅ แสดงปุ่มเฉพาะเมื่อ actualCheckin มีค่า และยังไม่ออกบิล
-  const canShowButton =
-    canCreateBill &&
-    !hasBill &&
-    booking?.actualCheckin &&
-    booking.actualCheckin !== 0;
+  // ✅ แสดงปุ่มเฉพาะเมื่อ checkinAt มีค่า และยังไม่ออกบิล
+  const canShowButton = canCreateBill && !hasBill && booking?.checkinAt;
 
   return (
     <tr key={room.roomId}>
       <td>{index + 1}</td>
       <td>{room.number}</td>
-      <td>{booking?.customer.userName || "-"}</td>
+      <td>{booking?.customer?.userName || "-"}</td>
       <td>{room.rent.toLocaleString()}</td>
       <td>{checkin}</td>
-      <td>{actual}</td>
+      <td>{actualCheckin}</td>
       <td>
         {hasBill ? (
           <button className="btn btn-success btn-sm fw-semibold" disabled>

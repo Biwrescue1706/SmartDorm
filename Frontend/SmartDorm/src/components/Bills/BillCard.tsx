@@ -1,3 +1,4 @@
+// src/components/Bills/BillCard.tsx
 import type { Room } from "../../types/Room";
 import type { Booking } from "../../types/Booking";
 
@@ -71,7 +72,7 @@ export default function BillCard({
 
       {hasBill && (
         <div className="text-center fw-bold mt-2" style={{ color: SCB_PURPLE }}>
-          ออกบิลแล้ว
+          ออกบิลแล้ว 
         </div>
       )}
     </div>

@@ -105,15 +105,18 @@ checkoutRouter.put("/:bookingId/request", async (req, res) => {
     if (active) throw new Error("มีคำขอคืนที่ยังดำเนินการอยู่");
 
     const checkout = await prisma.checkout.create({
-      data: {
-        bookingId,
-        roomId: booking.roomId,
-        customerId: customer.customerId,
-        requestedCheckout: new Date(requestedCheckout),
-        checkoutStatus: 0,
-      },
-      include: { room: true, customer: true },
-    });
+  data: {
+    bookingId,
+    roomId: booking.roomId,
+    customerId: customer.customerId,
+    requestedCheckout: new Date(requestedCheckout),
+    checkoutStatus: 0,
+  },
+  include: {
+    room: true,
+    customer: true,
+  },
+});
 
     const detailUrl = `https://smartdorm-detail.biwbong.shop/checkout/${checkout.checkoutId}`;
 

@@ -44,8 +44,6 @@ export default function EditBookingDialog({ booking, onSuccess }: Props) {
       if (!res.ok) throw new Error("Update failed");
 
       Swal.fire({
-        toast: true,
-        position: "top-end",
         icon: "success",
         title: "สำเร็จ",
         text: "แก้ไขข้อมูลผู้จองเรียบร้อยแล้ว",
@@ -56,8 +54,6 @@ export default function EditBookingDialog({ booking, onSuccess }: Props) {
       onSuccess();
     } catch {
       Swal.fire({
-        toast: true,
-        position: "top-end",
         icon: "error",
         title: "ผิดพลาด",
         text: "ไม่สามารถบันทึกข้อมูลได้",
@@ -137,9 +133,11 @@ export default function EditBookingDialog({ booking, onSuccess }: Props) {
                   value={form.ctitle}
                   onChange={(e) => setForm({ ...form, ctitle: e.target.value })}
                 >
-                  <option value="นาย">นาย</option>
-                  <option value="นาง">นาง</option>
-                  <option value="น.ส.">น.ส.</option>
+                            <option value="ด.ช.">เด็กชาย</option>
+          <option value="นาย">นาย</option>
+          <option value="ด.ญ.">เด็กหญิง</option>
+          <option value="นาง">นาง</option>
+          <option value="น.ส.">น.ส.</option>
                 </select>
               </div>
             </div>

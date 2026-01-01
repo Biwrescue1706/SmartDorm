@@ -1,3 +1,4 @@
+// src/modules/checkout.ts
 import { Router } from "express";
 import prisma from "../prisma";
 import { authMiddleware } from "../middleware/authMiddleware";
@@ -84,7 +85,7 @@ checkoutRouter.post("/myBookings", async (req, res) => {
 checkoutRouter.put("/:bookingId/request", async (req, res) => {
   try {
     const { bookingId } = req.params;
-    const { accessToken, requestedCheckout } = req.body;
+    const { accessToken, checkout: requestedCheckout } = req.body;
     if (!requestedCheckout) throw new Error("ต้องระบุวันที่ขอคืน");
 
     const { userId } = await verifyLineToken(accessToken);
@@ -105,18 +106,18 @@ checkoutRouter.put("/:bookingId/request", async (req, res) => {
     if (active) throw new Error("มีคำขอคืนที่ยังดำเนินการอยู่");
 
     const checkout = await prisma.checkout.create({
-  data: {
-    bookingId,
-    roomId: booking.roomId,
-    customerId: customer.customerId,
-    requestedCheckout: new Date(requestedCheckout),
-    checkoutStatus: 0,
-  },
-  include: {
-    room: true,
-    customer: true,
-  },
-});
+      data: {
+        bookingId,
+        roomId: booking.roomId,
+        customerId: customer.customerId,
+        checkout: new Date(requestedCheckout),
+        checkoutStatus: 0,
+      },
+      include: {
+        room: true,
+        customer: true,
+      },
+    });
 
     const detailUrl = `https://smartdorm-detail.biwbong.shop/checkout/${checkout.checkoutId}`;
 
@@ -126,10 +127,7 @@ checkoutRouter.put("/:bookingId/request", async (req, res) => {
         "📥 มีคำขอคืนห้องใหม่",
         [
           { label: "ห้อง", value: checkout.room.number },
-          {
-            label: "วันที่ขอคืน",
-            value: formatThaiDate(checkout.requestedCheckout),
-          },
+          { label: "วันที่ขอคืน", value: formatThaiDate(checkout.checkout) },
           { label: "ผู้เช่า", value: checkout.customer.userName || "-" },
         ],
         [{ label: "เปิดดูรายการ", url: detailUrl, style: "primary" }]
@@ -141,10 +139,7 @@ checkoutRouter.put("/:bookingId/request", async (req, res) => {
       "📤 ส่งคำขอคืนห้องแล้ว",
       [
         { label: "ห้อง", value: checkout.room.number },
-        {
-          label: "วันที่ขอคืน",
-          value: formatThaiDate(checkout.requestedCheckout),
-        },
+        { label: "วันที่ขอคืน", value: formatThaiDate(checkout.checkout) },
         { label: "สถานะ", value: "รอการตรวจสอบจากแอดมิน" },
       ],
       [{ label: "ดูสถานะคำขอ", url: detailUrl, style: "primary" }]
@@ -187,11 +182,7 @@ checkoutRouter.put("/:checkoutId/checkout", authMiddleware, async (req, res) => 
         { label: "วันที่เช็คเอาท์", value: formatThaiDate(new Date()) },
         { label: "เงินมัดจำ", value: `${deposit.toLocaleString()} บาท` },
         { label: "ยอดคืน", value: `${deposit.toLocaleString()} บาท` },
-        {
-          label: "แจ้งโอนเงิน",
-          value:
-            "กรุณาพิมพ์หมายเลขบัญชี\nธนาคาร\nxxx-xxx-xxxx\nชื่อ-นามสกุล",
-        },
+        { label: "แจ้งโอนเงิน", value: "กรุณาพิมพ์หมายเลขบัญชี\nธนาคาร\nxxx-xxx-xxxx\nชื่อ-นามสกุล" },
       ],
       [{ label: "ดูรายละเอียด", url: detailUrl, style: "primary" }]
     );

@@ -11,35 +11,12 @@ import {
 } from "../apis/endpoint.api";
 import { toast } from "../utils/toast";
 
-// ================= Type =================
-export interface BookingType {
-  bookingId: string;
-  fullName?: string;
-  ctitle?: string;
-  cname?: string;
-  csurname?: string;
-  cphone?: string;
-  cmumId?: string;
-  bookingDate: string;
-  checkin: string;
-  checkinAt?: string | null;
-  approveStatus: number;
-  checkinStatus: number;
-  slipUrl?: string;
-  room: {
-    roomId: string;
-    number: string;
-  };
-  customer: {
-    userName?: string;
-  };
-  checkout?: string | null;
-  checkoutAt?: string | null;
-}
+// import type จากไฟล์เดียว
+import { Booking, Checkout, Room, Customer } from "../types/Booking";
 
 // ================= Hook =================
 export function useBookings() {
-  const [bookings, setBookings] = useState<BookingType[]>([]);
+  const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
 
   const token = localStorage.getItem("token");
@@ -59,30 +36,49 @@ export function useBookings() {
 
       const data = await res.json();
 
-      // map ให้ตรง type
-      const formatted: BookingType[] = data.map((b: any) => ({
+      const formatted: Booking[] = data.map((b: any) => ({
         bookingId: b.bookingId,
-        fullName: b.fullName,
+        roomId: b.roomId,
+        customerId: b.customerId,
+
         ctitle: b.ctitle,
         cname: b.cname,
         csurname: b.csurname,
+        fullName: b.fullName,
         cphone: b.cphone,
         cmumId: b.cmumId,
-        bookingDate: b.bookingDate,
+
         checkin: b.checkin,
-        checkinAt: b.checkinAt,
-        approveStatus: b.approveStatus,
+        checkinAt: b.checkinAt ?? undefined,
         checkinStatus: b.checkinStatus,
+
+        approveStatus: b.approveStatus,
+        approvedAt: b.approvedAt ?? undefined,
+
+        bookingDate: b.bookingDate,
         slipUrl: b.slipUrl,
+
+        createdAt: b.createdAt,
+        updatedAt: b.updatedAt,
+
         room: {
           roomId: b.room.roomId,
           number: b.room.number,
+          size: b.room.size,
+          rent: b.room.rent,
+          deposit: b.room.deposit,
+          bookingFee: b.room.bookingFee,
         },
         customer: {
-          userName: b.customer?.userName,
+          customerId: b.customer.customerId,
+          userName: b.customer.userName,
         },
-        checkout: b.checkout || null,
-        checkoutAt: b.checkoutAt || null,
+        checkout: b.checkout?.map((c: any) => ({
+          checkoutId: c.checkoutId,
+          checkout: c.checkout,
+          checkoutAt: c.checkoutAt ?? undefined,
+          checkoutStatus: c.checkoutStatus,
+        })),
       }));
 
       setBookings(formatted);

@@ -169,7 +169,9 @@ bookingRouter.post("/create", async (req, res) => {
     });
 
     const detailUrl = `https://smartdorm-detail.biwbong.shop/booking/${booking.bookingId}`;
-    await sendFlexMessage(
+
+  try {
+  await sendFlexMessage(
       booking.customer?.userId ?? "",
       "📢 SmartDorm ยืนยันการจองห้อง",
       [
@@ -183,6 +185,37 @@ bookingRouter.post("/create", async (req, res) => {
       ],
       [{ label: "ดูรายละเอียด", url: detailUrl, style: "primary" }]
     );
+} catch (err) {
+      console.error("❌ LINE Error (customer):", err);
+    }
+
+    // 📩 แจ้งแอดมิน
+    const adminId = process.env.ADMIN_LINE_ID;
+    if (adminId) {
+      try {
+        await sendFlexMessage(
+          adminId,
+          "📢 มีการจองห้องใหม่เข้ามา",
+          [
+            { label: "รหัสการจอง", value: booking.bookingId },
+            { label: "ชื่อผู้จอง", value: booking.fullName ?? "-" },
+            { label: "ห้อง", value: booking.room.number },
+            { label: "วันจอง", value: formatThai(booking.bookingDate) },
+            { label: "วันที่แจ้งเข้าพัก", value: formatThai(booking.checkin) },
+            { label: "เบอร์โทร", value: booking.cphone ?? "-" },
+          ],
+          [
+            {
+              label: "เปิดดูรายการ",
+              url: "https://smartdorm-admin.biwbong.shop",
+              style: "primary",
+            },
+          ]
+        );
+      } catch (err) {
+        console.error("❌ LINE Error (admin):", err);
+      }
+    }
 
     res.json({ message: "สร้างการจองสำเร็จ", booking });
   } catch (err: any) {
@@ -220,12 +253,39 @@ bookingRouter.put("/:bookingId/approve", async (req, res) => {
     const updated = await prisma.$transaction(async (tx) => {
       const b = await tx.booking.update({
         where: { bookingId: req.params.bookingId },
-        data: { approveStatus: 1, approvedAt: new Date() },
+        data: { approveStatus: 1, checkinAt: new Date() },
         include: { room: true, customer: true },
       });
       await tx.room.update({ where: { roomId: b.roomId }, data: { status: 1 } });
       return b;
     });
+
+try {
+      await sendFlexMessage(
+        updated.customer?.userId ?? "",
+        "✔️ SmartDorm อนุมัติการจอง",
+        [
+          { label: "รหัส", value: updated.bookingId },
+          { label: "ชื่อ", value: updated.fullName ?? "-" },
+          { label: "ห้อง", value: updated.room.number },
+          { label: "วันจอง", value: formatThai(booking.bookingDate) },
+          { label: "วันที่แจ้งเข้าพัก", value: formatThai(updated.checkin) },
+          { label: "วันที่อนุมัติ", value: formatThai(updated.checkinAt) },
+          { label: "สถานะ", value: "อนุมัติแล้ว", color: "#27ae60" },
+          { label: "หมายเหตุ", value: "กรุณมาเช็คอินในวันที่แจ้งเข้าพัก" },
+        ],
+        [
+          {
+            label: "รายละเอียด",
+            url: `https://smartdorm-detail.biwbong.shop/booking/${updated.bookingId}`,
+            style: "primary",
+          },
+        ]
+      );
+    } catch (err) {
+      console.error("❌ LINE Error (approve):", err);
+    }
+
     res.json({ message: "อนุมัติสำเร็จ", booking: updated });
   } catch (err: any) {
     res.status(400).json({ error: err.message });
@@ -238,12 +298,36 @@ bookingRouter.put("/:bookingId/reject", async (req, res) => {
     const updated = await prisma.$transaction(async (tx) => {
       const b = await tx.booking.update({
         where: { bookingId: req.params.bookingId },
-        data: { approveStatus: 2, approvedAt: new Date() },
+        data: { approveStatus: 2, checkinAt: new Date() },
         include: { room: true, customer: true },
       });
       await tx.room.update({ where: { roomId: b.roomId }, data: { status: 0 } });
       return b;
     });
+    try {
+      await sendFlexMessage(
+        updated.customer?.userId ?? "",
+        "❌ SmartDorm ปฏิเสธการจอง",
+        [
+          { label: "รหัส", value: updated.bookingId },
+          { label: "ชื่อ", value: updated.fullName ?? "-" },
+          { label: "ห้อง", value: updated.room.number },
+          { label: "วันที่แจ้งเข้าพัก", value: formatThai(updated.checkin) },
+          { label: "วันที่ไม่อนุมัติ", value: formatThai(updated.checkinAt) },
+          { label: "เหตุผล", value: "กรุณาติดต่อแอดมินเพื่อสอบถามเพิ่มเติม" },
+        ],
+        [
+          {
+            label: "รายละเอียด",
+            url: `https://smartdorm-detail.biwbong.shop/booking/${updated.bookingId}`,
+            style: "primary",
+          },
+        ]
+      );
+    } catch (err) {
+      console.error("❌ LINE Error (reject):", err);
+    }
+
     res.json({ message: "ปฏิเสธสำเร็จ" });
   } catch (err: any) {
     res.status(400).json({ error: err.message });
@@ -258,6 +342,31 @@ bookingRouter.put("/:bookingId/checkin", async (req, res) => {
       data: { checkinStatus: 1, checkinAt: new Date() },
       include: { room: true, customer: true },
     });
+    try {
+      await sendFlexMessage(
+        updated.customer?.userId ?? "",
+        "🏠 SmartDorm เช็คอินสำเร็จ",
+        [
+          { label: "รหัส", value: updated.bookingId },
+          { label: "ชื่อ", value: updated.fullName ?? "-" },
+          { label: "ห้อง", value: updated.room.number },
+          {
+            label: "เช็คอิน",
+            value: formatThai(updated.checkinAt),
+          },
+        ],
+        [
+          {
+            label: "รายละเอียด",
+            url: `https://smartdorm-detail.biwbong.shop/booking/${updated.bookingId}`,
+            style: "primary",
+          },
+        ]
+      );
+    } catch (err) {
+      console.error("❌ LINE Error (checkin):", err);
+    }
+
     res.json({ message: "เช็คอินสำเร็จ", booking: updated });
   } catch (err: any) {
     res.status(400).json({ error: err.message });

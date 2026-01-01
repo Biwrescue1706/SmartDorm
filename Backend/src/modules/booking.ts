@@ -253,7 +253,7 @@ bookingRouter.put("/:bookingId/approve", async (req, res) => {
     const updated = await prisma.$transaction(async (tx) => {
       const b = await tx.booking.update({
         where: { bookingId: req.params.bookingId },
-        data: { approveStatus: 1, RefundApprovalDate: new Date() },
+        data: { approveStatus: 1, approvedAt: new Date() },
         include: { room: true, customer: true },
       });
       await tx.room.update({ where: { roomId: b.roomId }, data: { status: 1 } });

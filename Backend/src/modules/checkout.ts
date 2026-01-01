@@ -199,4 +199,53 @@ checkoutRouter.put(
   }
 );
 
+
+/* =====================================================
+   Admin: แก้ไขวันที่ขอคืน (ไม่แจ้งเตือน)
+===================================================== */
+checkoutRouter.put("/:checkoutId/date", authMiddleware, async (req, res) => {
+  try {
+    const { checkoutId } = req.params;
+    const { requestedCheckout } = req.body;
+    if (!requestedCheckout) throw new Error("ต้องระบุวันที่คืน");
+
+    const checkout = await prisma.checkout.findUnique({
+      where: { checkoutId },
+    });
+    if (!checkout) throw new Error("ไม่พบข้อมูล");
+    if (checkout.checkoutStatus === 1)
+      throw new Error("เช็คเอาท์แล้ว แก้ไม่ได้");
+
+    const updated = await prisma.checkout.update({
+      where: { checkoutId },
+      data: { requestedCheckout: new Date(requestedCheckout) },
+    });
+
+    res.json({ checkout: updated });
+  } catch (err: any) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+/* =====================================================
+   Admin: ลบ checkout (ไม่แจ้งเตือน)
+===================================================== */
+checkoutRouter.delete("/:checkoutId", authMiddleware, async (req, res) => {
+  try {
+    const { checkoutId } = req.params;
+
+    const checkout = await prisma.checkout.findUnique({
+      where: { checkoutId },
+    });
+    if (!checkout) throw new Error("ไม่พบข้อมูล");
+    if (checkout.checkoutStatus === 1)
+      throw new Error("เช็คเอาท์แล้ว ลบไม่ได้");
+
+    await prisma.checkout.delete({ where: { checkoutId } });
+    res.json({ message: "ลบ checkout สำเร็จ" });
+  } catch (err: any) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
 export default checkoutRouter;

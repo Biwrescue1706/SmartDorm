@@ -7,9 +7,7 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-/* =========================
-   Admin
-========================= */
+/* ===Admin === */
 model Admin {
   adminId  String @id @default(auto()) @map("_id") @db.ObjectId
   username String @unique
@@ -26,9 +24,7 @@ model Admin {
   billsUpdated Bill[] @relation("BillUpdatedBy")
 }
 
-/* =========================
-   Room
-========================= */
+/* === Room === */
 model Room {
   roomId     String @id @default(auto()) @map("_id") @db.ObjectId
   number     String @unique
@@ -53,9 +49,7 @@ model Room {
   checkouts Checkout[]
 }
 
-/* =========================
-   Customer
-========================= */
+/* === Customer === */
 model Customer {
   customerId String @id @default(auto()) @map("_id") @db.ObjectId
   userId     String
@@ -70,9 +64,7 @@ model Customer {
   checkouts Checkout[]
 }
 
-/* =========================
-   Booking
-========================= */
+/* === Booking === */
 model Booking {
   bookingId  String @id @default(auto()) @map("_id") @db.ObjectId
   roomId     String @db.ObjectId
@@ -111,9 +103,7 @@ model Booking {
   @@index([approveStatus])
 }
 
-/* =========================
-   Checkout
-========================= */
+/* === Checkout === */
 model Checkout {
   checkoutId String @id @default(auto()) @map("_id") @db.ObjectId
 
@@ -150,9 +140,7 @@ model Checkout {
   @@index([ReturnApprovalStatus])
 }
 
-/* =========================
-   Bill
-========================= */
+/* === Bill === */
 model Bill {
   billId String   @id @default(auto()) @map("_id") @db.ObjectId
   month  DateTime
@@ -207,9 +195,7 @@ model Bill {
   @@index([status])
 }
 
-/* =========================
-   Payment
-========================= */
+/* === Payment === */
 model Payment {
   paymentId  String @id @default(auto()) @map("_id") @db.ObjectId
   billId     String @unique @db.ObjectId

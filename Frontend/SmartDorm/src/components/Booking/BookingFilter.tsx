@@ -16,8 +16,8 @@ export default function BookingFilter({ active, onChange, bookings }: BookingFil
     approved: bookings.filter((b) => b.approveStatus === 1).length,
     rejected: bookings.filter((b) => b.approveStatus === 2).length,
     checkinPending: bookings.filter(
-      (b) => b.approveStatus === 1 && !b.actualCheckin
-    ).length,
+  (b) => b.approveStatus === 1 && !b.checkinAt
+).length,
   };
 
   //  รายการการ์ดแต่ละประเภท

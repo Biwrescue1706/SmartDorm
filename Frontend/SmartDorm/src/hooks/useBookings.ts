@@ -1,3 +1,4 @@
+// src/hooks/useBookings.ts
 import { useEffect, useState } from "react";
 import Swal from "sweetalert2";
 import axios from "axios";
@@ -10,13 +11,40 @@ import {
 } from "../apis/endpoint.api";
 import { toast } from "../utils/toast";
 
+// ================= Type =================
+export interface BookingType {
+  bookingId: string;
+  fullName?: string;
+  ctitle?: string;
+  cname?: string;
+  csurname?: string;
+  cphone?: string;
+  cmumId?: string;
+  bookingDate: string;
+  checkin: string;
+  checkinAt?: string | null;
+  approveStatus: number;
+  checkinStatus: number;
+  slipUrl?: string;
+  room: {
+    roomId: string;
+    number: string;
+  };
+  customer: {
+    userName?: string;
+  };
+  checkout?: string | null;
+  checkoutAt?: string | null;
+}
+
+// ================= Hook =================
 export function useBookings() {
-  const [bookings, setBookings] = useState<any[]>([]);
+  const [bookings, setBookings] = useState<BookingType[]>([]);
   const [loading, setLoading] = useState(true);
 
   const token = localStorage.getItem("token");
 
-  // โหลดข้อมูลทั้งหมด
+  // --------- Fetch all bookings ---------
   const fetchBookings = async () => {
     setLoading(true);
     try {
@@ -30,15 +58,42 @@ export function useBookings() {
       }
 
       const data = await res.json();
-      setBookings(data);
-    } catch {
+
+      // map ให้ตรง type
+      const formatted: BookingType[] = data.map((b: any) => ({
+        bookingId: b.bookingId,
+        fullName: b.fullName,
+        ctitle: b.ctitle,
+        cname: b.cname,
+        csurname: b.csurname,
+        cphone: b.cphone,
+        cmumId: b.cmumId,
+        bookingDate: b.bookingDate,
+        checkin: b.checkin,
+        checkinAt: b.checkinAt,
+        approveStatus: b.approveStatus,
+        checkinStatus: b.checkinStatus,
+        slipUrl: b.slipUrl,
+        room: {
+          roomId: b.room.roomId,
+          number: b.room.number,
+        },
+        customer: {
+          userName: b.customer?.userName,
+        },
+        checkout: b.checkout || null,
+        checkoutAt: b.checkoutAt || null,
+      }));
+
+      setBookings(formatted);
+    } catch (err) {
       toast("error", "เชื่อมต่อไม่สำเร็จ", "ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์");
     } finally {
       setLoading(false);
     }
   };
 
-  // อนุมัติการจอง
+  // --------- Approve booking ---------
   const approveBooking = async (id: string) => {
     try {
       const res = await fetch(`${API_BASE}${ApproveBooking(id)}`, {
@@ -56,7 +111,7 @@ export function useBookings() {
     }
   };
 
-  // ปฏิเสธการจอง
+  // --------- Reject booking ---------
   const rejectBooking = async (id: string) => {
     try {
       const res = await fetch(`${API_BASE}${RejectBooking(id)}`, {
@@ -74,7 +129,7 @@ export function useBookings() {
     }
   };
 
-  // ลบการจอง
+  // --------- Delete booking ---------
   const deleteBooking = async (id: string, room: string) => {
     const ok = await Swal.fire({
       title: `ลบการจองห้อง ${room}?`,
@@ -105,7 +160,7 @@ export function useBookings() {
     }
   };
 
-  // เช็คอิน
+  // --------- Checkin booking ---------
   const checkinBooking = async (id: string) => {
     try {
       await axios.put(
@@ -114,8 +169,8 @@ export function useBookings() {
         { withCredentials: true, headers: { Authorization: `Bearer ${token}` } }
       );
 
+      await fetchBookings();
       toast("success", "เช็คอินสำเร็จ", "ผู้จองได้เช็คอินแล้ว");
-      fetchBookings();
     } catch {
       toast("warning", "เช็คอินไม่สำเร็จ", "กรุณาลองใหม่อีกครั้ง");
     }

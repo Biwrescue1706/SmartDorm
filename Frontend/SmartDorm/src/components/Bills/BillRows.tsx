@@ -23,15 +23,9 @@ export default function BillRow({
 }: BillRowProps) {
   // 🗓️ แปลงวันที่ ถ้าไม่มีให้แสดง "-"
   const checkin = booking?.checkin ? formatThaiDate(booking.checkin) : "-";
-  const actual =
-  booking?.checkinAt
-    ? formatThaiDate(booking.checkinAt)
-    : "-";
+  const actualCheckin = booking?.checkinAt ? formatThaiDate(booking.checkinAt) : "-";
 
-const canShowButton =
-  canCreateBill &&
-  !hasBill &&
-  booking?.checkinAt;
+  const canShowButton = canCreateBill && !hasBill && booking?.checkinAt;
 
   return (
     <tr key={room.roomId}>

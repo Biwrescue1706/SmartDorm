@@ -14,7 +14,7 @@ export default function Dashboard() {
   const { handleLogout, role, adminName, adminUsername } = useAuth();
 
   const { rooms, fetchRooms } = useRooms();
-  const { bookings: bookingsData, fetchBookings } = useBookings();
+  const { bookings: rawBookings, fetchBookings } = useBookings();
   const { checkouts, fetchCheckouts } = useCheckouts();
   const { bills, fetchBills } = useBills();
 
@@ -33,31 +33,44 @@ export default function Dashboard() {
   }, []);
 
   /* =========================
-     MAP BOOKINGS ให้ครบ type Booking
+     MAP BOOKINGS ให้ตรง type
   ========================= */
   useEffect(() => {
-    if (Array.isArray(bookingsData)) {
-      const mapped: Booking[] = bookingsData.map((b) => ({
-        ...b,
+    if (Array.isArray(rawBookings)) {
+      const mapped: Booking[] = rawBookings.map((b) => ({
+        bookingId: b.bookingId,
         roomId: b.room?.roomId || "",
         customerId: b.customer?.userId || "",
-        createdAt: b.createdAt || new Date().toISOString(),
-        updatedAt: b.updatedAt || new Date().toISOString(),
+        fullName: b.fullName,
+        ctitle: b.ctitle,
+        cname: b.cname,
+        csurname: b.csurname,
+        cphone: b.cphone,
+        cmumId: b.cmumId,
+        bookingDate: b.bookingDate,
+        approveStatus: b.approveStatus,
+        checkinAt: b.checkinAt ?? undefined,
+        checkoutAt: b.checkoutAt ?? undefined,
+        createdAt: b.createdAt ?? new Date().toISOString(),
+        updatedAt: b.updatedAt ?? new Date().toISOString(),
+        slipUrl: b.slipUrl,
+        checkinStatus: b.checkinStatus,
+        checkin: b.checkin,
+        room: b.room,
+        customer: b.customer,
       }));
       setBookings(mapped);
     }
-  }, [bookingsData]);
+  }, [rawBookings]);
 
   /* =========================
      CALCULATE PENDING
   ========================= */
   useEffect(() => {
-    // approveStatus: 0 = PENDING
     setPendingBookings(
       bookings.filter((b) => b.approveStatus === 0).length
     );
 
-    // status: 0 = PENDING (checkout)
     setPendingCheckouts(
       Array.isArray(checkouts)
         ? checkouts.filter((c) => c.status === 0).length

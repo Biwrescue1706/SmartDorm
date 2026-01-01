@@ -4,18 +4,16 @@ import Nav from "../components/Nav";
 import { useAuth } from "../hooks/useAuth";
 import { useRooms } from "../hooks/useRooms";
 import { useBookings } from "../hooks/useBookings";
-import { useCheckouts } from "../hooks/useCheckouts";
 import { useBills } from "../hooks/useBills";
 import DashboardSummary from "../components/Dashboard/DashboardSummary";
 import DashboardRevenue from "../components/Dashboard/DashboardRevenue";
-import type { Booking, Checkout } from "../types/Booking";
+import type { Booking } from "../types/Booking";
 
 export default function Dashboard() {
   const { handleLogout, role, adminName, adminUsername } = useAuth();
 
   const { rooms, fetchRooms } = useRooms();
   const { bookings: rawBookings, fetchBookings } = useBookings();
-  const { checkouts, fetchCheckouts } = useCheckouts();
   const { bills, fetchBills } = useBills();
 
   const [bookings, setBookings] = useState<Booking[]>([]);
@@ -28,7 +26,6 @@ export default function Dashboard() {
   useEffect(() => {
     fetchRooms();
     fetchBookings();
-    fetchCheckouts();
     fetchBills();
   }, []);
 
@@ -39,27 +36,39 @@ export default function Dashboard() {
     if (Array.isArray(rawBookings)) {
       const mapped: Booking[] = rawBookings.map((b) => ({
         bookingId: b.bookingId,
-        roomId: b.room?.roomId || "",
-        customerId: b.customer?.customerId || "",
+        roomId: b.roomId,
+        customerId: b.customerId,
+
         fullName: b.fullName,
         ctitle: b.ctitle,
         cname: b.cname,
         csurname: b.csurname,
         cphone: b.cphone,
         cmumId: b.cmumId,
-        bookingDate: b.bookingDate,
-        approveStatus: b.approveStatus,
+
+        checkin: b.checkin,
         checkinAt: b.checkinAt ?? undefined,
-        // สำหรับ checkout ใช้ array checkout[], คำนวณ checkoutAt ล่าสุด
-        checkout: b.checkout ?? [],
+        checkinStatus: b.checkinStatus,
+
+        approveStatus: b.approveStatus,
+        approvedAt: b.approvedAt ?? undefined,
+
+        bookingDate: b.bookingDate,
+        slipUrl: b.slipUrl,
+
         createdAt: b.createdAt ?? new Date().toISOString(),
         updatedAt: b.updatedAt ?? new Date().toISOString(),
-        slipUrl: b.slipUrl,
-        checkinStatus: b.checkinStatus,
-        checkin: b.checkin,
+
         room: b.room,
         customer: b.customer,
+        checkout: b.checkout?.map((c) => ({
+          checkoutId: c.checkoutId,
+          checkout: c.checkout,
+          checkoutAt: c.checkoutAt ?? undefined,
+          checkoutStatus: c.checkoutStatus,
+        })),
       }));
+
       setBookings(mapped);
     }
   }, [rawBookings]);
@@ -68,16 +77,18 @@ export default function Dashboard() {
      CALCULATE PENDING
   ========================= */
   useEffect(() => {
+    // pending bookings
     setPendingBookings(
       bookings.filter((b) => b.approveStatus === 0).length
     );
 
-    setPendingCheckouts(
-      Array.isArray(checkouts)
-        ? checkouts.filter((c: Checkout) => c.checkoutStatus === 0).length
-        : 0
-    );
-  }, [bookings, checkouts]);
+    // pending checkouts
+    const pending = bookings.reduce((acc, b) => {
+      const c = b.checkout?.filter((c) => c.checkoutStatus === 0).length || 0;
+      return acc + c;
+    }, 0);
+    setPendingCheckouts(pending);
+  }, [bookings]);
 
   /* =========================
      ROOM STATS
@@ -93,10 +104,7 @@ export default function Dashboard() {
   return (
     <div
       className="d-flex flex-column min-vh-100"
-      style={{
-        backgroundColor: "#F7F4FD",
-        fontFamily: "Sarabun, sans-serif",
-      }}
+      style={{ backgroundColor: "#F7F4FD", fontFamily: "Sarabun, sans-serif" }}
     >
       {/* NAVBAR */}
       <Nav

@@ -7,8 +7,9 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-//Admin
-
+/* =========================
+   Admin
+========================= */
 model Admin {
   adminId  String @id @default(auto()) @map("_id") @db.ObjectId
   username String @unique
@@ -25,7 +26,9 @@ model Admin {
   billsUpdated Bill[] @relation("BillUpdatedBy")
 }
 
-//Room
+/* =========================
+   Room
+========================= */
 model Room {
   roomId     String @id @default(auto()) @map("_id") @db.ObjectId
   number     String @unique
@@ -50,7 +53,9 @@ model Room {
   checkouts Checkout[]
 }
 
-//Customer
+/* =========================
+   Customer
+========================= */
 model Customer {
   customerId String @id @default(auto()) @map("_id") @db.ObjectId
   userId     String
@@ -65,7 +70,9 @@ model Customer {
   checkouts Checkout[]
 }
 
-//Booking
+/* =========================
+   Booking
+========================= */
 model Booking {
   bookingId  String @id @default(auto()) @map("_id") @db.ObjectId
   roomId     String @db.ObjectId
@@ -78,13 +85,17 @@ model Booking {
   cphone   String?
   cmumId   String?
 
+  // check-in
   checkin       DateTime
-  actualCheckin DateTime?
-
-  approveStatus Int @default(0) // 0=PENDING,1=APPROVED,2=REJECTED
+  checkinAt     DateTime?
   checkinStatus Int @default(0) // 0=NOT_CHECKED_IN,1=CHECKED_IN,2=FAILED
 
-  slipUrl String?
+  // approval
+  approveStatus Int @default(0) // 0=PENDING,1=APPROVED,2=REJECTED
+  approvedAt    DateTime?       // วันที่อนุมัติ
+
+  bookingDate DateTime @default(now()) // วันที่จอง
+  slipUrl     String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -94,9 +105,15 @@ model Booking {
 
   checkout Checkout[]
   bills    Bill[]
+
+  @@index([roomId])
+  @@index([customerId])
+  @@index([approveStatus])
 }
 
-//Checkout
+/* =========================
+   Checkout
+========================= */
 model Checkout {
   checkoutId String @id @default(auto()) @map("_id") @db.ObjectId
 
@@ -104,20 +121,22 @@ model Checkout {
   roomId     String @db.ObjectId
   customerId String @db.ObjectId
 
-  requestedCheckout DateTime // วันขอคืน
+  // ขอคืน
+  checkout DateTime
 
-  status     Int      @default(0) 
+  ReturnApprovalStatus Int @default(0)
   // 0 = PENDING
   // 1 = APPROVED
   // 2 = REJECTED
 
-  approvedAt DateTime?
+  RefundApprovalDate DateTime?
 
-  checkoutStatus Int      @default(0)
-  // 0 = Waiting for checkout
+  // คืนจริง
+  checkoutStatus Int @default(0)
+  // 0 = Waiting
   // 1 = Checked out
 
-  actualCheckout DateTime?
+  checkoutAt DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -127,10 +146,13 @@ model Checkout {
   customer Customer @relation(fields: [customerId], references: [customerId])
 
   @@index([bookingId])
-  @@index([status])
+  @@index([checkoutStatus])
+  @@index([ReturnApprovalStatus])
 }
 
-//Bill
+/* =========================
+   Bill
+========================= */
 model Bill {
   billId String   @id @default(auto()) @map("_id") @db.ObjectId
   month  DateTime
@@ -173,19 +195,25 @@ model Bill {
   bookingId String?  @db.ObjectId
   booking   Booking? @relation(fields: [bookingId], references: [bookingId])
 
-  createdBy    String  @db.ObjectId
-  updatedBy    String? @db.ObjectId
+  createdBy String  @db.ObjectId
+  updatedBy String? @db.ObjectId
   adminCreated Admin?  @relation("BillCreatedBy", fields: [createdBy], references: [adminId])
   adminUpdated Admin?  @relation("BillUpdatedBy", fields: [updatedBy], references: [adminId])
 
   payment Payment?
+
+  @@index([roomId])
+  @@index([customerId])
+  @@index([status])
 }
 
-// Payment
+/* =========================
+   Payment
+========================= */
 model Payment {
-  paymentId  String  @id @default(auto()) @map("_id") @db.ObjectId
-  billId     String  @unique @db.ObjectId
-  customerId String  @db.ObjectId
+  paymentId  String @id @default(auto()) @map("_id") @db.ObjectId
+  billId     String @unique @db.ObjectId
+  customerId String @db.ObjectId
   slipUrl    String?
 
   createdAt DateTime @default(now())

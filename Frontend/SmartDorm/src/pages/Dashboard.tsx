@@ -1,3 +1,4 @@
+// src/pages/Dashboard.tsx
 import { useEffect, useState } from "react";
 import Nav from "../components/Nav";
 import { useAuth } from "../hooks/useAuth";
@@ -7,15 +8,17 @@ import { useCheckouts } from "../hooks/useCheckouts";
 import { useBills } from "../hooks/useBills";
 import DashboardSummary from "../components/Dashboard/DashboardSummary";
 import DashboardRevenue from "../components/Dashboard/DashboardRevenue";
+import type { Booking } from "../types/Booking";
 
 export default function Dashboard() {
   const { handleLogout, role, adminName, adminUsername } = useAuth();
 
   const { rooms, fetchRooms } = useRooms();
-  const { bookings, fetchBookings } = useBookings();
+  const { bookings: bookingsData, fetchBookings } = useBookings();
   const { checkouts, fetchCheckouts } = useCheckouts();
   const { bills, fetchBills } = useBills();
 
+  const [bookings, setBookings] = useState<Booking[]>([]);
   const [pendingBookings, setPendingBookings] = useState(0);
   const [pendingCheckouts, setPendingCheckouts] = useState(0);
 
@@ -30,14 +33,28 @@ export default function Dashboard() {
   }, []);
 
   /* =========================
+     MAP BOOKINGS ให้ครบ type Booking
+  ========================= */
+  useEffect(() => {
+    if (Array.isArray(bookingsData)) {
+      const mapped: Booking[] = bookingsData.map((b) => ({
+        ...b,
+        roomId: b.room?.roomId || "",
+        customerId: b.customer?.userId || "",
+        createdAt: b.createdAt || new Date().toISOString(),
+        updatedAt: b.updatedAt || new Date().toISOString(),
+      }));
+      setBookings(mapped);
+    }
+  }, [bookingsData]);
+
+  /* =========================
      CALCULATE PENDING
   ========================= */
   useEffect(() => {
     // approveStatus: 0 = PENDING
     setPendingBookings(
-      Array.isArray(bookings)
-        ? bookings.filter((b) => b.approveStatus === 0).length
-        : 0
+      bookings.filter((b) => b.approveStatus === 0).length
     );
 
     // status: 0 = PENDING (checkout)

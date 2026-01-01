@@ -11,8 +11,8 @@ import {
 } from "../apis/endpoint.api";
 import { toast } from "../utils/toast";
 
-// import type จากไฟล์เดียว
-import { Booking, Checkout, Room, Customer } from "../types/Booking";
+// เปลี่ยนเป็น type-only import
+import type { Booking } from "../types/Booking";
 
 // ================= Hook =================
 export function useBookings() {
@@ -21,7 +21,6 @@ export function useBookings() {
 
   const token = localStorage.getItem("token");
 
-  // --------- Fetch all bookings ---------
   const fetchBookings = async () => {
     setLoading(true);
     try {
@@ -61,18 +60,8 @@ export function useBookings() {
         createdAt: b.createdAt,
         updatedAt: b.updatedAt,
 
-        room: {
-          roomId: b.room.roomId,
-          number: b.room.number,
-          size: b.room.size,
-          rent: b.room.rent,
-          deposit: b.room.deposit,
-          bookingFee: b.room.bookingFee,
-        },
-        customer: {
-          customerId: b.customer.customerId,
-          userName: b.customer.userName,
-        },
+        room: b.room,
+        customer: b.customer,
         checkout: b.checkout?.map((c: any) => ({
           checkoutId: c.checkoutId,
           checkout: c.checkout,
@@ -89,7 +78,7 @@ export function useBookings() {
     }
   };
 
-  // --------- Approve booking ---------
+  // approve/reject/delete/checkin เหมือนเดิม
   const approveBooking = async (id: string) => {
     try {
       const res = await fetch(`${API_BASE}${ApproveBooking(id)}`, {
@@ -97,9 +86,7 @@ export function useBookings() {
         headers: { Authorization: `Bearer ${token}` },
         credentials: "include",
       });
-
       if (!res.ok) throw new Error();
-
       toast("success", "อนุมัติสำเร็จ", "การจองได้รับการอนุมัติแล้ว");
       await fetchBookings();
     } catch {
@@ -107,7 +94,6 @@ export function useBookings() {
     }
   };
 
-  // --------- Reject booking ---------
   const rejectBooking = async (id: string) => {
     try {
       const res = await fetch(`${API_BASE}${RejectBooking(id)}`, {
@@ -115,9 +101,7 @@ export function useBookings() {
         headers: { Authorization: `Bearer ${token}` },
         credentials: "include",
       });
-
       if (!res.ok) throw new Error();
-
       toast("warning", "ปฏิเสธสำเร็จ", "สถานะกลับเป็นยังไม่อนุมัติ");
       await fetchBookings();
     } catch {
@@ -125,7 +109,6 @@ export function useBookings() {
     }
   };
 
-  // --------- Delete booking ---------
   const deleteBooking = async (id: string, room: string) => {
     const ok = await Swal.fire({
       title: `ลบการจองห้อง ${room}?`,
@@ -137,18 +120,14 @@ export function useBookings() {
       confirmButtonColor: "#d33",
       cancelButtonColor: "#3085d6",
     });
-
     if (!ok.isConfirmed) return;
-
     try {
       const res = await fetch(`${API_BASE}${DeleteBooking(id)}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
         credentials: "include",
       });
-
       if (!res.ok) throw new Error();
-
       toast("success", "ลบสำเร็จ", `ลบการจองห้อง ${room} แล้ว`);
       await fetchBookings();
     } catch {
@@ -156,7 +135,6 @@ export function useBookings() {
     }
   };
 
-  // --------- Checkin booking ---------
   const checkinBooking = async (id: string) => {
     try {
       await axios.put(
@@ -164,7 +142,6 @@ export function useBookings() {
         {},
         { withCredentials: true, headers: { Authorization: `Bearer ${token}` } }
       );
-
       await fetchBookings();
       toast("success", "เช็คอินสำเร็จ", "ผู้จองได้เช็คอินแล้ว");
     } catch {

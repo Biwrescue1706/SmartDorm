@@ -161,14 +161,13 @@ checkoutRouter.put(
       const deposit = checkout.room.deposit || 0;
       const refundAmount = deposit;
 
-      await prisma.$transaction([
-        prisma.checkout.update({
-          where: { checkoutId },
-          data: {
-            checkoutStatus: 1,
-            actualCheckout: new Date(),
-          },
-        }),
+      await prisma.checkout.update({
+  where: { checkoutId },
+  data: {
+    checkoutStatus: 1,
+    checkoutAt: new Date(),
+  },
+});
         prisma.room.update({
           where: { roomId: checkout.roomId },
           data: { status: 0 },
@@ -184,7 +183,7 @@ checkoutRouter.put(
           {
             label: "แจ้งโอนเงิน",
             value:
-              "กรุณาพิมพ์หมายเลขบัญชี\nxxx-xxx-xxxx\nชื่อ-นามสกุล",
+              "กรุณาพิมพ์หมายเลขบัญชี\nธนาคาร\nxxx-xxx-xxxx\nชื่อ-นามสกุล",
           },
         ],
         []

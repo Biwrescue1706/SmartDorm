@@ -49,7 +49,7 @@ const formatThai = (d?: Date | string | null) =>
 bookingRouter.get("/getall", async (_req, res) => {
   try {
     const bookings = await prisma.booking.findMany({
-      orderBy: { createdAt: "desc" },
+      orderBy: { bookingDate: "desc" },
       include: { room: true, customer: true },
     });
     res.json(bookings);
@@ -75,7 +75,7 @@ bookingRouter.get("/search", async (req, res) => {
           }
         : undefined,
       include: { room: true, customer: true },
-      orderBy: { createdAt: "desc" },
+      orderBy: { bookingDate: "desc" },
     });
 
     res.json(results);
@@ -87,7 +87,7 @@ bookingRouter.get("/search", async (req, res) => {
 bookingRouter.get("/history", authMiddleware, async (_req, res) => {
   try {
     const bookings = await prisma.booking.findMany({
-      orderBy: { createdAt: "desc" },
+      orderBy: { bookingDate: "desc" },
       include: {
         room: { select: { number: true } },
         customer: {
@@ -274,7 +274,7 @@ bookingRouter.post(
       const booking = await prisma.booking.findUnique({ where: { bookingId } });
       if (!booking || !req.file) throw new Error("ข้อมูลไม่ครบ");
 
-      const created = booking.createdAt.toISOString().replace(/[:.]/g, "-");
+      const created = booking.bookingDate.toISOString().replace(/[:.]/g, "-");
       const fileName = `Booking-slips/Booking-slip_${bookingId}_${created}`;
 
       await supabase.storage
@@ -304,19 +304,22 @@ bookingRouter.post(
 bookingRouter.put("/:bookingId/approve", async (req, res) => {
   try {
     const updated = await prisma.$transaction(async (tx) => {
-      const b = await tx.booking.update({
-        where: { bookingId: req.params.bookingId },
-        data: { approveStatus: 1 },
-        include: { room: true, customer: true },
-      });
+  const b = await tx.booking.update({
+    where: { bookingId: req.params.bookingId },
+    data: {
+      approveStatus: 1, // APPROVED
+      approvedAt: new Date(),
+    },
+    include: { room: true, customer: true },
+  });
 
-      await tx.room.update({
-        where: { roomId: b.roomId },
-        data: { status: 1 },
-      });
+  await tx.room.update({
+    where: { roomId: b.roomId },
+    data: { status: 1 },
+  });
 
-      return b;
-    });
+  return b;
+});
 
     try {
       await sendFlexMessage(
@@ -326,9 +329,9 @@ bookingRouter.put("/:bookingId/approve", async (req, res) => {
           { label: "รหัส", value: updated.bookingId },
           { label: "ชื่อ", value: updated.fullName ?? "-" },
           { label: "ห้อง", value: updated.room.number },
-          { label: "วันจอง", value: formatThai(updated.createdAt) },
+          { label: "วันจอง", value: formatThai(updated.bookingDate) },
           { label: "วันที่แจ้งเข้าพัก", value: formatThai(updated.checkin) },
-          { label: "วันที่อนุมัติ", value: formatThai(new Date()) },
+          { label: "วันที่อนุมัติ", value: formatThai(updated.approvedAt) },
           { label: "สถานะ", value: "อนุมัติแล้ว", color: "#27ae60" },
           { label: "หมายเหตุ", value: "กรุณมาเช็คอินในวันที่แจ้งเข้าพัก" },
         ],
@@ -356,7 +359,8 @@ bookingRouter.put("/:bookingId/reject", async (req, res) => {
     const updated = await prisma.$transaction(async (tx) => {
       const b = await tx.booking.update({
         where: { bookingId: req.params.bookingId },
-        data: { approveStatus: 2 },
+        data: { approveStatus: 2,
+approvedAt: new Date(), },
         include: { room: true, customer: true },
       });
 
@@ -377,7 +381,7 @@ bookingRouter.put("/:bookingId/reject", async (req, res) => {
           { label: "ชื่อ", value: updated.fullName ?? "-" },
           { label: "ห้อง", value: updated.room.number },
           { label: "วันที่แจ้งเข้าพัก", value: formatThai(updated.checkin) },
-          { label: "วันที่ไม่อนุมัติ", value: formatThai(new Date()) },
+          { label: "วันที่ไม่อนุมัติ", value: formatThai(updated.approvedAt) },
           { label: "เหตุผล", value: "กรุณาติดต่อแอดมินเพื่อสอบถามเพิ่มเติม" },
         ],
         [
@@ -479,7 +483,7 @@ bookingRouter.put("/:bookingId", async (req, res) => {
           cphone: cphone ?? booking.cphone,
           cmumId: cmumId ?? booking.cmumId,
           approveStatus: nextApproveStatus,
-          createdAt: createdAt ? new Date(createdAt) : booking.createdAt,
+          bookingDate: checkin ? new Date(checkin) : new Date(),
         },
       });
 

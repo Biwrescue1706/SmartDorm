@@ -99,12 +99,12 @@ bookingRouter.get("/history", authMiddleware, async (_req, res) => {
     });
 
     const checkouts = await prisma.checkout.findMany({
-      select: {
-        bookingId: true,
-        requestedCheckout: true,
-        actualCheckout: true,
-      },
-    });
+  select: {
+    bookingId: true,
+    checkout: true,
+    checkoutAt: true,
+  },
+});
 
     // map checkout by bookingId
     const checkoutMap = new Map(checkouts.map((c) => [c.bookingId, c]));
@@ -118,9 +118,9 @@ bookingRouter.get("/history", authMiddleware, async (_req, res) => {
         // 🔹 ดึงจาก Booking (ตามที่คุณต้องการ)
         fullName: b.fullName,
         cphone: b.cphone,
-        createdAt: b.createdAt,
+        bookingDate: b.bookingDate,
         checkin : b.checkin,
-        actualCheckin: b.actualCheckin,
+        checkinAt: b.checkinAt,
 
         // 🔹 ความสัมพันธ์
         room: b.room,
@@ -129,8 +129,8 @@ bookingRouter.get("/history", authMiddleware, async (_req, res) => {
         },
 
         // 🔹 Checkout
-        requestedCheckout: c?.requestedCheckout || null,
-        actualCheckout: c?.actualCheckout || null,
+        checkout: c?.checkout || null,
+        checkoutAt: c?.checkoutAt || null,
       };
     });
 
@@ -191,6 +191,7 @@ bookingRouter.post("/create", async (req, res) => {
           cphone: cphone ?? "",
           cmumId: cmumId ?? "",
           slipUrl: null,
+          bookingDate: new Date(), // ✅ วันที่จอง = วันที่ปัจจุบัน
           checkin: new Date(checkin),
           approveStatus: 0,
           checkinStatus: 0,
@@ -218,7 +219,7 @@ bookingRouter.post("/create", async (req, res) => {
           { label: "รหัสการจอง", value: booking.bookingId },
           { label: "ชื่อ", value: booking.fullName ?? "-" },
           { label: "ห้อง", value: booking.room.number },
-          { label: "วันจอง", value: formatThai(booking.createdAt) },
+          { label: "วันจอง", value: formatThai(booking.bookingDate) },
           { label: "วันที่แจ้งเข้าพัก", value: formatThai(booking.checkin) },
           { label: "เบอร์โทร", value: booking.cphone ?? "-" },
           { label: "สถานะ", value: "รออนุมัติ", color: "#f39c12" },
@@ -240,7 +241,7 @@ bookingRouter.post("/create", async (req, res) => {
             { label: "รหัสการจอง", value: booking.bookingId },
             { label: "ชื่อผู้จอง", value: booking.fullName ?? "-" },
             { label: "ห้อง", value: booking.room.number },
-            { label: "วันจอง", value: formatThai(booking.createdAt) },
+            { label: "วันจอง", value: formatThai(booking.bookingDate) },
             { label: "วันที่แจ้งเข้าพัก", value: formatThai(booking.checkin) },
             { label: "เบอร์โทร", value: booking.cphone ?? "-" },
           ],
@@ -402,7 +403,7 @@ bookingRouter.put("/:bookingId/checkin", async (req, res) => {
   try {
     const updated = await prisma.booking.update({
       where: { bookingId: req.params.bookingId },
-      data: { checkinStatus: 1, actualCheckin: new Date() },
+      data: { checkinStatus: 1, checkinAt: new Date() },
       include: { room: true, customer: true },
     });
 
@@ -416,7 +417,7 @@ bookingRouter.put("/:bookingId/checkin", async (req, res) => {
           { label: "ห้อง", value: updated.room.number },
           {
             label: "เช็คอิน",
-            value: formatThai(updated.actualCheckin),
+            value: formatThai(updated.checkinAt),
           },
         ],
         [

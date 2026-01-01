@@ -8,7 +8,7 @@ import { useCheckouts } from "../hooks/useCheckouts";
 import { useBills } from "../hooks/useBills";
 import DashboardSummary from "../components/Dashboard/DashboardSummary";
 import DashboardRevenue from "../components/Dashboard/DashboardRevenue";
-import type { Booking } from "../types/Booking";
+import type { Booking, Checkout } from "../types/Booking";
 
 export default function Dashboard() {
   const { handleLogout, role, adminName, adminUsername } = useAuth();
@@ -40,7 +40,7 @@ export default function Dashboard() {
       const mapped: Booking[] = rawBookings.map((b) => ({
         bookingId: b.bookingId,
         roomId: b.room?.roomId || "",
-        customerId: b.customer?.userId || "",
+        customerId: b.customer?.customerId || "",
         fullName: b.fullName,
         ctitle: b.ctitle,
         cname: b.cname,
@@ -50,7 +50,8 @@ export default function Dashboard() {
         bookingDate: b.bookingDate,
         approveStatus: b.approveStatus,
         checkinAt: b.checkinAt ?? undefined,
-        checkoutAt: b.checkoutAt ?? undefined,
+        // สำหรับ checkout ใช้ array checkout[], คำนวณ checkoutAt ล่าสุด
+        checkout: b.checkout ?? [],
         createdAt: b.createdAt ?? new Date().toISOString(),
         updatedAt: b.updatedAt ?? new Date().toISOString(),
         slipUrl: b.slipUrl,
@@ -73,7 +74,7 @@ export default function Dashboard() {
 
     setPendingCheckouts(
       Array.isArray(checkouts)
-        ? checkouts.filter((c) => c.status === 0).length
+        ? checkouts.filter((c: Checkout) => c.checkoutStatus === 0).length
         : 0
     );
   }, [bookings, checkouts]);

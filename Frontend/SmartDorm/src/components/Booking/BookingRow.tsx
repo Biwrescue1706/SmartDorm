@@ -1,4 +1,4 @@
-//src/components/Booking/BookingRow.tsx
+// src/components/Booking/BookingRow.tsx
 import { useState } from "react";
 import Swal from "sweetalert2";
 import type { Booking } from "../../types/Booking";
@@ -52,9 +52,10 @@ export default function BookingRow({
   const today = normalizeDate(new Date());
   const checkinDate = booking.checkin ? normalizeDate(booking.checkin) : today;
 
+  // สามารถเช็คอินได้ ถ้าอนุมัติแล้ว และยังไม่เช็คอินจริง
   const canCheckin =
     booking.approveStatus === 1 &&
-    isEmpty(booking.actualCheckin) &&
+    booking.checkinStatus === 0 &&
     today.getTime() >= checkinDate.getTime();
 
   const [showSlip, setShowSlip] = useState(false);
@@ -95,7 +96,7 @@ export default function BookingRow({
       : "text-warning fw-bold";
 
   const SlipPopup = () =>
-    showSlip && (
+    showSlip && booking.slipUrl ? (
       <div
         className="position-fixed top-0 start-0 w-100 h-100 bg-dark bg-opacity-75 d-flex justify-content-center align-items-center"
         style={{ zIndex: 9999 }}
@@ -111,7 +112,7 @@ export default function BookingRow({
           </h1>
 
           <img
-            src={booking.slipUrl!}
+            src={booking.slipUrl}
             style={{
               maxWidth: "70%",
               maxHeight: "50vh",
@@ -122,7 +123,7 @@ export default function BookingRow({
 
           <div className="text-center mt-3">
             <button
-              className="btn btn-secondary "
+              className="btn btn-secondary"
               onClick={() => setShowSlip(false)}
             >
               ปิด
@@ -130,9 +131,7 @@ export default function BookingRow({
           </div>
         </div>
       </div>
-    );
-
-    
+    ) : null;
 
   // ------------------------------ CARD MODE ------------------------------
   if (mode === "card") {
@@ -150,15 +149,15 @@ export default function BookingRow({
           <b>เบอร์ :</b> {booking.cphone}
         </p>
         <p className="mt-2 mb-1">
-          <b>วันจอง :</b> {formatThai(booking.createdAt)}
+          <b>วันจอง :</b> {formatThai(booking.bookingDate)}
         </p>
         <p className="mt-2 mb-1">
           <b>วันแจ้งเข้าพัก :</b> {formatThai(booking.checkin)}
         </p>
 
-        {showActualCheckinColumn && booking.actualCheckin !== null && (
+        {showActualCheckinColumn && booking.checkinAt && (
           <p className="mt-2 mb-1">
-            <b>วันเข้าพักจริง :</b> {formatThai(booking.actualCheckin)}
+            <b>วันเข้าพักจริง :</b> {formatThai(booking.checkinAt)}
           </p>
         )}
 
@@ -178,7 +177,7 @@ export default function BookingRow({
           </>
         )}
 
-        <div className="d-flex justify-content-center gap-2 mt-2">
+        <div className="d-flex justify-content-center gap-2 mt-2 flex-wrap">
           {booking.approveStatus === 0 && (
             <ManageBookingDialog
               booking={booking}
@@ -189,7 +188,7 @@ export default function BookingRow({
 
           {canCheckin && (
             <button
-              className="btn btn-success btn-sm ms-2 mt-1 mx-2 my-1"
+              className="btn btn-success btn-sm"
               onClick={confirmCheckin}
             >
               เช็คอิน
@@ -202,7 +201,7 @@ export default function BookingRow({
 
           {isSuperAdmin && (
             <button
-              className="btn btn-sm fw-semibold text-white ms-2 mt-1 mx-2 my-1"
+              className="btn btn-sm fw-semibold text-white"
               style={{
                 background: "linear-gradient(135deg, #fc2525ff, #eac913ff)",
                 border: "none",
@@ -226,27 +225,27 @@ export default function BookingRow({
       <td>{booking.customer?.userName}</td>
       <td>{booking.fullName}</td>
       <td>{booking.cphone}</td>
-      <td>{formatThai(booking.createdAt)}</td>
+      <td>{formatThai(booking.bookingDate)}</td>
       <td>{formatThai(booking.checkin)}</td>
 
       {showActualCheckinColumn && (
         <td className="text-center">
-          {!isEmpty(booking.actualCheckin) && (
-            <span>{formatThai(booking.actualCheckin)}</span>
-          )}
-
-          {isEmpty(booking.actualCheckin) && canCheckin && (
-            <button
-              className="btn btn-sm fw-semibold text-black ms-2 mt-1 mx-2 my-1"
-              style={{
-                background: "linear-gradient(135deg, #3fe64dff, #f0cd09ff)",
-                border: "none",
-                padding: "4px 8px",
-              }}
-              onClick={confirmCheckin}
-            >
-              เช็คอิน
-            </button>
+          {booking.checkinAt ? (
+            <span>{formatThai(booking.checkinAt)}</span>
+          ) : (
+            canCheckin && (
+              <button
+                className="btn btn-sm fw-semibold text-black"
+                style={{
+                  background: "linear-gradient(135deg, #3fe64dff, #f0cd09ff)",
+                  border: "none",
+                  padding: "4px 8px",
+                }}
+                onClick={confirmCheckin}
+              >
+                เช็คอิน
+              </button>
+            )
           )}
         </td>
       )}
@@ -255,7 +254,7 @@ export default function BookingRow({
         {booking.slipUrl ? (
           <>
             <button
-              className="btn btn-outline-primary btn-sm fw-semibold text-whlie ms-2 mt-1 mx-2 my-1"
+              className="btn btn-outline-primary btn-sm fw-semibold text-white"
               onClick={() => setShowSlip(true)}
             >
               ดูสลิป
@@ -290,7 +289,7 @@ export default function BookingRow({
       {isSuperAdmin && (
         <td className="text-center">
           <button
-            className="btn btn-sm fw-semibold text-white ms-2 mt-1 mx-2 my-1"
+            className="btn btn-sm fw-semibold text-white"
             style={{
               background: "linear-gradient(135deg, #fc2525ff, #eac913ff)",
               border: "none",

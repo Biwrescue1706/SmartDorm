@@ -50,10 +50,10 @@ export default function BillCard({
       </p>
       <p className="mb-3">
         <b>เข้าพักจริง :</b>{" "}
-        {booking?.actualCheckin ? formatThaiDate(booking.actualCheckin) : "-"}
+        {booking?.checkinAt ? formatThaiDate(booking.checkinAt) : "-"}
       </p>
 
-      {!hasBill && booking?.actualCheckin && canCreateBill && (
+      {!hasBill && booking?.checkinAt && canCreateBill && (
         <button
           className="btn w-100 fw-bold"
           style={{
@@ -71,7 +71,7 @@ export default function BillCard({
 
       {hasBill && (
         <div className="text-center fw-bold mt-2" style={{ color: SCB_PURPLE }}>
-          ออกบิลแล้ว 
+          ออกบิลแล้ว
         </div>
       )}
     </div>

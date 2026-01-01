@@ -35,25 +35,6 @@ checkoutRouter.get("/getall", async (_req, res) => {
 });
 
 /* =====================================================
-   Admin: ดู checkout รายตัว
-===================================================== */
-checkoutRouter.get("/:checkoutId", async (req, res) => {
-  try {
-    const { checkoutId } = req.params;
-
-    const checkout = await prisma.checkout.findUnique({
-      where: { checkoutId },
-      include: { booking: true, room: true, customer: true },
-    });
-
-    if (!checkout) throw new Error("ไม่พบข้อมูล checkout");
-    res.json({ checkout });
-  } catch (err: any) {
-    res.status(400).json({ error: err.message });
-  }
-});
-
-/* =====================================================
    ลูกค้า: booking ที่ยังขอคืนได้
 ===================================================== */
 checkoutRouter.post("/myBookings", async (req, res) => {
@@ -70,7 +51,7 @@ checkoutRouter.post("/myBookings", async (req, res) => {
         approveStatus: 1,
         checkout: {
           none: {
-            status: { in: [0, 1] },
+            ReturnApprovalStatus: { in: [0, 1] },
             checkoutStatus: 0,
           },
         },
@@ -86,7 +67,7 @@ checkoutRouter.post("/myBookings", async (req, res) => {
 });
 
 /* =====================================================
-   ลูกค้า: ส่งคำขอคืนห้อง (แจ้ง Admin + ลูกค้า)
+   ลูกค้า: ส่งคำขอคืนห้อง
 ===================================================== */
 checkoutRouter.put("/:bookingId/request", async (req, res) => {
   try {
@@ -109,7 +90,7 @@ checkoutRouter.put("/:bookingId/request", async (req, res) => {
     const active = await prisma.checkout.findFirst({
       where: {
         bookingId,
-        status: { in: [0, 1] },
+        ReturnApprovalStatus: { in: [0, 1] },
         checkoutStatus: 0,
       },
     });
@@ -120,8 +101,8 @@ checkoutRouter.put("/:bookingId/request", async (req, res) => {
         bookingId,
         roomId: booking.roomId,
         customerId: customer.customerId,
-        requestedCheckout: new Date(requestedCheckout),
-        status: 0,
+        checkout: new Date(requestedCheckout),
+        ReturnApprovalStatus: 0,
         checkoutStatus: 0,
       },
       include: { room: true, customer: true },
@@ -129,126 +110,39 @@ checkoutRouter.put("/:bookingId/request", async (req, res) => {
 
     const detailUrl = `https://smartdorm-detail.biwbong.shop/checkout/${checkout.checkoutId}`;
 
-    // 🔔 แจ้ง Admin
     if (adminId) {
       await sendFlexMessage(
         adminId,
         "📥 มีคำขอคืนห้องใหม่",
         [
           { label: "ห้อง", value: checkout.room.number },
-          {
-            label: "วันที่ขอคืน",
-            value: formatThaiDate(checkout.requestedCheckout),
-          },
-          {
-            label: "ผู้เช่า",
-            value: checkout.customer.userName || "-",
-          },
+          { label: "วันที่ขอคืน", value: formatThaiDate(checkout.checkout) },
+          { label: "ผู้เช่า", value: checkout.customer.userName || "-" },
         ],
         [{ label: "เปิดดูรายการ", url: detailUrl, style: "primary" }]
       );
     }
 
-    // 🔔 แจ้ง ลูกค้า
     await sendFlexMessage(
       customer.userId,
       "📤 ส่งคำขอคืนห้องแล้ว",
       [
         { label: "ห้อง", value: checkout.room.number },
-        {
-          label: "วันที่ขอคืน",
-          value: formatThaiDate(checkout.requestedCheckout),
-        },
+        { label: "วันที่ขอคืน", value: formatThaiDate(checkout.checkout) },
         { label: "สถานะ", value: "รอการตรวจสอบจากแอดมิน" },
       ],
       [{ label: "ดูสถานะคำขอ", url: detailUrl, style: "primary" }]
     );
 
-    res.json({
-      checkout,
-      message: "ส่งคำขอคืนห้องเรียบร้อย",
-    });
+    res.json({ checkout });
   } catch (err: any) {
     res.status(400).json({ error: err.message });
   }
 });
 
 /* =====================================================
-   Admin: อนุมัติคำขอคืน (แจ้งลูกค้า)
-===================================================== */
-checkoutRouter.put("/:checkoutId/approve", authMiddleware, async (req, res) => {
-  try {
-    const { checkoutId } = req.params;
-
-    const checkout = await prisma.checkout.findUnique({
-      where: { checkoutId },
-      include: { room: true, customer: true },
-    });
-    if (!checkout) throw new Error("ไม่พบข้อมูล");
-    if (checkout.status !== 0) throw new Error("คำขอถูกดำเนินการแล้ว");
-
-    const updated = await prisma.checkout.update({
-      where: { checkoutId },
-      data: { status: 1, approvedAt: new Date() },
-    });
-
-    const detailUrl = `https://smartdorm-detail.biwbong.shop/checkout/${checkout.checkoutId}`;
-
-    await sendFlexMessage(
-      checkout.customer.userId,
-      "✅ อนุมัติคำขอคืนห้อง",
-      [
-        { label: "ห้อง", value: checkout.room.number },
-        { label: "สถานะ", value: "รอวันเช็คเอาท์" },
-      ],
-      [{ label: "เปิดดูรายการ", url: detailUrl, style: "primary" }]
-    );
-
-    res.json({ checkout: updated });
-  } catch (err: any) {
-    res.status(400).json({ error: err.message });
-  }
-});
-
-/* =====================================================
-   Admin: ปฏิเสธคำขอคืน (แจ้งลูกค้า)
-===================================================== */
-checkoutRouter.put("/:checkoutId/reject", authMiddleware, async (req, res) => {
-  try {
-    const { checkoutId } = req.params;
-
-    const checkout = await prisma.checkout.findUnique({
-      where: { checkoutId },
-      include: { room: true, customer: true },
-    });
-    if (!checkout) throw new Error("ไม่พบข้อมูล");
-    if (checkout.status !== 0) throw new Error("คำขอถูกดำเนินการแล้ว");
-
-    const updated = await prisma.checkout.update({
-      where: { checkoutId },
-      data: { status: 2 },
-    });
-
-    const detailUrl = `https://smartdorm-detail.biwbong.shop/checkout/${checkout.checkoutId}`;
-
-    await sendFlexMessage(
-      checkout.customer.userId,
-      "❌ ไม่อนุมัติการคืนห้อง",
-      [
-        { label: "ห้อง", value: checkout.room.number },
-        { label: "สถานะ", value: "ถูกปฏิเสธ" },
-      ],
-      [{ label: "เปิดดูรายการ", url: detailUrl, style: "primary" }]
-    );
-
-    res.json({ checkout: updated });
-  } catch (err: any) {
-    res.status(400).json({ error: err.message });
-  }
-});
-
-/* =====================================================
-   Admin: เช็คเอาท์จริง (แจ้งลูกค้า)
+   Admin: เช็คเอาท์จริง + คืนเงินมัดจำ (ไม่หักค่าปรับ)
+   🔔 เพิ่มแจ้งเตือนขอเลขบัญชี
 ===================================================== */
 checkoutRouter.put(
   "/:checkoutId/checkout",
@@ -262,8 +156,10 @@ checkoutRouter.put(
         include: { room: true, customer: true },
       });
       if (!checkout) throw new Error("ไม่พบข้อมูล");
-      if (checkout.status !== 1) throw new Error("ยังไม่ได้อนุมัติ");
-      if (checkout.checkoutStatus === 1) throw new Error("เช็คเอาท์ไปแล้ว");
+      if (checkout.checkoutStatus === 1) throw new Error("เช็คเอาท์แล้ว");
+
+      const deposit = checkout.room.deposit || 0;
+      const refundAmount = deposit;
 
       await prisma.$transaction([
         prisma.checkout.update({
@@ -279,72 +175,29 @@ checkoutRouter.put(
         }),
       ]);
 
-      const detailUrl = `https://smartdorm-detail.biwbong.shop/checkout/${checkout.checkoutId}`;
-
       await sendFlexMessage(
         checkout.customer.userId,
-        "🚪 เช็คเอาท์เรียบร้อยแล้ว",
+        "💸 คืนเงินมัดจำ",
         [
-          { label: "ห้อง", value: checkout.room.number },
-          { label: "วันที่เช็คเอาท์", value: formatThaiDate(new Date()) },
-          { label: "สถานะ", value: "คืนห้องเสร็จสิ้น" },
+          { label: "เงินมัดจำ", value: `${deposit.toLocaleString()} บาท` },
+          { label: "ยอดคืน", value: `${refundAmount.toLocaleString()} บาท` },
+          {
+            label: "แจ้งโอนเงิน",
+            value:
+              "กรุณาพิมพ์หมายเลขบัญชี\nxxx-xxx-xxxx\nชื่อ-นามสกุล",
+          },
         ],
-        [{ label: "ดูรายละเอียด", url: detailUrl, style: "primary" }]
+        []
       );
 
-      res.json({ message: "เช็คเอาท์สำเร็จ" });
+      res.json({
+        message: "เช็คเอาท์สำเร็จ",
+        refundAmount,
+      });
     } catch (err: any) {
       res.status(400).json({ error: err.message });
     }
   }
 );
-
-/* =====================================================
-   Admin: แก้ไขวันที่ขอคืน (ไม่แจ้งเตือน)
-===================================================== */
-checkoutRouter.put("/:checkoutId/date", authMiddleware, async (req, res) => {
-  try {
-    const { checkoutId } = req.params;
-    const { requestedCheckout } = req.body;
-    if (!requestedCheckout) throw new Error("ต้องระบุวันที่คืน");
-
-    const checkout = await prisma.checkout.findUnique({
-      where: { checkoutId },
-    });
-    if (!checkout) throw new Error("ไม่พบข้อมูล");
-    if (checkout.checkoutStatus === 1)
-      throw new Error("เช็คเอาท์แล้ว แก้ไม่ได้");
-
-    const updated = await prisma.checkout.update({
-      where: { checkoutId },
-      data: { requestedCheckout: new Date(requestedCheckout) },
-    });
-
-    res.json({ checkout: updated });
-  } catch (err: any) {
-    res.status(400).json({ error: err.message });
-  }
-});
-
-/* =====================================================
-   Admin: ลบ checkout (ไม่แจ้งเตือน)
-===================================================== */
-checkoutRouter.delete("/:checkoutId", authMiddleware, async (req, res) => {
-  try {
-    const { checkoutId } = req.params;
-
-    const checkout = await prisma.checkout.findUnique({
-      where: { checkoutId },
-    });
-    if (!checkout) throw new Error("ไม่พบข้อมูล");
-    if (checkout.checkoutStatus === 1)
-      throw new Error("เช็คเอาท์แล้ว ลบไม่ได้");
-
-    await prisma.checkout.delete({ where: { checkoutId } });
-    res.json({ message: "ลบ checkout สำเร็จ" });
-  } catch (err: any) {
-    res.status(400).json({ error: err.message });
-  }
-});
 
 export default checkoutRouter;

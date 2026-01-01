@@ -1,4 +1,4 @@
-// src/pages/Booking.tsx
+// src/pages/ManageRooms/Booking.tsx
 import { useState, useEffect } from "react";
 import BookingFilter from "../../components/Booking/BookingFilter";
 import BookingTable from "../../components/Booking/BookingTable";
@@ -33,12 +33,12 @@ export default function Booking() {
         ? bookings.filter((b) => b.approveStatus === 0)
         : active === "approved"
         ? bookings.filter(
-            (b) => b.approveStatus === 1 && b.actualCheckin != null
+            (b) => b.approveStatus === 1 && b.checkinAt != null
           )
         : active === "rejected"
         ? bookings.filter((b) => b.approveStatus === 2)
         : bookings.filter(
-            (b) => b.approveStatus === 1 && b.actualCheckin == null
+            (b) => b.approveStatus === 1 && b.checkinAt == null
           )
     );
     setCurrentPage(1);

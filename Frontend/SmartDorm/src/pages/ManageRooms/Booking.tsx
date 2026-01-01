@@ -32,11 +32,11 @@ export default function Booking() {
     active === "pending"
       ? bookings.filter((b) => b.approveStatus === 0)
       : active === "approved"
-      ? bookings.filter((b) => b.approveStatus === 1 && b.checkinAt)
+      ? bookings.filter((b) => b.approveStatus === 1) // แค่อนุมัติแล้ว ไม่สนใจ checkinAt
       : active === "rejected"
       ? bookings.filter((b) => b.approveStatus === 2)
       : bookings.filter(
-          (b) => b.approveStatus === 1 && !b.checkinAt
+          (b) => b.approveStatus === 1 && !b.checkinAt // ยังไม่ได้เช็คอิน
         )
   );
   setCurrentPage(1);

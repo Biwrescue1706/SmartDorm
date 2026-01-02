@@ -32,11 +32,11 @@ export default function Booking() {
     active === "pending"
       ? bookings.filter((b) => b.approveStatus === 0)
       : active === "approved"
-      ? bookings.filter((b) => b.approveStatus === 1) // แค่อนุมัติแล้ว ไม่สนใจ checkinAt
+      ? bookings.filter((b) => b.approveStatus === 1 && b.checkinStatus === 1 ) // แค่อนุมัติแล้ว ไม่สนใจ checkinAt
       : active === "rejected"
       ? bookings.filter((b) => b.approveStatus === 2)
       : bookings.filter(
-          (b) => b.approveStatus === 1 && !b.checkinAt // ยังไม่ได้เช็คอิน
+          (b) => b.approveStatus === 1  && b.checkinStatus === 0  // ยังไม่ได้เช็คอิน
         )
   );
   setCurrentPage(1);
@@ -57,8 +57,8 @@ export default function Booking() {
       />
 
       {/* -------- CONTENT -------- */}
-      <main className="main-content flex-grow-1 px-2 py-3 mt-6 mt-lg-7">
-        <div className="mx-auto" style={{ maxWidth: "1300px" }}>
+      <main className="main-content flex-grow-1 px-2 py-3 mt-5 mt-lg-7">
+        <div className="mx-auto" style={{ maxWidth: "1400px" }}>
           <h2
             className="fw-bold text-center py-2 mt-1"
             style={{

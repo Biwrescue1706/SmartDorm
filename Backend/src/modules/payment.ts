@@ -8,6 +8,8 @@ import { sendFlexMessage } from "../utils/lineFlex";
 
 const paymentRouter = Router();
 const upload = multer({ storage: multer.memoryStorage() });
+const BASE_URL = "https://smartdorm-detail.biwbong.shop";
+const ADMIN_URL = "https://smartdorm-admin.biwbong.shop";
 
 // Supabase
 const supabase = createClient(
@@ -26,9 +28,7 @@ const formatThaiDate = (d?: string | Date | null) =>
       })
     : "-";
 
-/* ========================================================
-   CREATE PAYMENT + UPLOAD SLIP
-======================================================== */
+// CREATE PAYMENT + UPLOAD SLIP
 paymentRouter.post("/create", upload.single("slip"), async (req, res) => {
   try {
     const { billId, accessToken } = req.body;
@@ -48,10 +48,10 @@ paymentRouter.post("/create", upload.single("slip"), async (req, res) => {
       include: { room: true, booking: true, customer: true },
     });
     if (!bill) throw new Error("ไม่พบบิลนี้");
-    if (bill.status === 1) throw new Error("บิลนี้ชำระแล้ว");
-    if (bill.status === 2) throw new Error("บิลนี้รอตรวจสอบอยู่");
+    if (bill.billStatus === 1) throw new Error("บิลนี้ชำระแล้ว");
+    if (bill.billStatus === 2) throw new Error("บิลนี้รอตรวจสอบอยู่");
 
-    // 🔒 กันจ่ายบิลคนอื่น
+    // กันจ่ายบิลคนอื่น
     if (bill.customerId && bill.customerId !== customer.customerId) {
       throw new Error("คุณไม่มีสิทธิ์ชำระบิลนี้");
     }
@@ -77,24 +77,27 @@ paymentRouter.post("/create", upload.single("slip"), async (req, res) => {
 
     const slipUrl = data.publicUrl;
 
+    // สร้าง Payment + อัปเดต Bill
     const [payment, updatedBill] = await prisma.$transaction([
       prisma.payment.create({
         data: {
           billId,
           customerId: customer.customerId,
           slipUrl,
+          paidAt: new Date(),
         },
       }),
       prisma.bill.update({
         where: { billId },
         data: {
-          status: 2, // VERIFYING
+          billStatus: 2, // รอตรวจสอบ
           slipUrl,
+          billDate: new Date(),
         },
       }),
     ]);
 
-    const customerUrl = `https://smartdorm-detail.biwbong.shop/bill/${bill.billId}`;
+    const customerUrl = `${BASE_URL}/bill/${bill.billId}`;
 
     // แจ้งลูกค้า
     if (bill.customer?.userId) {
@@ -105,6 +108,7 @@ paymentRouter.post("/create", upload.single("slip"), async (req, res) => {
           { label: "รหัสบิล", value: bill.billId },
           { label: "ห้อง", value: bill.room?.number ?? "-" },
           { label: "ยอด", value: `${bill.total.toLocaleString()} บาท` },
+          { label: "วันที่ชำระ", value: formatThaiDate(payment.paidAt) },
           { label: "สถานะ", value: "รอตรวจสอบ", color: "#f1c40f" },
         ],
         [{ label: "ดูบิล", url: customerUrl, style: "primary" }]
@@ -132,9 +136,7 @@ paymentRouter.post("/create", upload.single("slip"), async (req, res) => {
       );
     }
 
-    console.log(
-      `[${logTime()}] รับสลิปชำระเงิน บิล ${bill.billId} สำเร็จ`
-    );
+    console.log(`[${logTime()}] รับสลิปชำระเงิน บิล ${bill.billId} สำเร็จ`);
 
     res.json({ message: "ส่งสลิปสำเร็จ", payment, bill: updatedBill });
   } catch (err: any) {

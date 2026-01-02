@@ -1,12 +1,13 @@
 // src/components/Booking/BookingRow.tsx
 import { useState } from "react";
 import Swal from "sweetalert2";
-import type { Booking } from "../../types/Booking";
+import type { Booking ,Checkout } from "../../types/Booking";
 import EditBookingDialog from "./EditBookingDialog";
 import ManageBookingDialog from "./ManageBookingDialog";
 
 interface Props {
   booking: Booking;
+  checkout?: Checkout;
   onApprove: (id: string) => void;
   onReject: (id: string) => void;
   onDelete: (id: string, roomNum: string) => void;
@@ -20,6 +21,7 @@ interface Props {
 
 export default function BookingRow({
   booking,
+  checkout,
   onApprove,
   onReject,
   onDelete,
@@ -160,6 +162,10 @@ export default function BookingRow({
         )}
 
         <p className="mt-2 mb-1">
+          <b>วันแจ้งขอคืน :</b> {formatThai(checkout?.checkout)}
+        </p>
+
+        <p className="mt-2 mb-1">
           <b>สถานะ : </b> <span className={statusClass}>{statusText}</span>
         </p>
 
@@ -185,10 +191,7 @@ export default function BookingRow({
           )}
 
           {canCheckin && (
-            <button
-              className="btn btn-success btn-sm"
-              onClick={confirmCheckin}
-            >
+            <button className="btn btn-success btn-sm" onClick={confirmCheckin}>
               เช็คอิน
             </button>
           )}

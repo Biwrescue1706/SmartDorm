@@ -50,7 +50,9 @@ export default function BookingHistory() {
   /* ---------- year list ---------- */
   const years = useMemo(() => {
     const ys = data
-      .map((b) => (b.createdAt ? new Date(b.createdAt).getFullYear() : null))
+      .map((b) =>
+        b.bookingDate ? new Date(b.bookingDate).getFullYear() : null
+      )
       .filter((y): y is number => y !== null);
     return Array.from(new Set(ys)).sort((a, b) => b - a);
   }, [data]);
@@ -59,11 +61,11 @@ export default function BookingHistory() {
   const filtered = useMemo(() => {
     return data
       .filter((b) => {
-        if (status === "booked" && b.actualCheckout) return false;
-        if (status === "returned" && !b.actualCheckout) return false;
+        if (status === "booked" && b.RefundApprovalDate) return false;
+        if (status === "returned" && !b.RefundApprovalDate) return false;
 
-        if (year !== "all" && b.createdAt) {
-          if (new Date(b.createdAt).getFullYear() !== year) return false;
+        if (year !== "all" && b.bookingDate) {
+          if (new Date(b.bookingDate).getFullYear() !== year) return false;
         }
 
         const q = search.toLowerCase();
@@ -125,12 +127,12 @@ export default function BookingHistory() {
                 <button
                   className="btn btn-outline-secondary fw-semibold"
                   onClick={() => {
-  setSearch("");
-  setStatus("all");
-  setYear("all");
-  setCurrentPage(1);
-  refetch();
-}}
+                    setSearch("");
+                    setStatus("all");
+                    setYear("all");
+                    setCurrentPage(1);
+                    refetch();
+                  }}
                 >
                   รีเฟรช
                 </button>
@@ -213,8 +215,8 @@ export default function BookingHistory() {
                       <td>{formatThaiDate(b.createdAt)}</td>
                       <td>{formatThaiDate(b.checkin)}</td>
                       <td>{formatThaiDate(b.actualCheckin)}</td>
-                      <td>{formatThaiDate(b.requestedCheckout)}</td>
-                      <td>{formatThaiDate(b.actualCheckout)}</td>
+                      <td>{formatThaiDate(b.checkout)}</td>
+                      <td>{formatThaiDate(b.RefundApprovalDate)}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -245,7 +247,7 @@ export default function BookingHistory() {
                       <div className="small">
                         <b>เบอร์โทร : </b> {b.cphone || "-"}
                       </div>
-<div className="small">
+                      <div className="small">
                         <b>จอง : </b> {formatThaiDate(b.createdAt)}
                       </div>
                       <div className="small">

@@ -10,10 +10,10 @@ datasource db {
 //===Admin ===
 model Admin {
   adminId  String @id @default(auto()) @map("_id") @db.ObjectId
-  username String @unique
-  name     String
-  password String
-  role     Int    @default(1) // 0 = SUPER_ADMIN, 1 = STAFF
+  username String @unique // ชื่อผู้ใช้
+  name     String // ชื่อ
+  password String // รหัสผ่าน
+  role     Int    @default(1) // 0 = แอดมิน , 1 = พนักงาน
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -27,13 +27,13 @@ model Admin {
 //=== Room ===
 model Room {
   roomId     String @id @default(auto()) @map("_id") @db.ObjectId
-  number     String @unique
-  size       String
-  rent       Int
-  deposit    Int
-  bookingFee Int
+  number     String @unique // หมายเลขห้อง
+  size       String // ขนาดห้อง
+  rent       Int // ค่าเช่าห้อง
+  deposit    Int // ค่าประกันห้อง
+  bookingFee Int // ค่าธรรมเนียมการจอง
 
-  status Int @default(0) // 0 = AVAILABLE, 1 = OCCUPIED
+  status Int @default(0) // 0 = ว่าง , 1 = ถูกจองแล้ว
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -66,28 +66,28 @@ model Customer {
 
 //=== Booking ===
 model Booking {
-  bookingId  String @id @default(auto()) @map("_id") @db.ObjectId
-  roomId     String @db.ObjectId
-  customerId String @db.ObjectId
-
-  ctitle   String?
-  cname    String?
-  csurname String?
-  fullName String?
-  cphone   String?
-  cmumId   String?
-
-  //check-in
-  checkin       DateTime
-  checkinAt     DateTime?
-  checkinStatus Int @default(0) // 0=NOT_CHECKED_IN,1=CHECKED_IN,2=FAILED
-
-  //approval
-  approveStatus Int @default(0) // 0=PENDING,1=APPROVED,2=REJECTED
-  approvedAt    DateTime?       // วันที่อนุมัติ
+  bookingId  String  @id @default(auto()) @map("_id") @db.ObjectId
+  roomId     String  @db.ObjectId // ห้องที่จอง
+  customerId String  @db.ObjectId // ลูกค้าที่จอง
+  ctitle     String? // คำนำหน้า
+  cname      String? // ชื่อ
+  csurname   String? // นามสกุล
+  fullName   String? // ชื่อ-นามสกุล
+  cphone     String? // เบอร์โทร
+  cmumId     String? // หมายเลขบัตรประชาชน
 
   bookingDate DateTime @default(now()) // วันที่จอง
-  slipUrl     String?
+
+  //check-in
+  checkin       DateTime // วันที่ต้องการเช็คอิน
+  checkinAt     DateTime? // วันที่เช็คอินจริง
+  checkinStatus Int       @default(0) // 0 = ยังไม่เช็คอิน ,1 = เช็คอินแล้ว
+
+  //approval
+  approveStatus Int       @default(0) //0 = รอการอนุมัติ , 1 = อนุมัติ , 2 = ปฏิเสธ
+  approvedAt    DateTime? // วันที่อนุมัติ
+
+  slipUrl String? // รูปสลิปการโอนเงิน
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -112,20 +112,13 @@ model Checkout {
   customerId String @db.ObjectId
 
   // ขอคืน
-  checkout DateTime
-
-  ReturnApprovalStatus Int @default(0)
-  // 0 = PENDING
-  // 1 = APPROVED
-  // 2 = REJECTED
-
-  RefundApprovalDate DateTime?//วันที่อนุมัติคืน
+  checkout             DateTime // วันที่ขอคืน
+  ReturnApprovalStatus Int       @default(0) //0 = รอการอนุมัติ , 1 = อนุมัติ , 2 = ปฏิเสธ
+  RefundApprovalDate   DateTime? //วันที่อนุมัติคืน
 
   // คืนจริง
-  checkoutStatus Int @default(0)
-  // 0 = Waiting
-  // 1 = Checked out
-  checkoutAt DateTime? //วันที่คืนจริง
+  checkoutStatus Int       @default(0) //0 = กำลังรอ , 1 = เช็คเอาท์แล้ว
+  checkoutAt     DateTime? //วันที่คืนจริง
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -144,54 +137,61 @@ model Bill {
   billId String   @id @default(auto()) @map("_id") @db.ObjectId
   month  DateTime
 
-  rent         Int
-  service      Int @default(50)
-  wBefore      Int
-  wAfter       Int
-  wUnits       Int
-  wPrice       Int @default(19)
-  waterCost    Int @default(0)
-  eBefore      Int
-  eAfter       Int
-  eUnits       Int
-  ePrice       Int @default(7)
-  electricCost Int @default(0)
-  fine         Int @default(0)
-  overdueDays  Int @default(0)
-  total        Int @default(0)
-
-  status  Int      @default(0) // 0=UNPAID,1=PAID,2=VERIFYING
-  dueDate DateTime
-
   ctitle   String?
   cname    String?
   csurname String?
   fullName String?
   cphone   String?
-  slipUrl  String?
+
+  total Int @default(0) // ยอดรวมที่ต้องชำระ
+
+  billStatus Int      @default(0) // 0 = ยังไม่ชำระเงิน, 1 = ชำระเงินแล้ว, 2 = กำลังตรวจสอบ
+  billDate   DateTime // วันที่สถานะบิลเปลี่ยนแปลง
+
+  paidAt DateTime? // วันที่ชำระเงิน
+
+  dueDate DateTime // วันครบกำหนดชำระเงิน
+  slipUrl String?
+
+  rent         Int // ค่าเช่าห้อง
+  service      Int @default(50) // ค่าส่วนกลาง
+  //ค่าน้ำ
+  wBefore      Int // ค่าน้ำหน่วยก่อนหน้า
+  wAfter       Int // ค่าน้ำหน่วยปัจจุบัน
+  wUnits       Int // ค่าน้ำที่ใช้
+  wPrice       Int @default(19) // ราคาน้ำต่อหน่วย
+  waterCost    Int @default(0) // ค่าน้ำที่ต้องจ่าย
+  //ค่าไฟ
+  eBefore      Int // ค่าไฟหน่วยก่อนหน้า
+  eAfter       Int // ค่าไฟหน่วยปัจจุบัน
+  eUnits       Int // ค่าไฟที่ใช้
+  ePrice       Int @default(7) // ราคาไฟต่อหน่วย
+  electricCost Int @default(0) // ค่าไฟที่ต้องจ่าย
+
+  // ค่าปรับ
+  fine        Int @default(0) // ค่าปรับ
+  overdueDays Int @default(0) // จำนวนวันที่ค้างชำระ
+
+  roomId     String?  @db.ObjectId
+  customerId String? @db.ObjectId
+  bookingId  String? @db.ObjectId
+  createdBy  String  @db.ObjectId
+  updatedBy  String? @db.ObjectId
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  roomId String @db.ObjectId
-  room   Room   @relation(fields: [roomId], references: [roomId])
-
-  customerId String?   @db.ObjectId
-  customer   Customer? @relation(fields: [customerId], references: [customerId])
-
-  bookingId String?  @db.ObjectId
-  booking   Booking? @relation(fields: [bookingId], references: [bookingId])
-
-  createdBy String  @db.ObjectId
-  updatedBy String? @db.ObjectId
-  adminCreated Admin?  @relation("BillCreatedBy", fields: [createdBy], references: [adminId])
-  adminUpdated Admin?  @relation("BillUpdatedBy", fields: [updatedBy], references: [adminId])
+  room         Room?     @relation(fields: [roomId], references: [roomId])
+  customer     Customer? @relation(fields: [customerId], references: [customerId])
+  booking      Booking?  @relation(fields: [bookingId], references: [bookingId])
+  adminCreated Admin?    @relation("BillCreatedBy", fields: [createdBy], references: [adminId])
+  adminUpdated Admin?    @relation("BillUpdatedBy", fields: [updatedBy], references: [adminId])
 
   payment Payment?
 
   @@index([roomId])
   @@index([customerId])
-  @@index([status])
+  @@index([billStatus])
 }
 
 //=== Payment ===
@@ -199,7 +199,9 @@ model Payment {
   paymentId  String @id @default(auto()) @map("_id") @db.ObjectId
   billId     String @unique @db.ObjectId
   customerId String @db.ObjectId
-  slipUrl    String?
+
+  paidAt  DateTime // วันที่ชำระเงิน
+  slipUrl String? // รูปสลิปการโอนเงิน
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

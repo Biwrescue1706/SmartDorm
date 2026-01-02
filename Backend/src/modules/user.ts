@@ -107,7 +107,7 @@ userRouter.post("/payments", async (req, res) => {
 
     const bills = await prisma.bill.findMany({
       where: {
-        status: 1,
+        billStatus: 1,
         customer: {
           userId,
         },
@@ -139,7 +139,7 @@ userRouter.post("/bills/unpaid", async (req, res) => {
 
     const bills = await prisma.bill.findMany({
       where: {
-        status: 0,
+        billStatus: 0,
         customer: {
           userId,
         },

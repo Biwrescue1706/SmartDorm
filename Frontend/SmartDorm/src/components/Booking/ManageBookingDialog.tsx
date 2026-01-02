@@ -94,7 +94,7 @@ export default function ManageBookingDialog({
                   ["ผู้ใช้ (LIFF)", booking.customer.userName],
                   ["ชื่อ-สกุล", booking.fullName],
                   ["เบอร์โทร", booking.cphone || "-"],
-                  ["จองเมื่อ", formatThaiDate(booking.checkinAt)],
+                  ["จองเมื่อ", formatThaiDate(booking.bookingDate)],
                   ["เช็คอิน", formatThaiDate(booking.checkin)],
                 ].map(([label, value], i) => (
                   <div

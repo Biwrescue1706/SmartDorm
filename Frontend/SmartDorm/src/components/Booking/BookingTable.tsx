@@ -83,11 +83,12 @@ export default function BookingTable({
                   <th>เบอร์</th>
                   <th>วันที่จอง</th>
                   <th>วันแจ้งเข้าพัก</th>
-
                   {showActualCheckinColumn && <th>วันเข้าพักจริง</th>}
-
                   <th>สลิป</th>
                   <th>สถานะ</th>
+
+                  <th>วันที่ขอคืน</th>
+                  <th>วันเช็คเอาท์จริง</th>
 
                   {role === 0 && <th>แก้ไข</th>}
                   {role === 0 && <th>ลบ</th>}

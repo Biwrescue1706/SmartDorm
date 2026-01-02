@@ -1,4 +1,3 @@
-
 import type { Booking } from "../../types/Booking";
 
 interface BookingFilterProps {
@@ -9,15 +8,21 @@ interface BookingFilterProps {
   bookings: Booking[]; //  รับ bookings เพื่อคำนวณจำนวนแต่ละสถานะ
 }
 
-export default function BookingFilter({ active, onChange, bookings }: BookingFilterProps) {
+export default function BookingFilter({
+  active,
+  onChange,
+  bookings,
+}: BookingFilterProps) {
   //  คำนวณจำนวนแต่ละสถานะ
   const counts = {
     pending: bookings.filter((b) => b.approveStatus === 0).length,
-    approved: bookings.filter((b) => b.approveStatus === 1).length,
+    approved: bookings.filter(
+      (b) => b.approveStatus === 1 && b.checkinStatus === 1
+    ).length,
     rejected: bookings.filter((b) => b.approveStatus === 2).length,
     checkinPending: bookings.filter(
-  (b) => b.approveStatus === 1 && !b.checkinAt
-).length,
+      (b) => b.approveStatus === 1 && b.checkinStatus === 0
+    ).length,
   };
 
   //  รายการการ์ดแต่ละประเภท
@@ -42,9 +47,10 @@ export default function BookingFilter({ active, onChange, bookings }: BookingFil
             cursor: "pointer",
             width: "120px",
             borderRadius: "1rem",
-            background: active === card.key
-              ? `linear-gradient(135deg, ${card.color}, #ffffff)`
-              : "#f8f9fa",
+            background:
+              active === card.key
+                ? `linear-gradient(135deg, ${card.color}, #ffffff)`
+                : "#f8f9fa",
             transition: "all 0.25s ease-in-out",
           }}
         >

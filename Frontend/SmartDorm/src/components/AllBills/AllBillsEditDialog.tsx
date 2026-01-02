@@ -1,4 +1,3 @@
-// src/components/AllBills/AllBillsEditDialog.tsx
 import { useState } from "react";
 import Swal from "sweetalert2";
 import type { Bill } from "../../types/Bill";
@@ -17,7 +16,7 @@ export default function AllBillsEditDialog({ bill, onSave, onClose }: Props) {
     wAfter: bill.wAfter ?? 0,
     eBefore: bill.eBefore ?? 0,
     eAfter: bill.eAfter ?? 0,
-    status: bill.status ?? 0,
+    billStatus: bill.billStatus ?? 0, // ✅ แก้ตรงนี้
   });
 
   const submit = async (e: React.FormEvent) => {
@@ -111,9 +110,9 @@ export default function AllBillsEditDialog({ bill, onSave, onClose }: Props) {
               <label className="form-label fw-semibold mt-3">สถานะบิล</label>
               <select
                 className="form-select text-center"
-                value={form.status}
+                value={form.billStatus} // ✅ แก้ตรงนี้
                 onChange={(e) =>
-                  setForm({ ...form, status: Number(e.target.value) })
+                  setForm({ ...form, billStatus: Number(e.target.value) })
                 }
               >
                 <option value={0}>ยังไม่ชำระ</option>

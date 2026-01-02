@@ -37,7 +37,7 @@ interface Bill {
 
   total: number;
   dueDate: string;
-  status: number;
+  billStatus: number;
 
   room: Room;
   booking?: Booking;
@@ -78,16 +78,16 @@ export default function BillDetail() {
 
   /* ===================== STATUS ===================== */
   const statusText =
-    bill.status === 1
+    bill.billStatus === 1
       ? "ชำระเงินแล้ว"
-      : bill.status === 2
+      : bill.billStatus === 2
       ? "รอการตรวจสอบ"
       : "รอการชำระ";
 
   const statusColor =
-    bill.status === 1
+    bill.billStatus === 1
       ? "success"
-      : bill.status === 2
+      : bill.billStatus === 2
       ? "info"
       : "warning";
 
@@ -141,7 +141,7 @@ export default function BillDetail() {
               })}
             </p>
 
-            {bill.status === 0 && (
+            {bill.billStatus === 0 && (
               <p className="text-danger fw-semibold mb-1">
                 <strong>ครบกำหนดชำระ :</strong>{" "}
                 {formatThai(bill.dueDate)}
@@ -220,7 +220,7 @@ export default function BillDetail() {
           </table>
 
           {/* PAY BUTTON */}
-          {bill.status === 0 && (
+          {bill.billStatus === 0 && (
             <button
               className="btn fw-bold w-100 py-3 mt-3"
               style={{

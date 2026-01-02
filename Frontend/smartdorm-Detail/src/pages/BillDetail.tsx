@@ -1,51 +1,10 @@
-// src/pages/BillDetail.tsx
-import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import axios from "axios";
 import BookingNav from "../components/BookingNav";
-import { API_BASE } from "../config";
-
-/* ===================== TYPES ===================== */
-interface Room {
-  number: string;
-}
-
-interface Booking {
-  fullName?: string;
-}
-
-interface Customer {
-  userName: string;
-}
-
-interface Bill {
-  billId: string;
-  month: string;
-  rent: number;
-  service: number;
-  fine: number;
-
-  wBefore: number;
-  wAfter: number;
-  wUnits: number;
-  waterCost: number;
-
-  eBefore: number;
-  eAfter: number;
-  eUnits: number;
-  electricCost: number;
-
-  total: number;
-  dueDate: string;
-  billStatus: number;
-
-  room: Room;
-  booking?: Booking;
-  customer?: Customer;
-}
+import { useBill } from "../hooks/useBill";
+import { Bill } from "../types/bill";
 
 /* ===================== FORMAT DATE ===================== */
-const formatThai = (d: string) =>
+export const formatThai = (d: string) =>
   new Date(d).toLocaleDateString("th-TH", {
     year: "numeric",
     month: "long",
@@ -53,30 +12,31 @@ const formatThai = (d: string) =>
   });
 
 export default function BillDetail() {
-  const { billId } = useParams();
-  const [bill, setBill] = useState<Bill | null>(null);
+  const { billId } = useParams<{ billId: string }>();
+  const { bill, loading, error } = useBill(billId);
 
-  useEffect(() => {
-    if (!billId) return;
-    axios
-      .get(`${API_BASE}/bill/${billId}`)
-      .then((res) => setBill(res.data));
-  }, [billId]);
-
-  if (!bill)
+  if (loading)
     return (
       <>
         <BookingNav />
-        <div className="vh-100 d-flex justify-content-center align-items-center text-danger fw-bold">
-          ไม่พบบิลนี้
+        <div className="vh-100 d-flex justify-content-center align-items-center">
+          กำลังโหลด...
         </div>
       </>
     );
 
-  const fullName =
-    bill.booking?.fullName || bill.customer?.userName || "-";
+  if (error || !bill)
+    return (
+      <>
+        <BookingNav />
+        <div className="vh-100 d-flex justify-content-center align-items-center text-danger fw-bold">
+          {error || "ไม่พบบิลนี้"}
+        </div>
+      </>
+    );
 
-  /* ===================== STATUS ===================== */
+  const fullName = bill.booking?.fullName || bill.customer?.userName || "-";
+
   const statusText =
     bill.billStatus === 1
       ? "ชำระเงินแล้ว"
@@ -124,8 +84,8 @@ export default function BillDetail() {
           {/* BILL INFO */}
           <div className="bg-light p-3 rounded border mb-3 mt-2">
             <p className="mb-1">
-  <strong>Line ผู้เช่า  :</strong> {bill.customer?.userName ?? "-"}
-</p>
+              <strong>Line ผู้เช่า :</strong> {bill.customer?.userName ?? "-"}
+            </p>
             <p className="mb-1">
               <strong>ผู้เช่า :</strong> {fullName}
             </p>
@@ -142,16 +102,13 @@ export default function BillDetail() {
 
             {bill.billStatus === 0 && (
               <p className="text-danger fw-semibold mb-1">
-                <strong>ครบกำหนดชำระ :</strong>{" "}
-                {formatThai(bill.dueDate)}
+                <strong>ครบกำหนดชำระ :</strong> {formatThai(bill.dueDate)}
               </p>
             )}
 
             <p className="mb-1">
               <strong>สถานะ :</strong>{" "}
-              <span className={`badge bg-${statusColor}`}>
-                {statusText}
-              </span>
+              <span className={`badge bg-${statusColor}`}>{statusText}</span>
             </p>
           </div>
 
@@ -211,9 +168,7 @@ export default function BillDetail() {
                 <td colSpan={4} className="text-end">
                   รวมทั้งหมด
                 </td>
-                <td className="text-primary fs-5">
-                  {bill.total.toLocaleString()}
-                </td>
+                <td className="text-primary fs-5">{bill.total.toLocaleString()}</td>
               </tr>
             </tfoot>
           </table>
@@ -224,8 +179,7 @@ export default function BillDetail() {
               className="btn fw-bold w-100 py-3 mt-3"
               style={{
                 borderRadius: "14px",
-                background:
-                  "linear-gradient(135deg,#27C96D,#0AA04F)",
+                background: "linear-gradient(135deg,#27C96D,#0AA04F)",
                 color: "white",
                 fontSize: "1.15rem",
               }}

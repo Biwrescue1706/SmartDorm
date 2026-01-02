@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
-import { Bill } from "../types/bill";
+import type { Bill } from "../types/bill";
 import { API_BASE } from "../config";
 
 export function useBill(billId?: string) {

@@ -35,7 +35,7 @@ export interface Bill {
   overdueDays: number;
   total: number;
 
-  status: number;
+  billStatus: number; // 0=ยังไม่จ่าย, 1=จ่ายแล้ว, 2=รอตรวจสอบ
   dueDate: string;
 
   // ✅ snapshot ผู้เช่า (อยู่ใน Bill จริง)

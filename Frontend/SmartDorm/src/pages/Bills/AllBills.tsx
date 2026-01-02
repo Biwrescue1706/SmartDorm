@@ -32,9 +32,10 @@ export default function AllBills() {
   const [editingBill, setEditingBill] = useState<Bill | null>(null);
   const [manageBill, setManageBill] = useState<Bill | null>(null);
 
-  const unpaidCount = bills.filter((b) => b.status === 0).length;
-  const paidCount = bills.filter((b) => b.status === 1).length;
-  const pendingCount = bills.filter((b) => b.status === 2).length;
+  // ✅ FIX: ใช้ billStatus
+  const unpaidCount = bills.filter((b) => b.billStatus === 0).length;
+  const paidCount = bills.filter((b) => b.billStatus === 1).length;
+  const pendingCount = bills.filter((b) => b.billStatus === 2).length;
 
   const [page, setPage] = useState(1);
   const [rows, setRows] = useState(12);
@@ -50,17 +51,21 @@ export default function AllBills() {
   useEffect(() => {
     let result = bills;
 
+    // ✅ FIX: status → billStatus
     if (filterStatus !== "")
-      result = result.filter((b) => b.status === Number(filterStatus));
+      result = result.filter(
+        (b) => b.billStatus === Number(filterStatus)
+      );
 
     if (filterMonth)
       result = result.filter(
-        (b) => new Date(b.month).toISOString().slice(0, 7) === filterMonth
+        (b) =>
+          new Date(b.month).toISOString().slice(0, 7) === filterMonth
       );
 
     if (filterRoom)
       result = result.filter((b) =>
-        b.room.number.toString().includes(filterRoom)
+        b.room?.number?.toString().includes(filterRoom)
       );
 
     setFiltered(result);
@@ -73,39 +78,38 @@ export default function AllBills() {
   /* ---------------- SLIP VIEW ---------------- */
   const handleViewSlip = (bill: Bill) => {
     const url = bill.payment?.slipUrl || bill.slipUrl;
-    if (!url) return Swal.fire("ไม่มีสลิป", "ยังไม่มีหลักฐานการชำระ", "info");
+    if (!url)
+      return Swal.fire("ไม่มีสลิป", "ยังไม่มีหลักฐานการชำระ", "info");
 
     Swal.fire({
-      title: `สลิปห้อง ${bill.room.number}`,
+      title: `สลิปห้อง ${bill.room?.number ?? "-"}`,
       html: `
-      <img src="${url}" style="
-        width: 100%;
-        max-width: 350px;
-        max-height: 70vh;
-        object-fit: contain;
-        border-radius: 12px;
-        display: block;
-        margin: 0 auto;
-      "/>
-    `,
+        <img src="${url}" style="
+          width: 100%;
+          max-width: 350px;
+          max-height: 70vh;
+          object-fit: contain;
+          border-radius: 12px;
+          display: block;
+          margin: 0 auto;
+        "/>
+      `,
       showConfirmButton: false,
       showCloseButton: true,
       background: "#fff",
-
-      // ⭐ เลื่อนลงให้ไม่ชน Navbar
       customClass: {
         popup: "swal-slip-popup",
       },
     });
   };
 
-  /* ---------------- RESET ALL STATE ---------------- */
+  /* ---------------- RESET ---------------- */
   const handleRefresh = async () => {
     setFilterStatus("0");
     setFilterMonth("");
     setFilterRoom("");
     setPage(1);
-    await fetchBills(); // ดึงข้อมูลใหม่ทั้งหมด
+    await fetchBills();
   };
 
   return (
@@ -134,7 +138,6 @@ export default function AllBills() {
             รายการบิลทั้งหมด
           </h2>
 
-          {/* 🔁 ปุ่มรีเซ็ต / รีเฟรช */}
           <div className="text-center mb-3">
             <button
               onClick={handleRefresh}
@@ -152,7 +155,6 @@ export default function AllBills() {
             </button>
           </div>
 
-          {/* STATUS FILTER */}
           <BillStatusCardFilter
             filterStatus={filterStatus}
             setFilterStatus={setFilterStatus}
@@ -161,7 +163,6 @@ export default function AllBills() {
             pendingCount={pendingCount}
           />
 
-          {/* FILTER INPUTS */}
           <div className="d-flex gap-2 flex-wrap mb-3">
             <input
               type="month"
@@ -181,7 +182,6 @@ export default function AllBills() {
             />
           </div>
 
-          {/* TABLE / CARD RESPONSIVE */}
           {loading ? (
             <p className="text-center text-muted">⏳ กำลังโหลดข้อมูล...</p>
           ) : width >= 1400 ? (
@@ -228,7 +228,6 @@ export default function AllBills() {
         </div>
       </main>
 
-      {/* EDIT DIALOG */}
       {editingBill && (
         <AllBillsEditDialog
           bill={editingBill}
@@ -237,7 +236,6 @@ export default function AllBills() {
         />
       )}
 
-      {/* APPROVE / REJECT DIALOG */}
       {manageBill && (
         <BillManageDialog
           bill={manageBill}

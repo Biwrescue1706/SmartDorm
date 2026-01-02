@@ -1,4 +1,3 @@
-// src/components/AllBills/AllBillsRow.tsx
 import type { Bill } from "../../types/Bill";
 
 interface Props {
@@ -8,7 +7,7 @@ interface Props {
   onEdit: (bill: Bill) => void;
   onDelete: (billId: string, room: string) => void;
   onViewSlip: (bill: Bill) => void;
-  onManage: (bill: Bill) => void; // ⭐ เพิ่ม
+  onManage: (bill: Bill) => void;
 }
 
 export default function AllBillsRow({
@@ -20,7 +19,7 @@ export default function AllBillsRow({
   onViewSlip,
   onManage
 }: Props) {
-  const status = bill.status;
+  const status = bill.billStatus; // ✅ เปลี่ยนตรงนี้
 
   return (
     <tr>
@@ -49,7 +48,7 @@ export default function AllBillsRow({
 
       {/* สลิป */}
       <td>
-        {status === 1 ? (
+        {status === 1 && (bill.payment?.slipUrl || bill.slipUrl) ? (
           <button className="btn btn-outline-primary btn-sm" onClick={() => onViewSlip(bill)}>
             ดูสลิป
           </button>
@@ -58,7 +57,7 @@ export default function AllBillsRow({
         )}
       </td>
 
-      {/* จัดการ */}
+      {/* จัดการ / แก้ไข */}
       <td>
         {status === 2 ? (
           <button
@@ -67,7 +66,7 @@ export default function AllBillsRow({
           >
             จัดการ
           </button>
-        ) : status === 0 ? (
+        ) : status === 0 && role === 0 ? (
           <button className="btn btn-warning btn-sm" onClick={() => onEdit(bill)}>
             ✏️
           </button>
@@ -78,7 +77,7 @@ export default function AllBillsRow({
 
       {/* ลบเฉพาะ ADMIN */}
       <td>
-        {role === 0 && status === 0 ? (
+        {role === 0 && (status === 0 || status === 1) ? (
           <button
             className="btn btn-danger btn-sm"
             onClick={() => onDelete(bill.billId, bill.room.number)}

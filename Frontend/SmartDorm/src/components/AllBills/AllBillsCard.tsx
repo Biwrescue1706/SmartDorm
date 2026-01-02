@@ -17,8 +17,9 @@ export default function AllBillsCard({
   onEdit,
   onManage,
 }: Props) {
-  const isPaid = bill.status === 1;
-  const isPending = bill.status === 2;
+  // ✅ FIX: status → billStatus
+  const isPaid = bill.billStatus === 1;
+  const isPending = bill.billStatus === 2;
   const hasSlip = bill.payment?.slipUrl || bill.slipUrl;
   const isStaff = role === 1;
 
@@ -33,7 +34,7 @@ export default function AllBillsCard({
           : "6px solid #e74c3c",
       }}
     >
-      <h5 className="fw-bold mb-2">ห้อง {bill.room.number}</h5>
+      <h5 className="fw-bold mb-2">ห้อง {bill.room?.number}</h5>
 
       <p className="mb-1">
         <b>ผู้เช่า:</b> {bill.fullName || "-"}
@@ -93,7 +94,7 @@ export default function AllBillsCard({
         /* 👑 ADMIN */
         <div className="mt-3 d-flex flex-column gap-2">
           {/* STATUS 2 → MANAGE */}
-          {bill.status === 2 && (
+          {bill.billStatus === 2 && (
             <button
               className="btn btn-info btn-sm fw-semibold w-100 text-white"
               onClick={() => onManage(bill)}
@@ -103,7 +104,7 @@ export default function AllBillsCard({
           )}
 
           {/* STATUS 0 → EDIT + DELETE */}
-          {bill.status === 0 && role === 0 && (
+          {bill.billStatus === 0 && role === 0 && (
             <div className="d-flex gap-2">
               <button
                 className="btn btn-warning btn-sm w-50 fw-semibold"
@@ -114,15 +115,15 @@ export default function AllBillsCard({
 
               <button
                 className="btn btn-danger btn-sm w-50 fw-semibold"
-                onClick={() => onDelete(bill.billId, bill.room.number)}
+                onClick={() => onDelete(bill.billId, bill.room?.number ?? "-")}
               >
                 🗑️ ลบ
               </button>
             </div>
           )}
 
-          {/* STATUS 1 → VIEW SLIP + DELETE (❌ NO EDIT) */}
-          {bill.status === 1 && (
+          {/* STATUS 1 → VIEW SLIP + DELETE */}
+          {bill.billStatus === 1 && (
             <div className="d-flex gap-2">
               {hasSlip && (
                 <button
@@ -136,7 +137,7 @@ export default function AllBillsCard({
               {role === 0 && (
                 <button
                   className="btn btn-danger btn-sm fw-semibold w-50"
-                  onClick={() => onDelete(bill.billId, bill.room.number)}
+                  onClick={() => onDelete(bill.billId, bill.room?.number ?? "-")}
                 >
                   🗑️ ลบ
                 </button>

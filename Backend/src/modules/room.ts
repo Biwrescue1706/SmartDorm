@@ -28,7 +28,7 @@ roomRouter.get("/getall", async (_req, res) => {
             billId: true,
             month: true,
             total: true,
-            status: true,
+            billStatus: true,
             dueDate: true,
             booking: {
               select: {
@@ -77,7 +77,7 @@ roomRouter.get("/:roomId", async (req, res) => {
             billId: true,
             month: true,
             total: true,
-            status: true,
+            billStatus: true,
             dueDate: true,
             booking: {
               select: {

@@ -129,19 +129,19 @@ export default function DashboardRevenue({
   }, [bills, bookings]);
 
   /* ---------------- FILTERING ---------------- */
-  const FBills = useMemo(
-    () =>
-      bills.filter((b) => {
-        const y = new Date(b.month).getUTCFullYear() + 543;
-        const m = String(new Date(b.month).getUTCMonth() + 1).padStart(2, "0");
-        return (
-          b.status === 1 &&
-          (!selectedYear || y.toString() === selectedYear) &&
-          (!selectedMonth || m === selectedMonth)
-        );
-      }),
-    [bills, selectedYear, selectedMonth]
-  );
+const FBills = useMemo(
+  () =>
+    bills.filter((b) => {
+      const y = new Date(b.month).getUTCFullYear() + 543;
+      const m = String(new Date(b.month).getUTCMonth() + 1).padStart(2, "0");
+      return (
+        b.billStatus === 1 && // ✅ เปลี่ยนตรงนี้จาก status
+        (!selectedYear || y.toString() === selectedYear) &&
+        (!selectedMonth || m === selectedMonth)
+      );
+    }),
+  [bills, selectedYear, selectedMonth]
+);
 
   const FBookings = useMemo(
     () =>

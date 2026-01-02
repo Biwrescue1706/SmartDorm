@@ -48,8 +48,7 @@ export default function BillTable({
             <th style={{ width: "6%" }}>#</th>
             <th style={{ width: "10%" }}>ห้อง</th>
             <th style={{ width: "18%" }}>LINE</th>
-            <th style={{ width: "15%" }}>ค่าเช่า</th>
-            <th style={{ width: "20%" }}>วันขอเข้าพัก</th>
+            <th style={{ width: "18%" }}>ชื่อ</th>
             <th style={{ width: "20%" }}>วันเข้าพัก</th>
             <th style={{ width: "15%" }}>ออกบิล</th>
           </tr>

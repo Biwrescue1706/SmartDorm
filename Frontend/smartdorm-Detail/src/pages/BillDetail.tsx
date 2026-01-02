@@ -124,7 +124,7 @@ export default function BillDetail() {
           {/* BILL INFO */}
           <div className="bg-light p-3 rounded border mb-3 mt-2">
             <p className="mb-1">
-              <strong>Line ผู้เช่า  :</strong> {bill.customer.userName}
+              <strong>Line ผู้เช่า  :</strong> {booking.customer?.userName ?? "-"}
             </p>
             <p className="mb-1">
               <strong>ผู้เช่า :</strong> {fullName}

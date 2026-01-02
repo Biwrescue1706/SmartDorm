@@ -121,12 +121,11 @@ export default function BillDetail() {
             รายละเอียดบิลค่าเช่าห้อง
           </div>
 
-          <h5 className="fw-bold text-secondary text-center mt-3">
-            SmartDorm
-          </h5>
-
           {/* BILL INFO */}
           <div className="bg-light p-3 rounded border mb-3 mt-2">
+            <p className="mb-1">
+              <strong>Line ผู้เช่า  :</strong> {bill.customer.userName}
+            </p>
             <p className="mb-1">
               <strong>ผู้เช่า :</strong> {fullName}
             </p>

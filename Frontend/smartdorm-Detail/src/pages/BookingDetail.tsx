@@ -1,3 +1,4 @@
+// src/pages/BookingDetail.tsx
 import { useParams } from "react-router-dom";
 import BookingNav from "../components/BookingNav";
 import { useBookingDetail } from "../hooks/Booking/useBookingDetail";
@@ -105,7 +106,7 @@ export default function BookingDetail() {
                 </tr>
                 <tr>
                   <td>LINE ผู้ใช้</td>
-                  <td>{booking.customer.userName ?? "-"}</td>
+                  <td>{booking.customer?.userName ?? "-"}</td>
                 </tr>
               </tbody>
             </table>
@@ -145,10 +146,10 @@ export default function BookingDetail() {
                   </tr>
                 )}
 
-                {booking.actualCheckin && (
+                {booking.checkinAt && (
                   <tr>
                     <td>วันเข้าเช็คอิน</td>
-                    <td>{formatThaiDate(booking.actualCheckin)}</td>
+                    <td>{formatThaiDate(booking.checkinAt)}</td>
                   </tr>
                 )}
               </tbody>

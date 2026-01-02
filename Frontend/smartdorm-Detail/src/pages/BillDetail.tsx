@@ -164,9 +164,9 @@ export default function BillDetail() {
             <thead className="table-light">
               <tr>
                 <th>รายการ</th>
-                <th>เดือนหลัง</th>
-                <th>เดือนก่อน</th>
-                <th>ใช้</th>
+                <th>มิเตอร์เดือนหลัง</th>
+                <th>มิเตอร์เดือนก่อน</th>
+                <th>จำนวนหน่วยที่ใช้</th>
                 <th>จำนวนเงิน</th>
               </tr>
             </thead>

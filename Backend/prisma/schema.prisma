@@ -146,7 +146,7 @@ model Bill {
   total Int @default(0) // ยอดรวมที่ต้องชำระ
 
   billStatus Int      @default(0) // 0 = ยังไม่ชำระเงิน, 1 = ชำระเงินแล้ว, 2 = กำลังตรวจสอบ
-  billDate   DateTime // วันที่สถานะบิลเปลี่ยนแปลง
+  billDate DateTime? // วันที่สถานะบิลเปลี่ยนแปลง
 
   paidAt DateTime? // วันที่ชำระเงิน
 

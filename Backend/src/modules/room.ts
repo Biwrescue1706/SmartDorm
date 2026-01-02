@@ -20,7 +20,7 @@ roomRouter.get("/getall", async (_req, res) => {
             cphone: true,
             approveStatus: true,
             checkinStatus: true,
-            createdAt: true,
+            bookingDate: true,
           },
         },
         bills: {
@@ -30,6 +30,7 @@ roomRouter.get("/getall", async (_req, res) => {
             total: true,
             billStatus: true,
             dueDate: true,
+            
             booking: {
               select: {
                 fullName: true,

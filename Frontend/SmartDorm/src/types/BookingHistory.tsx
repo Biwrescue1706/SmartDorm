@@ -1,3 +1,4 @@
+// src/types/BookingHistory.ts
 export interface BookingHistory {
   bookingId: string;
 
@@ -9,14 +10,20 @@ export interface BookingHistory {
     userName?: string;
   };
 
-  // จาก Booking
   fullName?: string;
   cphone?: string;
-  createdAt?: string;
-  actualCheckin?: string;
-  checkin?: string;
 
-  // จาก Checkout
-  requestedCheckout?: string;
-  actualCheckout?: string;
+  // Booking
+  bookingDate?: string; // วันที่จอง
+  checkin?: string;
+  checkinAt?: string;
+
+  // Checkout (relation)
+  checkout?: {
+    checkout?: string;
+    RefundApprovalDate?: string;
+    checkoutStatus?: number;
+    checkoutAt?: string;
+
+  }[];
 }

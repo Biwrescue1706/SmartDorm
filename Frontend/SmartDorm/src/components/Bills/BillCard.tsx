@@ -46,9 +46,6 @@ export default function BillCard({
 <p className="mb-1">
         <b>ชื่อ :</b> {booking?.fullName || "-"}
       </p>
-      <p className="mb-1">
-        <b>ค่าเช่า :</b> {room.rent.toLocaleString()}
-      </p>
       <p className="mb-3">
         <b>เข้าพักจริง :</b>{" "}
         {booking?.checkinAt ? formatThaiDate(booking.checkinAt) : "-"}

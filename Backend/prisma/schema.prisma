@@ -200,7 +200,7 @@ model Payment {
   billId     String @unique @db.ObjectId
   customerId String @db.ObjectId
 
-  paidAt  DateTime // วันที่ชำระเงิน
+  paidAt  DateTime? // วันที่ชำระเงิน
   slipUrl String? // รูปสลิปการโอนเงิน
 
   createdAt DateTime @default(now())

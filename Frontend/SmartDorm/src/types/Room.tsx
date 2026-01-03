@@ -5,6 +5,12 @@ export interface Admin {
   name: string;
 }
 
+// เพิ่ม type Booking ถ้ายังไม่มี
+export interface Booking {
+  bookingId: string;
+  fullName: string; // ชื่อผู้เช่า
+}
+
 export interface Room {
   roomId: string;
   number: string;
@@ -17,7 +23,11 @@ export interface Room {
   updatedAt: string;
   adminCreated?: Admin;
   adminUpdated?: Admin;
+
+  // ✅ เพิ่ม booking
+  booking?: Booking | null;
 }
+
 export interface RoomForm {
   number: string;
   size: string;

@@ -59,14 +59,14 @@ export default function AllBillsRow({
 
       {/* จัดการ / แก้ไข */}
       <td>
-        {status === 2 ? (
+        {bill.billStatus === 2 ? (
           <button
             className="btn btn-info btn-sm text-white"
             onClick={() => onManage(bill)}
           >
             จัดการ
           </button>
-        ) : status === 0 && role === 0 ? (
+        ) : bill.billStatus === 0  ? (
           <button className="btn btn-warning btn-sm" onClick={() => onEdit(bill)}>
             ✏️
           </button>
@@ -77,7 +77,7 @@ export default function AllBillsRow({
 
       {/* ลบเฉพาะ ADMIN */}
       <td>
-        {role === 0 && (status === 0 || status === 1) ? (
+        {role === 0 && (bill.billStatus === 0 || bill.billStatus === 1) ? (
           <button
             className="btn btn-danger btn-sm"
             onClick={() => onDelete(bill.billId, bill.room.number)}

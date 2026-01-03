@@ -1,10 +1,12 @@
+// src/components/Room/RoomRow.tsx
 import { useEffect } from "react";
 import { useRooms } from "../../hooks/ManageRooms/useRooms";
-import type { Room } from "../../types/Room";
+import type { Room , Booking } from "../../types/Room";
 import EditRoomDialog from "./EditRoomDialog";
 
 interface Props {
   room: Room;
+  booking?: Booking | null;
   index: number;
   onUpdated: () => void;
   role?: number | null;
@@ -24,7 +26,7 @@ export default function RoomRow({ room, index, onUpdated, role }: Props) {
           : "bg-secondary"
       }`}
     >
-      {status === 0 ? "ว่าง" : status === 1 ? "เต็ม" : "-"}
+      {status === 0 ? "ว่าง" : status === 1 ? "เต็ม" : " "}
     </span>
   );
 
@@ -46,8 +48,9 @@ export default function RoomRow({ room, index, onUpdated, role }: Props) {
       <td>{room.number}</td>
       <td>{room.size}</td>
       <td>{room.rent.toLocaleString("th-TH")}</td>
-      <td>{room.adminCreated?.name || "-"}</td>
-      <td>{room.adminUpdated?.name || "-"}</td>
+      <td>{room.status === 1 ? room.booking?.fullName || " " : " "}</td>
+      <td>{room.adminCreated?.name || " "}</td>
+      <td>{room.adminUpdated?.name || " "}</td>
       <td>{getStatus(room.status)}</td>
 
       {/* ✅ เฉพาะ SuperAdmin เท่านั้นที่เห็นปุ่มแก้ไข/ลบ */}

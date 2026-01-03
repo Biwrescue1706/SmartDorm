@@ -1,3 +1,4 @@
+// src/components/Room/RoomTable.tsx
 import RoomRow from "./RoomRow";
 import type { Room } from "../../types/Room";
 
@@ -34,6 +35,7 @@ export default function RoomTable({
             <th scope="col" style={{ width: "35%" }}>ห้อง</th>
             <th scope="col" style={{ width: "80%" }}>ขนาด</th>
             <th scope="col" style={{ width: "45%" }}>ค่าเช่า</th>
+            <th scope="col" style={{ width: "45%" }}>ผู้เช่า</th>
             <th scope="col" style={{ width: "45%" }}>ผู้สร้าง</th>
             <th scope="col" style={{ width: "45%" }}>ผู้แก้ไข</th>
             <th scope="col" style={{ width: "45%" }}>สถานะ</th>

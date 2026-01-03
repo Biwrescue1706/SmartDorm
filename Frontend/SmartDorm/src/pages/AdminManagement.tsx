@@ -287,18 +287,20 @@ export default function AdminManagement() {
           </h2>
 
           {/* BUTTON */}
-          <div className="text-center mb-4">
-            <button
-              className="btn text-white fw-bold px-5 py-2"
-              style={{
-                background: `linear-gradient(135deg, ${THEME.purple}, ${THEME.purpleLight})`,
-                borderRadius: "12px",
-              }}
-              onClick={openAddDialog}
-            >
-              ➕ เพิ่มสมาชิก
-            </button>
-          </div>
+          {role == 0 && (
+            <div className="text-center mb-4">
+              <button
+                className="btn text-white fw-bold px-5 py-2"
+                style={{
+                  background: `linear-gradient(135deg, ${THEME.purple}, ${THEME.purpleLight})`,
+                  borderRadius: "12px",
+                }}
+                onClick={openAddDialog}
+              >
+                ➕ เพิ่มสมาชิก
+              </button>
+            </div>
+          )}
 
           {/* FILTER */}
           <div className="d-flex justify-content-center gap-3 flex-wrap mb-4">
@@ -344,6 +346,7 @@ export default function AdminManagement() {
               oldestAdminId={oldestAdminId}
               handleDelete={handleDelete}
               openEditDialog={openEditDialog}
+              role={role}
             />
           ) : windowWidth < 1400 ? (
             <TabletView
@@ -351,6 +354,7 @@ export default function AdminManagement() {
               oldestAdminId={oldestAdminId}
               handleDelete={handleDelete}
               openEditDialog={openEditDialog}
+              role={role}
             />
           ) : (
             <DesktopView
@@ -360,6 +364,7 @@ export default function AdminManagement() {
               openEditDialog={openEditDialog}
               currentPage={currentPage}
               rowsPerPage={rowsPerPage}
+              role={role}
             />
           )}
 
@@ -387,6 +392,7 @@ function MobileView({
   oldestAdminId,
   handleDelete,
   openEditDialog,
+  role,
 }: any) {
   return (
     <div className="row g-3">
@@ -401,23 +407,26 @@ function MobileView({
               <b>สิทธิ์ :</b> {a.role === 0 ? "แอดมินหลัก" : "พนักงาน"}
             </p>
 
-            <div className="d-flex justify-content-between">
-              <button
-                className="btn btn-sm btn-primary"
-                onClick={() => openEditDialog(a)}
-              >
-                ✏️
-              </button>
-
-              {a.adminId !== oldestAdminId && (
+            {/* เฉพาะ admin หลัก ที่ role == 0 เท่านั้น */}
+            {role === 0 && (
+              <div className="d-flex justify-content-between">
                 <button
-                  className="btn btn-sm btn-danger"
-                  onClick={() => handleDelete(a.adminId)}
+                  className="btn btn-sm btn-primary"
+                  onClick={() => openEditDialog(a)}
                 >
-                  ลบ
+                  ✏️
                 </button>
-              )}
-            </div>
+
+                {role === 0 && a.adminId !== oldestAdminId && (
+                  <button
+                    className="btn btn-sm btn-danger"
+                    onClick={() => handleDelete(a.adminId)}
+                  >
+                    ลบ
+                  </button>
+                )}
+              </div>
+            )}
           </div>
         </div>
       ))}
@@ -433,6 +442,7 @@ function TabletView({
   oldestAdminId,
   handleDelete,
   openEditDialog,
+  role,
 }: any) {
   return (
     <div className="row g-3">
@@ -446,24 +456,25 @@ function TabletView({
             <p>
               <b>สิทธิ์ :</b> {a.role === 0 ? "แอดมินหลัก" : "พนักงาน"}
             </p>
-
-            <div className="d-flex justify-content-between">
-              <button
-                className="btn btn-sm btn-primary"
-                onClick={() => openEditDialog(a)}
-              >
-                ✏️
-              </button>
-
-              {a.adminId !== oldestAdminId && (
+            {role === 0 && (
+              <div className="d-flex justify-content-between">
                 <button
-                  className="btn btn-sm btn-danger"
-                  onClick={() => handleDelete(a.adminId)}
+                  className="btn btn-sm btn-primary"
+                  onClick={() => openEditDialog(a)}
                 >
-                  ลบ
+                  ✏️
                 </button>
-              )}
-            </div>
+
+                {a.adminId !== oldestAdminId && (
+                  <button
+                    className="btn btn-sm btn-danger"
+                    onClick={() => handleDelete(a.adminId)}
+                  >
+                    ลบ
+                  </button>
+                )}
+              </div>
+            )}
           </div>
         </div>
       ))}
@@ -481,6 +492,7 @@ function DesktopView({
   openEditDialog,
   currentPage,
   rowsPerPage,
+  role,
 }: any) {
   return (
     <div className="responsive-table" style={{ overflowX: "auto" }}>
@@ -501,8 +513,8 @@ function DesktopView({
             <th>ชื่อผู้ใช้</th>
             <th>ชื่อ</th>
             <th>สิทธิ์</th>
-            <th>แก้ไข</th>
-            <th>ลบ</th>
+            {role === 0 && <th>แก้ไข</th>}
+            {role === 0 && <th>ลบ</th>}
           </tr>
         </thead>
 
@@ -517,24 +529,27 @@ function DesktopView({
               <td>{a.username}</td>
               <td>{a.name}</td>
               <td>{a.role === 0 ? "แอดมินหลัก" : "พนักงาน"}</td>
-              <td>
-                <button
-                  className="btn btn-primary btn-sm"
-                  onClick={() => openEditDialog(a)}
-                >
-                  ✏️
-                </button>
-              </td>
-              <td>
-                {a.adminId !== oldestAdminId && (
+
+              {role === 0 && (
+                <td>
+                  <button
+                    className="btn btn-primary btn-sm"
+                    onClick={() => openEditDialog(a)}
+                  >
+                    ✏️
+                  </button>
+                </td>
+              )}
+              {role === 0 && a.adminId !== oldestAdminId && (
+                <td>
                   <button
                     className="btn btn-danger btn-sm"
                     onClick={() => handleDelete(a.adminId)}
                   >
                     ลบ
                   </button>
-                )}
-              </td>
+                </td>
+              )}
             </tr>
           ))}
         </tbody>

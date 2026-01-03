@@ -230,18 +230,16 @@ export default function Nav({
             📋 บิลทั้งหมด
           </button>
 
-          {role === 0 && (
-            <button
-              className={`btn text-start ${
-                isActive("/admin/manage")
-                  ? "btn-warning text-dark fw-bold"
-                  : "btn-warning"
-              }`}
-              onClick={() => navigate("/admin/manage")}
-            >
-              👥 จัดการสมาชิก
-            </button>
-          )}
+          <button
+            className={`btn text-start ${
+              isActive("/admin/manage")
+                ? "btn-warning text-dark fw-bold"
+                : "btn-warning"
+            }`}
+            onClick={() => navigate("/admin/manage")}
+          >
+            👥 จัดการสมาชิก
+          </button>
 
           <button
             className={`btn text-start ${
@@ -343,17 +341,15 @@ export default function Nav({
               >
                 📋 บิลทั้งหมด
               </button>
-              {role === 0 && (
-                <button
-                  className="btn btn-warning text-start"
-                  onClick={() => {
-                    navigate("/admin/manage");
-                    setMenuOpen(false);
-                  }}
-                >
-                  👥 จัดการสมาชิก
-                </button>
-              )}
+              <button
+                className="btn btn-warning text-start"
+                onClick={() => {
+                  navigate("/admin/manage");
+                  setMenuOpen(false);
+                }}
+              >
+                👥 จัดการสมาชิก
+              </button>
               <button
                 className="btn btn-warning text-start"
                 onClick={() => {

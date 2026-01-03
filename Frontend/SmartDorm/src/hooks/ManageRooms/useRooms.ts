@@ -24,7 +24,12 @@ export function useRooms(roomId?: string) {
       });
 
       if (!res.ok) throw new Error();
-      const data: Room[] = await res.json();
+
+      const dataFromApi: any[] = await res.json(); // ใช้ any ก่อน
+      const data: Room[] = dataFromApi.map((r) => ({
+        ...r,
+        booking: r.bookings[0] || null, // ✅ เพิ่ม booking
+      }));
 
       setRooms(data.sort((a, b) => Number(a.number) - Number(b.number)));
       return data;

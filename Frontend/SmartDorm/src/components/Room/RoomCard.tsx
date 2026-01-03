@@ -1,3 +1,4 @@
+// src/components/Room/RoomCard.tsx
 import EditRoomDialog from "./EditRoomDialog";
 import { useRooms } from "../../hooks/ManageRooms/useRooms";
 import type { Room } from "../../types/Room";
@@ -45,13 +46,22 @@ export default function RoomCard({ room, role, onUpdated }: Props) {
           <b>ค่าเช่า :</b> {room.rent.toLocaleString("th-TH")}
         </p>
 
-        <p className="mt-2 mb-1 fs-5">
-          <b>ผู้สร้าง :</b> {room.adminCreated?.name || "-"}
-        </p>
+        {room.status === 1 && (
+          <p className="mt-2 mb-1 fs-5">
+            <b>ผู้เช่า :</b>{" "}
+            {room.status === 1 ? room.booking?.fullName || " " : " "}
+          </p>
+        )}
 
         <p className="mt-2 mb-1 fs-5">
-          <b>ผู้แก้ไข :</b> {room.adminUpdated?.name || "-"}
+          <b>ผู้สร้าง :</b> {room.adminCreated?.name || " "}
         </p>
+
+        {room.adminUpdated != null && (
+          <p className="mt-2 mb-1 fs-5">
+            <b>ผู้แก้ไข :</b> {room.adminUpdated?.name || " "}
+          </p>
+        )}
 
         <p className="mt-2 mb-1 fs-5">
           <b>สถานะ :</b>{" "}

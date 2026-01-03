@@ -21,7 +21,6 @@ export default function AllBillsCard({
   const isPaid = bill.billStatus === 1;
   const isPending = bill.billStatus === 2;
   const hasSlip = bill.payment?.slipUrl || bill.slipUrl;
-  const isStaff = role === 1;
 
   return (
     <div
@@ -37,13 +36,13 @@ export default function AllBillsCard({
       <h5 className="fw-bold mb-2">ห้อง {bill.room?.number}</h5>
 
       <p className="mb-1">
-        <b>ผู้เช่า:</b> {bill.fullName || "-"}
+        <b>ผู้เช่า:</b> {bill.fullName || " "}
       </p>
       <p className="mb-1">
-        <b>LINE:</b> {bill.customer?.userName || "-"}
+        <b>LINE:</b> {bill.customer?.userName || " "}
       </p>
       <p className="mb-1">
-        <b>เบอร์:</b> {bill.cphone || "-"}
+        <b>เบอร์:</b> {bill.cphone || " "}
       </p>
 
       <p className="mb-1">
@@ -81,17 +80,17 @@ export default function AllBillsCard({
       {/* ================= ACTIONS ================= */}
 
       {/* 👷 STAFF → ดูสลิปอย่างเดียว */}
-      {isStaff ? (
-        hasSlip && (
+
+        {hasSlip && (
           <button
             className="btn btn-outline-primary btn-sm w-100 mt-2"
             onClick={() => onViewSlip(bill)}
           >
             ดูสลิป
           </button>
-        )
-      ) : (
-        /* 👑 ADMIN */
+        )}
+ 
+        {/* /* 👑 ADMIN */}
         <div className="mt-3 d-flex flex-column gap-2">
           {/* STATUS 2 → MANAGE */}
           {bill.billStatus === 2 && (
@@ -103,24 +102,22 @@ export default function AllBillsCard({
             </button>
           )}
 
-          {/* STATUS 0 → EDIT + DELETE */}
-          {bill.billStatus === 0 && role === 0 && (
-            <div className="d-flex gap-2">
-              <button
-                className="btn btn-warning btn-sm w-50 fw-semibold"
-                onClick={() => onEdit(bill)}
-              >
-                ✏️ แก้ไข
-              </button>
-
+          <div className="d-flex gap-2">
+            <button
+              className="btn btn-warning btn-sm w-50 fw-semibold"
+              onClick={() => onEdit(bill)}
+            >
+              ✏️ แก้ไข
+            </button>
+            {bill.billStatus === 0 && role === 0 && (
               <button
                 className="btn btn-danger btn-sm w-50 fw-semibold"
-                onClick={() => onDelete(bill.billId, bill.room?.number ?? "-")}
+                onClick={() => onDelete(bill.billId, bill.room?.number ?? " ")}
               >
                 🗑️ ลบ
               </button>
-            </div>
-          )}
+            )}
+          </div>
 
           {/* STATUS 1 → VIEW SLIP + DELETE */}
           {bill.billStatus === 1 && (
@@ -137,7 +134,9 @@ export default function AllBillsCard({
               {role === 0 && (
                 <button
                   className="btn btn-danger btn-sm fw-semibold w-50"
-                  onClick={() => onDelete(bill.billId, bill.room?.number ?? "-")}
+                  onClick={() =>
+                    onDelete(bill.billId, bill.room?.number ?? " ")
+                  }
                 >
                   🗑️ ลบ
                 </button>
@@ -145,7 +144,7 @@ export default function AllBillsCard({
             </div>
           )}
         </div>
-      )}
+      
     </div>
   );
 }

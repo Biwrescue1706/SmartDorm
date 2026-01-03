@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
-import BookingNav from "../components/BookingNav";
+import BookingNav from "../../components/BookingNav";
 
 export default function ReturnSearch() {
   const [checkoutId, setCheckoutId] = useState("");

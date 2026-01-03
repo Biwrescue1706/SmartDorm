@@ -7,7 +7,7 @@ import Pagination from "../../components/Pagination";
 import Nav from "../../components/Nav";
 import RoomFilter from "../../components/Room/RoomFilter";
 import { useAuth } from "../../hooks/useAuth";
-import { useRooms } from "../../hooks/useRooms";
+import { useRooms } from "../../hooks/ManageRooms/useRooms";
 
 /* -------------------------------------------
    🎨 SCB THEME สำหรับหน้า Rooms

@@ -1,11 +1,11 @@
 import { useState } from "react";
 import axios from "axios";
-import { API_BASE } from "../config";
+import { API_BASE } from "../../config";
 import type {
   ChangePasswordInput,
   ChangePasswordResponse,
-} from "../types/Auth";
-import { toast } from "../utils/toast"; // ⬅️ ใช้ toast ตัวกลาง
+} from "../../types/Auth";
+import { toast } from "../../utils/toast"; // ⬅️ ใช้ toast ตัวกลาง
 
 export function useChangePassword() {
   const [loading, setLoading] = useState(false);

@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import BookingFilter from "../../components/Booking/BookingFilter";
 import BookingTable from "../../components/Booking/BookingTable";
-import { useBookings } from "../../hooks/useBookings";
+import { useBookings } from "../../hooks/ManageRooms/useBookings";
 import Nav from "../../components/Nav";
 import { useAuth } from "../../hooks/useAuth";
 

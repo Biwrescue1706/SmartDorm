@@ -2,17 +2,17 @@
 import { useEffect, useState } from "react";
 import Swal from "sweetalert2";
 import axios from "axios";
-import { API_BASE } from "../config";
+import { API_BASE } from "../../config";
 import {
   GetAllBooking,
   ApproveBooking,
   RejectBooking,
   DeleteBooking,
-} from "../apis/endpoint.api";
-import { toast } from "../utils/toast";
+} from "../../apis/endpoint.api";
+import { toast } from "../../utils/toast";
 
 // เปลี่ยนเป็น type-only import
-import type { Booking } from "../types/Booking";
+import type { Booking } from "../../types/Booking";
 
 // ================= Hook =================
 export function useBookings() {

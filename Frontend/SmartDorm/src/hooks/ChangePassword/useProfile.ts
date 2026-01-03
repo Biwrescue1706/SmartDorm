@@ -1,13 +1,13 @@
 // src/hooks/useProfile.ts
 import { useState, useEffect } from "react";
 import axios from "axios";
-import { API_BASE } from "../config";
+import { API_BASE } from "../../config";
 import type {
   Admin,
   UpdateProfileInput,
   UpdateProfileResponse,
-} from "../types/Auth";
-import { toast } from "../utils/toast"; // ใช้ toast กลาง
+} from "../../types/Auth";
+import { toast } from "../../utils/toast"; // ใช้ toast กลาง
 
 export function useProfile() {
   const [admin, setAdmin] = useState<Admin | null>(null);

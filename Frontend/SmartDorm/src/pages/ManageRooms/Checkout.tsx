@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Nav from "../../components/Nav";
 import { useAuth } from "../../hooks/useAuth";
-import { useCheckouts } from "../../hooks/useCheckouts";
+import { useCheckouts } from "../../hooks/ManageRooms/useCheckouts";
 
 import CheckoutTable from "../../components/Checkout/CheckoutTable";
 import CheckoutCards from "../../components/Checkout/CheckoutCards";

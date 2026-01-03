@@ -2,7 +2,7 @@
 import { useState } from "react";
 import Nav from "../../components/Nav";
 import { useAuth } from "../../hooks/useAuth";
-import { useChangePassword } from "../../hooks/useChangePassword";
+import { useChangePassword } from "../../hooks/ChangePassword/useChangePassword";
 import Swal from "sweetalert2";
 import { API_BASE } from "../../config";
 

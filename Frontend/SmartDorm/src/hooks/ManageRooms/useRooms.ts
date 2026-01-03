@@ -1,14 +1,14 @@
 import { useEffect, useState } from "react";
 import Swal from "sweetalert2";
-import { API_BASE } from "../config";
-import { toast } from "../utils/toast"; // ⬅️ ใช้ toast กลาง
+import { API_BASE } from "../../config";
+import { toast } from "../../utils/toast"; // ⬅️ ใช้ toast กลาง
 import {
   GetAllRoom,
   UpdateRoom,
   CreateRoom,
   DeleteRoom,
-} from "../apis/endpoint.api";
-import type { Room } from "../types/Room";
+} from "../../apis/endpoint.api";
+import type { Room } from "../../types/Room";
 
 export function useRooms(roomId?: string) {
   const [room, setRoom] = useState<Room | null>(null);

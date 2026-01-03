@@ -1,8 +1,8 @@
 // src/hooks/useCreateBill.ts
 import { useState, useEffect } from "react";
-import { API_BASE } from "../config";
-import type { Room } from "../types/Room";
-import type { Booking } from "../types/Booking";
+import { API_BASE } from "../../config";
+import type { Room } from "../../types/Room";
+import type { Booking } from "../../types/Booking";
 
 export function useCreateBill() {
   const [rooms, setRooms] = useState<Room[]>([]);

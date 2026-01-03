@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useRooms } from "../../hooks/useRooms";
+import { useRooms } from "../../hooks/ManageRooms/useRooms";
 import type { Room } from "../../types/Room";
 import EditRoomDialog from "./EditRoomDialog";
 

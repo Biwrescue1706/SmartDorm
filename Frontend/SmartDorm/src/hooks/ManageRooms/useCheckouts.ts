@@ -1,7 +1,7 @@
 import { useState } from "react";
 import Swal from "sweetalert2";
-import { API_BASE } from "../config";
-import type { Checkout } from "../types/Checkout";
+import { API_BASE } from "../../config";
+import type { Checkout } from "../../types/Checkout";
 
 export function useCheckouts() {
   const [checkouts, setCheckouts] = useState<Checkout[]>([]);

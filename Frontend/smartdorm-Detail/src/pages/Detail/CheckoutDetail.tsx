@@ -1,7 +1,7 @@
 // src/pages/CheckoutDetail.tsx
 import { useParams } from "react-router-dom";
-import CheckoutNav from "../components/CheckoutNav";
-import { useCheckoutDetail } from "../hooks/Checkout/useCheckoutDetail";
+import CheckoutNav from "../../components/CheckoutNav";
+import { useCheckoutDetail } from "../../hooks/Checkout/useCheckoutDetail";
 
 /* utils */
 const formatThaiDate = (d?: string | null) =>

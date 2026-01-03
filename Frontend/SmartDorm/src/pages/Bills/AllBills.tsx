@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import Nav from "../../components/Nav";
 import { useAuth } from "../../hooks/useAuth";
-import { useBills } from "../../hooks/useBills";
+import { useBills } from "../../hooks/Bill/useBills";
 import AllBillsCard from "../../components/AllBills/AllBillsCard";
 import AllBillsTable from "../../components/AllBills/AllBillsTable";
 import Pagination from "../../components/Pagination";

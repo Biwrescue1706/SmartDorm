@@ -1,12 +1,12 @@
 import { Routes, Route } from "react-router-dom";
-import BookingDetail from "./pages/BookingDetail";
-import CheckoutDetail from "./pages/CheckoutDetail";
-import BillDetail from "./pages/BillDetail";
+import BookingDetail from "./pages/Detail/BookingDetail";
+import CheckoutDetail from "./pages/Detail/CheckoutDetail";
+import BillDetail from "./pages/Detail/BillDetail";
 
 import Home from "./pages/Home";
-import BookingViewSearch from "./pages/BookingSearch";
-import ReturnSearch from "./pages/ReturnSearch";
-import PaymentSearch  from "./pages/PaymentSearch";
+import BookingViewSearch from "./pages/Search/BookingSearch";
+import ReturnSearch from "./pages/Search/ReturnSearch";
+import PaymentSearch  from "./pages/Search/PaymentSearch";
 
 
 export default function App() {

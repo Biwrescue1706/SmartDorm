@@ -1,8 +1,8 @@
 // src/hooks/usePendingBookings.ts
 import { useEffect, useState } from "react";
-import { API_BASE } from "../config";
-import { GetAllBooking } from "../apis/endpoint.api";
-import { toast } from "../utils/toast"; // ⬅️ ใช้ toast กลาง
+import { API_BASE } from "../../config";
+import { GetAllBooking } from "../../apis/endpoint.api";
+import { toast } from "../../utils/toast"; // ⬅️ ใช้ toast กลาง
 
 export function usePendingBookings(intervalMs = 30000) {
   const [pendingBookings, setPendingBookings] = useState(0);

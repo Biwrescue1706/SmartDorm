@@ -2,9 +2,9 @@
 import { useEffect, useState } from "react";
 import Nav from "../components/Nav";
 import { useAuth } from "../hooks/useAuth";
-import { useRooms } from "../hooks/useRooms";
-import { useBookings } from "../hooks/useBookings";
-import { useBills } from "../hooks/useBills";
+import { useRooms } from "../hooks/ManageRooms/useRooms";
+import { useBookings } from "../hooks/ManageRooms/useBookings";
+import { useBills } from "../hooks/Bill/useBills";
 import DashboardSummary from "../components/Dashboard/DashboardSummary";
 import DashboardRevenue from "../components/Dashboard/DashboardRevenue";
 import type { Booking } from "../types/Booking";

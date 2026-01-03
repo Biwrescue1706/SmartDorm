@@ -1,7 +1,7 @@
 // src/pages/BookingDetail.tsx
 import { useParams } from "react-router-dom";
-import BookingNav from "../components/BookingNav";
-import { useBookingDetail } from "../hooks/Booking/useBookingDetail";
+import BookingNav from "../../components/BookingNav";
+import { useBookingDetail } from "../../hooks/Booking/useBookingDetail";
 
 /* utils */
 const formatThaiDate = (d?: string | null) =>

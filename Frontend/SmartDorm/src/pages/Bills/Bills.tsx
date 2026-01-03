@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import Nav from "../../components/Nav";
 import { useAuth } from "../../hooks/useAuth";
-import { useCreateBill } from "../../hooks/useCreateBill";
+import { useCreateBill } from "../../hooks/Bill/useCreateBill";
 import BillTable from "../../components/Bills/BillTable";
 import BillCard from "../../components/Bills/BillCard";
 import BillDialog from "../../components/Bills/BillDialog";

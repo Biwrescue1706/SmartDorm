@@ -1,6 +1,6 @@
 import { useParams } from "react-router-dom";
-import BookingNav from "../components/BookingNav";
-import { useBill } from "../hooks/useBill";
+import BookingNav from "../../components/BookingNav";
+import { useBill } from "../../hooks/Bill/useBill";
 
 /* ===================== FORMAT DATE ===================== */
 export const formatThai = (d: string) =>

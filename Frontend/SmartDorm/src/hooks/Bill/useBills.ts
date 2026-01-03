@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import Swal from "sweetalert2";
 import axios from "axios";
-import { API_BASE } from "../config";
-import { GetAllBill, UpdateBill, DeleteBill } from "../apis/endpoint.api";
-import type { Bill } from "../types/Bill";
-import { toast } from "../utils/toast"; // ใช้ toast กลาง
+import { API_BASE } from "../../config";
+import { GetAllBill, UpdateBill, DeleteBill } from "../../apis/endpoint.api";
+import type { Bill } from "../../types/Bill";
+import { toast } from "../../utils/toast"; // ใช้ toast กลาง
 
 export function useBills() {
   const [bills, setBills] = useState<Bill[]>([]);

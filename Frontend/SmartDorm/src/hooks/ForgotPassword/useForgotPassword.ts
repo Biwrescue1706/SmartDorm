@@ -1,11 +1,11 @@
 import axios from "axios";
-import { API_BASE } from "../config";
+import { API_BASE } from "../../config";
 import type {
   CheckUsernameResponse,
   ForgotPasswordInput,
   ForgotPasswordResponse,
-} from "../types/Auth";
-import { toast } from "../utils/toast"; // ⬅️ ใช้ toast กลาง
+} from "../../types/Auth";
+import { toast } from "../../utils/toast"; // ⬅️ ใช้ toast กลาง
 
 export function useForgotPassword() {
   // ตรวจสอบ username

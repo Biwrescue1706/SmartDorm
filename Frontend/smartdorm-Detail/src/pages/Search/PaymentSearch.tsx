@@ -2,8 +2,8 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import Swal from "sweetalert2";
-import { API_BASE } from "../config";
-import NavBar from "../components/NavBar";
+import { API_BASE } from "../../config";
+import NavBar from "../../components/NavBar";
 
 export default function PaymentSearch() {
   const [billId, setBillId] = useState("");

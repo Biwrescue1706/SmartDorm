@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import prisma from "./prisma";
+import { scheduleOverdueAuto } from "./services/overdue.service"; // ✅ import Cron Job
 
 dotenv.config();
 
@@ -92,6 +93,8 @@ async function startServer() {
     console.log("🟡 กำลังเริ่มการเชื่อมต่อ Prisma...");
     await prisma.$connect();
     console.log("✅ เชื่อมต่อกับ MongoDB ผ่าน Prisma สำเร็จ");
+
+    scheduleOverdueAuto(); // จะรันทุกวัน 09:30 น.
 
     app.listen(PORT, () => {
       const env = process.env.NODE_ENV || "development";

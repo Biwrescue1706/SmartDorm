@@ -10,6 +10,7 @@ import {
   OVERDUE_FINE_PER_DAY,
   SERVICE_FEE,
 } from "../config/rate";
+import { processOverdueManual } from "../services/overdue.manual";
 
 const billRouter = Router();
 
@@ -193,6 +194,8 @@ billRouter.post(
         },
       });
 
+      const detailedBill = `${BASE_URL}bill/${bill.billId}`;
+
       // 📲 แจ้งเตือน LINE
       if (booking.customer.userId) {
         await sendFlexMessage(
@@ -222,7 +225,7 @@ billRouter.post(
           [
             {
               label: "ดูรายละเอียดและชำระเงิน",
-              url: `https://smartdorm-detail.biwbong.shop/bill/${bill.billId}`,
+              url: detailedBill,
             },
           ]
         );
@@ -336,70 +339,18 @@ billRouter.put(
 );
 
 // ⚠️ แจ้งเตือนค้างชำระ (Admin)
+// ⚠️ แจ้งเตือนค้างชำระ (Admin กดเอง)
 billRouter.put(
   "/overdue/:billId",
   authMiddleware,
   roleMiddleware(0),
   async (req, res) => {
     try {
-      const { billId } = req.params;
-
-      const bill = await prisma.bill.findUnique({
-        where: { billId },
-        include: { customer: true, room: true },
-      });
-
-      if (!bill) throw new Error("ไม่พบบิล");
-      if (bill.billStatus === 1) throw new Error("บิลนี้ชำระแล้ว");
-
-      const today = new Date();
-      const due = new Date(bill.dueDate);
-
-      let overdueDays = Math.floor(
-        (today.getTime() - due.getTime()) / (1000 * 60 * 60 * 24)
-      );
-      if (overdueDays < 0) overdueDays = 0;
-
-      const fine = overdueDays * OVERDUE_FINE_PER_DAY;
-
-      const total =
-        bill.rent + bill.service + bill.waterCost + bill.electricCost + fine;
-
-      // อัปเดตบิล
-      const updated = await prisma.bill.update({
-        where: { billId },
-        data: {
-          overdueDays,
-          fine,
-          total,
-          billStatus: 0,
-        },
-      });
-
-      // แจ้งเตือนลูกค้า
-      if (bill.customer?.userId) {
-        await sendFlexMessage(
-          bill.customer.userId,
-          "⚠️ แจ้งเตือนบิลค้างชำระ",
-          [
-            { label: "รหัสบิล", value: bill.billId },
-            { label: "ห้อง", value: bill.room?.number ?? "-" },
-            { label: "ค้างชำระ", value: `${overdueDays} วัน` },
-            { label: "ค่าปรับ", value: `${fine} บาท` },
-            { label: "ยอดรวม", value: `${total.toLocaleString()} บาท` },
-          ],
-          [
-            {
-              label: "ดูบิลและชำระเงิน",
-              url: `https://smartdorm-detail.biwbong.shop/bill/${bill.billId}`,
-            },
-          ]
-        );
-      }
+      const bill = await processOverdueManual(req.params.billId);
 
       res.json({
-        message: `อัปเดตบิลค้างชำระเรียบร้อย (${overdueDays} วัน, ค่าปรับ ${fine} บาท)`,
-        bill: updated,
+        message: "แจ้งเตือนบิลค้างชำระเรียบร้อย",
+        bill,
       });
     } catch (err: any) {
       res.status(400).json({ error: err.message });
@@ -449,7 +400,11 @@ billRouter.put(
       const waterCost = wUnits * WATER_PRICE;
       const electricCost = eUnits * ELECTRIC_PRICE;
 
-      const total = bill.rent + bill.service + waterCost + electricCost;
+      const fine = bill.fine ?? 0;
+
+      const total = bill.rent + bill.service + waterCost + electricCost + fine;
+      
+      const resetOverdue = !!dueDate;
 
       const updated = await prisma.bill.update({
         where: { billId },
@@ -468,12 +423,14 @@ billRouter.put(
           dueDate: dueDate ? new Date(dueDate) : bill.dueDate,
 
           // 🔄 reset ค้างชำระ
-          overdueDays: 0,
-          fine: 0,
+          overdueDays: resetOverdue ? 0 : bill.overdueDays,
+          fine: resetOverdue ? 0 : bill.fine,
 
           billDate: new Date(),
         },
       });
+
+      const detailedBill = `${BASE_URL}bill/${bill.billId}`;
 
       // 📲 แจ้งลูกค้าทาง LINE
       if (bill.customer?.userId) {
@@ -499,7 +456,7 @@ billRouter.put(
           [
             {
               label: "ดูรายละเอียดบิล",
-              url: `https://smartdorm-detail.biwbong.shop/bill/${bill.billId}`,
+              url: detailedBill,
             },
           ]
         );

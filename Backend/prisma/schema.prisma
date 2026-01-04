@@ -134,8 +134,12 @@ model Checkout {
 
 //=== Bill ===
 model Bill {
-  billId String   @id @default(auto()) @map("_id") @db.ObjectId
-  month  DateTime
+  billId     String  @id @default(auto()) @map("_id") @db.ObjectId
+  roomId     String? @db.ObjectId
+  customerId String? @db.ObjectId
+  bookingId  String? @db.ObjectId
+
+  month DateTime
 
   ctitle   String?
   cname    String?
@@ -145,8 +149,8 @@ model Bill {
 
   total Int @default(0) // ยอดรวมที่ต้องชำระ
 
-  billStatus Int      @default(0) // 0 = ยังไม่ชำระเงิน, 1 = ชำระเงินแล้ว, 2 = กำลังตรวจสอบ
-  billDate DateTime? // วันที่สถานะบิลเปลี่ยนแปลง
+  billStatus Int       @default(0) // 0 = ยังไม่ชำระเงิน, 1 = ชำระเงินแล้ว, 2 = กำลังตรวจสอบ
+  billDate   DateTime? // วันที่สถานะบิลเปลี่ยนแปลง
 
   paidAt DateTime? // วันที่ชำระเงิน
 
@@ -170,14 +174,12 @@ model Bill {
   fine        Int @default(0) // ค่าปรับ
   overdueDays Int @default(0) // จำนวนวันที่ค้างชำระ
 
-  roomId     String?  @db.ObjectId
-  customerId String? @db.ObjectId
-  bookingId  String? @db.ObjectId
-  createdBy  String  @db.ObjectId
-  updatedBy  String? @db.ObjectId
+  lastOverdueNotifyAt DateTime?
 
   createdAt DateTime @default(now())
+  createdBy String   @db.ObjectId
   updatedAt DateTime @updatedAt
+  updatedBy String?  @db.ObjectId
 
   room         Room?     @relation(fields: [roomId], references: [roomId])
   customer     Customer? @relation(fields: [customerId], references: [customerId])

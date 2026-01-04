@@ -5,9 +5,7 @@ import { authMiddleware, roleMiddleware } from "../middleware/authMiddleware";
 
 const roomRouter = Router();
 
-/* =====================================================
-   GET ALL ROOMS
-===================================================== */
+//   GET ALL ROOMS
 roomRouter.get("/getall", async (_req, res) => {
   try {
     const rooms = await prisma.room.findMany({
@@ -55,9 +53,7 @@ roomRouter.get("/getall", async (_req, res) => {
   }
 });
 
-/* =====================================================
-   GET ROOM BY ID
-===================================================== */
+//   GET ROOM BY ID
 roomRouter.get("/:roomId", async (req, res) => {
   try {
     const room = await prisma.room.findUnique({
@@ -104,9 +100,7 @@ roomRouter.get("/:roomId", async (req, res) => {
   }
 });
 
-/* =====================================================
-   CREATE ROOM
-===================================================== */
+//   CREATE ROOM
 roomRouter.post(
   "/create",
   authMiddleware,
@@ -157,9 +151,7 @@ roomRouter.post(
   }
 );
 
-/* =====================================================
-   UPDATE ROOM
-===================================================== */
+//   UPDATE ROOM
 roomRouter.put(
   "/:roomId",
   authMiddleware,
@@ -201,9 +193,7 @@ roomRouter.put(
   }
 );
 
-/* =====================================================
-   DELETE ROOM
-===================================================== */
+//   DELETE ROOM
 roomRouter.delete(
   "/:roomId",
   authMiddleware,

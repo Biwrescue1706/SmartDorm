@@ -4,6 +4,12 @@ import prisma from "../prisma";
 import { authMiddleware, roleMiddleware } from "../middleware/authMiddleware";
 import { sendFlexMessage } from "../utils/lineFlex";
 import { createClient } from "@supabase/supabase-js";
+import {
+  WATER_PRICE,
+  ELECTRIC_PRICE,
+  OVERDUE_FINE_PER_DAY,
+  SERVICE_FEE,
+} from "../config/rate";
 
 const billRouter = Router();
 
@@ -13,6 +19,9 @@ billStatus (Int)
 1 = จ่ายแล้ว
 2 = รอตรวจสอบ
 */
+
+const BASE_URL = "https://smartdorm-detail.biwbong.shop";
+const ADMIN_URL = "https://smartdorm-admin.biwbong.shop";
 
 // ---------------- Supabase ----------------
 const supabase = createClient(
@@ -108,7 +117,7 @@ billRouter.post(
   authMiddleware,
   roleMiddleware(0),
   async (req, res) => {
-try {
+    try {
       const { roomId } = req.params;
       const { month, wAfter, eAfter } = req.body;
 
@@ -145,15 +154,13 @@ try {
         throw new Error("ค่าไฟปัจจุบันต้องมากกว่าหรือเท่าก่อนหน้า");
 
       const rent = booking.room.rent;
-      const service = 50;
-      const wPrice = 19;
-      const ePrice = 7;
+      const service = SERVICE_FEE;
 
       const wUnits = wAfter - wBefore;
       const eUnits = eAfter - eBefore;
 
-      const waterCost = wUnits * wPrice;
-      const electricCost = eUnits * ePrice;
+      const waterCost = wUnits * WATER_PRICE;
+      const electricCost = eUnits * ELECTRIC_PRICE;
 
       const total = rent + service + waterCost + electricCost;
 
@@ -316,7 +323,7 @@ billRouter.put(
           where: { billId },
           data: {
             billStatus: 0,
-            billDate: new Date()
+            billDate: new Date(),
           },
         });
       });
@@ -348,11 +355,15 @@ billRouter.put(
       const today = new Date();
       const due = new Date(bill.dueDate);
 
-      let diffTime = today.getTime() - due.getTime();
-      let overdueDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+      let overdueDays = Math.floor(
+        (today.getTime() - due.getTime()) / (1000 * 60 * 60 * 24)
+      );
       if (overdueDays < 0) overdueDays = 0;
 
-      const fine = overdueDays * 50;
+      const fine = overdueDays * OVERDUE_FINE_PER_DAY;
+
+      const total =
+        bill.rent + bill.service + bill.waterCost + bill.electricCost + fine;
 
       // อัปเดตบิล
       const updated = await prisma.bill.update({
@@ -360,7 +371,8 @@ billRouter.put(
         data: {
           overdueDays,
           fine,
-          billStatus: 0, // ยังไม่ชำระ
+          total,
+          billStatus: 0,
         },
       });
 
@@ -372,10 +384,9 @@ billRouter.put(
           [
             { label: "รหัสบิล", value: bill.billId },
             { label: "ห้อง", value: bill.room?.number ?? "-" },
-            { label: "ยอดรวม", value: `${bill.total.toLocaleString()} บาท` },
             { label: "ค้างชำระ", value: `${overdueDays} วัน` },
             { label: "ค่าปรับ", value: `${fine} บาท` },
-            { label: "ครบกำหนดชำระ", value: formatThaiDate(bill.dueDate) },
+            { label: "ยอดรวม", value: `${total.toLocaleString()} บาท` },
           ],
           [
             {
@@ -404,46 +415,95 @@ billRouter.put(
   async (req, res) => {
     try {
       const { billId } = req.params;
-      const { wBefore, wAfter, eBefore, eAfter, month, dueDate } = req.body;
+      const { wAfter, eAfter, month, dueDate } = req.body;
 
-      const bill = await prisma.bill.findUnique({ where: { billId } });
+      const bill = await prisma.bill.findUnique({
+        where: { billId },
+        include: {
+          customer: true,
+          room: true,
+        },
+      });
+
       if (!bill) throw new Error("ไม่พบบิล");
 
       // ❌ lock สถานะ
-      if (bill.billStatus !== 0)
-        throw new Error("ไม่สามารถแก้ไขบิลนี้ได้");
+      if (bill.billStatus !== 0) throw new Error("ไม่สามารถแก้ไขบิลนี้ได้");
 
-      if (wAfter < wBefore)
+      // 🔒 validation มิเตอร์
+      const wBefore = bill.wBefore;
+      const eBefore = bill.eBefore;
+
+      const newWAfter = wAfter ?? bill.wAfter;
+      const newEAfter = eAfter ?? bill.eAfter;
+
+      // 🔍 validation มิเตอร์
+      if (newWAfter < wBefore)
         throw new Error("ค่าน้ำปัจจุบันต้องมากกว่าหรือเท่าก่อนหน้า");
-      if (eAfter < eBefore)
+      if (newEAfter < eBefore)
         throw new Error("ค่าไฟปัจจุบันต้องมากกว่าหรือเท่าก่อนหน้า");
 
-      const wUnits = wAfter - wBefore;
-      const eUnits = eAfter - eBefore;
+      const wUnits = newWAfter - wBefore;
+      const eUnits = newEAfter - eBefore;
 
-      const waterCost = wUnits * bill.wPrice;
-      const electricCost = eUnits * bill.ePrice;
+      const waterCost = wUnits * WATER_PRICE;
+      const electricCost = eUnits * ELECTRIC_PRICE;
 
-      const total =
-        bill.rent + bill.service + waterCost + electricCost;
+      const total = bill.rent + bill.service + waterCost + electricCost;
 
       const updated = await prisma.bill.update({
         where: { billId },
         data: {
-          wBefore,
-          wAfter,
+          wAfter: newWAfter,
           wUnits,
           waterCost,
-          eBefore,
-          eAfter,
+
+          eAfter: newEAfter,
           eUnits,
           electricCost,
+
           total,
+
           month: month ? new Date(month) : bill.month,
           dueDate: dueDate ? new Date(dueDate) : bill.dueDate,
+
+          // 🔄 reset ค้างชำระ
+          overdueDays: 0,
+          fine: 0,
+
           billDate: new Date(),
         },
       });
+
+      // 📲 แจ้งลูกค้าทาง LINE
+      if (bill.customer?.userId) {
+        await sendFlexMessage(
+          bill.customer.userId,
+          "✏️ มีการแก้ไขบิลค่าเช่าห้อง",
+          [
+            { label: "รหัสบิล", value: bill.billId },
+            { label: "ห้อง", value: bill.room?.number ?? "-" },
+            {
+              label: "ประจำเดือน",
+              value: formatThaiMonth(month ? new Date(month) : bill.month),
+            },
+            {
+              label: "ยอดรวมใหม่",
+              value: `${total.toLocaleString()} บาท`,
+            },
+            {
+              label: "ครบกำหนดชำระ",
+              value: formatThaiDate(dueDate ? new Date(dueDate) : bill.dueDate),
+            },
+          ],
+          [
+            {
+              label: "ดูรายละเอียดบิล",
+              url: `https://smartdorm-detail.biwbong.shop/bill/${bill.billId}`,
+            },
+          ]
+        );
+      }
 
       res.json({ message: "แก้ไขบิลสำเร็จ", bill: updated });
     } catch (err: any) {

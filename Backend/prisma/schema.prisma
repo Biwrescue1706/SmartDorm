@@ -159,13 +159,11 @@ model Bill {
   wBefore      Int // ค่าน้ำหน่วยก่อนหน้า
   wAfter       Int // ค่าน้ำหน่วยปัจจุบัน
   wUnits       Int // ค่าน้ำที่ใช้
-  wPrice       Int @default(19) // ราคาน้ำต่อหน่วย
   waterCost    Int @default(0) // ค่าน้ำที่ต้องจ่าย
   //ค่าไฟ
   eBefore      Int // ค่าไฟหน่วยก่อนหน้า
   eAfter       Int // ค่าไฟหน่วยปัจจุบัน
   eUnits       Int // ค่าไฟที่ใช้
-  ePrice       Int @default(7) // ราคาไฟต่อหน่วย
   electricCost Int @default(0) // ค่าไฟที่ต้องจ่าย
 
   // ค่าปรับ

@@ -7,9 +7,7 @@ import { deleteSlip } from "./booking";
 
 const userRouter = Router();
 
-/* =====================================================
-   📋 ดึงลูกค้าทั้งหมด (Admin)
-===================================================== */
+//   📋 ดึงลูกค้าทั้งหมด (Admin)
 userRouter.get("/getall", async (_req, res) => {
   try {
     const users = await prisma.customer.findMany({
@@ -29,9 +27,7 @@ userRouter.get("/getall", async (_req, res) => {
   }
 });
 
-/* =====================================================
-   🧍‍♂️ Register / Update (LINE Login)
-===================================================== */
+//   🧍‍♂️ Register / Update (LINE Login)
 userRouter.post("/register", async (req, res) => {
   try {
     const { accessToken } = req.body;
@@ -64,9 +60,7 @@ userRouter.post("/register", async (req, res) => {
   }
 });
 
-/* =====================================================
-   👤 /user/me (ตรวจ token)
-===================================================== */
+//   👤 /user/me (ตรวจ token)
 userRouter.post("/me", async (req, res) => {
   try {
     const { accessToken } = req.body;
@@ -97,9 +91,7 @@ userRouter.post("/me", async (req, res) => {
   }
 });
 
-/* =====================================================
-   💸 บิลที่ชำระแล้ว
-===================================================== */
+//   💸 บิลที่ชำระแล้ว
 userRouter.post("/payments", async (req, res) => {
   try {
     const { accessToken } = req.body;
@@ -129,9 +121,7 @@ userRouter.post("/payments", async (req, res) => {
   }
 });
 
-/* =====================================================
-   💰 บิลที่ยังไม่ชำระ
-===================================================== */
+//   💰 บิลที่ยังไม่ชำระ
 userRouter.post("/bills/unpaid", async (req, res) => {
   try {
     const { accessToken } = req.body;
@@ -158,10 +148,9 @@ userRouter.post("/bills/unpaid", async (req, res) => {
   }
 });
 
-/* =====================================================
-   🚪 ห้องที่สามารถคืนได้
-   ✔ ใช้ customerId เป็นหลัก
-===================================================== */
+//   🚪 ห้องที่สามารถคืนได้
+//   ✔ ใช้ customerId เป็นหลัก
+
 userRouter.post("/bookings/returnable", async (req, res) => {
   try {
     const { accessToken } = req.body;
@@ -198,9 +187,7 @@ userRouter.post("/bookings/returnable", async (req, res) => {
   }
 });
 
-/* =====================================================
-   🔍 ค้นหาลูกค้า (Admin)
-===================================================== */
+//   🔍 ค้นหาลูกค้า (Admin)
 userRouter.get("/search", async (req, res) => {
   try {
     const keyword = req.query.keyword?.toString().trim();
@@ -239,9 +226,7 @@ userRouter.get("/search", async (req, res) => {
   }
 });
 
-/* =====================================================
-   ❌ ลบลูกค้า (Admin)
-===================================================== */
+//   ❌ ลบลูกค้า (Admin)
 userRouter.delete("/:customerId", async (req, res) => {
   try {
     const { customerId } = req.params;

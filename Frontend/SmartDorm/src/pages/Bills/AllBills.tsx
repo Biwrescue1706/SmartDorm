@@ -1,3 +1,4 @@
+// src/pages/Bills/AllBills.tsx
 import { useState, useEffect } from "react";
 import Nav from "../../components/Nav";
 import { useAuth } from "../../hooks/useAuth";
@@ -14,12 +15,12 @@ import type { Bill } from "../../types/Bill";
 export default function AllBills() {
   const { handleLogout, role, adminName, adminUsername } = useAuth();
 
+  // ✅ ใช้ชื่อฟังก์ชันให้ตรงกับ useBills()
   const {
     bills,
     loading,
     fetchBills,
     updateBill,
-
     deleteBillById,
     approveBillById,
     rejectBillById,
@@ -34,6 +35,7 @@ export default function AllBills() {
   const [editingBill, setEditingBill] = useState<Bill | null>(null);
   const [manageBill, setManageBill] = useState<Bill | null>(null);
 
+  // ✅ นับจาก billStatus
   const unpaidCount = bills.filter((b) => b.billStatus === 0).length;
   const paidCount = bills.filter((b) => b.billStatus === 1).length;
   const pendingCount = bills.filter((b) => b.billStatus === 2).length;
@@ -48,11 +50,14 @@ export default function AllBills() {
     return () => window.removeEventListener("resize", resize);
   }, []);
 
+  /* ---------------- FILTER ---------------- */
   useEffect(() => {
     let result = bills;
 
     if (filterStatus !== "") {
-      result = result.filter((b) => b.billStatus === Number(filterStatus));
+      result = result.filter(
+        (b) => b.billStatus === Number(filterStatus)
+      );
     }
 
     if (filterMonth) {
@@ -75,6 +80,7 @@ export default function AllBills() {
   const start = (page - 1) * rows;
   const currentBills = filtered.slice(start, start + rows);
 
+  /* ---------------- SLIP VIEW ---------------- */
   const handleViewSlip = (bill: Bill) => {
     const url = bill.payment?.slipUrl || bill.slipUrl;
     if (!url)
@@ -82,12 +88,24 @@ export default function AllBills() {
 
     Swal.fire({
       title: `สลิปห้อง ${bill.room?.number ?? "-"}`,
-      html: `<img src="${url}" style="width:100%;max-width:350px;" />`,
+      html: `
+        <img src="${url}" style="
+          width: 100%;
+          max-width: 350px;
+          max-height: 70vh;
+          object-fit: contain;
+          border-radius: 12px;
+          display: block;
+          margin: 0 auto;
+        "/>
+      `,
       showConfirmButton: false,
       showCloseButton: true,
+      background: "#fff",
     });
   };
 
+  /* ---------------- RESET ---------------- */
   const handleRefresh = async () => {
     setFilterStatus("0");
     setFilterMonth("");
@@ -96,8 +114,28 @@ export default function AllBills() {
     await fetchBills();
   };
 
+  // ✅ wrapper (ไม่ลบของเดิม แค่ผูกชื่อให้ถูก)
+  const handleDeleteBill = (billId: string, room?: string) => {
+    deleteBillById(billId, room ?? "-");
+  };
+
+  const handleOverdueBill = (billId: string, room?: string) => {
+    overdueBillById(billId, room ?? "-");
+  };
+
+  const handleApproveBill = (billId: string, room?: string) => {
+    approveBillById(billId, room ?? "-");
+  };
+
+  const handleRejectBill = (billId: string, room?: string) => {
+    rejectBillById(billId, room ?? "-");
+  };
+
   return (
-    <div className="d-flex flex-column" style={{ minHeight: "100vh" }}>
+    <div
+      className="d-flex flex-column"
+      style={{ background: "#f5f3ff", minHeight: "100vh" }}
+    >
       <Nav
         onLogout={handleLogout}
         role={role}
@@ -105,46 +143,110 @@ export default function AllBills() {
         adminUsername={adminUsername}
       />
 
-      <main className="flex-grow-1 px-2 py-3">
-        {loading ? (
-          <p className="text-center">กำลังโหลด...</p>
-        ) : width >= 1400 ? (
-          <AllBillsTable
-            bills={currentBills}
-            role={role}
-            onEdit={setEditingBill}
-            onDelete={deleteBillById}
-            onViewSlip={handleViewSlip}
-            onManage={setManageBill}
-            onOverdue={overdueBillById}
-          />
-        ) : (
-          <div className="d-grid gap-3">
-            {currentBills.map((bill) => (
-              <AllBillsCard
-                key={bill.billId}
-                bill={bill}
-                role={role}
-                onEdit={setEditingBill}
-                onDelete={deleteBillById}
-                onViewSlip={handleViewSlip}
-                onManage={setManageBill}
-                onOverdue={overdueBillById}
-              />
-            ))}
-          </div>
-        )}
+      <main className="main-content px-2 py-3 mt-6 mt-lg-7 flex-grow-1">
+        <div className="mx-auto" style={{ maxWidth: "1400px" }}>
+          <h2
+            className="fw-bold text-center py-2 mb-3"
+            style={{
+              color: "#4A0080",
+              borderBottom: "3px solid #CE93D8",
+              width: "fit-content",
+              margin: "0 auto",
+            }}
+          >
+            รายการบิลทั้งหมด
+          </h2>
 
-        <Pagination
-          currentPage={page}
-          totalItems={filtered.length}
-          rowsPerPage={rows}
-          onPageChange={setPage}
-          onRowsPerPageChange={(r) => {
-            setRows(r);
-            setPage(1);
-          }}
-        />
+          <div className="text-center mb-3">
+            <button
+              onClick={handleRefresh}
+              disabled={loading}
+              className="btn fw-semibold shadow-sm px-4 py-2"
+              style={{
+                background:
+                  "linear-gradient(135deg, #4A148C, #7B1FA2, #CE93D8)",
+                color: "#fff",
+                borderRadius: "10px",
+                border: "none",
+              }}
+            >
+              {loading ? "⏳ กำลังโหลด..." : "🔄 รีเซ็ตข้อมูล"}
+            </button>
+          </div>
+
+          <BillStatusCardFilter
+            filterStatus={filterStatus}
+            setFilterStatus={setFilterStatus}
+            unpaidCount={unpaidCount}
+            paidCount={paidCount}
+            pendingCount={pendingCount}
+          />
+
+          <div className="d-flex gap-2 flex-wrap mb-3">
+            <input
+              type="month"
+              className="form-control shadow-sm"
+              style={{ width: 160, borderRadius: 8 }}
+              value={filterMonth}
+              onChange={(e) => setFilterMonth(e.target.value)}
+            />
+
+            <input
+              type="text"
+              className="form-control shadow-sm"
+              style={{ width: 200, borderRadius: 8 }}
+              placeholder="ค้นหาห้อง..."
+              value={filterRoom}
+              onChange={(e) => setFilterRoom(e.target.value)}
+            />
+          </div>
+
+          {loading ? (
+            <p className="text-center text-muted">⏳ กำลังโหลดข้อมูล...</p>
+          ) : width >= 1400 ? (
+            <AllBillsTable
+              bills={currentBills}
+              role={role}
+              onEdit={setEditingBill}
+              onDelete={handleDeleteBill}
+              onViewSlip={handleViewSlip}
+              onManage={setManageBill}
+              onOverdue={handleOverdueBill}
+            />
+          ) : (
+            <div
+              className="d-grid"
+              style={{
+                gridTemplateColumns: width < 600 ? "1fr" : "repeat(3, 1fr)",
+                gap: "14px",
+              }}
+            >
+              {currentBills.map((bill) => (
+                <AllBillsCard
+                  key={bill.billId}
+                  bill={bill}
+                  role={role}
+                  onEdit={setEditingBill}
+                  onDelete={handleDeleteBill}
+                  onViewSlip={handleViewSlip}
+                  onManage={setManageBill}
+                  onOverdue={handleOverdueBill}
+                />
+              ))}
+            </div>
+          )}
+
+          <Pagination
+            currentPage={page}
+            totalItems={filtered.length}
+            rowsPerPage={rows}
+            onPageChange={setPage}
+            onRowsPerPageChange={(r) => {
+              setRows(r);
+              setPage(1);
+            }}
+          />
+        </div>
       </main>
 
       {editingBill && (
@@ -158,9 +260,9 @@ export default function AllBills() {
       {manageBill && (
         <BillManageDialog
           bill={manageBill}
-          onApprove={approveBillById}
-          onReject={rejectBillById}
-          onOverdue={overdueBillById}
+          onApprove={handleApproveBill}
+          onReject={handleRejectBill}
+          onOverdue={handleOverdueBill}
           onClose={() => setManageBill(null)}
         />
       )}

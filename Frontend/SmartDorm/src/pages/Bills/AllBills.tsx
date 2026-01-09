@@ -111,6 +111,15 @@ export default function AllBills() {
     await fetchBills();
   };
 
+// ✅ เพิ่มเข้าไป
+const handleDeleteBill = (billId: string, room?: string) => {
+  deleteBill(billId, room ?? "-");
+};
+
+const handleOverdueBill = (billId: string, room?: string) => {
+  overdueBill(billId, room ?? "-");
+};
+
   return (
     <div
       className="d-flex flex-column"
@@ -185,14 +194,14 @@ export default function AllBills() {
             <p className="text-center text-muted">⏳ กำลังโหลดข้อมูล...</p>
           ) : width >= 1400 ? (
             <AllBillsTable
-              bills={currentBills}
-              role={role}
-              onEdit={setEditingBill}
-              onDelete={deleteBill}
-              onViewSlip={handleViewSlip}
-              onManage={setManageBill}
-              onOverdue={overdueBill} // ✅ เพิ่ม
-            />
+  bills={currentBills}
+  role={role}
+  onEdit={setEditingBill}
+  onDelete={handleDeleteBill}    // ✅ ใช้ wrapper
+  onViewSlip={handleViewSlip}
+  onManage={setManageBill}
+  onOverdue={handleOverdueBill}  // ✅ ใช้ wrapper
+/>
           ) : (
             <div
               className="d-grid"
@@ -203,15 +212,15 @@ export default function AllBills() {
             >
               {currentBills.map((bill) => (
                 <AllBillsCard
-                  key={bill.billId}
-                  bill={bill}
-                  role={role}
-                  onEdit={setEditingBill}
-                  onDelete={deleteBill}
-                  onViewSlip={handleViewSlip}
-                  onManage={setManageBill}
-                  onOverdue={overdueBill} // ✅ เพิ่ม
-                />
+  key={bill.billId}
+  bill={bill}
+  role={role}
+  onEdit={setEditingBill}
+  onDelete={handleDeleteBill}    // ✅
+  onViewSlip={handleViewSlip}
+  onManage={setManageBill}
+  onOverdue={handleOverdueBill}  // ✅
+/>
               ))}
             </div>
           )}

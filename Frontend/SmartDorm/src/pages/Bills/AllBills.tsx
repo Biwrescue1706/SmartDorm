@@ -14,16 +14,19 @@ import type { Bill } from "../../types/Bill";
 
 export default function AllBills() {
   const { handleLogout, role, adminName, adminUsername } = useAuth();
-  const {
-    bills,
-    loading,
-    fetchBills,
-    updateBill,
-    deleteBill,
-    approveBill,
-    rejectBill,
-    overdueBill, // ✅ เพิ่ม
-  } = useBills();
+
+  // ตัดเฉพาะส่วนที่เปลี่ยน
+const {
+  bills,
+  loading,
+  fetchBills,
+  updateBill,
+
+  deleteBillById,
+  approveBillById,
+  rejectBillById,
+  overdueBillById,
+} = useBills();
 
   const [filterStatus, setFilterStatus] = useState("0");
   const [filterMonth, setFilterMonth] = useState("");

@@ -2,9 +2,13 @@ import { useEffect, useState } from "react";
 import Swal from "sweetalert2";
 import axios from "axios";
 import { API_BASE } from "../../config";
-import { GetAllBill, UpdateBill, DeleteBill } from "../../apis/endpoint.api";
+import {
+  GetAllBill,
+  UpdateBill,
+  DeleteBill,
+} from "../../apis/endpoint.api";
 import type { Bill } from "../../types/Bill";
-import { toast } from "../../utils/toast"; // ใช้ toast กลาง
+import { toast } from "../../utils/toast";
 
 export function useBills() {
   const [bills, setBills] = useState<Bill[]>([]);
@@ -27,7 +31,11 @@ export function useBills() {
       const data = await res.json();
       setBills(data);
     } catch {
-      toast("error", "เชื่อมต่อไม่สำเร็จ", "ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์");
+      toast(
+        "error",
+        "เชื่อมต่อไม่สำเร็จ",
+        "ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์"
+      );
     } finally {
       setLoading(false);
     }
@@ -38,6 +46,7 @@ export function useBills() {
     try {
       Swal.fire({
         title: "กำลังอัปเดต...",
+        allowOutsideClick: false,
         didOpen: () => Swal.showLoading(),
       });
 
@@ -50,14 +59,16 @@ export function useBills() {
 
       if (!res.ok) throw new Error();
 
+      Swal.close();
       toast("success", "อัปเดตสำเร็จ", "ระบบได้บันทึกข้อมูลบิลแล้ว");
       await fetchBills();
     } catch {
+      Swal.close();
       toast("error", "อัปเดตไม่สำเร็จ", "กรุณาลองใหม่อีกครั้ง");
     }
   };
 
-  // ---------------- ลบบิล (⭐ แก้ตรงนี้) ----------------
+  // ---------------- ลบบิล ----------------
   const deleteBill = async (billId: string, roomNumber: string) => {
     const ok = await Swal.fire({
       title: `ลบบิลห้อง ${roomNumber}?`,
@@ -73,10 +84,7 @@ export function useBills() {
       const res = await fetch(`${API_BASE}${DeleteBill(billId)}`, {
         method: "DELETE",
         credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        // ⭐ สำคัญ: ส่ง billId ไปใน body
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ billId }),
       });
 
@@ -107,6 +115,7 @@ export function useBills() {
         {},
         { withCredentials: true }
       );
+
       toast("success", "อนุมัติการชำระแล้ว", `บิลห้อง ${room} ถูกอนุมัติ`);
       await fetchBills();
     } catch {
@@ -132,6 +141,7 @@ export function useBills() {
         {},
         { withCredentials: true }
       );
+
       toast("info", "ปฏิเสธสำเร็จ", "สถานะกลับเป็นยังไม่ชำระ");
       await fetchBills();
     } catch {
@@ -139,6 +149,57 @@ export function useBills() {
     }
   };
 
+  // ---------------- แจ้งเตือนบิลค้างชำระ ----------------
+  const overdueBill = async (billId: string, room: string) => {
+    const bill = bills.find((b) => b.billId === billId);
+
+    if (!bill || bill.billStatus !== 0) {
+      toast(
+        "info",
+        "ไม่สามารถแจ้งเตือน",
+        "บิลนี้ไม่อยู่ในสถานะค้างชำระ"
+      );
+      return;
+    }
+
+    const ok = await Swal.fire({
+      title: `แจ้งเตือนบิลห้อง ${room}?`,
+      text: "ระบบจะส่ง LINE แจ้งลูกค้า",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "แจ้งเตือน",
+      cancelButtonText: "ยกเลิก",
+    });
+
+    if (!ok.isConfirmed) return;
+
+    try {
+      Swal.fire({
+        title: "กำลังส่งแจ้งเตือน...",
+        allowOutsideClick: false,
+        didOpen: () => Swal.showLoading(),
+      });
+
+      await axios.put(
+        `${API_BASE}/bill/overdue/${billId}`,
+        {},
+        { withCredentials: true }
+      );
+
+      Swal.close();
+      toast("success", "แจ้งเตือนสำเร็จ", `ส่งแจ้งเตือนห้อง ${room}`);
+      await fetchBills();
+    } catch (err: any) {
+      Swal.close();
+      toast(
+        "error",
+        "แจ้งเตือนไม่สำเร็จ",
+        err?.response?.data?.error || "เกิดข้อผิดพลาด"
+      );
+    }
+  };
+
+  // ---------------- init ----------------
   useEffect(() => {
     fetchBills();
   }, []);
@@ -151,5 +212,6 @@ export function useBills() {
     deleteBill,
     approveBill,
     rejectBill,
+    overdueBill,
   };
 }

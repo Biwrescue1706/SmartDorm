@@ -185,7 +185,7 @@ export function useBills() {
     }
   };
 
-  // ================== ✅ Wrapper ใหม่ (รับ billId) ==================
+  // ================== เพิ่มใหม่ (รับ billId) ==================
 
   const findBill = (billId: string) =>
     bills.find((b) => b.billId === billId);
@@ -230,7 +230,7 @@ export function useBills() {
     rejectBill,
     overdueBill,
 
-    // ✅ ของใหม่
+    // ของใหม่ (ใช้กับ component ที่ส่งมาเป็น billId)
     deleteBillById,
     approveBillById,
     rejectBillById,

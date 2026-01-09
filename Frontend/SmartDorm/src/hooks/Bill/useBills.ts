@@ -69,9 +69,11 @@ export function useBills() {
   };
 
   // ---------------- ลบบิล ----------------
-  const deleteBill = async (billId: string, roomNumber: string) => {
+  const deleteBill = async (bill: Bill) => {
+    const room = bill.room.number;
+
     const ok = await Swal.fire({
-      title: `ลบบิลห้อง ${roomNumber}?`,
+      title: `ลบบิลห้อง ${room}?`,
       icon: "warning",
       showCancelButton: true,
       confirmButtonText: "ลบ",
@@ -81,16 +83,14 @@ export function useBills() {
     if (!ok.isConfirmed) return;
 
     try {
-      const res = await fetch(`${API_BASE}${DeleteBill(billId)}`, {
+      const res = await fetch(`${API_BASE}${DeleteBill(bill.billId)}`, {
         method: "DELETE",
         credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ billId }),
       });
 
       if (!res.ok) throw new Error();
 
-      toast("success", "ลบบิลสำเร็จ", `บิลห้อง ${roomNumber} ถูกลบแล้ว`);
+      toast("success", "ลบบิลสำเร็จ", `บิลห้อง ${room} ถูกลบแล้ว`);
       await fetchBills();
     } catch {
       toast("error", "ลบไม่สำเร็จ", "ไม่สามารถลบบิลได้");
@@ -98,12 +98,14 @@ export function useBills() {
   };
 
   // ---------------- อนุมัติบิล ----------------
-  const approveBill = async (billId: string, room: string) => {
+  const approveBill = async (bill: Bill) => {
+    const room = bill.room.number;
+
     const ok = await Swal.fire({
       title: `อนุมัติบิลห้อง ${room}?`,
       icon: "question",
       showCancelButton: true,
-      confirmButtonText: "✔️ อนุมัติ",
+      confirmButtonText: "อนุมัติ",
       cancelButtonText: "ยกเลิก",
     });
 
@@ -111,7 +113,7 @@ export function useBills() {
 
     try {
       await axios.put(
-        `${API_BASE}/bill/approve/${billId}`,
+        `${API_BASE}/bill/approve/${bill.billId}`,
         {},
         { withCredentials: true }
       );
@@ -124,12 +126,14 @@ export function useBills() {
   };
 
   // ---------------- ปฏิเสธบิล ----------------
-  const rejectBill = async (billId: string, room: string) => {
+  const rejectBill = async (bill: Bill) => {
+    const room = bill.room.number;
+
     const ok = await Swal.fire({
       title: `ปฏิเสธบิลห้อง ${room}?`,
       icon: "warning",
       showCancelButton: true,
-      confirmButtonText: "❌ ปฏิเสธ",
+      confirmButtonText: "ปฏิเสธ",
       cancelButtonText: "ยกเลิก",
     });
 
@@ -137,7 +141,7 @@ export function useBills() {
 
     try {
       await axios.put(
-        `${API_BASE}/bill/reject/${billId}`,
+        `${API_BASE}/bill/reject/${bill.billId}`,
         {},
         { withCredentials: true }
       );
@@ -150,10 +154,8 @@ export function useBills() {
   };
 
   // ---------------- แจ้งเตือนบิลค้างชำระ ----------------
-  const overdueBill = async (billId: string, room: string) => {
-    const bill = bills.find((b) => b.billId === billId);
-
-    if (!bill || bill.billStatus !== 0) {
+  const overdueBill = async (bill: Bill) => {
+    if (bill.billStatus !== 0) {
       toast(
         "info",
         "ไม่สามารถแจ้งเตือน",
@@ -161,6 +163,8 @@ export function useBills() {
       );
       return;
     }
+
+    const room = bill.room.number;
 
     const ok = await Swal.fire({
       title: `แจ้งเตือนบิลห้อง ${room}?`,
@@ -181,7 +185,7 @@ export function useBills() {
       });
 
       await axios.put(
-        `${API_BASE}/bill/overdue/${billId}`,
+        `${API_BASE}/bill/overdue/${bill.billId}`,
         {},
         { withCredentials: true }
       );

@@ -1,3 +1,4 @@
+// src/components/AllBills/AllBillsRow.tsx
 import type { Bill } from "../../types/Bill";
 
 interface Props {

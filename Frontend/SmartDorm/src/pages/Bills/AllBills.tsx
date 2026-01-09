@@ -1,4 +1,3 @@
-// src/pages/AllBills.tsx
 import { useState, useEffect } from "react";
 import Nav from "../../components/Nav";
 import { useAuth } from "../../hooks/useAuth";
@@ -22,6 +21,7 @@ export default function AllBills() {
     deleteBill,
     approveBill,
     rejectBill,
+    overdueBill, // ✅ เพิ่ม
   } = useBills();
 
   const [filterStatus, setFilterStatus] = useState("0");
@@ -32,7 +32,7 @@ export default function AllBills() {
   const [editingBill, setEditingBill] = useState<Bill | null>(null);
   const [manageBill, setManageBill] = useState<Bill | null>(null);
 
-  // ✅ FIX: ใช้ billStatus
+  // ✅ นับจาก billStatus
   const unpaidCount = bills.filter((b) => b.billStatus === 0).length;
   const paidCount = bills.filter((b) => b.billStatus === 1).length;
   const pendingCount = bills.filter((b) => b.billStatus === 2).length;
@@ -51,22 +51,24 @@ export default function AllBills() {
   useEffect(() => {
     let result = bills;
 
-    // ✅ FIX: status → billStatus
-    if (filterStatus !== "")
+    if (filterStatus !== "") {
       result = result.filter(
         (b) => b.billStatus === Number(filterStatus)
       );
+    }
 
-    if (filterMonth)
+    if (filterMonth) {
       result = result.filter(
         (b) =>
           new Date(b.month).toISOString().slice(0, 7) === filterMonth
       );
+    }
 
-    if (filterRoom)
+    if (filterRoom) {
       result = result.filter((b) =>
         b.room?.number?.toString().includes(filterRoom)
       );
+    }
 
     setFiltered(result);
     setPage(1);
@@ -97,9 +99,6 @@ export default function AllBills() {
       showConfirmButton: false,
       showCloseButton: true,
       background: "#fff",
-      customClass: {
-        popup: "swal-slip-popup",
-      },
     });
   };
 
@@ -192,6 +191,7 @@ export default function AllBills() {
               onDelete={deleteBill}
               onViewSlip={handleViewSlip}
               onManage={setManageBill}
+              onOverdue={overdueBill} // ✅ เพิ่ม
             />
           ) : (
             <div
@@ -210,6 +210,7 @@ export default function AllBills() {
                   onDelete={deleteBill}
                   onViewSlip={handleViewSlip}
                   onManage={setManageBill}
+                  onOverdue={overdueBill} // ✅ เพิ่ม
                 />
               ))}
             </div>
@@ -241,6 +242,7 @@ export default function AllBills() {
           bill={manageBill}
           onApprove={approveBill}
           onReject={rejectBill}
+          onOverdue={overdueBill} // ✅ เพิ่ม
           onClose={() => setManageBill(null)}
         />
       )}

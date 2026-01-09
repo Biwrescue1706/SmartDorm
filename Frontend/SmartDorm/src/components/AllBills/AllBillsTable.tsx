@@ -6,7 +6,7 @@ interface Props {
   bills: Bill[];
   role?: number | null;
   onEdit: (bill: Bill) => void;
-  onDelete: (billId: string, room: string) => void;
+  onDelete: (billId: string) => void;
   onViewSlip: (bill: Bill) => void;
   onManage: (bill: Bill) => void; // ⭐ เพิ่ม
 }

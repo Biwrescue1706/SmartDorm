@@ -161,9 +161,11 @@ export default function BookingRow({
           </p>
         )}
 
-        <p className="mt-2 mb-1">
-          <b>วันแจ้งขอคืน :</b> {formatThai(checkout?.checkout)}
-        </p>
+        {checkout?.checkout !== null && (
+          <p className="mt-2 mb-1">
+            <b>วันแจ้งขอคืน :</b> {formatThai(checkout?.checkout)}
+          </p>
+        )}
 
         <p className="mt-2 mb-1">
           <b>สถานะ : </b> <span className={statusClass}>{statusText}</span>

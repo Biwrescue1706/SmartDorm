@@ -10,7 +10,6 @@ const adminId = process.env.ADMIN_LINE_ID;
 const BASE_URL = "https://smartdorm-detail.biwbong.shop";
 const ADMIN_URL = "https://smartdorm-admin.biwbong.shop";
 
-//  Utils
 const formatThaiDate = (d?: string | Date | null) =>
   d
     ? new Date(d).toLocaleDateString("th-TH", {
@@ -20,7 +19,6 @@ const formatThaiDate = (d?: string | Date | null) =>
       })
     : "-";
 
-//   Admin: ดู checkout ทั้งหมด
 checkouts.get("/getall", authMiddleware, async (_req, res) => {
   try {
     const checkouts = await prisma.checkout.findMany({
@@ -33,7 +31,6 @@ checkouts.get("/getall", authMiddleware, async (_req, res) => {
   }
 });
 
-//   Admin: ดู checkout รายตัว
 checkouts.get("/:checkoutId", async (req, res) => {
   try {
     const { checkoutId } = req.params;
@@ -48,7 +45,6 @@ checkouts.get("/:checkoutId", async (req, res) => {
   }
 });
 
-//ลูกค้า: booking ที่ยังขอคืนได้
 checkouts.post("/myBookings", async (req, res) => {
   try {
     const { accessToken } = req.body;
@@ -73,7 +69,6 @@ checkouts.post("/myBookings", async (req, res) => {
   }
 });
 
-//   ลูกค้า: ส่งคำขอคืนห้อง
 checkouts.put("/:bookingId/request", async (req, res) => {
   try {
     const { bookingId } = req.params;
@@ -105,14 +100,11 @@ checkouts.put("/:bookingId/request", async (req, res) => {
         checkout: new Date(requestedCheckout),
         checkoutStatus: 0,
       },
-      include: {
-        room: true,
-        customer: true,
-      },
+      include: { room: true, customer: true },
     });
 
     const detailUrl = `${BASE_URL}/checkout/${checkout.checkoutId}`;
-    const admindetailUrl = `${ADMIN_URL}`;
+
     if (adminId) {
       await sendFlexMessage(
         adminId,
@@ -123,7 +115,7 @@ checkouts.put("/:bookingId/request", async (req, res) => {
           { label: "วันที่ขอคืน", value: formatThaiDate(checkout.checkout) },
           { label: "ผู้เช่า", value: checkout.customer.userName || "-" },
         ],
-        [{ label: "เปิดดูรายการ", url: admindetailUrl, style: "primary" }]
+        [{ label: "เปิดดูรายการ", url: ADMIN_URL, style: "primary" }]
       );
     }
 
@@ -145,7 +137,6 @@ checkouts.put("/:bookingId/request", async (req, res) => {
   }
 });
 
-// Admin: อนุมัติคำขอคืน (แจ้งลูกค้า)
 checkouts.put("/:checkoutId/approve", authMiddleware, async (req, res) => {
   try {
     const { checkoutId } = req.params;
@@ -172,10 +163,7 @@ checkouts.put("/:checkoutId/approve", authMiddleware, async (req, res) => {
         { label: "รหัสการคืน", value: checkout.checkoutId },
         { label: "ห้อง", value: checkout.room.number },
         { label: "วันที่ขอคืน", value: formatThaiDate(checkout.checkout) },
-        {
-          label: "วันที่อนุมัติ",
-          value: formatThaiDate(updated.RefundApprovalDate),
-        },
+        { label: "วันที่อนุมัติ", value: formatThaiDate(updated.RefundApprovalDate) },
         { label: "สถานะ", value: "รอวันเช็คเอาท์", color: "#f39c12" },
       ],
       [{ label: "เปิดดูรายการ", url: detailUrl, style: "primary" }]
@@ -187,7 +175,6 @@ checkouts.put("/:checkoutId/approve", authMiddleware, async (req, res) => {
   }
 });
 
-//Admin: ปฏิเสธคำขอคืน (แจ้งลูกค้า)
 checkouts.put("/:checkoutId/reject", authMiddleware, async (req, res) => {
   try {
     const { checkoutId } = req.params;
@@ -214,10 +201,7 @@ checkouts.put("/:checkoutId/reject", authMiddleware, async (req, res) => {
         { label: "รหัสการคืน", value: checkout.checkoutId },
         { label: "ห้อง", value: checkout.room.number },
         { label: "วันที่ขอคืน", value: formatThaiDate(checkout.checkout) },
-        {
-          label: "วันที่ปฏิเสธ",
-          value: formatThaiDate(updated.RefundApprovalDate),
-        },
+        { label: "วันที่ปฏิเสธ", value: formatThaiDate(updated.RefundApprovalDate) },
         { label: "สถานะ", value: "ถูกปฏิเสธ" },
         { label: "เหตุผล", value: "กรุณาติดต่อแอดมินเพื่อสอบถามเพิ่มเติม" },
       ],
@@ -230,7 +214,6 @@ checkouts.put("/:checkoutId/reject", authMiddleware, async (req, res) => {
   }
 });
 
-//Admin: เช็คเอาท์จริง + คืนเงินมัดจำ
 checkouts.put("/:checkoutId/checkout", authMiddleware, async (req, res) => {
   try {
     const { checkoutId } = req.params;
@@ -240,6 +223,8 @@ checkouts.put("/:checkoutId/checkout", authMiddleware, async (req, res) => {
       include: { room: true, customer: true },
     });
     if (!checkout) throw new Error("ไม่พบข้อมูล checkout");
+    if (checkout.ReturnApprovalStatus !== 1)
+      throw new Error("ยังไม่ได้รับการอนุมัติคำขอคืน");
     if (checkout.checkoutStatus === 1) throw new Error("เช็คเอาท์ไปแล้ว");
 
     const deposit = checkout.room.deposit || 0;
@@ -274,11 +259,10 @@ checkouts.put("/:checkoutId/checkout", authMiddleware, async (req, res) => {
   }
 });
 
-// Admin: แก้ไขวันที่ขอคืน
 checkouts.put("/:checkoutId/date", authMiddleware, async (req, res) => {
   try {
     const { checkoutId } = req.params;
-    const { checkout: newCheckoutDate } = req.body; // ตรงกับ Prisma
+    const { checkout: newCheckoutDate } = req.body;
 
     if (!newCheckoutDate) throw new Error("ต้องระบุวันที่คืน");
 
@@ -289,7 +273,7 @@ checkouts.put("/:checkoutId/date", authMiddleware, async (req, res) => {
 
     const updated = await prisma.checkout.update({
       where: { checkoutId },
-      data: { checkout: new Date(newCheckoutDate) }, // อัปเดตวันที่ขอคืน
+      data: { checkout: new Date(newCheckoutDate) },
     });
 
     res.json({ checkout: updated });
@@ -298,7 +282,6 @@ checkouts.put("/:checkoutId/date", authMiddleware, async (req, res) => {
   }
 });
 
-//   Admin: ลบ checkout
 checkouts.delete("/:checkoutId", authMiddleware, async (req, res) => {
   try {
     const { checkoutId } = req.params;

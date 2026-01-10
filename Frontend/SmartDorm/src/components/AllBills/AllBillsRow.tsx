@@ -1,3 +1,4 @@
+// src/components/AllBills/AllBillsRow.tsx
 import type { Bill } from "../../types/Bill";
 
 interface Props {
@@ -5,7 +6,7 @@ interface Props {
   bill: Bill;
   role?: number | null;
   onEdit: (bill: Bill) => void;
-  onDelete: (billId: string, room: string) => void;
+  onDelete: (billId: string, room?: string) => void; // ✅ เพิ่ม room?
   onViewSlip: (bill: Bill) => void;
   onManage: (bill: Bill) => void;
 }

@@ -1,3 +1,4 @@
+// src/pages/ManageRooms/Checkout.tsx
 import { useEffect, useMemo, useState } from "react";
 import Nav from "../../components/Nav";
 import { useAuth } from "../../hooks/useAuth";
@@ -47,12 +48,12 @@ export default function Checkout() {
   /* ================= FILTER DATA ================= */
   const filteredCheckouts = useMemo(() => {
     const result = checkouts.filter((c) => {
-      if (filter === "pending") return c.status === 0;
+      if (filter === "pending") return c.ReturnApprovalStatus === 0;
       if (filter === "approved")
-        return c.status === 1 && c.checkoutStatus === 0;
+        return c.ReturnApprovalStatus === 1 && c.checkoutStatus === 0;
       if (filter === "completed")
-        return c.status === 1 && c.checkoutStatus === 1;
-      if (filter === "rejected") return c.status === 2;
+        return c.ReturnApprovalStatus === 1 && c.checkoutStatus === 1;
+      if (filter === "rejected") return c.ReturnApprovalStatus === 2;
       return true;
     });
 

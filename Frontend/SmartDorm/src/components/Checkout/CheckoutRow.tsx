@@ -1,3 +1,4 @@
+// src/components/Checkout/CheckoutRow.tsx
 import type { Checkout } from "../../types/Checkout";
 
 const thaiDate = (d?: string | null) =>
@@ -37,16 +38,14 @@ export default function CheckoutRow({
       <td>{checkout.customer?.userName}</td>
       <td>{checkout.booking?.fullName}</td>
       <td>{checkout.booking?.cphone}</td>
-      <td>{thaiDate(checkout.requestedCheckout)}</td>
+      <td>{thaiDate(checkout.checkout)}</td>
 
       <td>
-        {checkout.checkoutStatus === 1
-          ? thaiDate(checkout.actualCheckout)
-          : "-"}
+        {checkout.checkoutStatus === 1 ? thaiDate(checkout.checkoutAt) : "-"}
       </td>
 
       <td>
-        {checkout.status === 0 && (
+        {checkout.ReturnApprovalStatus === 0 && (
           <button
             className="btn btn-warning btn-sm"
             onClick={() => onView(checkout)}
@@ -55,7 +54,7 @@ export default function CheckoutRow({
           </button>
         )}
 
-        {checkout.status === 1 && checkout.checkoutStatus === 0 && (
+        {checkout.ReturnApprovalStatus === 1 && checkout.checkoutStatus === 0 && (
           <button
             className="btn btn-primary btn-sm"
             onClick={() => onCheckout(checkout)}
@@ -68,7 +67,7 @@ export default function CheckoutRow({
           <span className="badge bg-info">คืนแล้ว</span>
         )}
 
-        {checkout.status === 2 && (
+        {checkout.ReturnApprovalStatus === 2 && (
           <span className="badge bg-danger">ปฏิเสธ</span>
         )}
       </td>
@@ -76,7 +75,7 @@ export default function CheckoutRow({
       {canEdit && (
         <td>
           <button
-            className="btn btn-outline-primary btn-sm"
+            className="btn btn-primary btn-sm"
             onClick={() => onEdit(checkout)}
           >
             ✏️
@@ -87,7 +86,7 @@ export default function CheckoutRow({
       {role === 0 && (
         <td>
           <button
-            className="btn btn-outline-danger btn-sm"
+            className="btn btn-danger btn-sm"
             onClick={() => onDelete(checkout.checkoutId)}
           >
             🗑️

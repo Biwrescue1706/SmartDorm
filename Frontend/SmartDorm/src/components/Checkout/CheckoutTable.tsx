@@ -1,3 +1,4 @@
+// src/components/Checkout/CheckoutTable.tsx
 import CheckoutRow from "./CheckoutRow";
 import type { Checkout } from "../../types/Checkout";
 

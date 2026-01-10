@@ -18,8 +18,8 @@ export default function CheckoutEditDialog({
   onClose,
 }: Props) {
   const [checkoutDate, setCheckoutDate] = useState<string>(
-    checkout?.requestedCheckout
-      ? new Date(checkout.requestedCheckout).toISOString().split("T")[0]
+    checkout?.checkout
+      ? new Date(checkout.checkout).toISOString().split("T")[0]
       : ""
   );
 

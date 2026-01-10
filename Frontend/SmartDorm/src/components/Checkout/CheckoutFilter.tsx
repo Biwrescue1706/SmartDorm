@@ -1,3 +1,4 @@
+// src/components/Checkout/CheckoutFilter.tsx
 import type { Checkout } from "../../types/Checkout";
 
 interface Props {
@@ -16,14 +17,14 @@ export default function CheckoutFilter({
   checkouts,
 }: Props) {
   const counts = {
-    pending: checkouts.filter((c) => c.status === 0).length,
+    pending: checkouts.filter((c) => c.ReturnApprovalStatus  === 0).length,
     approved: checkouts.filter(
-      (c) => c.status === 1 && c.checkoutStatus === 0
+      (c) => c.ReturnApprovalStatus  === 1 && c.checkoutStatus === 0
     ).length,
     completed: checkouts.filter(
-      (c) => c.status === 1 && c.checkoutStatus === 1
+      (c) => c.ReturnApprovalStatus  === 1 && c.checkoutStatus === 1
     ).length,
-    rejected: checkouts.filter((c) => c.status === 2).length,
+    rejected: checkouts.filter((c) => c.ReturnApprovalStatus  === 2).length,
   };
 
   const cards = [

@@ -1,3 +1,4 @@
+// src/components/Checkout/CheckoutApproveDialog.tsx
 import type { Checkout } from "../../types/Checkout";
 
 interface Props {
@@ -28,7 +29,7 @@ export default function CheckoutApproveDialog({
           <div className="modal-body">
             <p>ชื่อ: {checkout.booking?.fullName || "-"}</p>
             <p>LINE: {checkout.customer?.userName || "-"}</p>
-            <p>วันที่ขอคืน: {formatThaiDate(checkout.requestedCheckout)}</p>
+            <p>วันที่ขอคืน: {formatThaiDate(checkout.checkout)}</p>
           </div>
 
           <div className="modal-footer">

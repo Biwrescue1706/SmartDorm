@@ -57,7 +57,7 @@ export const processOverdueAuto = async () => {
     if (bill.customer?.userId) {
       await sendFlexMessage(
         bill.customer.userId,
-        "🏫SmartDorm🎉 แจ้งเตือนบิลค้างชำระ",
+        "🏫SmartDorm🎉 ระบบแจ้งเตือนบิลค้างชำระ ( อัตโนมัติ )",
         [
           { label: "ห้อง", value: bill.room?.number ?? "-" },
           { label: "ชื่อ", value: bill.fullName ?? "-" },
@@ -73,7 +73,7 @@ export const processOverdueAuto = async () => {
     if (adminId) {
       await sendFlexMessage(
         adminId,
-        "มีบิลค้างชำระ",
+        "🏫SmartDorm🎉 ระบบแจ้งเตือนบิลค้างชำระ ( อัตโนมัติ )",
         [
           { label: "ห้อง", value: bill.room?.number ?? "-" },
           { label: "ชื่อ", value: bill.fullName ?? "-" },

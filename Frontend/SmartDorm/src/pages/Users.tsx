@@ -13,7 +13,7 @@ interface BookingDetail {
   room?: { number: string };
   createdAt?: string;
   checkin?: string;
-  actualCheckin?: string;
+  checkinAt?: string;
   fullName?: string;
   cphone?: string;
 }
@@ -429,7 +429,7 @@ export default function Users() {
                     <b>เช็คอิน : </b> {formatThaiDate(b.checkin)}
                   </p>
                   <p>
-                    <b>เข้าพักจริง : </b> {formatThaiDate(b.actualCheckin)}
+                    <b>เข้าพักจริง : </b> {formatThaiDate(b.checkinAt)}
                   </p>
 
                   {role === 0 && (

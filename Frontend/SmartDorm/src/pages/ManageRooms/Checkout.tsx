@@ -96,8 +96,8 @@ export default function Checkout() {
         adminUsername={adminUsername}
       />
 
-      <main className="flex-grow-1 px-2 py-3 mt-5 mt-lg-7">
-        <div className="container-max mx-auto">
+      <main className="main-content flex-grow-1 px-2 py-3 mt-5 mt-lg-7">
+        <div className="mx-auto" style={{ maxWidth: "1400px" }}>
           {/* HEADER */}
           <div className="mb-2">
             <h2 className="fw-bold text-center mt-3">จัดการการคืนห้อง</h2>

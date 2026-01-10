@@ -4,10 +4,10 @@ import { Router } from "express";
 import fetch from "node-fetch";
 
 // 🌐 Router
-const qrRouter = Router();
+const Qr = Router();
 
 //  สร้าง QR Code สำหรับ PromptPay Payment
-qrRouter.get("/:amount", async (req, res) => {
+Qr.get("/:amount", async (req, res) => {
   try {
     const { amount } = req.params;
     const promptpayId = "0611747731"; // 🔢 หมายเลข PromptPay ของ SmartDorm
@@ -37,4 +37,4 @@ qrRouter.get("/:amount", async (req, res) => {
   }
 });
 
-export default qrRouter;
+export default Qr;

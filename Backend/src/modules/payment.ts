@@ -6,7 +6,7 @@ import { createClient } from "@supabase/supabase-js";
 import { verifyLineToken } from "../utils/verifyLineToken";
 import { sendFlexMessage } from "../utils/lineFlex";
 
-const paymentRouter = Router();
+const payments = Router();
 const upload = multer({ storage: multer.memoryStorage() });
 const BASE_URL = "https://smartdorm-detail.biwbong.shop";
 const ADMIN_URL = "https://smartdorm-admin.biwbong.shop";
@@ -29,7 +29,7 @@ const formatThaiDate = (d?: string | Date | null) =>
     : "-";
 
 // CREATE PAYMENT + UPLOAD SLIP
-paymentRouter.post("/create", upload.single("slip"), async (req, res) => {
+payments.post("/create", upload.single("slip"), async (req, res) => {
   try {
     const { billId, accessToken } = req.body;
     const slip = req.file;
@@ -144,4 +144,4 @@ paymentRouter.post("/create", upload.single("slip"), async (req, res) => {
   }
 });
 
-export default paymentRouter;
+export default payments;

@@ -125,7 +125,7 @@ export async function sendFlexMessage(
           },
           {
             type: "text",
-            text: "🏫สมาร์ทดอร์ม🎉",
+            text: "🏫SmartDorm🎉",
             weight: "bold",
             color: "#000000",
             size: "md",

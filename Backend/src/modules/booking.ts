@@ -8,7 +8,7 @@ import { sendFlexMessage } from "../utils/lineFlex";
 import { authMiddleware } from "../middleware/authMiddleware";
 
 const upload = multer({ storage: multer.memoryStorage() });
-const bookingRouter = Router();
+const booking = Router();
 const BASE_URL = "https://smartdorm-detail.biwbong.shop";
 const ADMIN_URL = "https://smartdorm-admin.biwbong.shop";
 
@@ -46,7 +46,7 @@ const formatThai = (d?: Date | string | null) =>
 // ================== ROUTES ==================
 
 // 📋 GET ALL BOOKINGS
-bookingRouter.get("/getall", async (_req, res) => {
+booking.get("/getall", async (_req, res) => {
   try {
     const bookings = await prisma.booking.findMany({
       orderBy: { bookingDate: "desc" },
@@ -59,7 +59,7 @@ bookingRouter.get("/getall", async (_req, res) => {
 });
 
 // 🔍 SEARCH BOOKINGS
-bookingRouter.get("/search", async (req, res) => {
+booking.get("/search", async (req, res) => {
   try {
     const keyword = (req.query.keyword as string)?.trim();
     const results = await prisma.booking.findMany({
@@ -83,7 +83,7 @@ bookingRouter.get("/search", async (req, res) => {
 });
 
 // 📋 GET HISTORY
-bookingRouter.get("/history", authMiddleware, async (_req, res) => {
+booking.get("/history", authMiddleware, async (_req, res) => {
   try {
     const bookings = await prisma.booking.findMany({
       orderBy: { bookingDate: "desc" },
@@ -122,7 +122,7 @@ bookingRouter.get("/history", authMiddleware, async (_req, res) => {
 });
 
 // 🔎 GET BOOKING BY ID
-bookingRouter.get("/:bookingId", async (req, res) => {
+booking.get("/:bookingId", async (req, res) => {
   try {
     const booking = await prisma.booking.findUnique({
       where: { bookingId: req.params.bookingId },
@@ -136,7 +136,7 @@ bookingRouter.get("/:bookingId", async (req, res) => {
 });
 
 // ➕ CREATE BOOKING
-bookingRouter.post("/create", async (req, res) => {
+booking.post("/create", async (req, res) => {
   try {
     const {
       accessToken,
@@ -185,7 +185,7 @@ bookingRouter.post("/create", async (req, res) => {
     try {
       await sendFlexMessage(
         booking.customer?.userId ?? "",
-        "📢 🏫SmartDorm🎉 ยืนยันการจองห้อง",
+        "🏫SmartDorm🎉 ยืนยันการจองห้อง",
         [
           { label: "รหัสการจอง", value: booking.bookingId },
           { label: "ชื่อ", value: booking.fullName ?? "-" },
@@ -236,7 +236,7 @@ bookingRouter.post("/create", async (req, res) => {
 });
 
 // 📤 UPLOAD SLIP
-bookingRouter.post(
+booking.post(
   "/:bookingId/uploadSlip",
   upload.single("slip"),
   async (req, res) => {
@@ -271,7 +271,7 @@ bookingRouter.post(
 );
 
 // ✅ APPROVE
-bookingRouter.put("/:bookingId/approve", async (req, res) => {
+booking.put("/:bookingId/approve", async (req, res) => {
   try {
     const updated = await prisma.$transaction(async (tx) => {
       const b = await tx.booking.update({
@@ -325,7 +325,7 @@ bookingRouter.put("/:bookingId/approve", async (req, res) => {
 });
 
 // ❌ REJECT
-bookingRouter.put("/:bookingId/reject", async (req, res) => {
+booking.put("/:bookingId/reject", async (req, res) => {
   try {
     const updated = await prisma.$transaction(async (tx) => {
       const b = await tx.booking.update({
@@ -378,7 +378,7 @@ bookingRouter.put("/:bookingId/reject", async (req, res) => {
 });
 
 // 🏠 CHECKIN
-bookingRouter.put("/:bookingId/checkin", async (req, res) => {
+booking.put("/:bookingId/checkin", async (req, res) => {
   try {
     const updated = await prisma.booking.update({
       where: { bookingId: req.params.bookingId },
@@ -423,7 +423,7 @@ bookingRouter.put("/:bookingId/checkin", async (req, res) => {
 });
 
 // ✏️ ADMIN UPDATE
-bookingRouter.put("/:bookingId", async (req, res) => {
+booking.put("/:bookingId", async (req, res) => {
   try {
     const { bookingId } = req.params;
     const { ctitle, cname, csurname, cphone, cmumId, approveStatus, checkin } =
@@ -473,7 +473,7 @@ bookingRouter.put("/:bookingId", async (req, res) => {
 });
 
 // 🗑️ DELETE
-bookingRouter.delete("/:bookingId", async (req, res) => {
+booking.delete("/:bookingId", async (req, res) => {
   try {
     const { bookingId } = req.params;
     const existing = await prisma.booking.findUnique({ where: { bookingId } });
@@ -495,4 +495,4 @@ bookingRouter.delete("/:bookingId", async (req, res) => {
   }
 });
 
-export default bookingRouter;
+export default booking;

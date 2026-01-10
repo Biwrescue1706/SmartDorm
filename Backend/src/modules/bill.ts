@@ -12,7 +12,7 @@ import {
 } from "../config/rate";
 import { processOverdueManual } from "../services/overdue.manual";
 
-const billRouter = Router();
+const bill = Router();
 
 /*
 billStatus (Int)
@@ -69,7 +69,7 @@ const deleteSlip = async (url?: string | null) => {
 };
 
 // 📋 ดึงบิลทั้งหมด (Admin)
-billRouter.get("/getall", async (_req, res) => {
+bill.get("/getall", async (_req, res) => {
   try {
     const bills = await prisma.bill.findMany({
       include: {
@@ -88,7 +88,7 @@ billRouter.get("/getall", async (_req, res) => {
 });
 
 // 🔍 ดึงบิลตาม ID (Customer / Admin)
-billRouter.get("/:billId", async (req, res) => {
+bill.get("/:billId", async (req, res) => {
   try {
     const { billId } = req.params;
 
@@ -113,7 +113,7 @@ billRouter.get("/:billId", async (req, res) => {
 });
 
 // ➕ สร้างบิลจากห้อง (Admin)
-billRouter.post(
+bill.post(
   "/createFromRoom/:roomId",
   authMiddleware,
   roleMiddleware(0),
@@ -239,7 +239,7 @@ billRouter.post(
 );
 
 // ✅ อนุมัติการชำระเงิน (Admin)
-billRouter.put(
+bill.put(
   "/approve/:billId",
   authMiddleware,
   roleMiddleware(0),
@@ -279,7 +279,7 @@ billRouter.put(
       if (bill.customer?.userId) {
         await sendFlexMessage(
           bill.customer.userId,
-          "✅ การชำระเงินของคุณได้รับการยืนยันแล้ว",
+          "🏫SmartDorm🎉 แจ้งผลการชำระเงิน",
           [
             { label: "รหัสบิล", value: bill.billId },
             { label: "ห้อง", value: bill.room?.number ?? "-" },
@@ -302,7 +302,7 @@ billRouter.put(
 );
 
 // ❌ ปฏิเสธสลิป (Admin)
-billRouter.put(
+bill.put(
   "/reject/:billId",
   authMiddleware,
   roleMiddleware(0),
@@ -338,9 +338,8 @@ billRouter.put(
   }
 );
 
-// ⚠️ แจ้งเตือนค้างชำระ (Admin)
 // ⚠️ แจ้งเตือนค้างชำระ (Admin กดเอง)
-billRouter.put(
+bill.put(
   "/overdue/:billId",
   authMiddleware,
   roleMiddleware(0),
@@ -359,7 +358,7 @@ billRouter.put(
 );
 
 // ✏️ แก้ไขบิล (ห้ามแก้ถ้า billStatus = 1,2)
-billRouter.put(
+bill.put(
   "/edit/:billId",
   authMiddleware,
   roleMiddleware(0),
@@ -388,7 +387,6 @@ billRouter.put(
       const newWAfter = wAfter ?? bill.wAfter;
       const newEAfter = eAfter ?? bill.eAfter;
 
-      // 🔍 validation มิเตอร์
       if (newWAfter < wBefore)
         throw new Error("ค่าน้ำปัจจุบันต้องมากกว่าหรือเท่าก่อนหน้า");
       if (newEAfter < eBefore)
@@ -400,11 +398,30 @@ billRouter.put(
       const waterCost = wUnits * WATER_PRICE;
       const electricCost = eUnits * ELECTRIC_PRICE;
 
-      const fine = bill.fine ?? 0;
+      // ----------------- ใหม่: คำนวณ overdue ตามเงื่อนไข -----------------
+      let newOverdueDays = bill.overdueDays ?? 0;
+      let newFine = bill.fine ?? 0;
 
-      const total = bill.rent + bill.service + waterCost + electricCost + fine;
-      
-      const resetOverdue = !!dueDate;
+      if (dueDate) {
+        const today = new Date();
+        const newDue = new Date(dueDate);
+
+        if (today > newDue) {
+          const diffDays = Math.floor(
+            (today.getTime() - newDue.getTime()) / (1000 * 60 * 60 * 24)
+          );
+
+          newOverdueDays = diffDays;
+          newFine = diffDays * OVERDUE_FINE_PER_DAY;
+        } else {
+          // ยังไม่เกินกำหนดใหม่ → reset
+          newOverdueDays = 0;
+          newFine = 0;
+        }
+      }
+      // ----------------- ใหม่: คำนวณ overdue ตามเงื่อนไข ------------------
+      const total =
+        bill.rent + bill.service + waterCost + electricCost + newFine;
 
       const updated = await prisma.bill.update({
         where: { billId },
@@ -422,9 +439,9 @@ billRouter.put(
           month: month ? new Date(month) : bill.month,
           dueDate: dueDate ? new Date(dueDate) : bill.dueDate,
 
-          // 🔄 reset ค้างชำระ
-          overdueDays: resetOverdue ? 0 : bill.overdueDays,
-          fine: resetOverdue ? 0 : bill.fine,
+          // ใช้ค่าที่คำนวณใหม่
+          overdueDays: newOverdueDays,
+          fine: newFine,
 
           billDate: new Date(),
         },
@@ -432,11 +449,10 @@ billRouter.put(
 
       const detailedBill = `${BASE_URL}bill/${bill.billId}`;
 
-      // 📲 แจ้งลูกค้าทาง LINE
       if (bill.customer?.userId) {
         await sendFlexMessage(
           bill.customer.userId,
-          "✏️ มีการแก้ไขบิลค่าเช่าห้อง",
+          "🏫SmartDorm🎉 แก้ไขบิลค่าเช่าห้อง",
           [
             { label: "รหัสบิล", value: bill.billId },
             { label: "ห้อง", value: bill.room?.number ?? "-" },
@@ -470,39 +486,34 @@ billRouter.put(
 );
 
 // 🗑️ ลบบิลและ payment (Admin)
-billRouter.delete(
-  "/:billId",
-  authMiddleware,
-  roleMiddleware(0),
-  async (req, res) => {
-    try {
-      const { billId } = req.params;
+bill.delete("/:billId", authMiddleware, roleMiddleware(0), async (req, res) => {
+  try {
+    const { billId } = req.params;
 
-      const bill = await prisma.bill.findUnique({
-        where: { billId },
-        include: { payment: true }, // ตรวจสอบว่ามี payment หรือไม่
-      });
+    const bill = await prisma.bill.findUnique({
+      where: { billId },
+      include: { payment: true }, // ตรวจสอบว่ามี payment หรือไม่
+    });
 
-      if (!bill) throw new Error("ไม่พบบิล");
+    if (!bill) throw new Error("ไม่พบบิล");
 
-      await prisma.$transaction(async (tx) => {
-        // ลบสลิปจาก Supabase ถ้ามี
-        if (bill.slipUrl) await deleteSlip(bill.slipUrl);
+    await prisma.$transaction(async (tx) => {
+      // ลบสลิปจาก Supabase ถ้ามี
+      if (bill.slipUrl) await deleteSlip(bill.slipUrl);
 
-        // ลบ payment ทั้งหมดของบิลนี้
-        if (bill.payment) {
-          await tx.payment.deleteMany({ where: { billId } });
-        }
+      // ลบ payment ทั้งหมดของบิลนี้
+      if (bill.payment) {
+        await tx.payment.deleteMany({ where: { billId } });
+      }
 
-        // ลบบิล
-        await tx.bill.delete({ where: { billId } });
-      });
+      // ลบบิล
+      await tx.bill.delete({ where: { billId } });
+    });
 
-      res.json({ message: "ลบบิลและ payment สำเร็จ" });
-    } catch (err: any) {
-      res.status(400).json({ error: err.message });
-    }
+    res.json({ message: "ลบบิลและ payment สำเร็จ" });
+  } catch (err: any) {
+    res.status(400).json({ error: err.message });
   }
-);
+});
 
-export default billRouter;
+export default bill;

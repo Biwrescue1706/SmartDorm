@@ -5,6 +5,7 @@ import { OVERDUE_FINE_PER_DAY } from "../config/rate";
 import cron from "node-cron";
 
 const BASE_URL = "https://smartdorm-detail.biwbong.shop";
+const ADMIN_URL = "https://smartdorm-admin.biwbong.shop";
 const adminId = process.env.ADMIN_LINE_ID;
 
 //  * ประมวลผลบิลค้างชำระอัตโนมัติ
@@ -56,9 +57,10 @@ export const processOverdueAuto = async () => {
     if (bill.customer?.userId) {
       await sendFlexMessage(
         bill.customer.userId,
-        "⚠️ แจ้งเตือนบิลค้างชำระ",
+        "🏫SmartDorm🎉 แจ้งเตือนบิลค้างชำระ",
         [
           { label: "ห้อง", value: bill.room?.number ?? "-" },
+          { label: "ชื่อ", value: bill.fullName ?? "-" },
           { label: "ค้าง", value: `${overdueDays} วัน` },
           { label: "ค่าปรับ", value: `${fine} บาท` },
           { label: "ยอดรวม", value: `${total.toLocaleString()} บาท` },
@@ -71,12 +73,15 @@ export const processOverdueAuto = async () => {
     if (adminId) {
       await sendFlexMessage(
         adminId,
-        "📢 บิลค้างชำระ (ระบบอัตโนมัติ)",
+        "มีบิลค้างชำระ",
         [
           { label: "ห้อง", value: bill.room?.number ?? "-" },
+          { label: "ชื่อ", value: bill.fullName ?? "-" },
           { label: "ค้าง", value: `${overdueDays} วัน` },
+          { label: "ค่าปรับ", value: `${fine} บาท` },
+          { label: "ยอดรวม", value: `${total.toLocaleString()} บาท` },
         ],
-        [{ label: "ดูรายละเอียด", url: billUrl }]
+        [{ label: "ดูรายละเอียด", url: ADMIN_URL }]
       );
     }
   }

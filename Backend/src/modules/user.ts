@@ -5,10 +5,10 @@ import prisma from "../prisma";
 import { verifyLineToken } from "../utils/verifyLineToken";
 import { deleteSlip } from "./booking";
 
-const userRouter = Router();
+const user = Router();
 
 //   📋 ดึงลูกค้าทั้งหมด (Admin)
-userRouter.get("/getall", async (_req, res) => {
+user.get("/getall", async (_req, res) => {
   try {
     const users = await prisma.customer.findMany({
       include: {
@@ -28,7 +28,7 @@ userRouter.get("/getall", async (_req, res) => {
 });
 
 //   🧍‍♂️ Register / Update (LINE Login)
-userRouter.post("/register", async (req, res) => {
+user.post("/register", async (req, res) => {
   try {
     const { accessToken } = req.body;
     const { userId, displayName } = await verifyLineToken(accessToken);
@@ -61,7 +61,7 @@ userRouter.post("/register", async (req, res) => {
 });
 
 //   👤 /user/me (ตรวจ token)
-userRouter.post("/me", async (req, res) => {
+user.post("/me", async (req, res) => {
   try {
     const { accessToken } = req.body;
     const { userId, displayName } = await verifyLineToken(accessToken);
@@ -92,7 +92,7 @@ userRouter.post("/me", async (req, res) => {
 });
 
 //   💸 บิลที่ชำระแล้ว
-userRouter.post("/payments", async (req, res) => {
+user.post("/payments", async (req, res) => {
   try {
     const { accessToken } = req.body;
     const { userId } = await verifyLineToken(accessToken);
@@ -122,7 +122,7 @@ userRouter.post("/payments", async (req, res) => {
 });
 
 //   💰 บิลที่ยังไม่ชำระ
-userRouter.post("/bills/unpaid", async (req, res) => {
+user.post("/bills/unpaid", async (req, res) => {
   try {
     const { accessToken } = req.body;
     const { userId } = await verifyLineToken(accessToken);
@@ -150,8 +150,7 @@ userRouter.post("/bills/unpaid", async (req, res) => {
 
 //   🚪 ห้องที่สามารถคืนได้
 //   ✔ ใช้ customerId เป็นหลัก
-
-userRouter.post("/bookings/returnable", async (req, res) => {
+user.post("/bookings/returnable", async (req, res) => {
   try {
     const { accessToken } = req.body;
     const { userId } = await verifyLineToken(accessToken);
@@ -188,7 +187,7 @@ userRouter.post("/bookings/returnable", async (req, res) => {
 });
 
 //   🔍 ค้นหาลูกค้า (Admin)
-userRouter.get("/search", async (req, res) => {
+user.get("/search", async (req, res) => {
   try {
     const keyword = req.query.keyword?.toString().trim();
     if (!keyword) return res.json({ users: [] });
@@ -204,7 +203,11 @@ userRouter.get("/search", async (req, res) => {
                 OR: [
                   { fullName: { contains: keyword, mode: "insensitive" } },
                   { cphone: { contains: keyword, mode: "insensitive" } },
-                  { room: { number: { contains: keyword, mode: "insensitive" } } },
+                  {
+                    room: {
+                      number: { contains: keyword, mode: "insensitive" },
+                    },
+                  },
                 ],
               },
             },
@@ -227,7 +230,7 @@ userRouter.get("/search", async (req, res) => {
 });
 
 //   ❌ ลบลูกค้า (Admin)
-userRouter.delete("/:customerId", async (req, res) => {
+user.delete("/:customerId", async (req, res) => {
   try {
     const { customerId } = req.params;
 
@@ -259,4 +262,4 @@ userRouter.delete("/:customerId", async (req, res) => {
   }
 });
 
-export default userRouter;
+export default user;

@@ -4,6 +4,7 @@ import { sendFlexMessage } from "../utils/lineFlex";
 import { OVERDUE_FINE_PER_DAY } from "../config/rate";
 
 const BASE_URL = "https://smartdorm-detail.biwbong.shop";
+const ADMIN_URL = "https://smartdorm-admin.biwbong.shop";
 const ADMIN_LINE_ID = process.env.ADMIN_LINE_ID;
 
 export const processOverdueManual = async (billId: string) => {
@@ -25,17 +26,12 @@ export const processOverdueManual = async (billId: string) => {
     (today.getTime() - due.getTime()) / (1000 * 60 * 60 * 24)
   );
 
-  if (overdueDays <= 0)
-    throw new Error("บิลนี้ยังไม่เกินกำหนด");
+  if (overdueDays <= 0) throw new Error("บิลนี้ยังไม่เกินกำหนด");
 
   const fine = overdueDays * OVERDUE_FINE_PER_DAY;
 
   const total =
-    bill.rent +
-    bill.service +
-    bill.waterCost +
-    bill.electricCost +
-    fine;
+    bill.rent + bill.service + bill.waterCost + bill.electricCost + fine;
 
   const updated = await prisma.bill.update({
     where: { billId },
@@ -53,9 +49,10 @@ export const processOverdueManual = async (billId: string) => {
   if (bill.customer?.userId) {
     await sendFlexMessage(
       bill.customer.userId,
-      "⚠️ แจ้งเตือนบิลค้างชำระ",
+      "🏫SmartDorm🎉 แจ้งเตือนบิลค้างชำระ",
       [
         { label: "ห้อง", value: bill.room?.number ?? "-" },
+        { label: "ชื่อ", value: bill.fullName ?? "-" },
         { label: "ค้าง", value: `${overdueDays} วัน` },
         { label: "ค่าปรับ", value: `${fine} บาท` },
         { label: "ยอดรวม", value: `${total.toLocaleString()} บาท` },
@@ -73,8 +70,10 @@ export const processOverdueManual = async (billId: string) => {
         { label: "ห้อง", value: bill.room?.number ?? "-" },
         { label: "ชื่อ", value: bill.fullName ?? "-" },
         { label: "ค้าง", value: `${overdueDays} วัน` },
+        { label: "ค่าปรับ", value: `${fine} บาท` },
+        { label: "ยอดรวม", value: `${total.toLocaleString()} บาท` },
       ],
-      [{ label: "ดูรายละเอียด", url: billUrl }]
+      [{ label: "ดูรายละเอียด", url: ADMIN_URL }]
     );
   }
 

@@ -5,7 +5,7 @@ import { authMiddleware } from "../middleware/authMiddleware";
 import { verifyLineToken } from "../utils/verifyLineToken";
 import { sendFlexMessage } from "../utils/lineFlex";
 
-const checkoutRouter = Router();
+const checkouts = Router();
 const adminId = process.env.ADMIN_LINE_ID;
 const BASE_URL = "https://smartdorm-detail.biwbong.shop";
 const ADMIN_URL = "https://smartdorm-admin.biwbong.shop";
@@ -21,7 +21,7 @@ const formatThaiDate = (d?: string | Date | null) =>
     : "-";
 
 //   Admin: ดู checkout ทั้งหมด
-checkoutRouter.get("/getall", authMiddleware, async (_req, res) => {
+checkouts.get("/getall", authMiddleware, async (_req, res) => {
   try {
     const checkouts = await prisma.checkout.findMany({
       orderBy: { createdAt: "desc" },
@@ -34,7 +34,7 @@ checkoutRouter.get("/getall", authMiddleware, async (_req, res) => {
 });
 
 //   Admin: ดู checkout รายตัว
-checkoutRouter.get("/:checkoutId", async (req, res) => {
+checkouts.get("/:checkoutId", async (req, res) => {
   try {
     const { checkoutId } = req.params;
     const checkout = await prisma.checkout.findUnique({
@@ -49,7 +49,7 @@ checkoutRouter.get("/:checkoutId", async (req, res) => {
 });
 
 //ลูกค้า: booking ที่ยังขอคืนได้
-checkoutRouter.post("/myBookings", async (req, res) => {
+checkouts.post("/myBookings", async (req, res) => {
   try {
     const { accessToken } = req.body;
     const { userId } = await verifyLineToken(accessToken);
@@ -74,7 +74,7 @@ checkoutRouter.post("/myBookings", async (req, res) => {
 });
 
 //   ลูกค้า: ส่งคำขอคืนห้อง
-checkoutRouter.put("/:bookingId/request", async (req, res) => {
+checkouts.put("/:bookingId/request", async (req, res) => {
   try {
     const { bookingId } = req.params;
     const { accessToken, checkout: requestedCheckout } = req.body;
@@ -146,7 +146,7 @@ checkoutRouter.put("/:bookingId/request", async (req, res) => {
 });
 
 // Admin: อนุมัติคำขอคืน (แจ้งลูกค้า)
-checkoutRouter.put("/:checkoutId/approve", authMiddleware, async (req, res) => {
+checkouts.put("/:checkoutId/approve", authMiddleware, async (req, res) => {
   try {
     const { checkoutId } = req.params;
 
@@ -188,7 +188,7 @@ checkoutRouter.put("/:checkoutId/approve", authMiddleware, async (req, res) => {
 });
 
 //Admin: ปฏิเสธคำขอคืน (แจ้งลูกค้า)
-checkoutRouter.put("/:checkoutId/reject", authMiddleware, async (req, res) => {
+checkouts.put("/:checkoutId/reject", authMiddleware, async (req, res) => {
   try {
     const { checkoutId } = req.params;
 
@@ -231,55 +231,51 @@ checkoutRouter.put("/:checkoutId/reject", authMiddleware, async (req, res) => {
 });
 
 //Admin: เช็คเอาท์จริง + คืนเงินมัดจำ
-checkoutRouter.put(
-  "/:checkoutId/checkout",
-  authMiddleware,
-  async (req, res) => {
-    try {
-      const { checkoutId } = req.params;
+checkouts.put("/:checkoutId/checkout", authMiddleware, async (req, res) => {
+  try {
+    const { checkoutId } = req.params;
 
-      const checkout = await prisma.checkout.findUnique({
-        where: { checkoutId },
-        include: { room: true, customer: true },
-      });
-      if (!checkout) throw new Error("ไม่พบข้อมูล checkout");
-      if (checkout.checkoutStatus === 1) throw new Error("เช็คเอาท์ไปแล้ว");
+    const checkout = await prisma.checkout.findUnique({
+      where: { checkoutId },
+      include: { room: true, customer: true },
+    });
+    if (!checkout) throw new Error("ไม่พบข้อมูล checkout");
+    if (checkout.checkoutStatus === 1) throw new Error("เช็คเอาท์ไปแล้ว");
 
-      const deposit = checkout.room.deposit || 0;
+    const deposit = checkout.room.deposit || 0;
 
-      await prisma.checkout.update({
-        where: { checkoutId },
-        data: { checkoutStatus: 1, checkoutAt: new Date() },
-      });
+    await prisma.checkout.update({
+      where: { checkoutId },
+      data: { checkoutStatus: 1, checkoutAt: new Date() },
+    });
 
-      const detailUrl = `${BASE_URL}/checkout/${checkout.checkoutId}`;
+    const detailUrl = `${BASE_URL}/checkout/${checkout.checkoutId}`;
 
-      await sendFlexMessage(
-        checkout.customer.userId,
-        "🏫SmartDorm🎉 เช็คเอาท์เรียบร้อยแล้ว",
-        [
-          { label: "รหัสการคืน", value: checkout.checkoutId },
-          { label: "ห้อง", value: checkout.room.number },
-          { label: "วันที่เช็คเอาท์", value: formatThaiDate(new Date()) },
-          { label: "เงินมัดจำ", value: `${deposit.toLocaleString()} บาท` },
-          { label: "ยอดคืน", value: `${deposit.toLocaleString()} บาท` },
-          {
-            label: "แจ้งโอนเงิน",
-            value: "กรุณาพิมพ์หมายเลขบัญชี\nธนาคาร\nxxx-xxx-xxxx\nชื่อ-นามสกุล",
-          },
-        ],
-        [{ label: "ดูรายละเอียด", url: detailUrl, style: "primary" }]
-      );
+    await sendFlexMessage(
+      checkout.customer.userId,
+      "🏫SmartDorm🎉 เช็คเอาท์เรียบร้อยแล้ว",
+      [
+        { label: "รหัสการคืน", value: checkout.checkoutId },
+        { label: "ห้อง", value: checkout.room.number },
+        { label: "วันที่เช็คเอาท์", value: formatThaiDate(new Date()) },
+        { label: "เงินมัดจำ", value: `${deposit.toLocaleString()} บาท` },
+        { label: "ยอดคืน", value: `${deposit.toLocaleString()} บาท` },
+        {
+          label: "แจ้งโอนเงิน",
+          value: "กรุณาพิมพ์หมายเลขบัญชี\nธนาคาร\nxxx-xxx-xxxx\nชื่อ-นามสกุล",
+        },
+      ],
+      [{ label: "ดูรายละเอียด", url: detailUrl, style: "primary" }]
+    );
 
-      res.json({ message: "เช็คเอาท์สำเร็จ", refundAmount: deposit });
-    } catch (err: any) {
-      res.status(400).json({ error: err.message });
-    }
+    res.json({ message: "เช็คเอาท์สำเร็จ", refundAmount: deposit });
+  } catch (err: any) {
+    res.status(400).json({ error: err.message });
   }
-);
+});
 
 // Admin: แก้ไขวันที่ขอคืน
-checkoutRouter.put("/:checkoutId/date", authMiddleware, async (req, res) => {
+checkouts.put("/:checkoutId/date", authMiddleware, async (req, res) => {
   try {
     const { checkoutId } = req.params;
     const { checkout: newCheckoutDate } = req.body; // ตรงกับ Prisma
@@ -303,7 +299,7 @@ checkoutRouter.put("/:checkoutId/date", authMiddleware, async (req, res) => {
 });
 
 //   Admin: ลบ checkout
-checkoutRouter.delete("/:checkoutId", authMiddleware, async (req, res) => {
+checkouts.delete("/:checkoutId", authMiddleware, async (req, res) => {
   try {
     const { checkoutId } = req.params;
 
@@ -321,4 +317,4 @@ checkoutRouter.delete("/:checkoutId", authMiddleware, async (req, res) => {
   }
 });
 
-export default checkoutRouter;
+export default checkouts;

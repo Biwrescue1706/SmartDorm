@@ -248,8 +248,11 @@ export default function Users() {
 
           {/* TABLE MODE */}
           {width >= 1400 ? (
-            <div className="table-responsive shadow-sm rounded">
-              <table className="table table-hover align-middle text-center mb-0">
+            <div className="responsive-table" style={{ overflowX: "auto" }}>
+              <table
+                className="table table-sm table-striped align-middle text-center"
+                style={{ tableLayout: "fixed", width: "100%" }}
+              >
                 <thead className="table-dark">
                   <tr>
                     <th>#</th>

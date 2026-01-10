@@ -29,8 +29,11 @@ export default function CheckoutTable({
     role === 0 && !checkouts.some((c) => c.checkoutStatus === 1);
 
   return (
-    <div className="table-responsive">
-      <table className="table table-striped text-center">
+    <div className="responsive-table" style={{ overflowX: "auto" }}>
+      <table
+        className="table table-sm table-striped align-middle text-center"
+        style={{ tableLayout: "fixed", width: "100%" }}
+      >
         <thead className="table-dark">
           <tr>
             <th>#</th>

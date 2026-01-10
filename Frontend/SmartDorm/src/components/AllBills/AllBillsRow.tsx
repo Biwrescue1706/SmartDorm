@@ -6,9 +6,10 @@ interface Props {
   bill: Bill;
   role?: number | null;
   onEdit: (bill: Bill) => void;
-  onDelete: (billId: string, room?: string) => void; // ✅ เพิ่ม room?
+  onDelete: (billId: string, room: string) => void;
   onViewSlip: (bill: Bill) => void;
   onManage: (bill: Bill) => void;
+  onOverdue: (billId: string, room: string) => void; // ⭐
 }
 
 export default function AllBillsRow({
@@ -18,9 +19,15 @@ export default function AllBillsRow({
   onEdit,
   onDelete,
   onViewSlip,
-  onManage
+  onManage,
+  onOverdue,
 }: Props) {
-  const status = bill.billStatus; // ✅ เปลี่ยนตรงนี้
+  const status = bill.billStatus;
+  const overdueDays = bill.overdueDays ?? 0;
+
+  const today = new Date();
+  const dueDate = new Date(bill.dueDate);
+  const isPastDue = today > dueDate;
 
   return (
     <tr>
@@ -38,19 +45,55 @@ export default function AllBillsRow({
       </td>
 
       <td>{bill.total.toLocaleString()}</td>
+      <td>
+        {new Date(bill.dueDate).toLocaleDateString("th-TH", {
+          day: "numeric",
+          month: "long",
+          year: "numeric",
+        })}
+      </td>
 
       <td>
-        {status === 0 && <span className="badge bg-danger">ค้างชำระ</span>}
+        {status === 0 &&
+          (isPastDue ? (
+            <span className="badge bg-dark">เกินกำหนด</span>
+          ) : (
+            <span className="badge bg-danger">ค้างชำระ</span>
+          ))}
         {status === 1 && <span className="badge bg-success">ชำระแล้ว</span>}
         {status === 2 && (
           <span className="badge bg-warning text-dark">รอตรวจสอบ</span>
         )}
       </td>
 
+      {/* ⭐ เกินกำหนด */}
+      <td>
+        {status === 0 ? (
+          <div className="d-flex flex-column align-items-center gap-1">
+            <span className="fw-semibold">
+              {overdueDays > 0 ? `${overdueDays} วัน` : "ยังไม่เกินกำหนด"}
+            </span>
+            {role === 0 && isPastDue && (
+              <button
+                className="btn btn-outline-warning btn-sm"
+                onClick={() => onOverdue(bill.billId, bill.room?.number ?? "-")}
+              >
+                แจ้งเตือน
+              </button>
+            )}
+          </div>
+        ) : (
+          <span className="text-muted small">—</span>
+        )}
+      </td>
+
       {/* สลิป */}
       <td>
         {status === 1 && (bill.payment?.slipUrl || bill.slipUrl) ? (
-          <button className="btn btn-outline-primary btn-sm" onClick={() => onViewSlip(bill)}>
+          <button
+            className="btn btn-outline-primary btn-sm"
+            onClick={() => onViewSlip(bill)}
+          >
             ดูสลิป
           </button>
         ) : (
@@ -60,15 +103,18 @@ export default function AllBillsRow({
 
       {/* จัดการ / แก้ไข */}
       <td>
-        {bill.billStatus === 2 ? (
+        {(status === 2 || status === 0) && role === 0 ? (
           <button
             className="btn btn-info btn-sm text-white"
             onClick={() => onManage(bill)}
           >
             จัดการ
           </button>
-        ) : bill.billStatus === 0  ? (
-          <button className="btn btn-warning btn-sm" onClick={() => onEdit(bill)}>
+        ) : status === 0 ? (
+          <button
+            className="btn btn-warning btn-sm"
+            onClick={() => onEdit(bill)}
+          >
             ✏️
           </button>
         ) : (
@@ -76,12 +122,12 @@ export default function AllBillsRow({
         )}
       </td>
 
-      {/* ลบเฉพาะ ADMIN */}
+      {/* ลบ */}
       <td>
-        {role === 0 && (bill.billStatus === 0 || bill.billStatus === 1) ? (
+        {role === 0 && (status === 0 || status === 1) ? (
           <button
             className="btn btn-danger btn-sm"
-            onClick={() => onDelete(bill.billId, bill.room.number)}
+            onClick={() => onDelete(bill.billId, bill.room?.number ?? "-")}
           >
             🗑️
           </button>

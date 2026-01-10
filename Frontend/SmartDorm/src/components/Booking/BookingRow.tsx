@@ -1,7 +1,7 @@
 // src/components/Booking/BookingRow.tsx
 import { useState } from "react";
 import Swal from "sweetalert2";
-import type { Booking ,Checkout } from "../../types/Booking";
+import type { Booking, Checkout } from "../../types/Booking";
 import EditBookingDialog from "./EditBookingDialog";
 import ManageBookingDialog from "./ManageBookingDialog";
 
@@ -161,9 +161,15 @@ export default function BookingRow({
           </p>
         )}
 
-        {checkout?.checkout !== null && (
+        {checkout?.checkout && (
           <p className="mt-2 mb-1">
-            <b>วันแจ้งขอคืน :</b> {formatThai(checkout?.checkout)}
+            <b>วันที่ขอคืน :</b> {formatThai(checkout.checkout)}
+          </p>
+        )}
+
+        {checkout?.checkoutAt && (
+          <p className="mt-2 mb-1">
+            <b>วันเช็คเอาท์จริง :</b> {formatThai(checkout.checkoutAt)}
           </p>
         )}
 
@@ -257,7 +263,7 @@ export default function BookingRow({
         {booking.slipUrl ? (
           <>
             <button
-              className="btn btn-outline-primary btn-sm fw-semibold text-white"
+              className="btn btn-primary btn-sm fw-semibold text-white"
               onClick={() => setShowSlip(true)}
             >
               ดูสลิป
@@ -282,6 +288,18 @@ export default function BookingRow({
           />
         )}
       </td>
+
+      {checkout?.checkout && (
+        <p className="mt-2 mb-1">
+          <b>วันที่ขอคืน :</b> {formatThai(checkout.checkout)}
+        </p>
+      )}
+
+      {checkout?.checkoutAt && (
+        <p className="mt-2 mb-1">
+          <b>วันเช็คเอาท์จริง :</b> {formatThai(checkout.checkoutAt)}
+        </p>
+      )}
 
       {isSuperAdmin && (
         <td className="text-center">

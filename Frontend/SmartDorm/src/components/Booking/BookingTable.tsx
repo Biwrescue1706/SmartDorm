@@ -1,10 +1,11 @@
 //src/components/Booking/BookingTable.tsx
 import BookingRow from "./BookingRow";
 import Pagination from "../Pagination";
-import type { Booking } from "../../types/Booking";
+import type { Booking, Checkout } from "../../types/Booking";
 
 interface Props {
   bookings: Booking[];
+  checkout?: Checkout[];
   onApprove: (id: string) => void;
   onReject: (id: string) => void;
   onDelete: (id: string, roomNum: string) => void;
@@ -22,6 +23,7 @@ interface Props {
 
 export default function BookingTable({
   bookings,
+  checkout,
   onApprove,
   onReject,
   onDelete,
@@ -42,9 +44,7 @@ export default function BookingTable({
 
   const showActualCheckinColumn = !!showActualColumn;
 
-  // --------------------------------------------------
   // ✅ เรียงข้อมูลก่อน: 1) ตามหมายเลขห้อง 2) ตามวันที่สร้าง
-  // --------------------------------------------------
   const sortedBookings = bookings.slice().sort((a, b) => {
     const roomA = Number(a.room.number);
     const roomB = Number(b.room.number);
@@ -54,14 +54,11 @@ export default function BookingTable({
     return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
   });
 
-  // --------------------------------------------------
   // ✅ Pagination ทำจาก sortedBookings
-  // --------------------------------------------------
   const startIndex = (currentPage - 1) * rowsPerPage;
   const endIndex = startIndex + rowsPerPage;
   const paginatedBookings = sortedBookings.slice(startIndex, endIndex);
-  // --------------------------------------------------
-
+  
   return (
     <div
       className="container mt-3"
@@ -87,8 +84,12 @@ export default function BookingTable({
                   <th>สลิป</th>
                   <th>สถานะ</th>
 
-                  <th>วันที่ขอคืน</th>
+                  {checkout?.[0]?.checkout && (
+                    <th>วันที่ขอคืน</th>
+                  )}
+                  {checkout?.[0]?.checkoutAt && (
                   <th>วันเช็คเอาท์จริง</th>
+                  )}
 
                   {role === 0 && <th>แก้ไข</th>}
                   {role === 0 && <th>ลบ</th>}
@@ -103,6 +104,7 @@ export default function BookingTable({
                     index={startIndex + i + 1}
                     role={role}
                     mode="table"
+                    checkout={b.checkout?.[0]}
                     showActualCheckinColumn={showActualCheckinColumn}
                     onApprove={onApprove}
                     onReject={onReject}
@@ -133,6 +135,7 @@ export default function BookingTable({
                   index={startIndex + i + 1}
                   role={role}
                   mode="card"
+                  checkout={b.checkout?.[0]}
                   showActualCheckinColumn={true}
                   onApprove={onApprove}
                   onReject={onReject}

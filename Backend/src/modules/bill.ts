@@ -22,7 +22,7 @@ billStatus (Int)
 3 = ปฏิเสธ
 */
 
-const BASE_URL = "https://smartdorm-detail.biwbong.shop/";
+const BASE_URL = "https://smartdorm-detail.biwbong.shop";
 
 // ---------------- Supabase ----------------
 const supabase = createClient(
@@ -205,7 +205,7 @@ bill.post(
         },
       });
 
-      const detailedBill = `${BASE_URL}bill/${billCreated.billId}`;
+      const detailedBill = `${BASE_URL}/bill/${billCreated.billId}`;
 
       if (booking.customer.userId) {
         await sendFlexMessage(
@@ -284,7 +284,7 @@ bill.put(
         return b;
       });
 
-      const detailedBill = `${BASE_URL}bill/${updated.billId}`;
+      const detailedBill = `${BASE_URL}/bill/${billCreated.billId}`;
 
       if (billData.customer?.userId) {
         await sendFlexMessage(
@@ -344,7 +344,7 @@ bill.put(
         });
       });
 
-      const detailedBill = `${BASE_URL}bill/${updated.billId}`;
+      const detailedBill = `${BASE_URL}/bill/${billCreated.billId}`;
 
       if (billData.customer?.userId) {
         await sendFlexMessage(
@@ -477,7 +477,7 @@ bill.put(
         },
       });
 
-      const detailedBill = `${BASE_URL}bill/${updated.billId}`;
+      const detailedBill = `${BASE_URL}/bill/${billCreated.billId}`;
 
       if (billData.customer?.userId) {
         await sendFlexMessage(

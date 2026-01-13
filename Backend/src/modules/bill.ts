@@ -19,10 +19,10 @@ billStatus (Int)
 0 = ยังไม่จ่าย
 1 = จ่ายแล้ว
 2 = รอตรวจสอบ
+3 = ปฏิเสธ
 */
 
-const BASE_URL = "https://smartdorm-detail.biwbong.shop";
-const ADMIN_URL = "https://smartdorm-admin.biwbong.shop";
+const BASE_URL = "https://smartdorm-detail.biwbong.shop/";
 
 // ---------------- Supabase ----------------
 const supabase = createClient(
@@ -68,51 +68,66 @@ const deleteSlip = async (url?: string | null) => {
   }
 };
 
+// ---------------- Status Helpers ----------------
+const getBillStatusText = (status: number) => {
+  switch (status) {
+    case 0:
+      return "รอการชำระเงิน";
+    case 1:
+      return "ชำระเงินแล้ว";
+    case 2:
+      return "รอตรวจสอบ";
+    case 3:
+      return "ปฏิเสธการชำระเงิน";
+    default:
+      return "ไม่ทราบสถานะ";
+  }
+};
+
+const getBillStatusColour = (status: number) => {
+  switch (status) {
+    case 0:
+      return "#9CA3AF";
+    case 1:
+      return "#16A34A";
+    case 2:
+      return "#FACC15";
+    case 3:
+      return "#DC2626";
+    default:
+      return "#6B7280";
+  }
+};
+
 // 📋 ดึงบิลทั้งหมด (Admin)
 bill.get("/getall", async (_req, res) => {
   try {
     const bills = await prisma.bill.findMany({
-      include: {
-        room: true,
-        booking: true,
-        customer: true,
-        payment: true,
-      },
+      include: { room: true, booking: true, customer: true, payment: true },
       orderBy: { createdAt: "desc" },
     });
-
     res.json(bills);
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
 });
 
-// 🔍 ดึงบิลตาม ID (Customer / Admin)
+// 🔍 ดึงบิลตาม ID
 bill.get("/:billId", async (req, res) => {
   try {
     const { billId } = req.params;
-
     const bill = await prisma.bill.findUnique({
       where: { billId },
-      include: {
-        room: true,
-        booking: true,
-        customer: true,
-        payment: true,
-      },
+      include: { room: true, booking: true, customer: true, payment: true },
     });
-
-    if (!bill) {
-      return res.status(404).json({ error: "ไม่พบบิลนี้" });
-    }
-
+    if (!bill) return res.status(404).json({ error: "ไม่พบบิลนี้" });
     res.json(bill);
   } catch (err: any) {
     res.status(400).json({ error: err.message });
   }
 });
 
-// ➕ สร้างบิลจากห้อง (Admin)
+// ➕ สร้างบิลจากห้อง
 bill.post(
   "/createFromRoom/:roomId",
   authMiddleware,
@@ -121,12 +136,10 @@ bill.post(
     try {
       const { roomId } = req.params;
       const { month, wAfter, eAfter } = req.body;
-
       if (!month) throw new Error("กรุณาระบุเดือน");
 
       const billMonth = new Date(month);
 
-      // ❌ ห้ามสร้างซ้ำเดือนเดียวกัน
       const dup = await prisma.bill.findFirst({
         where: { roomId, month: billMonth },
       });
@@ -139,7 +152,6 @@ bill.post(
       });
       if (!booking) throw new Error("ไม่พบผู้เข้าพัก");
 
-      // 🔍 ดึงบิลก่อนหน้า
       const prevBill = await prisma.bill.findFirst({
         where: { roomId, month: { lt: billMonth } },
         orderBy: { month: "desc" },
@@ -148,7 +160,6 @@ bill.post(
       const wBefore = prevBill ? prevBill.wAfter : 0;
       const eBefore = prevBill ? prevBill.eAfter : 0;
 
-      // 🔒 validation มิเตอร์
       if (wAfter < wBefore)
         throw new Error("ค่าน้ำปัจจุบันต้องมากกว่าหรือเท่าก่อนหน้า");
       if (eAfter < eBefore)
@@ -165,7 +176,7 @@ bill.post(
 
       const total = rent + service + waterCost + electricCost;
 
-      const bill = await prisma.bill.create({
+      const billCreated = await prisma.bill.create({
         data: {
           roomId,
           bookingId: booking.bookingId,
@@ -194,51 +205,52 @@ bill.post(
         },
       });
 
-      const detailedBill = `${BASE_URL}bill/${bill.billId}`;
+      const detailedBill = `${BASE_URL}bill/${billCreated.billId}`;
 
-      // 📲 แจ้งเตือน LINE
       if (booking.customer.userId) {
         await sendFlexMessage(
           booking.customer.userId,
-          `📄 แจ้งบิลค่าเช่าห้อง ประจำเดือน ${formatThaiMonth(bill.month)}`,
+          `📄 แจ้งบิลค่าเช่าห้อง ประจำเดือน ${formatThaiMonth(
+            billCreated.month
+          )}`,
           [
             { label: "ห้อง", value: booking.room?.number },
             { label: "ค่าเช่าห้อง", value: `${rent} บาท` },
             {
               label: "ค่าน้ำ",
-              value: `${bill.wUnits} หน่วย (${bill.waterCost} บาท)`,
+              value: `${billCreated.wUnits} หน่วย (${billCreated.waterCost} บาท)`,
             },
             {
               label: "ค่าไฟ",
-              value: `${bill.eUnits} หน่วย (${bill.electricCost} บาท)`,
+              value: `${billCreated.eUnits} หน่วย (${billCreated.electricCost} บาท)`,
             },
             { label: "ค่าส่วนกลาง", value: `${service} บาท` },
             {
               label: "ยอดรวมทั้งหมด",
-              value: `${bill.total.toLocaleString()} บาท`,
+              value: `${billCreated.total.toLocaleString()} บาท`,
             },
             {
               label: "ครบกำหนดชำระ",
-              value: formatThaiDate(bill.dueDate),
+              value: formatThaiDate(billCreated.dueDate),
+            },
+            {
+              label: "สถานะ",
+              value: getBillStatusText(billCreated.billStatus),
+              colour: getBillStatusColour(billCreated.billStatus),
             },
           ],
-          [
-            {
-              label: "ดูรายละเอียดและชำระเงิน",
-              url: detailedBill,
-            },
-          ]
+          [{ label: "ดูรายละเอียดและชำระเงิน", url: detailedBill }]
         );
       }
 
-      res.json({ message: "สร้างบิลจากห้องสำเร็จ", bill });
+      res.json({ message: "สร้างบิลจากห้องสำเร็จ", bill: billCreated });
     } catch (err: any) {
       res.status(400).json({ error: err.message });
     }
   }
 );
 
-// ✅ อนุมัติการชำระเงิน (Admin)
+// ✅ อนุมัติการชำระเงิน
 bill.put(
   "/approve/:billId",
   authMiddleware,
@@ -247,17 +259,13 @@ bill.put(
     try {
       const { billId } = req.params;
 
-      const bill = await prisma.bill.findUnique({
+      const billData = await prisma.bill.findUnique({
         where: { billId },
-        include: {
-          customer: true,
-          room: true,
-          payment: true,
-        },
+        include: { customer: true, room: true, payment: true },
       });
 
-      if (!bill) throw new Error("ไม่พบบิล");
-      if (bill.billStatus !== 2)
+      if (!billData) throw new Error("ไม่พบบิล");
+      if (billData.billStatus !== 2)
         throw new Error("บิลนี้ไม่ได้อยู่ในสถานะรอตรวจสอบ");
 
       const updated = await prisma.$transaction(async (tx) => {
@@ -266,7 +274,7 @@ bill.put(
           data: { billStatus: 1, billDate: new Date() },
         });
 
-        if (bill.payment) {
+        if (billData.payment) {
           await tx.payment.update({
             where: { billId },
             data: { updatedAt: new Date() },
@@ -276,21 +284,28 @@ bill.put(
         return b;
       });
 
-      if (bill.customer?.userId) {
+      const detailedBill = `${BASE_URL}bill/${updated.billId}`;
+
+      if (billData.customer?.userId) {
         await sendFlexMessage(
-          bill.customer.userId,
+          billData.customer.userId,
           "🏫SmartDorm🎉 แจ้งผลการชำระเงิน",
           [
-            { label: "รหัสบิล", value: bill.billId },
-            { label: "ห้อง", value: bill.room?.number ?? "-" },
-            { label: "เดือนที่ชำระ", value: formatThaiMonth(bill.month) },
+            { label: "รหัสบิล", value: updated.billId },
+            { label: "ห้อง", value: billData.room?.number ?? "-" },
+            { label: "เดือนที่ชำระ", value: formatThaiMonth(updated.month) },
             {
               label: "ยอดชำระ",
-              value: `${bill.total.toLocaleString()} บาท`,
+              value: `${updated.total.toLocaleString()} บาท`,
             },
-            { label: "วันที่ยืนยัน", value: formatThaiDate(new Date()) },
+            {
+              label: "สถานะ",
+              value: getBillStatusText(updated.billStatus),
+              colour: getBillStatusColour(updated.billStatus),
+            },
+            { label: "วันที่ยืนยัน", value: formatThaiDate(updated.billDate) },
           ],
-          []
+          [{ label: "ดูรายละเอียดและชำระเงิน", url: detailedBill }]
         );
       }
 
@@ -301,7 +316,7 @@ bill.put(
   }
 );
 
-// ❌ ปฏิเสธสลิป (Admin)
+// ❌ ปฏิเสธสลิป
 bill.put(
   "/reject/:billId",
   authMiddleware,
@@ -310,54 +325,73 @@ bill.put(
     try {
       const { billId } = req.params;
 
-      const bill = await prisma.bill.findUnique({
+      const billData = await prisma.bill.findUnique({
         where: { billId },
-        include: { payment: true },
+        include: { customer: true, room: true, payment: true },
       });
 
-      if (!bill) throw new Error("ไม่พบบิล");
+      if (!billData) throw new Error("ไม่พบบิล");
 
-      await prisma.$transaction(async (tx) => {
-        if (bill.slipUrl) await deleteSlip(bill.slipUrl);
-        if (bill.payment) {
+      const updated = await prisma.$transaction(async (tx) => {
+        if (billData.slipUrl) await deleteSlip(billData.slipUrl);
+        if (billData.payment) {
           await tx.payment.delete({ where: { billId } });
         }
-        await tx.bill.update({
+
+        return tx.bill.update({
           where: { billId },
-          data: {
-            billStatus: 0,
-            billDate: new Date(),
-          },
+          data: { billStatus: 3, billDate: new Date() },
         });
       });
 
-      res.json({ message: "ปฏิเสธการชำระเงินแล้ว" });
+      const detailedBill = `${BASE_URL}bill/${updated.billId}`;
+
+      if (billData.customer?.userId) {
+        await sendFlexMessage(
+          billData.customer.userId,
+          "🏫SmartDorm🎉 แจ้งผลการชำระเงิน",
+          [
+            { label: "รหัสบิล", value: updated.billId },
+            { label: "ห้อง", value: billData.room?.number ?? "-" },
+            { label: "เดือนที่ชำระ", value: formatThaiMonth(updated.month) },
+            {
+              label: "ยอดชำระ",
+              value: `${updated.total.toLocaleString()} บาท`,
+            },
+            {
+              label: "สถานะ",
+              value: getBillStatusText(updated.billStatus),
+              colour: getBillStatusColour(updated.billStatus),
+            },
+            { label: "วันที่ยืนยัน", value: formatThaiDate(updated.billDate) },
+          ],
+          [{ label: "ดูรายละเอียดและชำระเงิน", url: detailedBill }]
+        );
+      }
+
+      res.json({ message: "ปฏิเสธการชำระเงินแล้ว", bill: updated });
     } catch (err: any) {
       res.status(400).json({ error: err.message });
     }
   }
 );
 
-// ⚠️ แจ้งเตือนค้างชำระ (Admin กดเอง)
+// ⚠️ แจ้งเตือนค้างชำระ
 bill.put(
   "/overdue/:billId",
   authMiddleware,
   roleMiddleware(0),
   async (req, res) => {
     try {
-      const bill = await processOverdueManual(req.params.billId);
-
-      res.json({
-        message: "แจ้งเตือนบิลค้างชำระเรียบร้อย",
-        bill,
-      });
+      const b = await processOverdueManual(req.params.billId);
+      res.json({ message: "แจ้งเตือนบิลค้างชำระเรียบร้อย", bill: b });
     } catch (err: any) {
       res.status(400).json({ error: err.message });
     }
   }
 );
 
-// ✏️ แก้ไขบิล (ห้ามแก้ถ้า billStatus = 1,2)
+// ✏️ แก้ไขบิล
 bill.put(
   "/edit/:billId",
   authMiddleware,
@@ -365,27 +399,24 @@ bill.put(
   async (req, res) => {
     try {
       const { billId } = req.params;
-      const { wAfter, eAfter, month, dueDate } = req.body;
+      const { wAfter, eAfter, month, dueDate, billStatus } = req.body;
 
-      const bill = await prisma.bill.findUnique({
+      const billData = await prisma.bill.findUnique({
         where: { billId },
-        include: {
-          customer: true,
-          room: true,
-        },
+        include: { customer: true, room: true },
       });
 
-      if (!bill) throw new Error("ไม่พบบิล");
+      if (!billData) throw new Error("ไม่พบบิล");
 
-      // ❌ lock สถานะ
-      if (bill.billStatus !== 0) throw new Error("ไม่สามารถแก้ไขบิลนี้ได้");
+      if (![0, 2, 3].includes(billData.billStatus)) {
+        throw new Error("ไม่สามารถแก้ไขบิลนี้ได้");
+      }
 
-      // 🔒 validation มิเตอร์
-      const wBefore = bill.wBefore;
-      const eBefore = bill.eBefore;
+      const wBefore = billData.wBefore;
+      const eBefore = billData.eBefore;
 
-      const newWAfter = wAfter ?? bill.wAfter;
-      const newEAfter = eAfter ?? bill.eAfter;
+      const newWAfter = wAfter ?? billData.wAfter;
+      const newEAfter = eAfter ?? billData.eAfter;
 
       if (newWAfter < wBefore)
         throw new Error("ค่าน้ำปัจจุบันต้องมากกว่าหรือเท่าก่อนหน้า");
@@ -398,9 +429,8 @@ bill.put(
       const waterCost = wUnits * WATER_PRICE;
       const electricCost = eUnits * ELECTRIC_PRICE;
 
-      // ----------------- ใหม่: คำนวณ overdue ตามเงื่อนไข -----------------
-      let newOverdueDays = bill.overdueDays ?? 0;
-      let newFine = bill.fine ?? 0;
+      let newOverdueDays = billData.overdueDays ?? 0;
+      let newFine = billData.fine ?? 0;
 
       if (dueDate) {
         const today = new Date();
@@ -410,18 +440,20 @@ bill.put(
           const diffDays = Math.floor(
             (today.getTime() - newDue.getTime()) / (1000 * 60 * 60 * 24)
           );
-
           newOverdueDays = diffDays;
           newFine = diffDays * OVERDUE_FINE_PER_DAY;
         } else {
-          // ยังไม่เกินกำหนดใหม่ → reset
           newOverdueDays = 0;
           newFine = 0;
         }
       }
-      // ----------------- ใหม่: คำนวณ overdue ตามเงื่อนไข ------------------
+
       const total =
-        bill.rent + bill.service + waterCost + electricCost + newFine;
+        billData.rent +
+        billData.service +
+        waterCost +
+        electricCost +
+        newFine;
 
       const updated = await prisma.bill.update({
         where: { billId },
@@ -429,52 +461,55 @@ bill.put(
           wAfter: newWAfter,
           wUnits,
           waterCost,
-
           eAfter: newEAfter,
           eUnits,
           electricCost,
-
           total,
-
-          month: month ? new Date(month) : bill.month,
-          dueDate: dueDate ? new Date(dueDate) : bill.dueDate,
-
-          // ใช้ค่าที่คำนวณใหม่
+          month: month ? new Date(month) : billData.month,
+          dueDate: dueDate ? new Date(dueDate) : billData.dueDate,
           overdueDays: newOverdueDays,
           fine: newFine,
-
+          billStatus:
+            typeof billStatus === "number"
+              ? billStatus
+              : billData.billStatus,
           billDate: new Date(),
         },
       });
 
-      const detailedBill = `${BASE_URL}bill/${bill.billId}`;
+      const detailedBill = `${BASE_URL}bill/${updated.billId}`;
 
-      if (bill.customer?.userId) {
+      if (billData.customer?.userId) {
         await sendFlexMessage(
-          bill.customer.userId,
+          billData.customer.userId,
           "🏫SmartDorm🎉 แก้ไขบิลค่าเช่าห้อง",
           [
-            { label: "รหัสบิล", value: bill.billId },
-            { label: "ห้อง", value: bill.room?.number ?? "-" },
+            { label: "รหัสบิล", value: updated.billId },
+            { label: "ห้อง", value: billData.room?.number ?? "-" },
+            { label: "ประจำเดือน", value: formatThaiMonth(updated.month) },
             {
-              label: "ประจำเดือน",
-              value: formatThaiMonth(month ? new Date(month) : bill.month),
+              label: "ค่าน้ำ",
+              value: `${updated.wUnits} หน่วย (${updated.waterCost} บาท)`,
+            },
+            {
+              label: "ค่าไฟ",
+              value: `${updated.eUnits} หน่วย (${updated.electricCost} บาท)`,
             },
             {
               label: "ยอดรวมใหม่",
-              value: `${total.toLocaleString()} บาท`,
+              value: `${updated.total.toLocaleString()} บาท`,
             },
             {
               label: "ครบกำหนดชำระ",
-              value: formatThaiDate(dueDate ? new Date(dueDate) : bill.dueDate),
+              value: formatThaiDate(updated.dueDate),
+            },
+            {
+              label: "สถานะ",
+              value: getBillStatusText(updated.billStatus),
+              colour: getBillStatusColour(updated.billStatus),
             },
           ],
-          [
-            {
-              label: "ดูรายละเอียดบิล",
-              url: detailedBill,
-            },
-          ]
+          [{ label: "ดูรายละเอียดบิล", url: detailedBill }]
         );
       }
 
@@ -485,28 +520,23 @@ bill.put(
   }
 );
 
-// 🗑️ ลบบิลและ payment (Admin)
+// 🗑️ ลบบิล
 bill.delete("/:billId", authMiddleware, roleMiddleware(0), async (req, res) => {
   try {
     const { billId } = req.params;
 
-    const bill = await prisma.bill.findUnique({
+    const billData = await prisma.bill.findUnique({
       where: { billId },
-      include: { payment: true }, // ตรวจสอบว่ามี payment หรือไม่
+      include: { payment: true },
     });
 
-    if (!bill) throw new Error("ไม่พบบิล");
+    if (!billData) throw new Error("ไม่พบบิล");
 
     await prisma.$transaction(async (tx) => {
-      // ลบสลิปจาก Supabase ถ้ามี
-      if (bill.slipUrl) await deleteSlip(bill.slipUrl);
-
-      // ลบ payment ทั้งหมดของบิลนี้
-      if (bill.payment) {
+      if (billData.slipUrl) await deleteSlip(billData.slipUrl);
+      if (billData.payment) {
         await tx.payment.deleteMany({ where: { billId } });
       }
-
-      // ลบบิล
       await tx.bill.delete({ where: { billId } });
     });
 

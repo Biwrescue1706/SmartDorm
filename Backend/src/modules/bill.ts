@@ -236,7 +236,7 @@ bill.post(
             {
               label: "สถานะ",
               value: getBillStatusText(billCreated.billStatus),
-              colour: getBillStatusColour(billCreated.billStatus),
+              color: getBillStatusColour(billCreated.billStatus),
             },
           ],
           [{ label: "ดูรายละเอียดและชำระเงิน", url: detailedBill }]
@@ -301,7 +301,7 @@ bill.put(
             {
               label: "สถานะ",
               value: getBillStatusText(updated.billStatus),
-              colour: getBillStatusColour(updated.billStatus),
+              color: getBillStatusColour(updated.billStatus),
             },
             { label: "วันที่ยืนยัน", value: formatThaiDate(updated.billDate) },
           ],
@@ -361,7 +361,7 @@ bill.put(
             {
               label: "สถานะ",
               value: getBillStatusText(updated.billStatus),
-              colour: getBillStatusColour(updated.billStatus),
+              color: getBillStatusColour(updated.billStatus),
             },
             { label: "วันที่ยืนยัน", value: formatThaiDate(updated.billDate) },
           ],
@@ -506,7 +506,7 @@ bill.put(
             {
               label: "สถานะ",
               value: getBillStatusText(updated.billStatus),
-              colour: getBillStatusColour(updated.billStatus),
+              color: getBillStatusColour(updated.billStatus),
             },
           ],
           [{ label: "ดูรายละเอียดบิล", url: detailedBill }]

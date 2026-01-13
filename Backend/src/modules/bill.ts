@@ -284,7 +284,7 @@ bill.put(
         return b;
       });
 
-      const detailedBill = `${BASE_URL}/bill/${billCreated.billId}`;
+      const detailedBill = `${BASE_URL}/bill/${bill.billId}`;
 
       if (billData.customer?.userId) {
         await sendFlexMessage(
@@ -344,7 +344,7 @@ bill.put(
         });
       });
 
-      const detailedBill = `${BASE_URL}/bill/${billCreated.billId}`;
+      const detailedBill = `${BASE_URL}/bill/${bill.billId}`;
 
       if (billData.customer?.userId) {
         await sendFlexMessage(
@@ -477,7 +477,7 @@ bill.put(
         },
       });
 
-      const detailedBill = `${BASE_URL}/bill/${billCreated.billId}`;
+      const detailedBill = `${BASE_URL}/bill/${bill.billId}`;
 
       if (billData.customer?.userId) {
         await sendFlexMessage(

@@ -64,7 +64,7 @@ export default function Users() {
   const pendingCheckouts = usePendingCheckouts();
 
   const [users, setUsers] = useState<Customer[]>([]);
-  const [checkouts, setCheckouts] = useState<any[]>([]);
+  
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [width, setWidth] = useState(window.innerWidth);

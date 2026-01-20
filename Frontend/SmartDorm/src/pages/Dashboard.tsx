@@ -23,18 +23,14 @@ export default function Dashboard() {
   const pendingBookings = usePendingBookings();
   const pendingCheckouts = usePendingCheckouts();
 
-  /* =========================
-     LOAD DATA
-  ========================= */
+  //     LOAD DATA
   useEffect(() => {
     fetchRooms();
     fetchBookings();
     fetchBills();
   }, []);
 
-  /* =========================
-     MAP BOOKINGS ให้ตรง type
-  ========================= */
+  //     MAP BOOKINGS ให้ตรง type
   useEffect(() => {
     if (Array.isArray(rawBookings)) {
       const mapped: Booking[] = rawBookings.map((b) => ({
@@ -78,9 +74,7 @@ export default function Dashboard() {
     }
   }, [rawBookings]);
 
-  /* =========================
-     ROOM STATS
-  ========================= */
+  //     ROOM STATS
   const totalRooms = Array.isArray(rooms) ? rooms.length : 0;
   const availableRooms = Array.isArray(rooms)
     ? rooms.filter((r) => r.status === 0).length
@@ -100,6 +94,7 @@ export default function Dashboard() {
         adminName={adminName}
         adminUsername={adminUsername}
         pendingBookings={pendingBookings}
+        pendingCheckouts={pendingCheckouts}
       />
 
       <main className="main-content flex-grow-1 px-4 py-4 mt-6 mt-lg-6">

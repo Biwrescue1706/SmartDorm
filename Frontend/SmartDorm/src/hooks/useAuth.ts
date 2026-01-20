@@ -4,7 +4,7 @@ import { toast } from "../utils/toast"; // <-- เรียกใช้ toast �
 import { API_BASE } from "../config";
 import { Login, Register, Verify, Logout } from "../apis/endpoint.api";
 import type { LoginCredentials, RegisterData } from "../types/Auth";
-import { useEffect, useRef, useState , } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export function useAuth() {
   const [loading, setLoading] = useState(false);
@@ -13,7 +13,7 @@ export function useAuth() {
   const [adminName, setAdminName] = useState<string>("");
   const [adminUsername, setAdminUsername] = useState<string>("");
   const [message, setMessage] = useState("กำลังโหลด...");
-  
+
   const navigate = useNavigate();
   const hasVerified = useRef(false);
 
@@ -108,6 +108,11 @@ export function useAuth() {
       res?.ok ? "กรุณาเข้าสู่ระบบ" : "ออกจากระบบไม่สำเร็จ",
     );
 
+    console.clear();
+    if (import.meta.env.PROD) {
+      console.clear();
+    }
+
     setIsAuth(false);
     setRole(null);
     setMessage("กำลังโหลด...");
@@ -122,6 +127,11 @@ export function useAuth() {
     hasVerified.current = true;
 
     const verify = async () => {
+      console.clear();
+      if (import.meta.env.PROD) {
+        console.clear();
+      }
+
       const res = await fetch(`${API_BASE}${Verify}`, {
         method: "GET",
         credentials: "include",
@@ -134,7 +144,10 @@ export function useAuth() {
         setAdminUsername("");
 
         toast("warning", "กรุณาเข้าสู่ระบบ", "กรุณาเข้าสู่ระบบ");
-
+        console.clear();
+        if (import.meta.env.PROD) {
+          console.clear();
+        }
         setTimeout(() => navigate("/"), 2000);
         return;
       }
@@ -176,6 +189,7 @@ export async function verifyAuth(): Promise<boolean> {
     credentials: "include",
   }).catch(() => null);
 
+  console.clear();
   if (import.meta.env.PROD) {
     console.clear();
   }

@@ -42,6 +42,10 @@ export default function GuestRoute({ children }: { children: ReactNode }) {
 
   // 🔐 ตรวจสอบ token (ให้รันครั้งเดียวจริง ๆ)
   useEffect(() => {
+        if (import.meta.env.PROD) {
+      console.clear();
+    }
+    console.clear();
     if (ran.current) return; // กันไม่ให้รันซ้ำใน dev
     ran.current = true;
 

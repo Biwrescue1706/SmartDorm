@@ -7,7 +7,7 @@ export default function ProtectedRoute({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [isAuth, setIsAuth] = useState(false);
 
-  const text = "รอการตอบกลับจาก Server ...";
+  const text = "กำลังรอการตอบกลับจาก Server ...";
   const [displayText, setDisplayText] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
   const [index, setIndex] = useState(0);
@@ -22,7 +22,7 @@ export default function ProtectedRoute({ children }: { children: ReactNode }) {
       if (!isDeleting) {
         // พิมพ์เพิ่ม
         setDisplayText(text.slice(0, index + 1));
-        setIndex(prev => prev + 1);
+        setIndex((prev) => prev + 1);
 
         // ถ้าพิมพ์ครบแล้ว → เริ่มลบ
         if (index + 1 === text.length) {
@@ -31,7 +31,7 @@ export default function ProtectedRoute({ children }: { children: ReactNode }) {
       } else {
         // ลบทีละตัว
         setDisplayText(text.slice(0, index - 1));
-        setIndex(prev => prev - 1);
+        setIndex((prev) => prev - 1);
 
         // ถ้าลบหมดแล้ว → เริ่มพิมพ์ใหม่
         if (index - 1 === 0) {
@@ -45,6 +45,10 @@ export default function ProtectedRoute({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const check = async () => {
+      console.clear();
+      if (import.meta.env.PROD) {
+        console.clear();
+      }
       const valid = await verifyAuth();
       setIsAuth(valid);
       setLoading(false);

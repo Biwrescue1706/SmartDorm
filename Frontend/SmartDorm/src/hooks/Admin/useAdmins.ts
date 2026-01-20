@@ -1,7 +1,8 @@
+// src/hooks/Admin/useAdmins.ts
 import { useState, useEffect } from "react";
-import { API_BASE } from "../config";
-import { type Admin } from "../types/admin";
-import { toast } from "../utils/toast"; // ใช้ toast ที่มี 3 args
+import { API_BASE } from "../../config";
+import { type Admin } from "../../types/admin";
+import { toast } from "../../utils/toast"; // ใช้ toast ที่มี 3 args
 
 export function useAdmins() {
   const [admins, setAdmins] = useState<Admin[]>([]);

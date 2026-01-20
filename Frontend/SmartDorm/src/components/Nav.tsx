@@ -1,3 +1,4 @@
+// src/components/Nav.tsx
 import { useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 
@@ -275,13 +276,13 @@ export default function Nav({
           <div
             className="position-fixed text-white p-3 shadow"
             style={{
-              width: 240,
+              width: 200,
               height: "100vh",
               marginTop: 0, // กัน Topbar
               marginLeft: 0, // mobile
               paddingTop: 80,
               backgroundColor: "#4A0080",
-              zIndex: 1800,
+              zIndex: 1500,
             }}
           >
             <button
@@ -405,7 +406,7 @@ export default function Nav({
               top: 0,
               left: 0,
               background: "rgba(0,0,0,.35)",
-              zIndex: 999,
+              zIndex: 1000,
             }}
             onClick={() => setMenuOpen(false)}
           />

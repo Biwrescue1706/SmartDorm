@@ -1,6 +1,6 @@
 // src/pages/AdminManagement.tsx
 import { useState, useEffect } from "react";
-import { useAdmins } from "../hooks/useAdmins";
+import { useAdmins } from "../hooks/Admin/useAdmins";
 import { useAuth } from "../hooks/useAuth";
 import Nav from "../components/Nav";
 import Pagination from "../components/Pagination";
@@ -8,18 +8,10 @@ import Swal from "sweetalert2";
 import { API_BASE } from "../config";
 import type { Admin } from "../types/admin";
 
-/* -------------------------------------------
-   🎨 SCB THEME PREMIUM
--------------------------------------------- */
-const THEME = {
-  purple: "#4A0080",
-  purpleLight: "#6A11CB",
-  purpleDark: "#2E0055",
-  gold: "#D4AF37",
-  bg: "#f5f3fa",
-  text: "#333",
-  cardBg: "#ffffff",
-};
+import { THEME } from "../components/Admin/AdminTheme";
+import MobileView from "../components/Admin/MobileView";
+import TabletView from "../components/Admin/TabletView";
+import DesktopView from "../components/Admin/DesktopView";
 
 export default function AdminManagement() {
   const { admins, loading, fetchAdmins } = useAdmins();
@@ -33,9 +25,6 @@ export default function AdminManagement() {
   const smartDormIcon =
     "https://smartdorm-admin.biwbong.shop/assets/SmartDorm.png";
 
-  /* -------------------------------------------
-     🔔 SweetAlert + Toast theme SCB
-  -------------------------------------------- */
   const Toast = Swal.mixin({
     toast: true,
     position: "top-end",
@@ -57,7 +46,7 @@ export default function AdminManagement() {
     admins.length > 0
       ? [...admins].sort(
           (a, b) =>
-            new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+            new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
         )[0].adminId
       : null;
 
@@ -65,18 +54,15 @@ export default function AdminManagement() {
     filterRole === "admin"
       ? admins.filter((a) => a.role === 0)
       : filterRole === "staff"
-      ? admins.filter((a) => a.role === 1)
-      : admins;
+        ? admins.filter((a) => a.role === 1)
+        : admins;
 
   const totalItems = filteredAdmins.length;
   const currentAdmins = filteredAdmins.slice(
     (currentPage - 1) * rowsPerPage,
-    currentPage * rowsPerPage
+    currentPage * rowsPerPage,
   );
 
-  /* =============================================================
-     🟣 ADD ADMIN POPUP (PREMIUM UI)
-  ============================================================= */
   const openAddDialog = async () => {
     const result = await Swal.fire({
       html: `
@@ -122,7 +108,7 @@ export default function AdminManagement() {
         password: (document.getElementById("add-password") as HTMLInputElement)
           ?.value,
         role: parseInt(
-          (document.getElementById("add-role") as HTMLSelectElement)?.value
+          (document.getElementById("add-role") as HTMLSelectElement)?.value,
         ),
       }),
     });
@@ -153,9 +139,6 @@ export default function AdminManagement() {
     }
   };
 
-  /* =============================================================
-     🟣 EDIT ADMIN (SCB UI)
-  ============================================================= */
   const openEditDialog = async (admin: Admin) => {
     const result = await Swal.fire({
       html: `
@@ -195,7 +178,7 @@ export default function AdminManagement() {
         password: (document.getElementById("edit-pass") as HTMLInputElement)
           ?.value,
         role: parseInt(
-          (document.getElementById("edit-role") as HTMLSelectElement)?.value
+          (document.getElementById("edit-role") as HTMLSelectElement)?.value,
         ),
       }),
     });
@@ -229,9 +212,6 @@ export default function AdminManagement() {
     }
   };
 
-  /* =============================================================
-     🟣 DELETE ADMIN
-  ============================================================= */
   const handleDelete = async (adminId: string) => {
     if (adminId === oldestAdminId)
       return Toast.fire({
@@ -265,9 +245,6 @@ export default function AdminManagement() {
     }
   };
 
-  /* =============================================================
-     🎯 UI RENDER
-  ============================================================= */
   return (
     <div style={{ background: THEME.bg, minHeight: "100vh" }}>
       <Nav
@@ -286,7 +263,6 @@ export default function AdminManagement() {
             🛡️ จัดการผู้ดูแลระบบ SmartDorm
           </h2>
 
-          {/* BUTTON */}
           {role == 0 && (
             <div className="text-center mb-4">
               <button
@@ -302,7 +278,6 @@ export default function AdminManagement() {
             </div>
           )}
 
-          {/* FILTER */}
           <div className="d-flex justify-content-center gap-3 flex-wrap mb-4">
             {[
               { key: "all", label: `ทั้งหมด (${admins.length})` },
@@ -319,7 +294,7 @@ export default function AdminManagement() {
             ].map((f) => (
               <div
                 key={f.key}
-                className={`px-4 py-2 fw-bold shadow-sm`}
+                className="px-4 py-2 fw-bold shadow-sm"
                 style={{
                   cursor: "pointer",
                   borderRadius: "10px",
@@ -337,7 +312,6 @@ export default function AdminManagement() {
             ))}
           </div>
 
-          {/* MOBILE / TABLET / DESKTOP */}
           {loading ? (
             <p className="text-center">⏳ กำลังโหลดข้อมูล...</p>
           ) : windowWidth < 600 ? (
@@ -380,180 +354,6 @@ export default function AdminManagement() {
           />
         </div>
       </main>
-    </div>
-  );
-}
-
-/* =============================================================
-   📱 MOBILE VIEW
-============================================================= */
-function MobileView({
-  admins,
-  oldestAdminId,
-  handleDelete,
-  openEditDialog,
-  role,
-}: any) {
-  return (
-    <div className="row g-3">
-      {admins.map((a: Admin) => (
-        <div key={a.adminId} className="col-12">
-          <div className="card p-3 shadow-sm" style={{ borderRadius: "14px" }}>
-            <h5 className="fw-bold">{a.username}</h5>
-            <p>
-              <b>ชื่อ :</b> {a.name}
-            </p>
-            <p>
-              <b>สิทธิ์ :</b> {a.role === 0 ? "แอดมินหลัก" : "พนักงาน"}
-            </p>
-
-            {/* เฉพาะ admin หลัก ที่ role == 0 เท่านั้น */}
-            {role === 0 && (
-              <div className="d-flex justify-content-between">
-                <button
-                  className="btn btn-sm btn-primary"
-                  onClick={() => openEditDialog(a)}
-                >
-                  ✏️
-                </button>
-
-                {role === 0 && a.adminId !== oldestAdminId && (
-                  <button
-                    className="btn btn-sm btn-danger"
-                    onClick={() => handleDelete(a.adminId)}
-                  >
-                    ลบ
-                  </button>
-                )}
-              </div>
-            )}
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-/* =============================================================
-   📟 TABLET VIEW
-============================================================= */
-function TabletView({
-  admins,
-  oldestAdminId,
-  handleDelete,
-  openEditDialog,
-  role,
-}: any) {
-  return (
-    <div className="row g-3">
-      {admins.map((a: Admin) => (
-        <div key={a.adminId} className="col-12 col-sm-6 col-lg-4">
-          <div className="card p-3 shadow-sm" style={{ borderRadius: "14px" }}>
-            <h5 className="fw-bold">{a.username}</h5>
-            <p>
-              <b>ชื่อ :</b> {a.name}
-            </p>
-            <p>
-              <b>สิทธิ์ :</b> {a.role === 0 ? "แอดมินหลัก" : "พนักงาน"}
-            </p>
-            {role === 0 && (
-              <div className="d-flex justify-content-between">
-                <button
-                  className="btn btn-sm btn-primary"
-                  onClick={() => openEditDialog(a)}
-                >
-                  ✏️
-                </button>
-
-                {a.adminId !== oldestAdminId && (
-                  <button
-                    className="btn btn-sm btn-danger"
-                    onClick={() => handleDelete(a.adminId)}
-                  >
-                    ลบ
-                  </button>
-                )}
-              </div>
-            )}
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-/* =============================================================
-   🖥️ DESKTOP VIEW
-============================================================= */
-function DesktopView({
-  currentAdmins,
-  oldestAdminId,
-  handleDelete,
-  openEditDialog,
-  currentPage,
-  rowsPerPage,
-  role,
-}: any) {
-  return (
-    <div className="responsive-table" style={{ overflowX: "auto" }}>
-      <table
-        className="table table-striped align-middle text-center shadow-sm"
-        style={{
-          borderRadius: "14px",
-          overflow: "hidden",
-          background: "#fff",
-        }}
-      >
-        <thead
-          className="text-white"
-          style={{ background: THEME.purple, fontSize: "1rem" }}
-        >
-          <tr>
-            <th>#</th>
-            <th>ชื่อผู้ใช้</th>
-            <th>ชื่อ</th>
-            <th>สิทธิ์</th>
-            {role === 0 && <th>แก้ไข</th>}
-            {role === 0 && <th>ลบ</th>}
-          </tr>
-        </thead>
-
-        <tbody style={{ fontSize: ".95rem" }}>
-          {currentAdmins.map((a: Admin, i: number) => (
-            <tr
-              key={a.adminId}
-              style={{ transition: "0.3s" }}
-              className="table-hover"
-            >
-              <td>{(currentPage - 1) * rowsPerPage + i + 1}</td>
-              <td>{a.username}</td>
-              <td>{a.name}</td>
-              <td>{a.role === 0 ? "แอดมินหลัก" : "พนักงาน"}</td>
-
-              {role === 0 && (
-                <td>
-                  <button
-                    className="btn btn-primary btn-sm"
-                    onClick={() => openEditDialog(a)}
-                  >
-                    ✏️
-                  </button>
-                </td>
-              )}
-              {role === 0 && a.adminId !== oldestAdminId && (
-                <td>
-                  <button
-                    className="btn btn-danger btn-sm"
-                    onClick={() => handleDelete(a.adminId)}
-                  >
-                    ลบ
-                  </button>
-                </td>
-              )}
-            </tr>
-          ))}
-        </tbody>
-      </table>
     </div>
   );
 }

@@ -120,13 +120,7 @@ export default function Users() {
     fetchUsers();
   }, []);
 
-  const fetchCheckouts = async () => {
-    const res = await axios.get(`${API_BASE}/checkout/getall`);
-    setCheckouts(res.data.checkouts || []);
-  };
-  useEffect(() => {
-    fetchCheckouts();
-  }, []);
+  
 
   /* ---------------- Search ---------------- */
   const handleSearch = async () => {

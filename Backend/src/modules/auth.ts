@@ -60,7 +60,7 @@ auth.post("/login", async (req, res) => {
         role: admin.role,
       },
       JWT_SECRET,
-      { expiresIn: "10m", algorithm: "HS256" }
+      { expiresIn: "30m", algorithm: "HS256" }
     );
 
     const isProd = process.env.NODE_ENV === "production";
@@ -69,7 +69,7 @@ auth.post("/login", async (req, res) => {
       secure: isProd,
       sameSite: isProd ? "none" : "lax",
       path: "/",
-      maxAge: 10 * 60 * 1000,
+      maxAge: 30 * 60 * 1000,
     });
 
     res.json({

@@ -1,7 +1,8 @@
-import { useState } from "react";
+// src/pages/ForgotPassword/ResetPassword.tsx
 import { useNavigate, useLocation } from "react-router-dom";
 import { useForgotPassword } from "../../hooks/ForgotPassword/useForgotPassword";
 import Swal from "sweetalert2";
+import { useEffect, useState } from "react";
 
 interface LocationState {
   username: string;
@@ -19,10 +20,13 @@ export default function ResetPassword() {
   const [showNew, setShowNew] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
 
-  if (!state?.username) {
-    navigate("/forgot-username");
-    return null;
-  }
+  useEffect(() => {
+    if (!state?.username) {
+      navigate("/forgot-username", { replace: true });
+    }
+  }, [state, navigate]);
+
+  if (!state?.username) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -60,10 +64,10 @@ export default function ResetPassword() {
         <div className="container-fluid d-flex justify-content-between align-items-center">
           {/* BACK */}
           <button
-            className="btn btn-outline-warning fw-semibold"
-            onClick={() => navigate("/forgot-username")}
+            className="btn btn-warning fw-bold text-dark text-center fs-4"
+            onClick={() => navigate("/")}
           >
-            ⬅
+            &larr;
           </button>
 
           {/* BRAND CENTER */}
@@ -75,6 +79,9 @@ export default function ResetPassword() {
                 width="48"
                 height="48"
                 className="img-fluid"
+                style={{
+                  borderRadius: "20px",
+                }}
               />
               <span className="fw-bold h4 text-warning mb-0">SmartDorm</span>
             </div>
@@ -106,6 +113,9 @@ export default function ResetPassword() {
               width="48"
               height="48"
               className="img-fluid"
+              style={{
+                borderRadius: "15px",
+              }}
             />
             <h3 className="fw-bold text-warning mb-0">SmartDorm</h3>
           </div>
@@ -168,12 +178,22 @@ export default function ResetPassword() {
               </span>
             </div>
 
-            <button
-              type="submit"
-              className="btn btn-warning w-100 fw-bold text-dark"
-            >
-              บันทึกรหัสผ่านใหม่
-            </button>
+            <div className="d-flex gap-2">
+              <button
+                type="button"
+                className="btn btn-warning w-50 fw-bold text-dark ml-2 mr-2"
+                onClick={() => navigate("/")}
+              >
+                ยกเลิก
+              </button>
+
+              <button
+                type="submit"
+                className="btn btn-warning w-50 fw-bold text-dark"
+              >
+                บันทึกรหัสผ่านใหม่
+              </button>
+            </div>
           </form>
         </div>
       </div>

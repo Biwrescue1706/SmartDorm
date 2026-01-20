@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="th">
   <head>
     <meta charset="UTF-8" />
@@ -28,7 +28,7 @@
       .smart-footer {
         font-size: 14px;
         backdrop-filter: blur(10px);
-        background: rgba(255, 255, 255, 0.45);
+        background: rgb(255, 255, 255);
         border-top: 1px solid rgba(0, 0, 0, 0.12);
       }
     </style>
@@ -38,27 +38,27 @@
     <!-- React Root -->
     <div id="root"></div>
 
-<!-- Footer -->
-<footer
-  class="smart-footer text-center text-secondary py-2 w-100"
-  style="
-    margin-top: 50px;
-    font-size: 14px;
-    background: rgba(255, 255, 255, 0.6);
-    backdrop-filter: blur(8px);
-    border-top: 1px solid rgba(0,0,0,.15);
-  "
->
-  © <span id="smartYear"></span> SmartDorm • All rights reserved.
-</footer>
+    <!-- Footer -->
+    <footer
+      class="smart-footer text-center text-secondary py-2 w-100"
+      style="
+        margin-top: 50px;
+        font-size: 14px;
+        background: rgba(255, 255, 255, 0.6);
+        backdrop-filter: blur(8px);
+        border-top: 1px solid rgba(0, 0, 0, 0.15);
+      "
+    >
+      © <span id="smartYear"></span> SmartDorm • All rights reserved.
+    </footer>
 
-<script>
-  document.getElementById("smartYear").textContent =
-    `2025 - ${new Date().getFullYear()}`;
-</script>
+    <script>
+      document.getElementById("smartYear").textContent =
+        `2025 - ${new Date().getFullYear()}`;
+    </script>
 
     <!-- Ribbon Mourning -->
-<!--
+    <!--
     <img
       src="https://github.com/KongNontawatDev/Black-Mourning-Ribbon/blob/2150640c0e623c7fbcca07024287b597f7999a84/ribbon_bottom_right.png?raw=true"
       alt="Black mourning ribbon for websites, bottom right corner"

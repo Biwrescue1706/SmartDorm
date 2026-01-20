@@ -21,6 +21,7 @@ export default function AllBillsTable({
   onManage,
   onOverdue,
 }: Props) {
+  const status = bills[0]?.billStatus;
   return (
     <div className="responsive-table" style={{ overflowX: "auto" }}>
       <table
@@ -39,9 +40,15 @@ export default function AllBillsTable({
             <th>วันครบกำหนด</th>
             <th>สถานะ</th>
             <th>เกินกำหนด</th>
-            <th>สลิป</th>
-            <th>จัดการ</th>
-            <th>ลบ</th>
+            {(status === 1 || status === 2) &&
+              (bills[0]?.payment?.slipUrl || bills[0]?.slipUrl) && (
+                <th>สลิป</th>
+              )}
+            {status === 2 && role === 0 && <th>จัดการ</th>}
+            {role === 0 && (status === 0 || status === 2) && <th>แก้ไข</th>}
+            {role === 0 && (status === 0 || status === 1 || status === 2) && (
+              <th>ลบ</th>
+            )}
           </tr>
         </thead>
 

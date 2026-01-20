@@ -1,3 +1,4 @@
+// src/components/Dashboard/MonthlyBillTable.tsx
 import type { Bill } from "../../types/Bill";
 
 export default function MonthlyBillTable({ bills, monthNamesTH }: any) {
@@ -31,9 +32,11 @@ export default function MonthlyBillTable({ bills, monthNamesTH }: any) {
             fontSize: "1rem",
           }}
         >
-          <td colSpan={6} className="fw-bold py-2">
-            📊 สรุปรายรับรายเดือน (SmartDorm)
-          </td>
+          <tr>
+            <th colSpan={6} className="fw-bold py-2">
+              📊 สรุปรายรับรายเดือน (SmartDorm)
+            </th>
+          </tr>
           <tr>
             <th>#</th>
             <th>เดือน</th>

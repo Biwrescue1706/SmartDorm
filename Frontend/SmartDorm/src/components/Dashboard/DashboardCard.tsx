@@ -1,3 +1,4 @@
+// src/components/Dashboard/DashboardCard.tsx
 import { useNavigate } from "react-router-dom";
 
 interface DashboardCardProps {

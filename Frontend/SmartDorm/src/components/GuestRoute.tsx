@@ -1,5 +1,5 @@
 // ✅ src/components/GuestRoute.tsx
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Navigate } from "react-router-dom";
 import { verifyAuth } from "../hooks/useAuth";
 
@@ -7,33 +7,30 @@ export default function GuestRoute({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [isAuth, setIsAuth] = useState(false);
 
-    const text = "รอการตอบกลับจาก Server ...";
+  const text = "กำลังรอการตอบกลับจาก Server ...";
   const [displayText, setDisplayText] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
   const [index, setIndex] = useState(0);
 
-  // 🔁 Typewriter Loop (พิมพ์-ลบ-พิมพ์)
+  const ran = useRef(false);
+
+  // 🔁 Typewriter Loop
   useEffect(() => {
-    if (!loading) return; // server ตอบแล้ว หยุดอนิเมชัน
+    if (!loading) return;
 
-    const speed = isDeleting ? 30 : 60; // ลบเร็วกว่า
-
+    const speed = isDeleting ? 30 : 60;
     const timeout = setTimeout(() => {
       if (!isDeleting) {
-        // พิมพ์เพิ่มทีละตัว
         setDisplayText(text.slice(0, index + 1));
-        setIndex(prev => prev + 1);
+        setIndex((prev) => prev + 1);
 
-        // พิมพ์ครบแล้ว → เริ่มลบ
         if (index + 1 === text.length) {
-          setTimeout(() => setIsDeleting(true), 500); // หน่วงนิดนึงก่อนลบ
+          setTimeout(() => setIsDeleting(true), 500);
         }
       } else {
-        // ลบทีละตัว
         setDisplayText(text.slice(0, index - 1));
-        setIndex(prev => prev - 1);
+        setIndex((prev) => prev - 1);
 
-        // ถ้าลบหมดแล้ว → เริ่มพิมพ์ใหม่
         if (index - 1 === 0) {
           setIsDeleting(false);
         }
@@ -43,13 +40,17 @@ export default function GuestRoute({ children }: { children: ReactNode }) {
     return () => clearTimeout(timeout);
   }, [index, isDeleting, loading]);
 
-  // 🔐 ตรวจสอบ token
+  // 🔐 ตรวจสอบ token (ให้รันครั้งเดียวจริง ๆ)
   useEffect(() => {
+    if (ran.current) return; // กันไม่ให้รันซ้ำใน dev
+    ran.current = true;
+
     const check = async () => {
       const valid = await verifyAuth();
       setIsAuth(valid);
       setLoading(false);
     };
+
     check();
   }, []);
 

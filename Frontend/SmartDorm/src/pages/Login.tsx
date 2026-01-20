@@ -45,7 +45,9 @@ export default function Login() {
             alt="logo"
             width="60"
             height="60"
-            style={{ filter: "drop-shadow(0 3px 6px rgba(0,0,0,.45))" }}
+            style={{ 
+              borderRadius: "20px",
+              filter: "drop-shadow(0 3px 6px rgba(0,0,0,.45))" }}
           />
           <h2
             className="fw-bold text-warning m-0"

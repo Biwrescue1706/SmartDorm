@@ -31,7 +31,7 @@ export default function ForgotUsername() {
         <div className="container-fluid d-flex justify-content-between align-items-center">
           {/* ปุ่มย้อนกลับซ้าย */}
           <button
-            className="btn btn-outline-warning fw-semibold"
+            className="btn btn-warning fw-semibold text-dark text-center fs-4"
             onClick={() => navigate("/")}
           >
             &larr;
@@ -45,17 +45,18 @@ export default function ForgotUsername() {
                 alt="logo"
                 width="48"
                 height="48"
+                style={{
+                  borderRadius: "20px",
+                }}
               />
               <span className="fw-bold h4 text-warning mb-0">SmartDorm</span>
             </div>
-            <small className="text-light opacity-75">
-              ระบบจัดการหอพักสำหรับผู้ดูแล
-            </small>
+            <small className="text-light ">ระบบจัดการหอพักสำหรับผู้ดูแล</small>
           </div>
 
           {/* Dummy พื้นที่ขวาเพื่อบาลานซ์ */}
           <div className="invisible">
-            <button className="btn btn-outline-warning">X</button>
+            <button className="btn btn-warning">X</button>
           </div>
         </div>
       </nav>
@@ -78,6 +79,7 @@ export default function ForgotUsername() {
               width="48"
               height="48"
               className="img-fluid"
+              style={{ borderRadius: "20px" }}
             />
             <h3 className="fw-bold text-warning mb-0">SmartDorm</h3>
           </div>

@@ -74,20 +74,27 @@ export default function BillManageDialog({
                 src={slip}
                 alt="slip"
                 style={{
-                  width: "360px", // ⭐ ฟิกขนาดความกว้าง
-                  maxWidth: "70%", // ⭐ ถ้าจอแคบลง ให้ลดได้
-                  height: "180px", // ⭐ รักษาสัดส่วน ไม่บีบภาพ
-                  maxHeight: "65vh", // ⭐ ไม่ล้นจอ
+                  width: "360px",
+                  maxWidth: "70%", 
+                  height: "180px", 
+                  maxHeight: "65vh",
                   objectFit: "contain",
                   borderRadius: "14px",
                   boxShadow: "0 0 10px rgba(0,0,0,0.2)",
                   display: "block",
-                  margin: "0 auto", // ⭐ ให้อยู่กึ่งกลาง
+                  margin: "0 auto",
                 }}
               />
             ) : (
               <p className="text-danger mt-3">ไม่มีสลิปแนบมา</p>
             )}
+            <h6 className="fw-bold mt-4">ชื่อผู้ชำระ: {bill.customer?.userName ?? "-"} </h6>
+            <h6 className="fw-bold mt-2">วันที่ชำระ: {new Date(bill.payment?.paidAt ?? "").toLocaleDateString("th-TH", {
+              day: "numeric",
+              month: "long",
+              year: "numeric",
+            })} </h6>
+            <h6 className="fw-bold mt-4">ยอดชำระ: {bill.total.toLocaleString()} บาท </h6>
           </div>
 
           {/* FOOTER */}

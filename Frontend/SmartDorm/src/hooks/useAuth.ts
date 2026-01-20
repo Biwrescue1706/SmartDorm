@@ -1,10 +1,10 @@
 // src/hooks/useAuth.ts
-import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "../utils/toast"; // <-- เรียกใช้ toast แยกไฟล์แล้ว
 import { API_BASE } from "../config";
 import { Login, Register, Verify, Logout } from "../apis/endpoint.api";
 import type { LoginCredentials, RegisterData } from "../types/Auth";
+import { useEffect, useRef, useState , } from "react";
 
 export function useAuth() {
   const [loading, setLoading] = useState(false);
@@ -13,7 +13,9 @@ export function useAuth() {
   const [adminName, setAdminName] = useState<string>("");
   const [adminUsername, setAdminUsername] = useState<string>("");
   const [message, setMessage] = useState("กำลังโหลด...");
+  
   const navigate = useNavigate();
+  const hasVerified = useRef(false);
 
   /* ---------------- Register ---------------- */
   const register = async (data: RegisterData) => {
@@ -30,7 +32,7 @@ export function useAuth() {
         toast(
           "error",
           "ไม่สามารถโหลดข้อมูลได้",
-          "ไม่สามารถเชื่อมต่อกับ Backend ได้"
+          "ไม่สามารถเชื่อมต่อกับ Backend ได้",
         );
         return false;
       }
@@ -71,7 +73,7 @@ export function useAuth() {
         toast(
           "error",
           "เข้าสู่ระบบไม่สำเร็จ",
-          data.error || "กรุณาตรวจสอบข้อมูลอีกครั้ง"
+          data.error || "กรุณาตรวจสอบข้อมูลอีกครั้ง",
         );
         return false;
       }
@@ -79,8 +81,12 @@ export function useAuth() {
       toast(
         "success",
         "เข้าสู่ระบบสำเร็จ",
-        `ยินดีต้อนรับ ${data.admin?.name || credentials.username}`
+        `ยินดีต้อนรับ ${data.admin?.name || credentials.username}`,
       );
+
+      if (import.meta.env.PROD) {
+        console.clear();
+      }
 
       await new Promise((r) => setTimeout(r, 1500));
       return true;
@@ -99,7 +105,7 @@ export function useAuth() {
     toast(
       res?.ok ? "success" : "error",
       res?.ok ? "ออกจากระบบสำเร็จ" : "ออกจากระบบไม่สำเร็จ",
-      res?.ok ? "กรุณาเข้าสู่ระบบ" : "ออกจากระบบไม่สำเร็จ"
+      res?.ok ? "กรุณาเข้าสู่ระบบ" : "ออกจากระบบไม่สำเร็จ",
     );
 
     setIsAuth(false);
@@ -112,6 +118,9 @@ export function useAuth() {
 
   /* ---------------- Verify Auth ---------------- */
   useEffect(() => {
+    if (hasVerified.current) return; // กันไม่ให้ยิงซ้ำ
+    hasVerified.current = true;
+
     const verify = async () => {
       const res = await fetch(`${API_BASE}${Verify}`, {
         method: "GET",
@@ -166,6 +175,10 @@ export async function verifyAuth(): Promise<boolean> {
     method: "GET",
     credentials: "include",
   }).catch(() => null);
+
+  if (import.meta.env.PROD) {
+    console.clear();
+  }
 
   if (!res || !res.ok) return false;
   const data = await res.json().catch(() => null);

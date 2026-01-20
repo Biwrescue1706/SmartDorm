@@ -13,6 +13,7 @@ export interface Customer {
 
 export interface Payment {
   slipUrl?: string | null;
+  paidAt: string;
 }
 
 export interface Bill {

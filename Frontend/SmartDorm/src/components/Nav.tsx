@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 export interface NavProps {
   onLogout: () => void;
   pendingBookings?: number;
+  pendingCheckouts?: number;
   role?: number | null;
   adminName?: string;
   adminUsername?: string;
@@ -12,6 +13,7 @@ export interface NavProps {
 export default function Nav({
   onLogout,
   pendingBookings = 0,
+  pendingCheckouts = 0,
   role,
   adminName,
   adminUsername,
@@ -53,8 +55,10 @@ export default function Nav({
         style={{
           height: "60px",
           backgroundColor: "#4A0080",
+          marginTop: 0, // กัน Topbar
+          marginLeft: 0, // mobile
           color: "#F7D53D",
-          zIndex: 999,
+          zIndex: 1500,
         }}
       >
         {/* MOBILE MENU */}
@@ -72,6 +76,7 @@ export default function Nav({
             alt="SmartDorm"
             width={35}
             height={35}
+            style={{ borderRadius: "10px" }}
           />
           <div className="text-center">
             <h6 className="fw-bold text-warning m-0">🏠SmartDorm</h6>
@@ -127,7 +132,10 @@ export default function Nav({
 
               <button
                 className="btn btn-light w-100 text-start text-danger fw-bold"
-                onClick={onLogout}
+                onClick={() => {
+                  setProfileOpen(false);
+                  onLogout();
+                }}
               >
                 🚪 ออกจากระบบ
               </button>
@@ -142,9 +150,11 @@ export default function Nav({
         style={{
           width: 180,
           height: "100vh",
+          marginTop: 0, // กัน Topbar
+          marginLeft: 0, // mobile
           paddingTop: 80,
           backgroundColor: "#4A0080",
-          zIndex: 999,
+          zIndex: 1500,
         }}
       >
         <div className="px-2 d-flex flex-column gap-2">
@@ -195,6 +205,11 @@ export default function Nav({
             onClick={() => navigate("/checkout")}
           >
             🔄 หน้าคืน
+            {pendingCheckouts > 0 && (
+              <span className="badge bg-danger position-absolute top-0 end-0">
+                {pendingCheckouts}
+              </span>
+            )}
           </button>
 
           <button
@@ -262,18 +277,25 @@ export default function Nav({
             style={{
               width: 240,
               height: "100vh",
-              top: 0,
-              left: 0,
+              marginTop: 0, // กัน Topbar
+              marginLeft: 0, // mobile
               paddingTop: 80,
               backgroundColor: "#4A0080",
               zIndex: 1800,
             }}
           >
             <button
-              className="btn btn-warning btn-sm mb-3 fw-bold"
+              className="btn btn-warning btn-sm mb-3 fw-bold ms-auto d-flex align-items-center gap-2"
               onClick={() => setMenuOpen(false)}
             >
-              ✖ ปิดเมนู
+              <img
+                src="/assets/SmartDorm.webp"
+                alt="SmartDorm"
+                width={35}
+                height={35}
+                style={{ borderRadius: "10px" }}
+              />
+              ปิดเมนู
             </button>
 
             {/* เมนูเหมือน Desktop ทุกปุ่ม */}
@@ -287,6 +309,7 @@ export default function Nav({
               >
                 🏠 หน้าแรก
               </button>
+
               <button
                 className="btn btn-warning text-start"
                 onClick={() => {
@@ -296,24 +319,33 @@ export default function Nav({
               >
                 🏘️ จัดการห้องพัก
               </button>
+
               <button
-                className="btn btn-warning text-start"
+                className="btn btn-warning text-start d-flex justify-content-between align-items-center"
                 onClick={() => {
                   navigate("/bookings");
                   setMenuOpen(false);
                 }}
               >
-                📑 การจอง
+                <span>📑 การจอง</span>
+                {pendingBookings > 0 && (
+                  <span className="badge bg-danger">{pendingBookings}</span>
+                )}
               </button>
+
               <button
-                className="btn btn-warning text-start"
+                className="btn btn-warning text-start d-flex justify-content-between align-items-center"
                 onClick={() => {
                   navigate("/checkout");
                   setMenuOpen(false);
                 }}
               >
-                🔄 หน้าคืน
+                <span>🔄 หน้าคืน</span>
+                {pendingCheckouts > 0 && (
+                  <span className="badge bg-danger">{pendingCheckouts}</span>
+                )}
               </button>
+
               <button
                 className="btn btn-warning text-start"
                 onClick={() => {
@@ -323,6 +355,7 @@ export default function Nav({
               >
                 🕘 ประวัติการจอง
               </button>
+
               <button
                 className="btn btn-warning text-start"
                 onClick={() => {
@@ -332,6 +365,7 @@ export default function Nav({
               >
                 🧾 สร้างบิล
               </button>
+
               <button
                 className="btn btn-warning text-start"
                 onClick={() => {
@@ -341,6 +375,7 @@ export default function Nav({
               >
                 📋 บิลทั้งหมด
               </button>
+
               <button
                 className="btn btn-warning text-start"
                 onClick={() => {
@@ -350,6 +385,7 @@ export default function Nav({
               >
                 👥 จัดการสมาชิก
               </button>
+              
               <button
                 className="btn btn-warning text-start"
                 onClick={() => {
@@ -369,7 +405,7 @@ export default function Nav({
               top: 0,
               left: 0,
               background: "rgba(0,0,0,.35)",
-              zIndex: 1700,
+              zIndex: 999,
             }}
             onClick={() => setMenuOpen(false)}
           />

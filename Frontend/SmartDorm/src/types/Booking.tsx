@@ -14,9 +14,13 @@ export interface Room {
 
 export interface Checkout {
   checkoutId: string;
-  checkout: string;       // วันที่ขอคืน
-  checkoutAt?: string;    // วันที่คืนจริง
-  checkoutStatus: number;
+  checkout: string; // วันที่ขอคืน
+  ReturnApprovalStatus: number;
+  RefundApprovalDate?: string;
+
+  checkoutStatus: number;//คืนจริง
+  checkoutAt?: string; // วันที่คืนจริง
+  
 }
 
 export interface Booking {

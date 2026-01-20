@@ -75,7 +75,7 @@ export default function AllBillsRow({
             </span>
             {role === 0 && isPastDue && (
               <button
-                className="btn btn-outline-warning btn-sm"
+                className="btn btn-warning btn-sm text-white"
                 onClick={() => onOverdue(bill.billId, bill.room?.number ?? "-")}
               >
                 แจ้งเตือน
@@ -83,58 +83,58 @@ export default function AllBillsRow({
             )}
           </div>
         ) : (
-          <span className="text-muted small">—</span>
+          <span>ชำระแล้ว เกินกำหนด {overdueDays} วัน</span>
         )}
       </td>
 
       {/* สลิป */}
-      <td>
-        {status === 1 && (bill.payment?.slipUrl || bill.slipUrl) ? (
+      {(status === 1 || status === 2)  && (bill.payment?.slipUrl || bill.slipUrl) && (
+        <td>
           <button
-            className="btn btn-outline-primary btn-sm"
+            className="btn btn-primary btn-sm"
             onClick={() => onViewSlip(bill)}
           >
             ดูสลิป
           </button>
-        ) : (
-          <span className="text-muted small">—</span>
-        )}
-      </td>
+        </td>
+      )}
 
       {/* จัดการ / แก้ไข */}
-      <td>
-        {(status === 2 || status === 0) && role === 0 ? (
+      {status === 2 && role === 0 && (
+        <td>
           <button
             className="btn btn-info btn-sm text-white"
             onClick={() => onManage(bill)}
           >
             จัดการ
           </button>
-        ) : status === 0 ? (
+        </td>
+      )}
+
+      {/* แก้ไข */}
+      {role === 0 && (status === 0 || status === 2) && (
+        <td>
           <button
             className="btn btn-warning btn-sm"
             onClick={() => onEdit(bill)}
           >
+            {" "}
             ✏️
           </button>
-        ) : (
-          <span className="text-muted small">—</span>
-        )}
-      </td>
+        </td>
+      )}
 
       {/* ลบ */}
-      <td>
-        {role === 0 && (status === 0 || status === 1) ? (
+      {role === 0 && (status === 0 || status === 1 || status === 2) && (
+        <td>
           <button
             className="btn btn-danger btn-sm"
             onClick={() => onDelete(bill.billId, bill.room?.number ?? "-")}
           >
             🗑️
           </button>
-        ) : (
-          <span className="text-muted small">—</span>
-        )}
-      </td>
+        </td>
+      )}
     </tr>
   );
 }

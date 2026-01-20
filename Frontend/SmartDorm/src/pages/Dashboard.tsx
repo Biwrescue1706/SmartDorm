@@ -8,6 +8,8 @@ import { useBills } from "../hooks/Bill/useBills";
 import DashboardSummary from "../components/Dashboard/DashboardSummary";
 import DashboardRevenue from "../components/Dashboard/DashboardRevenue";
 import type { Booking } from "../types/Booking";
+import { usePendingBookings } from "../hooks/ManageRooms/usePendingBookings";
+import { usePendingCheckouts } from "../hooks/ManageRooms/usePendingCheckouts";
 
 export default function Dashboard() {
   const { handleLogout, role, adminName, adminUsername } = useAuth();
@@ -17,8 +19,9 @@ export default function Dashboard() {
   const { bills, fetchBills } = useBills();
 
   const [bookings, setBookings] = useState<Booking[]>([]);
-  const [pendingBookings, setPendingBookings] = useState(0);
-  const [pendingCheckouts, setPendingCheckouts] = useState(0);
+
+  const pendingBookings = usePendingBookings();
+  const pendingCheckouts = usePendingCheckouts();
 
   /* =========================
      LOAD DATA
@@ -66,29 +69,14 @@ export default function Dashboard() {
           checkout: c.checkout,
           checkoutAt: c.checkoutAt ?? undefined,
           checkoutStatus: c.checkoutStatus,
+          ReturnApprovalStatus: c.ReturnApprovalStatus,
+          RefundApprovalDate: c.RefundApprovalDate ?? undefined,
         })),
       }));
 
       setBookings(mapped);
     }
   }, [rawBookings]);
-
-  /* =========================
-     CALCULATE PENDING
-  ========================= */
-  useEffect(() => {
-    // pending bookings
-    setPendingBookings(
-      bookings.filter((b) => b.approveStatus === 0).length
-    );
-
-    // pending checkouts
-    const pending = bookings.reduce((acc, b) => {
-      const c = b.checkout?.filter((c) => c.checkoutStatus === 0).length || 0;
-      return acc + c;
-    }, 0);
-    setPendingCheckouts(pending);
-  }, [bookings]);
 
   /* =========================
      ROOM STATS
@@ -106,7 +94,6 @@ export default function Dashboard() {
       className="d-flex flex-column min-vh-100"
       style={{ backgroundColor: "#F7F4FD", fontFamily: "Sarabun, sans-serif" }}
     >
-      {/* NAVBAR */}
       <Nav
         onLogout={handleLogout}
         role={role}
@@ -115,7 +102,6 @@ export default function Dashboard() {
         pendingBookings={pendingBookings}
       />
 
-      {/* MAIN CONTENT */}
       <main className="main-content flex-grow-1 px-4 py-4 mt-6 mt-lg-6">
         <div className="mx-auto container-max">
           <h2
@@ -128,7 +114,6 @@ export default function Dashboard() {
             📊 สรุปข้อมูลหอพัก SmartDorm
           </h2>
 
-          {/* SUMMARY */}
           <DashboardSummary
             totalRooms={totalRooms}
             availableRooms={availableRooms}
@@ -137,7 +122,6 @@ export default function Dashboard() {
             pendingCheckouts={pendingCheckouts}
           />
 
-          {/* REVENUE */}
           <DashboardRevenue bills={bills} bookings={bookings} />
         </div>
       </main>

@@ -229,26 +229,6 @@ export default function Users() {
       </div>
     );
 
-  const co = checkouts.find((c) => c.bookingId);
-
-  const renderStatus = (status?: number) => {
-    if (status === 0)
-      return (
-        <span className="badge rounded-pill bg-warning text-dark px-3">
-          รอการอนุมัติ
-        </span>
-      );
-    if (status === 1)
-      return (
-        <span className="badge rounded-pill bg-success px-3">อนุมัติแล้ว</span>
-      );
-    if (status === 2)
-      return (
-        <span className="badge rounded-pill bg-danger px-3">ไม่อนุมัติ</span>
-      );
-    return <span className="badge rounded-pill bg-secondary px-3">-</span>;
-  };
-
   /* ---------------- Render ---------------- */
   return (
     <>

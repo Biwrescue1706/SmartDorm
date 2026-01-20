@@ -19,7 +19,7 @@ const formatThaiDate = (d?: string | Date | null) =>
       })
     : "-";
 
-checkouts.get("/getall", authMiddleware, async (_req, res) => {
+checkouts.get("/getall", async (_req, res) => {
   try {
     const checkouts = await prisma.checkout.findMany({
       orderBy: { createdAt: "desc" },

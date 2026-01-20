@@ -26,8 +26,6 @@ export default function AdminManagement() {
     "https://smartdorm-admin.biwbong.shop/assets/SmartDorm.png";
 
   const Toast = Swal.mixin({
-    toast: true,
-    position: "top-end",
     showConfirmButton: false,
     timer: 2600,
     background: "#ffffff",
@@ -246,15 +244,18 @@ export default function AdminManagement() {
   };
 
   return (
-    <div style={{ background: THEME.bg, minHeight: "100vh" }}>
+    <div
+      className="d-flex flex-column min-vh-100"
+      style={{ backgroundColor: "#F7F4FD", fontFamily: "Sarabun, sans-serif" }}
+    >
+      {" "}
       <Nav
         onLogout={handleLogout}
         role={role}
         adminName={adminName}
         adminUsername={adminUsername}
       />
-
-      <main className="main-content flex-grow-1 px-2 py-2 mt-6 mt-lg-6">
+      <main className="main-content flex-grow-1 px-4 py-4 mt-6 mt-lg-6">
         <div className="mx-auto container-max">
           <h2
             className="text-center fw-bold mb-4"

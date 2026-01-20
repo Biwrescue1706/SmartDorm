@@ -8,6 +8,8 @@ import Nav from "../../components/Nav";
 import RoomFilter from "../../components/Room/RoomFilter";
 import { useAuth } from "../../hooks/useAuth";
 import { useRooms } from "../../hooks/ManageRooms/useRooms";
+import { usePendingBookings } from "../../hooks/ManageRooms/usePendingBookings";
+import { usePendingCheckouts } from "../../hooks/ManageRooms/usePendingCheckouts";
 
 /* -------------------------------------------
    🎨 SCB THEME สำหรับหน้า Rooms
@@ -156,6 +158,10 @@ export default function Rooms() {
   /* -------------------------------------------
      🧠 Render หลัก
   -------------------------------------------- */
+
+    const pendingBookings = usePendingBookings();
+    const pendingCheckouts = usePendingCheckouts();
+    
   return (
     <div className="d-flex min-vh-100" style={{ background: THEME.bg }}>
       <Nav
@@ -163,6 +169,8 @@ export default function Rooms() {
         role={role}
         adminName={adminName}
         adminUsername={adminUsername}
+        pendingBookings={pendingBookings}
+        pendingCheckouts={pendingCheckouts}
       />
 
       <main

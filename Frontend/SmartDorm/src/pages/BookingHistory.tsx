@@ -4,6 +4,8 @@ import Nav from "../components/Nav";
 import Pagination from "../components/Pagination";
 import { useAuth } from "../hooks/useAuth";
 import { useBookingHistory } from "../hooks/useBookingHistory";
+import { usePendingCheckouts } from "../hooks/ManageRooms/usePendingCheckouts";
+import { usePendingBookings } from "../hooks/ManageRooms/usePendingBookings";
 
 /* =======================
    SCB THEME
@@ -52,7 +54,7 @@ export default function BookingHistory() {
   const years = useMemo(() => {
     const ys = data
       .map((b) =>
-        b.bookingDate ? new Date(b.bookingDate).getFullYear() : null
+        b.bookingDate ? new Date(b.bookingDate).getFullYear() : null,
       )
       .filter((y): y is number => y !== null);
 
@@ -81,7 +83,7 @@ export default function BookingHistory() {
         );
       })
       .sort(
-        (a, b) => Number(a.room?.number || 0) - Number(b.room?.number || 0)
+        (a, b) => Number(a.room?.number || 0) - Number(b.room?.number || 0),
       );
   }, [data, search, status, year]);
 
@@ -97,6 +99,8 @@ export default function BookingHistory() {
       </div>
     );
 
+  const pendingBookings = usePendingBookings();
+  const pendingCheckouts = usePendingCheckouts();
   return (
     <>
       <Nav
@@ -104,6 +108,8 @@ export default function BookingHistory() {
         role={role}
         adminName={adminName}
         adminUsername={adminUsername}
+        pendingBookings={pendingBookings}
+        pendingCheckouts={pendingCheckouts}
       />
 
       <main className="main-content mt-5 pt-4 px-2">
@@ -111,7 +117,10 @@ export default function BookingHistory() {
           className="container-fluid px-xl-5 py-4"
           style={{ background: BG_SOFT, borderRadius: 20 }}
         >
-          <h2 className="fw-bold text-center mb-4" style={{ color: SCB_PURPLE }}>
+          <h2
+            className="fw-bold text-center mb-4"
+            style={{ color: SCB_PURPLE }}
+          >
             📑 ประวัติการจองทั้งหมด
           </h2>
 
@@ -174,7 +183,7 @@ export default function BookingHistory() {
               value={year}
               onChange={(e) =>
                 setYear(
-                  e.target.value === "all" ? "all" : Number(e.target.value)
+                  e.target.value === "all" ? "all" : Number(e.target.value),
                 )
               }
             >
@@ -218,9 +227,7 @@ export default function BookingHistory() {
                       <td>{formatThaiDate(b.checkinAt)}</td>
                       <td>{formatThaiDate(b.checkout?.[0]?.checkout)}</td>
                       <td>
-                        {formatThaiDate(
-                          b.checkout?.[0]?.RefundApprovalDate
-                        )}
+                        {formatThaiDate(b.checkout?.[0]?.RefundApprovalDate)}
                       </td>
                     </tr>
                   ))}
@@ -237,17 +244,38 @@ export default function BookingHistory() {
                 >
                   <div className="card h-100 shadow-sm border-0">
                     <div className="card-body">
-                      <h5 className="fw-bold mb-2" style={{ color: SCB_PURPLE }}>
+                      <h5
+                        className="fw-bold mb-2"
+                        style={{ color: SCB_PURPLE }}
+                      >
                         ห้อง {b.room?.number}
                       </h5>
-                      <div className="small"><b>ชื่อ :</b> {b.fullName}</div>
-                      <div className="small"><b>LINE :</b> {b.customer?.userName || "-"}</div>
-                      <div className="small"><b>เบอร์ :</b> {b.cphone || "-"}</div>
-                      <div className="small"><b>จอง :</b> {formatThaiDate(b.bookingDate)}</div>
-                      <div className="small"><b>แจ้งเข้าพัก :</b> {formatThaiDate(b.checkin)}</div>
-                      <div className="small"><b>เข้าพักจริง :</b> {formatThaiDate(b.checkinAt)}</div>
-                      <div className="small"><b>ขอคืน :</b> {formatThaiDate(b.checkout?.[0]?.checkout)}</div>
-                      <div className="small"><b>คืนอนุมัติ :</b> {formatThaiDate(b.checkout?.[0]?.RefundApprovalDate)}</div>
+                      <div className="small">
+                        <b>ชื่อ :</b> {b.fullName}
+                      </div>
+                      <div className="small">
+                        <b>LINE :</b> {b.customer?.userName || "-"}
+                      </div>
+                      <div className="small">
+                        <b>เบอร์ :</b> {b.cphone || "-"}
+                      </div>
+                      <div className="small">
+                        <b>จอง :</b> {formatThaiDate(b.bookingDate)}
+                      </div>
+                      <div className="small">
+                        <b>แจ้งเข้าพัก :</b> {formatThaiDate(b.checkin)}
+                      </div>
+                      <div className="small">
+                        <b>เข้าพักจริง :</b> {formatThaiDate(b.checkinAt)}
+                      </div>
+                      <div className="small">
+                        <b>ขอคืน :</b>{" "}
+                        {formatThaiDate(b.checkout?.[0]?.checkout)}
+                      </div>
+                      <div className="small">
+                        <b>คืนอนุมัติ :</b>{" "}
+                        {formatThaiDate(b.checkout?.[0]?.RefundApprovalDate)}
+                      </div>
                     </div>
                   </div>
                 </div>

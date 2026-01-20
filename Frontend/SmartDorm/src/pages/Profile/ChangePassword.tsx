@@ -5,6 +5,8 @@ import { useAuth } from "../../hooks/useAuth";
 import { useChangePassword } from "../../hooks/ChangePassword/useChangePassword";
 import Swal from "sweetalert2";
 import { API_BASE } from "../../config";
+import { usePendingCheckouts } from "../../hooks/ManageRooms/usePendingCheckouts";
+import { usePendingBookings } from "../../hooks/ManageRooms/usePendingBookings";
 
 export default function ChangePassword() {
   const { handleLogout, role, adminName, adminUsername } = useAuth();
@@ -58,7 +60,9 @@ export default function ChangePassword() {
       }, 1500);
     }
   };
-
+  const pendingBookings = usePendingBookings();
+  const pendingCheckouts = usePendingCheckouts();
+  
   return (
     <>
       <Nav
@@ -66,6 +70,8 @@ export default function ChangePassword() {
         role={role}
         adminName={adminName}
         adminUsername={adminUsername}
+        pendingBookings={pendingBookings}
+        pendingCheckouts={pendingCheckouts}
       />
 
       {/* Responsive container */}

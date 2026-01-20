@@ -11,6 +11,8 @@ import AllBillsEditDialog from "../../components/AllBills/AllBillsEditDialog";
 import BillManageDialog from "../../components/AllBills/BillManageDialog";
 import Swal from "sweetalert2";
 import type { Bill } from "../../types/Bill";
+import { usePendingBookings } from "../../hooks/ManageRooms/usePendingBookings";
+import { usePendingCheckouts } from "../../hooks/ManageRooms/usePendingCheckouts";
 
 export default function AllBills() {
   const { handleLogout, role, adminName, adminUsername } = useAuth();
@@ -107,6 +109,9 @@ export default function AllBills() {
     await fetchBills();
   };
 
+  const pendingBookings = usePendingBookings();
+  const pendingCheckouts = usePendingCheckouts();
+
   return (
     <div
       className="d-flex flex-column"
@@ -117,7 +122,10 @@ export default function AllBills() {
         role={role}
         adminName={adminName}
         adminUsername={adminUsername}
+        pendingBookings={pendingBookings}
+        pendingCheckouts={pendingCheckouts}
       />
+
 
       <main className="main-content px-2 py-3 mt-6 mt-lg-7 flex-grow-1">
         <div className="mx-auto" style={{ maxWidth: "1400px" }}>

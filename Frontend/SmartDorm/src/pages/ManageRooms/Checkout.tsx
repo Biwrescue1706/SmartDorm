@@ -13,6 +13,8 @@ import Pagination from "../../components/Pagination";
 
 import Swal from "sweetalert2";
 import type { Checkout } from "../../types/Checkout";
+import { usePendingCheckouts } from "../../hooks/ManageRooms/usePendingCheckouts";
+import { usePendingBookings } from "../../hooks/ManageRooms/usePendingBookings";
 
 export default function Checkout() {
   const { handleLogout, role, adminName, adminUsername } = useAuth();
@@ -88,6 +90,9 @@ export default function Checkout() {
     fetchCheckouts();
   };
 
+  const pendingBookings = usePendingBookings();
+  const pendingCheckouts = usePendingCheckouts();
+
   return (
     <div className="d-flex min-vh-100 bg-white">
       <Nav
@@ -95,6 +100,8 @@ export default function Checkout() {
         role={role}
         adminName={adminName}
         adminUsername={adminUsername}
+        pendingBookings={pendingBookings}
+        pendingCheckouts={pendingCheckouts}
       />
 
       <main className="main-content flex-grow-1 px-2 py-3 mt-5 mt-lg-7">

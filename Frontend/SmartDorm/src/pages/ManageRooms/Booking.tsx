@@ -5,6 +5,8 @@ import BookingTable from "../../components/Booking/BookingTable";
 import { useBookings } from "../../hooks/ManageRooms/useBookings";
 import Nav from "../../components/Nav";
 import { useAuth } from "../../hooks/useAuth";
+import { usePendingCheckouts } from "../../hooks/ManageRooms/usePendingCheckouts";
+import { usePendingBookings } from "../../hooks/ManageRooms/usePendingBookings";
 
 export default function Booking() {
   const { handleLogout, role, adminName, adminUsername } = useAuth();
@@ -45,7 +47,8 @@ export default function Booking() {
   const handleFilter = (
     status: "pending" | "approved" | "rejected" | "checkinPending"
   ) => setActive(status);
-
+  const pendingBookings = usePendingBookings();
+  const pendingCheckouts = usePendingCheckouts();
   return (
     <div className="d-flex bg-white min-vh-100">
       {/* -------- NAV -------- */}
@@ -54,6 +57,8 @@ export default function Booking() {
         role={role}
         adminName={adminName}
         adminUsername={adminUsername}
+        pendingBookings={pendingBookings}
+        pendingCheckouts={pendingCheckouts}
       />
 
       {/* -------- CONTENT -------- */}

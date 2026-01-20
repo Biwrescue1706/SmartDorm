@@ -8,6 +8,8 @@ import BillCard from "../../components/Bills/BillCard";
 import BillDialog from "../../components/Bills/BillDialog";
 import Pagination from "../../components/Pagination";
 import "bootstrap/dist/css/bootstrap.min.css";
+import { usePendingCheckouts } from "../../hooks/ManageRooms/usePendingCheckouts";
+import { usePendingBookings } from "../../hooks/ManageRooms/usePendingBookings";
 
 export default function Bills() {
   const { handleLogout, role, adminName, adminUsername } = useAuth();
@@ -105,6 +107,9 @@ export default function Bills() {
     if (currentPage > totalPages && totalPages > 0) setCurrentPage(totalPages);
   }, [totalItems, rowsPerPage, currentPage]);
 
+    const pendingBookings = usePendingBookings();
+    const pendingCheckouts = usePendingCheckouts();
+
   return (
     <div
       className="d-flex flex-column"
@@ -115,7 +120,10 @@ export default function Bills() {
         role={role}
         adminName={adminName}
         adminUsername={adminUsername}
+        pendingBookings={pendingBookings}
+        pendingCheckouts={pendingCheckouts}
       />
+
 
       <main className="main-content flex-grow-1 px-1 py-2 mt-6 mt-lg-7">
         <div className="mx-auto container-max">

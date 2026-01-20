@@ -6,6 +6,8 @@ import { useChangePassword } from "../../hooks/ChangePassword/useChangePassword"
 import Swal from "sweetalert2";
 import type { Admin } from "../../types/Auth";
 import { API_BASE } from "../../config";
+import { usePendingBookings } from "../../hooks/ManageRooms/usePendingBookings";
+import { usePendingCheckouts } from "../../hooks/ManageRooms/usePendingCheckouts";
 
 const SCB_PURPLE = "#4A0080";
 const SCB_GOLD = "#D4AF37";
@@ -16,8 +18,7 @@ const BG_SOFT = "#F6F1FC";
 ================================================================ */
 
 export default function Profile() {
-  const { handleLogout, role, adminName, adminUsername } =
-    useAuth();
+  const { handleLogout, role, adminName, adminUsername } = useAuth();
   const { admin, loading, updateProfile } = useProfile();
   const { changePassword, loading: passLoading } = useChangePassword();
 
@@ -80,6 +81,9 @@ export default function Profile() {
     }
   };
 
+  const pendingBookings = usePendingBookings();
+  const pendingCheckouts = usePendingCheckouts();
+
   return (
     <>
       <Nav
@@ -87,6 +91,8 @@ export default function Profile() {
         role={role}
         adminName={adminName}
         adminUsername={adminUsername}
+        pendingBookings={pendingBookings}
+        pendingCheckouts={pendingCheckouts}
       />
 
       <div
@@ -127,7 +133,7 @@ function ProfileCard({
 }) {
   const [showName, setShowName] = useState(false);
   const [showPass, setShowPass] = useState(false);
-
+  
   return (
     <>
       <div className="card profile-card shadow-lg p-4 w-100">
@@ -251,7 +257,7 @@ function DialogEditName({
       />
       <ButtonsRow onClose={onClose} onSave={submit} />
     </>,
-    onClose
+    onClose,
   );
 }
 
@@ -295,7 +301,7 @@ function DialogEditPassword({
       {passwordInput("ยืนยันรหัสผ่าน", confirm, setConfirm, show, setShow)}
       <ButtonsRow loading={loading} onClose={onClose} onSave={submit} />
     </>,
-    onClose
+    onClose,
   );
 }
 
@@ -308,7 +314,7 @@ function passwordInput(
   value: string,
   setValue: (v: string) => void,
   show: boolean,
-  toggle: (v: boolean) => void
+  toggle: (v: boolean) => void,
 ) {
   return (
     <div className="mb-3 position-relative">

@@ -1,3 +1,4 @@
+// src/pages/Users.tsx
 import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import Swal from "sweetalert2";
@@ -6,16 +7,25 @@ import Nav from "../components/Nav";
 import { useAuth } from "../hooks/useAuth";
 import Pagination from "../components/Pagination";
 import * as Dialog from "@radix-ui/react-dialog";
+import { usePendingBookings } from "../hooks/ManageRooms/usePendingBookings";
+import { usePendingCheckouts } from "../hooks/ManageRooms/usePendingCheckouts";
 
 /* ---------------------- Types ---------------------- */
 interface BookingDetail {
   bookingId: string;
   room?: { number: string };
-  createdAt?: string;
   checkin?: string;
   checkinAt?: string;
+  bookingDate?: string;
   fullName?: string;
   cphone?: string;
+  checkout?: {
+    checkout: string;
+    ReturnApprovalStatus: number;
+    RefundApprovalDate: string;
+    checkoutStatus: number;
+    checkoutAt: string;
+  }[];
 }
 
 interface Customer {
@@ -50,7 +60,11 @@ const formatThaiDate = (x?: string) => {
 export default function Users() {
   const { handleLogout, role, adminName, adminUsername } = useAuth();
 
+  const pendingBookings = usePendingBookings();
+  const pendingCheckouts = usePendingCheckouts();
+
   const [users, setUsers] = useState<Customer[]>([]);
+  const [checkouts, setCheckouts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [width, setWidth] = useState(window.innerWidth);
@@ -104,6 +118,14 @@ export default function Users() {
 
   useEffect(() => {
     fetchUsers();
+  }, []);
+
+  const fetchCheckouts = async () => {
+    const res = await axios.get(`${API_BASE}/checkout/getall`);
+    setCheckouts(res.data.checkouts || []);
+  };
+  useEffect(() => {
+    fetchCheckouts();
   }, []);
 
   /* ---------------- Search ---------------- */
@@ -162,7 +184,7 @@ export default function Users() {
     try {
       await axios.delete(`${API_BASE}/user/${selectedUser.customerId}`);
       setUsers((prev) =>
-        prev.filter((x) => x.customerId !== selectedUser.customerId)
+        prev.filter((x) => x.customerId !== selectedUser.customerId),
       );
       setShowDialog(false);
       Swal.fire("สำเร็จ", "ลบลูกค้าเรียบร้อย", "success");
@@ -171,7 +193,7 @@ export default function Users() {
     }
   };
 
-  /* ---------------- Build Cards (ใช้ทั้ง table + card) ---------------- */
+  /* ---------------- Build Cards ---------------- */
   const userCards = useMemo<UserCard[]>(() => {
     const cards: UserCard[] = [];
 
@@ -182,7 +204,7 @@ export default function Users() {
           acc[name] = acc[name] ? [...acc[name], b] : [b];
           return acc;
         },
-        {}
+        {},
       );
 
       Object.entries(grouped).forEach(([name, bookings]) => {
@@ -207,6 +229,26 @@ export default function Users() {
       </div>
     );
 
+  const co = checkouts.find((c) => c.bookingId);
+
+  const renderStatus = (status?: number) => {
+    if (status === 0)
+      return (
+        <span className="badge rounded-pill bg-warning text-dark px-3">
+          รอการอนุมัติ
+        </span>
+      );
+    if (status === 1)
+      return (
+        <span className="badge rounded-pill bg-success px-3">อนุมัติแล้ว</span>
+      );
+    if (status === 2)
+      return (
+        <span className="badge rounded-pill bg-danger px-3">ไม่อนุมัติ</span>
+      );
+    return <span className="badge rounded-pill bg-secondary px-3">-</span>;
+  };
+
   /* ---------------- Render ---------------- */
   return (
     <>
@@ -215,6 +257,8 @@ export default function Users() {
         role={role}
         adminName={adminName}
         adminUsername={adminUsername}
+        pendingBookings={pendingBookings}
+        pendingCheckouts={pendingCheckouts}
       />
 
       <main className="main-content mt-5 pt-4 px-2">
@@ -223,10 +267,9 @@ export default function Users() {
             className="fw-bold text-center mt-3 mb-4"
             style={{ color: "#46007A" }}
           >
-            👥 รายชื่อลูกค้าทั้งหมด
+            รายชื่อลูกค้าทั้งหมด
           </h2>
 
-          {/* Search */}
           <div
             className="input-group mb-3"
             style={{ maxWidth: 600, margin: "0 auto" }}
@@ -246,13 +289,9 @@ export default function Users() {
             </button>
           </div>
 
-          {/* TABLE MODE */}
           {width >= 1400 ? (
             <div className="responsive-table" style={{ overflowX: "auto" }}>
-              <table
-                className="table table-sm table-striped align-middle text-center"
-                style={{ tableLayout: "fixed", width: "100%" }}
-              >
+              <table className="table table-sm table-striped align-middle text-center">
                 <thead className="table-dark">
                   <tr>
                     <th>#</th>
@@ -274,7 +313,7 @@ export default function Users() {
                           onClick={() => {
                             setSelectedUser({
                               ...users.find(
-                                (u) => u.customerId === card.customerId
+                                (u) => u.customerId === card.customerId,
                               )!,
                               bookings: card.bookings,
                             });
@@ -291,14 +330,14 @@ export default function Users() {
                             onClick={() => {
                               setSelectedUser({
                                 ...users.find(
-                                  (u) => u.customerId === card.customerId
+                                  (u) => u.customerId === card.customerId,
                                 )!,
                                 bookings: card.bookings,
                               });
                               handleDeleteUser();
                             }}
                           >
-                            🗑️
+                            ลบ
                           </button>
                         )}
                       </td>
@@ -308,7 +347,6 @@ export default function Users() {
               </table>
             </div>
           ) : (
-            /* CARD MODE */
             <div className="row g-3">
               {paginated.map((card, idx) => (
                 <div
@@ -331,7 +369,7 @@ export default function Users() {
                           onClick={() => {
                             setSelectedUser({
                               ...users.find(
-                                (u) => u.customerId === card.customerId
+                                (u) => u.customerId === card.customerId,
                               )!,
                               bookings: card.bookings,
                             });
@@ -347,14 +385,14 @@ export default function Users() {
                             onClick={() => {
                               setSelectedUser({
                                 ...users.find(
-                                  (u) => u.customerId === card.customerId
+                                  (u) => u.customerId === card.customerId,
                                 )!,
                                 bookings: card.bookings,
                               });
                               handleDeleteUser();
                             }}
                           >
-                            🗑️
+                            ลบ
                           </button>
                         )}
                       </div>
@@ -378,32 +416,30 @@ export default function Users() {
         </div>
       </main>
 
-      {/* Dialog */}
       <Dialog.Root open={showDialog} onOpenChange={setShowDialog}>
         <Dialog.Portal>
           <Dialog.Overlay
-            className="position-fixed top-50 start-0 w-100 h-100"
-            style={{
-              background: "rgba(0,0,0,0.75)",
-              zIndex: 1000,
-            }}
+            className="position-fixed top-0 start-0 w-100 h-100"
+            style={{ background: "rgba(0,0,0,0.85)", zIndex: 99 }}
           />
 
           <Dialog.Content
-            className="position-fixed start-50 bg-white rounded-4 shadow-lg"
+            className="position-fixed bg-white rounded-4 shadow-lg"
             style={{
-              top: "5px",
-              transform: "translateX(-50%)",
-              width: "95%",
+              top: "50%",
+              left: "50%",
+              transform: "translate(-50%, -50%)",
+              width: "90%",
               maxWidth: "650px",
-              maxHeight: "calc(100vh - 120px)",
+              maxHeight: "85vh",
               display: "flex",
               flexDirection: "column",
-              zIndex: 1000,
+              zIndex: 1600,
             }}
           >
             <Dialog.Title className="p-3 border-bottom fw-bold text-center">
-              ประวัติของ {selectedUser?.bookings?.[0]?.fullName}
+              ประวัติของ <br />
+              {selectedUser?.bookings?.[0]?.fullName}
             </Dialog.Title>
 
             <Dialog.Description className="visually-hidden">
@@ -411,42 +447,106 @@ export default function Users() {
             </Dialog.Description>
 
             <div className="p-3" style={{ overflowY: "auto", flexGrow: 1 }}>
-              {selectedUser?.bookings?.map((b) => (
+              {selectedUser?.bookings?.map((b, i) => (
                 <div
                   key={b.bookingId}
-                  className="border rounded-3 p-3 mb-3 bg-white shadow-sm"
+                  className="mb-3 rounded-4 shadow-sm border"
+                  style={{ overflow: "hidden" }}
                 >
-                  <p>
-                    <b>ห้อง : </b> {b.room?.number}
-                  </p>
-                  <p>
-                    <b>โทร : </b> {b.cphone}
-                  </p>
-                  <p>
-                    <b>จอง : </b> {formatThaiDate(b.createdAt)}
-                  </p>
-                  <p>
-                    <b>เช็คอิน : </b> {formatThaiDate(b.checkin)}
-                  </p>
-                  <p>
-                    <b>เข้าพักจริง : </b> {formatThaiDate(b.checkinAt)}
-                  </p>
+                  <div
+                    className="px-3 py-2 fw-bold text-white"
+                    style={{ background: "#5a2d82" }}
+                  >
+                    รายการที่ {i + 1} • ห้อง {b.room?.number || "-"}
+                  </div>
 
-                  {role === 0 && (
-                    <button
-                      className="btn btn-danger btn-sm w-100 mt-2"
-                      onClick={() => handleDeleteBooking(b)}
-                    >
-                      ลบรายการนี้
-                    </button>
-                  )}
+                  <div className="p-3 bg-white">
+                    <div className="d-flex justify-content-between mb-1">
+                      <span className="fw-semibold">ชื่อผู้เช่า</span>
+                      <span className="fw-semibold">{b.fullName || "-"}</span>
+                    </div>
+                    <div className="d-flex justify-content-between mb-1">
+                      <span className="fw-semibold">Line ผู้เช่า</span>
+                      <span className="fw-semibold">
+                        {selectedUser?.userName || "-"}
+                      </span>
+                    </div>
+                    <div className="d-flex justify-content-between mb-1">
+                      <span className="fw-semibold">เบอร์โทร</span>
+                      <span className="fw-semibold">{b.cphone || "-"}</span>
+                    </div>
+
+                    <div className="d-flex justify-content-between mb-1">
+                      <span className="fw-semibold">วันที่จอง</span>
+                      <span className="fw-semibold">
+                        {formatThaiDate(b.bookingDate)}
+                      </span>
+                    </div>
+
+                    <div className="d-flex justify-content-between mb-1">
+                      <span className="fw-semibold">วันที่ขอเข้าพัก</span>
+                      <span className="fw-semibold">
+                        {formatThaiDate(b.checkin)}
+                      </span>
+                    </div>
+
+                    <div className="d-flex justify-content-between">
+                      <span className="fw-semibold">เข้าพักจริง</span>
+                      <span className="fw-semibold">
+                        {formatThaiDate(b.checkinAt)}
+                      </span>
+                    </div>
+
+                    {/* <div className="d-flex justify-content-between mt-2">
+                      <span className="fw-semibold">วันที่ขอคืน</span>
+                      <span className="fw-semibold">
+                        {formatThaiDate(co?.checkout)}
+                      </span>
+                    </div>
+
+                    <div className="d-flex justify-content-between">
+                      <span className="fw-semibold">สถานะ</span>
+                      <span className="fw-semibold">
+                        {renderStatus(co?.checkoutStatus)}
+                      </span>
+                    </div>
+
+                    <div className="d-flex justify-content-between">
+                      <span className="fw-semibold">วันคืนกุญแจ</span>
+                      <span className="fw-semibold">
+                        {formatThaiDate(co?.checkoutAt)}
+                      </span>
+                    </div>
+
+                    <div className="d-flex justify-content-between">
+                      <span className="fw-semibold">คืนกุญแจ</span>
+                      <span className="fw-semibold">
+                        {co?.checkoutStatus === 0
+                          ? "รอการอนุมัติ"
+                          : co?.checkoutStatus === 1
+                            ? "คืนแล้ว"
+                            : co?.[0].checkoutStatus === 2
+                              ? "ไม่อนุมัติ"
+                              : ""}
+                      </span> 
+                   </div> */}
+
+                    {role === 0 && (
+                      <button
+                        className="btn btn-danger btn-sm w-100 mt-3"
+                        onClick={() => handleDeleteBooking(b)}
+                      >
+                        ลบรายการนี้
+                      </button>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>
 
             <div className="p-3 border-top bg-light">
               <Dialog.Close asChild>
-                <button className="btn btn-secondary w-100">ปิด</button>
+                <button className="btn btn-dark w-100">ปิด</button>
               </Dialog.Close>
             </div>
           </Dialog.Content>

@@ -30,6 +30,19 @@ const formatThaiDate = (d?: string | null) => {
 
 const toBEYear = (y: number) => y + 543;
 
+const approvalText = (v?: number | null) => {
+  if (v === 0) return "รออนุมัติ";
+  if (v === 1) return "อนุมัติแล้ว";
+  if (v === 2) return "ปฏิเสธ";
+  return "-";
+};
+
+const checkoutText = (v?: number | null) => {
+  if (v === 0) return "ยังไม่เช็คเอาท์";
+  if (v === 1) return "เช็คเอาท์แล้ว";
+  return "-";
+};
+
 /* =======================
    Page
 ======================= */
@@ -101,6 +114,7 @@ export default function BookingHistory() {
 
   const pendingBookings = usePendingBookings();
   const pendingCheckouts = usePendingCheckouts();
+
   return (
     <>
       <Nav
@@ -211,7 +225,10 @@ export default function BookingHistory() {
                     <th>แจ้งเข้าพัก</th>
                     <th>เข้าพักจริง</th>
                     <th>วันที่ขอคืน</th>
+                    <th>สถานะคืน</th>
                     <th>คืนอนุมัติ</th>
+                    <th>สถานะเช็คเอาท์</th>
+                    <th>คืนจริง</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -225,8 +242,11 @@ export default function BookingHistory() {
                       <td>{formatThaiDate(b.bookingDate)}</td>
                       <td>{formatThaiDate(b.checkin)}</td>
                       <td>{formatThaiDate(b.checkinAt)}</td>
- <td>{formatThaiDate(b.checkout)}</td>
-<td>{formatThaiDate(b.checkoutAt)}</td>
+                      <td>{formatThaiDate(b.checkout)}</td>
+                      <td>{approvalText(b.ReturnApprovalStatus)}</td>
+                      <td>{formatThaiDate(b.RefundApprovalDate)}</td>
+                      <td>{checkoutText(b.checkoutStatus)}</td>
+                      <td>{formatThaiDate(b.checkoutAt)}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -267,13 +287,22 @@ export default function BookingHistory() {
                         <b>เข้าพักจริง :</b> {formatThaiDate(b.checkinAt)}
                       </div>
                       <div className="small">
-                        <div className="small">
-  <b>ขอคืน :</b> {formatThaiDate(b.checkout)}
-</div>
-<div className="small">
-  <b>คืนจริง :</b> {formatThaiDate(b.checkoutAt)}
-</div>
-                        {formatThaiDate(RefundApprovalDate)}
+                        <b>ขอคืน :</b> {formatThaiDate(b.checkout)}
+                      </div>
+                      <div className="small">
+                        <b>สถานะการคืน :</b>{" "}
+                        {approvalText(b.ReturnApprovalStatus)}
+                      </div>
+                      <div className="small">
+                        <b>คืนอนุมัติ :</b>{" "}
+                        {formatThaiDate(b.RefundApprovalDate)}
+                      </div>
+                      <div className="small">
+                        <b>สถานะเช็คเอาท์ :</b>{" "}
+                        {checkoutText(b.checkoutStatus)}
+                      </div>
+                      <div className="small">
+                        <b>คืนจริง :</b> {formatThaiDate(b.checkoutAt)}
                       </div>
                     </div>
                   </div>

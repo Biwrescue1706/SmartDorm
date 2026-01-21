@@ -225,10 +225,8 @@ export default function BookingHistory() {
                       <td>{formatThaiDate(b.bookingDate)}</td>
                       <td>{formatThaiDate(b.checkin)}</td>
                       <td>{formatThaiDate(b.checkinAt)}</td>
-                      <td>{formatThaiDate(b.checkout?.[0]?.checkout)}</td>
-                      <td>
-                        {formatThaiDate(b.checkout?.[0]?.RefundApprovalDate)}
-                      </td>
+ <td>{formatThaiDate(b.checkout)}</td>
+<td>{formatThaiDate(b.checkoutAt)}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -269,11 +267,12 @@ export default function BookingHistory() {
                         <b>เข้าพักจริง :</b> {formatThaiDate(b.checkinAt)}
                       </div>
                       <div className="small">
-                        <b>ขอคืน :</b>{" "}
-                        {formatThaiDate(b.checkout?.[0]?.checkout)}
-                      </div>
-                      <div className="small">
-                        <b>คืนอนุมัติ :</b>{" "}
+                        <div className="small">
+  <b>ขอคืน :</b> {formatThaiDate(b.checkout)}
+</div>
+<div className="small">
+  <b>คืนจริง :</b> {formatThaiDate(b.checkoutAt)}
+</div>
                         {formatThaiDate(b.checkout?.[0]?.RefundApprovalDate)}
                       </div>
                     </div>

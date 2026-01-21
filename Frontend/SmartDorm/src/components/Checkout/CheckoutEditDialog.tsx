@@ -7,7 +7,7 @@ interface Props {
   checkout: Checkout | null;
   onSave: (
     checkoutId: string,
-    values: { requestedCheckout: string }
+    values: { checkout: string }
   ) => Promise<void>;
   onClose: () => void;
 }
@@ -34,7 +34,7 @@ export default function CheckoutEditDialog({
     }
 
     await onSave(checkout.checkoutId, {
-      requestedCheckout: checkoutDate,
+      checkout: checkoutDate,
     });
 
     onClose();

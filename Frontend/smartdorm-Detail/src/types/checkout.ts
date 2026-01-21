@@ -21,9 +21,11 @@ export type CheckoutCustomer = {
 export type Checkout = {
   checkoutId: string;
 
+//คำขอ
+checkout: string;
   ReturnApprovalStatus: number; // 0 = รอ | 1 = อนุมัติ | 2 = ปฏิเสธ
+RefundApprovalDate?: string | null; // วันที่อนุมัติ / ปฏิเสธ
 
-  checkout: string;
   checkoutStatus: number; // 0 = ยังไม่ | 1 = เช็คเอาท์แล้ว
   checkoutAt?: string | null;
 

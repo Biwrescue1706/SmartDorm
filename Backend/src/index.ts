@@ -19,14 +19,14 @@ const allowedOrigins = [
   "http://localhost:5175",
 
   // Custom domains (frontend)
-  "https://smartdorm-admin.biwbong.shop",
+  "https://manage.smartdorm-biwboong.shop",
   "https://smartdorm-bookingsroom.biwbong.shop",
   "https://smartdorm-detail.biwbong.shop",
   "https://smartdorm-paymentbill.biwbong.shop",
   "https://smartdorm-returnroom.biwbong.shop",
 
   // ✅ Backend domain itself
-  "https://smartdorm-backend.biwbong.shop",
+  "https://hub.smartdorm-biwboong.shop",
 ];
 
 // ---------------- CORS Config ----------------

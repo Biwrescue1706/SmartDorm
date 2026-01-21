@@ -12,25 +12,22 @@ import {
 } from "../config/rate";
 import { processOverdueManual } from "../services/overdue.manual";
 
+import { BASE_URL } from "../utils/api";
+
 const bill = Router();
 
-/*
-billStatus (Int)
-0 = ยังไม่จ่าย
-1 = จ่ายแล้ว
-2 = รอตรวจสอบ
-3 = ปฏิเสธ
+/* billStatus (Int) 0 = ยังไม่จ่าย
+1 = จ่ายแล้ว 2 = รอตรวจสอบ 3 = ปฏิเสธ
 */
 
-const BASE_URL = "https://smartdorm-detail.biwbong.shop";
 
-// ---------------- Supabase ----------------
+//Supabase
 const supabase = createClient(
   process.env.SUPABASE_URL!,
   process.env.SUPABASE_KEY!
 );
 
-// ---------------- Helpers ----------------
+//Helpers
 const getDueDateNextMonth5th = (month: string | Date) => {
   const d = new Date(month);
   return new Date(d.getFullYear(), d.getMonth() + 1, 5);

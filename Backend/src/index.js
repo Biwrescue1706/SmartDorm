@@ -18,8 +18,8 @@ const allowedOrigins = [
   "https://manage.smartdorm-biwboong.shop",
   "https://bookingsroom.smartdorm-biwboong.shop",
   "https://details.smartdorm-biwboong.shop",
-  "https://smartdorm-paymentbill.biwbong.shop",
-  "https://smartdorm-returnroom.biwbong.shop",
+  "https://paymentbill.smartdorm-biwboong.shop",
+  "https://returnroom.smartdorm-biwboong.shop",
 
   "https://hub.smartdorm-biwboong.shop",
 ];

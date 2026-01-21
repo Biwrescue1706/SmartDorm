@@ -64,7 +64,7 @@ export default function Users() {
   const pendingCheckouts = usePendingCheckouts();
 
   const [users, setUsers] = useState<Customer[]>([]);
-  
+
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [width, setWidth] = useState(window.innerWidth);
@@ -119,8 +119,6 @@ export default function Users() {
   useEffect(() => {
     fetchUsers();
   }, []);
-
-  
 
   /* ---------------- Search ---------------- */
   const handleSearch = async () => {
@@ -226,6 +224,13 @@ export default function Users() {
   /* ---------------- Render ---------------- */
   return (
     <>
+      <div
+        className="d-flex flex-column min-vh-100"
+        style={{
+          backgroundColor: "#F7F4FD",
+          fontFamily: "Sarabun, sans-serif",
+        }}
+      >
       <Nav
         onLogout={handleLogout}
         role={role}
@@ -471,40 +476,6 @@ export default function Users() {
                       </span>
                     </div>
 
-                    {/* <div className="d-flex justify-content-between mt-2">
-                      <span className="fw-semibold">วันที่ขอคืน</span>
-                      <span className="fw-semibold">
-                        {formatThaiDate(co?.checkout)}
-                      </span>
-                    </div>
-
-                    <div className="d-flex justify-content-between">
-                      <span className="fw-semibold">สถานะ</span>
-                      <span className="fw-semibold">
-                        {renderStatus(co?.checkoutStatus)}
-                      </span>
-                    </div>
-
-                    <div className="d-flex justify-content-between">
-                      <span className="fw-semibold">วันคืนกุญแจ</span>
-                      <span className="fw-semibold">
-                        {formatThaiDate(co?.checkoutAt)}
-                      </span>
-                    </div>
-
-                    <div className="d-flex justify-content-between">
-                      <span className="fw-semibold">คืนกุญแจ</span>
-                      <span className="fw-semibold">
-                        {co?.checkoutStatus === 0
-                          ? "รอการอนุมัติ"
-                          : co?.checkoutStatus === 1
-                            ? "คืนแล้ว"
-                            : co?.[0].checkoutStatus === 2
-                              ? "ไม่อนุมัติ"
-                              : ""}
-                      </span> 
-                   </div> */}
-
                     {role === 0 && (
                       <button
                         className="btn btn-danger btn-sm w-100 mt-3"
@@ -526,6 +497,7 @@ export default function Users() {
           </Dialog.Content>
         </Dialog.Portal>
       </Dialog.Root>
+    </div>
     </>
   );
 }

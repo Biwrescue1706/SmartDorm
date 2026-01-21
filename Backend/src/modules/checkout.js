@@ -309,7 +309,7 @@ checkouts.put("/:checkoutId/date", authMiddleware, async (req, res) => {
   }
 });
 
-// ลบคำขอคืนห้อง (ลบได้ทุกกรณี และคืนสถานะห้องเป็นว่าง)
+// ลบคำขอคืนห้อง (ลบได้ทุกกรณี)
 checkouts.delete("/:checkoutId", authMiddleware, async (req, res) => {
   try {
     const { checkoutId } = req.params;

@@ -325,15 +325,6 @@ checkouts.delete("/:checkoutId", authMiddleware, async (req, res) => {
       await tx.checkout.delete({
         where: { checkoutId },
       });
-
-      // คืนสถานะห้องเป็นว่างเสมอ
-      await tx.room.update({
-        where: { roomId: checkout.roomId },
-        data: {
-          status: 0,
-          updatedAt: new Date(),
-        },
-      });
     });
 
     res.json({ message: "ลบ checkout สำเร็จ และคืนสถานะห้องแล้ว" });

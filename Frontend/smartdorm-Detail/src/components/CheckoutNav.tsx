@@ -38,7 +38,7 @@ export default function CheckoutNav() {
 
         {/* โลโก้ขวา */}
         <img
-          src="https://smartdorm-admin.biwbong.shop/assets/SmartDorm.webp"
+          src="https://manage.smartdorm-biwboong.shop/assets/SmartDorm.webp"
           alt="SmartDorm Logo"
           style={{
             width: "35px",

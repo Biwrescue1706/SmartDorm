@@ -65,7 +65,7 @@ export default function BookingHistory() {
   const filtered = useMemo(() => {
     return data
       .filter((b) => {
-        const isReturned = b.checkout?.[0]?.checkoutStatus === 1;
+        const isReturned = b.checkoutAt != null;
 
         if (status === "booked" && isReturned) return false;
         if (status === "returned" && !isReturned) return false;
@@ -273,7 +273,7 @@ export default function BookingHistory() {
 <div className="small">
   <b>คืนจริง :</b> {formatThaiDate(b.checkoutAt)}
 </div>
-                        {formatThaiDate(b.checkout?.[0]?.RefundApprovalDate)}
+                        {formatThaiDate(RefundApprovalDate)}
                       </div>
                     </div>
                   </div>

@@ -16,8 +16,8 @@ const allowedOrigins = [
   "http://localhost:5175",
 
   "https://manage.smartdorm-biwboong.shop",
-  "https://smartdorm-bookingsroom.biwbong.shop",
-  "https://smartdorm-detail.biwbong.shop",
+  "https://bookingsroom.smartdorm-biwboong.shop",
+  "https://details.smartdorm-biwboong.shop",
   "https://smartdorm-paymentbill.biwbong.shop",
   "https://smartdorm-returnroom.biwbong.shop",
 

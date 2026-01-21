@@ -47,7 +47,7 @@ export function useCheckouts() {
 
   const updateCheckoutDate = async (
     id: string,
-    values: { requestedCheckout: string }
+    values: { checkout: string }
   ) => {
     await fetch(`${API_BASE}/checkout/${id}/date`, {
       method: "PUT",

@@ -39,7 +39,10 @@ export default function AllBillsTable({
             <th>ยอดรวม</th>
             <th>วันครบกำหนด</th>
             <th>สถานะ</th>
-            <th>เกินกำหนด</th>
+            {role === 0 && (status === 0 || status === 1 || status === 2) && (
+              <th>เกินกำหนด</th>
+            )}
+
             {(status === 1 || status === 2) &&
               (bills[0]?.payment?.slipUrl || bills[0]?.slipUrl) && (
                 <th>สลิป</th>
@@ -55,7 +58,7 @@ export default function AllBillsTable({
         <tbody>
           {bills.length === 0 ? (
             <tr>
-              <td colSpan={12} className="text-muted py-4">
+              <td colSpan={9} aria-colspan={3} className="text-muted py-4">
                 ไม่พบบิล
               </td>
             </tr>

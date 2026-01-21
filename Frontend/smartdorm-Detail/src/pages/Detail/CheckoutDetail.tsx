@@ -122,7 +122,7 @@ export default function CheckoutDetail() {
                 <tr>
                   <td className="fw-semibold text-black">วันที่ขอคืน</td>
                   <td className="fw-semibold text-black">
-                    {formatThaiDate(checkout.requestedCheckout)}
+                    {formatThaiDate(checkout.checkout)}
                   </td>
                 </tr>
                 <tr>
@@ -131,10 +131,10 @@ export default function CheckoutDetail() {
                     {checkout.status === 0 && (
                       <StatusBadge text="รออนุมัติ" color="#F9A825" />
                     )}
-                    {checkout.status === 1 && (
+                    {checkout.ReturnApprovalStatus === 1 && (
                       <StatusBadge text="อนุมัติแล้ว" color="#2E7D32" />
                     )}
-                    {checkout.status === 2 && (
+                    {checkout.ReturnApprovalStatus === 2 && (
                       <StatusBadge text="ปฏิเสธ" color="#C62828" />
                     )}
                   </td>

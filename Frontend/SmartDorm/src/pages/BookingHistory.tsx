@@ -76,29 +76,35 @@ export default function BookingHistory() {
 
   /* ---------- filter + sort ---------- */
   const filtered = useMemo(() => {
-    return data
-      .filter((b) => {
-        const isReturned = b.checkoutAt != null;
+  return data
+    .filter((b) => {
+      const isReturned = b.checkoutAt != null;
 
-        if (status === "booked" && isReturned) return false;
-        if (status === "returned" && !isReturned) return false;
+      if (status === "booked" && isReturned) return false;
+      if (status === "returned" && !isReturned) return false;
 
-        if (year !== "all" && b.bookingDate) {
-          if (new Date(b.bookingDate).getFullYear() !== year) return false;
-        }
+      if (year !== "all" && b.bookingDate) {
+        if (new Date(b.bookingDate).getFullYear() !== year) return false;
+      }
 
-        const q = search.toLowerCase();
-        return (
-          b.room?.number?.toLowerCase().includes(q) ||
-          b.fullName?.toLowerCase().includes(q) ||
-          b.customer?.userName?.toLowerCase().includes(q) ||
-          b.cphone?.includes(q)
-        );
-      })
-      .sort(
-        (a, b) => Number(a.room?.number || 0) - Number(b.room?.number || 0),
+      const q = search.toLowerCase();
+
+      const roomNo = String(b.room?.number ?? "").toLowerCase();
+      const name = String(b.fullName ?? "").toLowerCase();
+      const line = String(b.customer?.userName ?? "").toLowerCase();
+      const phone = String(b.cphone ?? "");
+
+      return (
+        roomNo.includes(q) ||
+        name.includes(q) ||
+        line.includes(q) ||
+        phone.includes(q)
       );
-  }, [data, search, status, year]);
+    })
+    .sort(
+      (a, b) => Number(a.room?.number || 0) - Number(b.room?.number || 0),
+    );
+}, [data, search, status, year]);
 
   /* ---------- pagination ---------- */
   const totalItems = filtered.length;

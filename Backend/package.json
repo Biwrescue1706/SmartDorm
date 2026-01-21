@@ -2,11 +2,10 @@
   "name": "backend",
   "version": "1.0.0",
   "description": "SmartDorm backend service for dormitory management system",
-  "main": "dist/index.js",
+  "main": "src/index.js",
   "scripts": {
-    "dev": "nodemon src/index.ts",
-    "build": " prisma generate && prisma db push && tsc",
-    "start": "node dist/index.js",
+    "dev": "nodemon src/index.js",
+    "start": "node src/index.js",
     "prisma:generate": "npx prisma generate",
     "prisma:push": "npx prisma db push"
   },

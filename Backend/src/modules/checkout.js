@@ -309,7 +309,7 @@ checkouts.put("/:checkoutId/date", authMiddleware, async (req, res) => {
   }
 });
 
-// ลบคำขอคืนห้อง (ถ้ายังไม่เช็คเอาท์)
+// ลบคำขอคืนห้อง (ลบได้ทุกกรณี และคืนสถานะห้องเป็นว่าง)
 checkouts.delete("/:checkoutId", authMiddleware, async (req, res) => {
   try {
     const { checkoutId } = req.params;
@@ -317,12 +317,26 @@ checkouts.delete("/:checkoutId", authMiddleware, async (req, res) => {
     const checkout = await prisma.checkout.findUnique({
       where: { checkoutId },
     });
-    if (!checkout) throw new Error("ไม่พบข้อมูล");
-    if (checkout.checkoutStatus === 1)
-      throw new Error("เช็คเอาท์แล้ว ลบไม่ได้");
 
-    await prisma.checkout.delete({ where: { checkoutId } });
-    res.json({ message: "ลบ checkout สำเร็จ" });
+    if (!checkout) throw new Error("ไม่พบข้อมูล");
+
+    await prisma.$transaction(async (tx) => {
+      // ลบ checkout
+      await tx.checkout.delete({
+        where: { checkoutId },
+      });
+
+      // คืนสถานะห้องเป็นว่างเสมอ
+      await tx.room.update({
+        where: { roomId: checkout.roomId },
+        data: {
+          status: 0,
+          updatedAt: new Date(),
+        },
+      });
+    });
+
+    res.json({ message: "ลบ checkout สำเร็จ และคืนสถานะห้องแล้ว" });
   } catch (err) {
     res.status(400).json({ error: err.message });
   }

@@ -22,11 +22,12 @@ export type CheckoutCustomer = {
 export type Checkout = {
   checkoutId: string;
 
-  status: number;         // 0 = รอ | 1 = อนุมัติ | 2 = ปฏิเสธ
-  checkoutStatus: number; // 0 = ยังไม่ | 1 = เช็คเอาท์แล้ว
+  ReturnApprovalStatus: number;         // 0 = รอ | 1 = อนุมัติ | 2 = ปฏิเสธ
+  
 
-  requestedCheckout: string;
-  actualCheckout?: string | null;
+  checkout: string;
+checkoutStatus: number; // 0 = ยังไม่ | 1 = เช็คเอาท์แล้ว
+  checkoutAt?: string | null;
 
   booking: CheckoutBooking;
   room: CheckoutRoom;

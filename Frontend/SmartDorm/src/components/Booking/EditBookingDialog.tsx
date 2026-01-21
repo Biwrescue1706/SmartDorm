@@ -19,8 +19,9 @@ export default function EditBookingDialog({ booking, onSuccess }: Props) {
     cphone: booking.cphone || "",
     cmumId: booking.cmumId || "",
     approveStatus: booking.approveStatus ?? 0,
-    checkinStatus: booking.checkinStatus ?? 0,
-    checkoutStatus: booking.checkoutStatus ?? 0,
+    checkin: booking.checkin
+      ? new Date(booking.checkin).toISOString().slice(0, 10)
+      : "",
   });
 
   // =================== Validation + Save ===================
@@ -95,7 +96,7 @@ export default function EditBookingDialog({ booking, onSuccess }: Props) {
           credentials: "include",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(form),
-        }
+        },
       );
 
       if (!res.ok) throw new Error("Update failed");
@@ -211,9 +212,7 @@ export default function EditBookingDialog({ booking, onSuccess }: Props) {
                   className="form-control border-0 bg-light shadow-sm rounded-3 text-center"
                   placeholder="ชื่อผู้จอง"
                   value={form.cname}
-                  onChange={(e) =>
-                    setForm({ ...form, cname: e.target.value })
-                  }
+                  onChange={(e) => setForm({ ...form, cname: e.target.value })}
                 />
               </div>
             </div>
@@ -291,6 +290,23 @@ export default function EditBookingDialog({ booking, onSuccess }: Props) {
                   <option value={1}>อนุมัติแล้ว</option>
                   <option value={2}>ไม่อนุมัติ</option>
                 </select>
+              </div>
+            </div>
+
+            {/* วันที่เข้าพัก */}
+            <div className="row align-items-center mb-3">
+              <label className="col-4 col-form-label fw-bold text-center">
+                วันที่เข้าพัก
+              </label>
+              <div className="col-7">
+                <input
+                  type="date"
+                  className="form-control border-0 bg-light shadow-sm rounded-3 text-center"
+                  value={form.checkin}
+                  onChange={(e) =>
+                    setForm({ ...form, checkin: e.target.value })
+                  }
+                />
               </div>
             </div>
           </div>

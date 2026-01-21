@@ -1,16 +1,15 @@
-// src/modules/checkout.ts
+// src/modules/checkout.js
 import { Router } from "express";
-import prisma from "../prisma";
-import { authMiddleware } from "../middleware/authMiddleware";
-import { verifyLineToken } from "../utils/verifyLineToken";
-import { sendFlexMessage } from "../utils/lineFlex";
+import prisma from "../prisma.js";
+import { authMiddleware } from "../middleware/authMiddleware.js";
+import { verifyLineToken } from "../utils/verifyLineToken.js";
+import { sendFlexMessage } from "../utils/lineFlex.js";
+import { BASE_URL, ADMIN_URL } from "../utils/api.js";
 
 const checkouts = Router();
 const adminId = process.env.ADMIN_LINE_ID;
-const BASE_URL = "https://smartdorm-detail.biwbong.shop";
-const ADMIN_URL = "https://smartdorm-admin.biwbong.shop";
 
-const formatThaiDate = (d?: string | Date | null) =>
+const formatThaiDate = (d) =>
   d
     ? new Date(d).toLocaleDateString("th-TH", {
         year: "numeric",
@@ -21,12 +20,12 @@ const formatThaiDate = (d?: string | Date | null) =>
 
 checkouts.get("/getall", authMiddleware, async (_req, res) => {
   try {
-    const checkouts = await prisma.checkout.findMany({
+    const list = await prisma.checkout.findMany({
       orderBy: { createdAt: "desc" },
       include: { booking: true, room: true, customer: true },
     });
-    res.json({ checkouts });
-  } catch (err: any) {
+    res.json({ checkouts: list });
+  } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
@@ -40,7 +39,7 @@ checkouts.get("/:checkoutId", async (req, res) => {
     });
     if (!checkout) throw new Error("ไม่พบข้อมูล checkout");
     res.json({ checkout });
-  } catch (err: any) {
+  } catch (err) {
     res.status(400).json({ error: err.message });
   }
 });
@@ -64,7 +63,7 @@ checkouts.post("/myBookings", async (req, res) => {
     });
 
     res.json({ bookings });
-  } catch (err: any) {
+  } catch (err) {
     res.status(400).json({ error: err.message });
   }
 });
@@ -132,7 +131,7 @@ checkouts.put("/:bookingId/request", async (req, res) => {
     );
 
     res.json({ checkout });
-  } catch (err: any) {
+  } catch (err) {
     res.status(400).json({ error: err.message });
   }
 });
@@ -163,14 +162,17 @@ checkouts.put("/:checkoutId/approve", authMiddleware, async (req, res) => {
         { label: "รหัสการคืน", value: checkout.checkoutId },
         { label: "ห้อง", value: checkout.room.number },
         { label: "วันที่ขอคืน", value: formatThaiDate(checkout.checkout) },
-        { label: "วันที่อนุมัติ", value: formatThaiDate(updated.RefundApprovalDate) },
+        {
+          label: "วันที่อนุมัติ",
+          value: formatThaiDate(updated.RefundApprovalDate),
+        },
         { label: "สถานะ", value: "รอวันเช็คเอาท์", color: "#f39c12" },
       ],
       [{ label: "เปิดดูรายการ", url: detailUrl, style: "primary" }]
     );
 
     res.json({ checkout: updated });
-  } catch (err: any) {
+  } catch (err) {
     res.status(400).json({ error: err.message });
   }
 });
@@ -201,7 +203,10 @@ checkouts.put("/:checkoutId/reject", authMiddleware, async (req, res) => {
         { label: "รหัสการคืน", value: checkout.checkoutId },
         { label: "ห้อง", value: checkout.room.number },
         { label: "วันที่ขอคืน", value: formatThaiDate(checkout.checkout) },
-        { label: "วันที่ปฏิเสธ", value: formatThaiDate(updated.RefundApprovalDate) },
+        {
+          label: "วันที่ปฏิเสธ",
+          value: formatThaiDate(updated.RefundApprovalDate),
+        },
         { label: "สถานะ", value: "ถูกปฏิเสธ" },
         { label: "เหตุผล", value: "กรุณาติดต่อแอดมินเพื่อสอบถามเพิ่มเติม" },
       ],
@@ -209,7 +214,7 @@ checkouts.put("/:checkoutId/reject", authMiddleware, async (req, res) => {
     );
 
     res.json({ checkout: updated });
-  } catch (err: any) {
+  } catch (err) {
     res.status(400).json({ error: err.message });
   }
 });
@@ -254,7 +259,7 @@ checkouts.put("/:checkoutId/checkout", authMiddleware, async (req, res) => {
     );
 
     res.json({ message: "เช็คเอาท์สำเร็จ", refundAmount: deposit });
-  } catch (err: any) {
+  } catch (err) {
     res.status(400).json({ error: err.message });
   }
 });
@@ -277,7 +282,7 @@ checkouts.put("/:checkoutId/date", authMiddleware, async (req, res) => {
     });
 
     res.json({ checkout: updated });
-  } catch (err: any) {
+  } catch (err) {
     res.status(400).json({ error: err.message });
   }
 });
@@ -295,7 +300,7 @@ checkouts.delete("/:checkoutId", authMiddleware, async (req, res) => {
 
     await prisma.checkout.delete({ where: { checkoutId } });
     res.json({ message: "ลบ checkout สำเร็จ" });
-  } catch (err: any) {
+  } catch (err) {
     res.status(400).json({ error: err.message });
   }
 });

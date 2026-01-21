@@ -94,24 +94,36 @@ booking.get("/history", authMiddleware, async (_req, res) => {
     });
 
     const checkouts = await prisma.checkout.findMany({
-      select: { bookingId: true, checkout: true, checkoutAt: true },
+      select: { 
+    bookingId: true,
+    checkout: true,
+    ReturnApprovalStatus: true,
+    RefundApprovalDate: true,
+    checkoutStatus: true,
+    checkoutAt: true,
+ },
     });
     const checkoutMap = new Map(checkouts.map((c) => [c.bookingId, c]));
 
     const history = bookings.map((b: any) => {
       const c = checkoutMap.get(b.bookingId);
       return {
-        bookingId: b.bookingId,
-        fullName: b.fullName,
-        cphone: b.cphone,
-        bookingDate: b.bookingDate,
-        checkin: b.checkin,
-        checkinAt: b.checkinAt,
-        room: b.room,
-        customer: { userName: b.customer?.userName },
-        checkout: c?.checkout || null,
-        checkoutAt: c?.checkoutAt || null,
-      };
+  bookingId: b.bookingId,
+  fullName: b.fullName,
+  cphone: b.cphone,
+  bookingDate: b.bookingDate,
+  checkin: b.checkin,
+  checkinAt: b.checkinAt,
+  room: b.room,
+  customer: { userName: b.customer?.userName },
+
+  // Checkout (flattened)
+  checkout: c?.checkout || null,                       // วันที่ขอคืน
+  ReturnApprovalStatus: c?.ReturnApprovalStatus ?? 0,  // สถานะอนุมัติ
+  RefundApprovalDate: c?.RefundApprovalDate || null,   // วันที่อนุมัติ
+  checkoutStatus: c?.checkoutStatus ?? 0,              // สถานะเช็คเอาท์
+  checkoutAt: c?.checkoutAt || null,                   // วันที่คืนจริง
+};
     });
 
     res.json({ bookings: history });

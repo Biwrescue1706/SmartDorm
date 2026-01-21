@@ -3,8 +3,8 @@ import prisma from "../prisma";
 import { sendFlexMessage } from "../utils/lineFlex";
 import { OVERDUE_FINE_PER_DAY } from "../config/rate";
 
-const BASE_URL = "https://smartdorm-detail.biwbong.shop";
-const ADMIN_URL = "https://smartdorm-admin.biwbong.shop";
+import { BASE_URL, ADMIN_URL } from "../utils/api";
+
 const ADMIN_LINE_ID = process.env.ADMIN_LINE_ID;
 
 export const processOverdueManual = async (billId: string) => {

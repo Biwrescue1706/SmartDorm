@@ -108,7 +108,7 @@ model Booking {
 model Checkout {
   checkoutId String @id @default(auto()) @map("_id") @db.ObjectId
 
-  bookingId  String @db.ObjectId
+  bookingId  String @unique @db.ObjectId 
   roomId     String @db.ObjectId
   customerId String @db.ObjectId
 

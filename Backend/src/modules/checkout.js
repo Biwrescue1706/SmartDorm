@@ -55,16 +55,15 @@ checkouts.post("/myBookings", async (req, res) => {
     const customer = await prisma.customer.findFirst({ where: { userId } });
     if (!customer) throw new Error("ไม่พบข้อมูลลูกค้า");
 
-    const bookings = await prisma.booking.findMany({
-      where: {
-        customerId: customer.customerId,
-        approveStatus: 1,
-        checkout: { none: { checkoutStatus: 0 } },
-      },
-      include: { room: true },
-      orderBy: { createdAt: "desc" },
-    });
-
+ const bookings = await prisma.booking.findMany({
+  where: {
+    customerId: customer.customerId,
+    approveStatus: 1,
+    checkout: null, // ยังไม่เคยมี checkout เลย
+  },
+  include: { room: true },
+  orderBy: { createdAt: "desc" },
+});
     res.json({ bookings });
   } catch (err) {
     res.status(400).json({ error: err.message });

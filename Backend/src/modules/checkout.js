@@ -19,7 +19,7 @@ const formatThaiDate = (d) =>
     : "-";
 
 // ดึงรายการ checkout ทั้งหมด (Admin)
-checkouts.get("/getall", authMiddleware, async (_req, res) => {
+checkouts.get("/getall", async (_req, res) => {
   try {
     const list = await prisma.checkout.findMany({
       orderBy: { createdAt: "desc" },

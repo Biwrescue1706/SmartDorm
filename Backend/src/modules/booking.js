@@ -394,7 +394,6 @@ booking.put("/:bookingId/checkin", async (req, res) => {
 });
 
 // ✏️ ADMIN UPDATE
-// ✏️ ADMIN UPDATE
 booking.put("/:bookingId", async (req, res) => {
   try {
     const { bookingId } = req.params;

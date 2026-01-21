@@ -96,7 +96,7 @@ model Booking {
   room     Room     @relation(fields: [roomId], references: [roomId])
   customer Customer @relation(fields: [customerId], references: [customerId])
 
-  checkout Checkout[]
+  checkout Checkout?
   bills    Bill[]
 
   @@index([roomId])

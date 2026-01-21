@@ -7,12 +7,13 @@ import { verifyLineToken } from "../utils/verifyLineToken.js";
 import { sendFlexMessage } from "../utils/lineFlex.js";
 import { authMiddleware } from "../middleware/authMiddleware.js";
 
-const upload = multer({ storage: multer.memoryStorage() });
-const booking = Router();
-const BASE_URL = "https://smartdorm-detail.biwbong.shop";
-const ADMIN_URL = "https://smartdorm-admin.biwbong.shop";
+import { BASE_URL , ADMIN_URL } from "../utils/api.js";
 
-// ---------------- Supabase ----------------
+const upload = multer({ storage: multer.memoryStorage() });
+
+const booking = Router();
+
+//Supabase
 const supabase = createClient(
   process.env.SUPABASE_URL,
   process.env.SUPABASE_KEY
@@ -30,7 +31,7 @@ export const deleteSlip = async (url) => {
     const filePath = fullPath.split("/").slice(1).join("/");
     await supabase.storage.from(bucket).remove([filePath]);
   } catch (err) {
-    console.warn("⚠️ ลบสลิปไม่สำเร็จ", err);
+    console.warn("ลบสลิปไม่สำเร็จ", err);
   }
 };
 
@@ -43,7 +44,7 @@ const formatThai = (d) =>
       })
     : "-";
 
-// ================== ROUTES ==================
+// ROUTES
 
 // 📋 GET ALL BOOKINGS
 booking.get("/getall", async (_req, res) => {

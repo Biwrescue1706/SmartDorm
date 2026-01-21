@@ -4,8 +4,8 @@ import { sendFlexMessage } from "../utils/lineFlex";
 import { OVERDUE_FINE_PER_DAY } from "../config/rate";
 import cron from "node-cron";
 
-const BASE_URL = "https://smartdorm-detail.biwbong.shop";
-const ADMIN_URL = "https://smartdorm-admin.biwbong.shop";
+import { BASE_URL, ADMIN_URL } from "../utils/api";
+
 const adminId = process.env.ADMIN_LINE_ID;
 
 //  * ประมวลผลบิลค้างชำระอัตโนมัติ

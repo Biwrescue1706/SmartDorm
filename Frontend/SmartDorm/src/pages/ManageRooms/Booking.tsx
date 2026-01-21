@@ -29,20 +29,19 @@ export default function Booking() {
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
   /* ---------------- FILTER LOGIC ---------------- */
-  useEffect(() => {
+useEffect(() => {
   setFiltered(
     active === "pending"
       ? bookings.filter((b) => b.approveStatus === 0)
       : active === "approved"
-      ? bookings.filter((b) => b.approveStatus === 1 && b.checkinStatus === 1 ) // แค่อนุมัติแล้ว ไม่สนใจ checkinAt
+      ? bookings.filter((b) => b.approveStatus === 1 && b.checkinStatus === 1)
       : active === "rejected"
       ? bookings.filter((b) => b.approveStatus === 2)
-      : bookings.filter(
-          (b) => b.approveStatus === 1  && b.checkinStatus === 0  // ยังไม่ได้เช็คอิน
-        )
+      : bookings.filter((b) => b.approveStatus === 1 && b.checkinStatus === 0)
   );
   setCurrentPage(1);
 }, [active, bookings]);
+
 
   const handleFilter = (
     status: "pending" | "approved" | "rejected" | "checkinPending"

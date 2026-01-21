@@ -1,4 +1,4 @@
-// src/hooks/useBookings.ts
+// src/hooks/ManageRooms/useBookings.ts
 import { useEffect, useState } from "react";
 import Swal from "sweetalert2";
 import axios from "axios";
@@ -10,11 +10,8 @@ import {
   DeleteBooking,
 } from "../../apis/endpoint.api";
 import { toast } from "../../utils/toast";
-
-// เปลี่ยนเป็น type-only import
 import type { Booking } from "../../types/Booking";
 
-// ================= Hook =================
 export function useBookings() {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
@@ -26,6 +23,7 @@ export function useBookings() {
     try {
       const res = await fetch(`${API_BASE}${GetAllBooking}`, {
         credentials: "include",
+        headers: { Authorization: `Bearer ${token}` },
       });
 
       if (!res.ok) {
@@ -62,23 +60,16 @@ export function useBookings() {
 
         room: b.room,
         customer: b.customer,
-        checkout: b.checkout?.map((c: any) => ({
-          checkoutId: c.checkoutId,
-          checkout: c.checkout,
-          checkoutAt: c.checkoutAt ?? undefined,
-          checkoutStatus: c.checkoutStatus,
-        })),
       }));
 
       setBookings(formatted);
-    } catch (err) {
+    } catch {
       toast("error", "เชื่อมต่อไม่สำเร็จ", "ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์");
     } finally {
       setLoading(false);
     }
   };
 
-  // approve/reject/delete/checkin เหมือนเดิม
   const approveBooking = async (id: string) => {
     try {
       const res = await fetch(`${API_BASE}${ApproveBooking(id)}`, {
@@ -121,6 +112,7 @@ export function useBookings() {
       cancelButtonColor: "#3085d6",
     });
     if (!ok.isConfirmed) return;
+
     try {
       const res = await fetch(`${API_BASE}${DeleteBooking(id)}`, {
         method: "DELETE",

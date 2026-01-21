@@ -126,19 +126,21 @@ export default function CheckoutDetail() {
                   </td>
                 </tr>
                 <tr>
-                  <td className="fw-semibold text-black">สถานะคำขอ</td>
-                  <td>
-                    {checkout.status === 0 && (
-                      <StatusBadge text="รออนุมัติ" color="#F9A825" />
-                    )}
-                    {checkout.ReturnApprovalStatus === 1 && (
-                      <StatusBadge text="อนุมัติแล้ว" color="#2E7D32" />
-                    )}
-                    {checkout.ReturnApprovalStatus === 2 && (
-                      <StatusBadge text="ปฏิเสธ" color="#C62828" />
-                    )}
-                  </td>
-                </tr>
+  <td className="fw-semibold text-black">สถานะคำขอ</td>
+  <td>
+    {checkout.ReturnApprovalStatus === 0 && (
+      <StatusBadge text="รออนุมัติ" color="#F9A825" />
+    )}
+    {checkout.ReturnApprovalStatus === 1 && (
+      <StatusBadge text="อนุมัติแล้ว" color="#2E7D32" />
+    )}
+    {checkout.ReturnApprovalStatus === 2 && (
+      <StatusBadge text="ปฏิเสธ" color="#C62828" />
+    )}
+  </td>
+</tr>
+
+
                 <tr>
                   <td className="fw-semibold text-black">สถานะเช็คเอาท์</td>
                   <td>

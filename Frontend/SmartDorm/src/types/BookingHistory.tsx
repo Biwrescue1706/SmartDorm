@@ -3,7 +3,7 @@ export interface BookingHistory {
   bookingId: string;
 
   room?: {
-    number: string;
+    number?: string;
   };
 
   customer?: {
@@ -14,16 +14,11 @@ export interface BookingHistory {
   cphone?: string;
 
   // Booking
-  bookingDate?: string; // วันที่จอง
-  checkin?: string;
-  checkinAt?: string;
+  bookingDate?: string | null;
+  checkin?: string | null;
+  checkinAt?: string | null;
 
-  // Checkout (relation)
-  checkout?: {
-    checkout?: string;
-    RefundApprovalDate?: string;
-    checkoutStatus?: number;
-    checkoutAt?: string;
-
-  }[];
+  // Checkout (flattened from backend)
+  checkout?: string | null;     // วันที่ขอคืน
+  checkoutAt?: string | null;   // วันที่เช็คเอาท์จริง
 }

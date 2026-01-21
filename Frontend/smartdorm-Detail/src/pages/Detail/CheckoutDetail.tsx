@@ -140,18 +140,33 @@ export default function CheckoutDetail() {
   </td>
 </tr>
 
+<tr>
+  <td className="fw-semibold text-black">วันที่อนุมัติ</td>
+  <td className="fw-semibold text-black">
+    {checkout.RefundApprovalDate
+      ? formatThaiDate(checkout.RefundApprovalDate)
+      : "-"}
+  </td>
+</tr>
 
-                <tr>
-                  <td className="fw-semibold text-black">สถานะเช็คเอาท์</td>
-                  <td>
-                    {checkout.checkoutStatus === 0 && (
-                      <StatusBadge text="ยังไม่เช็คเอาท์" color="#F9A825" />
-                    )}
-                    {checkout.checkoutStatus === 1 && (
-                      <StatusBadge text="เช็คเอาท์แล้ว" color="#2E7D32" />
-                    )}
-                  </td>
-                </tr>
+{checkout.checkoutAt && (
+  <tr>
+    <td className="fw-semibold text-black">วันที่เช็คเอาท์</td>
+    <td className="fw-semibold text-black">
+      {formatThaiDate(checkout.checkoutAt)}
+    </td>
+  </tr>
+)}
+                {checkout.checkoutAt && (
+  <tr>
+    <td className="fw-semibold text-black">สถานะเช็คเอาท์</td>
+    <td>
+      {checkout.checkoutStatus === 1 && (
+        <StatusBadge text="เช็คเอาท์แล้ว" color="#2E7D32" />
+      )}
+    </td>
+  </tr>
+)}
               </tbody>
             </table>
 

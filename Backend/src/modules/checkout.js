@@ -181,7 +181,7 @@ checkouts.put("/:checkoutId/approve", authMiddleware, async (req, res) => {
   }
 });
 
-// แอดมินปฏิเสธคำขอคืนห้อง
+// แอดมินปฏิเสธคำขอคืนห้อง (ปฏิเสธแล้วให้ลบ เพื่อให้ขอใหม่ได้)
 checkouts.put("/:checkoutId/reject", authMiddleware, async (req, res) => {
   try {
     const { checkoutId } = req.params;
@@ -194,31 +194,23 @@ checkouts.put("/:checkoutId/reject", authMiddleware, async (req, res) => {
     if (checkout.ReturnApprovalStatus !== 0)
       throw new Error("คำขอถูกดำเนินการแล้ว");
 
-    const updated = await prisma.checkout.update({
+    // ลบทิ้ง เพื่อให้ booking กลับไปเป็น checkout: null
+    await prisma.checkout.delete({
       where: { checkoutId },
-      data: { ReturnApprovalStatus: 2, RefundApprovalDate: new Date() },
     });
-
-    const detailUrl = `${BASE_URL}/checkout/${checkout.checkoutId}`;
 
     await sendFlexMessage(
       checkout.customer.userId,
       "🏫SmartDorm🎉 แจ้งผลคำขอการคืนห้อง",
       [
-        { label: "รหัสการคืน", value: checkout.checkoutId },
         { label: "ห้อง", value: checkout.room.number },
-        { label: "วันที่ขอคืน", value: formatThaiDate(checkout.checkout) },
-        {
-          label: "วันที่ปฏิเสธ",
-          value: formatThaiDate(updated.RefundApprovalDate),
-        },
         { label: "สถานะ", value: "ถูกปฏิเสธ" },
-        { label: "เหตุผล", value: "กรุณาติดต่อแอดมินเพื่อสอบถามเพิ่มเติม" },
+        { label: "หมายเหตุ", value: "สามารถยื่นคำขอใหม่ได้อีกครั้ง" },
       ],
-      [{ label: "เปิดดูรายการ", url: detailUrl, style: "primary" }]
+      []
     );
 
-    res.json({ checkout: updated });
+    res.json({ message: "ปฏิเสธแล้ว สามารถขอใหม่ได้" });
   } catch (err) {
     res.status(400).json({ error: err.message });
   }

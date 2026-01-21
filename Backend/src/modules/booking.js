@@ -394,13 +394,17 @@ booking.put("/:bookingId/checkin", async (req, res) => {
 });
 
 // ✏️ ADMIN UPDATE
+// ✏️ ADMIN UPDATE
 booking.put("/:bookingId", async (req, res) => {
   try {
     const { bookingId } = req.params;
     const { ctitle, cname, csurname, cphone, cmumId, approveStatus, checkin } =
       req.body;
 
-    const data = await prisma.booking.findUnique({ where: { bookingId } });
+    const data = await prisma.booking.findUnique({
+      where: { bookingId },
+      include: { room: true },
+    });
     if (!data) throw new Error("ไม่พบข้อมูลการจอง");
 
     let fullName = data.fullName;
@@ -426,13 +430,20 @@ booking.put("/:bookingId", async (req, res) => {
           cphone: cphone ?? data.cphone,
           cmumId: cmumId ?? data.cmumId,
           approveStatus: nextApproveStatus,
+          // รีเซ็ตเช็คอินทุกครั้งที่เปลี่ยนสถานะ
+          checkinStatus: 0,
+          checkinAt: null,
+
           checkin: checkin ? new Date(checkin) : data.checkin,
         },
       });
 
+      // คุมสถานะห้องจากค่าปลายทาง
+      const roomStatus = nextApproveStatus === 2 ? 0 : 1;
+
       await tx.room.update({
         where: { roomId: data.roomId },
-        data: { status: nextApproveStatus === 2 ? 0 : 1 },
+        data: { status: roomStatus },
       });
 
       return b;
@@ -443,6 +454,7 @@ booking.put("/:bookingId", async (req, res) => {
     res.status(400).json({ error: err.message });
   }
 });
+
 
 // 🗑️ DELETE
 booking.delete("/:bookingId", async (req, res) => {

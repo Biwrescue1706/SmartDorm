@@ -39,7 +39,7 @@ export default function AllBillsTable({
             <th>ยอดรวม</th>
             <th>วันครบกำหนด</th>
             <th>สถานะ</th>
-            {role === 0 && (status === 0 || status === 1 || status === 2) && (
+            {(status === 0 || status === 1 || status === 2) && (
               <th>เกินกำหนด</th>
             )}
 

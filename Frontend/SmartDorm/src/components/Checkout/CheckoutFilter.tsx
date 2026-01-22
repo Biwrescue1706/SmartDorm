@@ -49,17 +49,10 @@ export default function CheckoutFilter({
       bg: "#E8F6F3",
       color: "#0F5132",
     },
-    {
-      key: "rejected",
-      label: "ปฏิเสธ",
-      count: counts.rejected,
-      bg: "#F8D7DA",
-      color: "#842029",
-    },
   ] as const;
 
   return (
-    <div className="row g-3 mb-4">
+    <div className="d-flex flex-wrap justify-content-center gap-3">
       {cards.map((c) => {
         const isActive = active === c.key;
 

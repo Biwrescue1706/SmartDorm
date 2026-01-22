@@ -231,136 +231,67 @@ export default function Users() {
           fontFamily: "Sarabun, sans-serif",
         }}
       >
-      <Nav
-        onLogout={handleLogout}
-        role={role}
-        adminName={adminName}
-        adminUsername={adminUsername}
-        pendingBookings={pendingBookings}
-        pendingCheckouts={pendingCheckouts}
-      />
+        <Nav
+          onLogout={handleLogout}
+          role={role}
+          adminName={adminName}
+          adminUsername={adminUsername}
+          pendingBookings={pendingBookings}
+          pendingCheckouts={pendingCheckouts}
+        />
 
-      <main className="main-content mt-5 pt-4 px-2">
-        <div className="container-max mx-auto" style={{ maxWidth: "1450px" }}>
-          <h2
-            className="fw-bold text-center mt-3 mb-4"
-            style={{ color: "#46007A" }}
-          >
-            รายชื่อลูกค้าทั้งหมด
-          </h2>
+        <main className="main-content mt-5 pt-4 px-2">
+          <div className="container-max mx-auto" style={{ maxWidth: "1450px" }}>
+            <h2
+              className="fw-bold text-center mt-3 mb-4"
+              style={{ color: "#46007A" }}
+            >
+              รายชื่อลูกค้าทั้งหมด
+            </h2>
 
-          <div
-            className="input-group mb-3"
-            style={{ maxWidth: 600, margin: "0 auto" }}
-          >
-            <input
-              className="form-control"
-              placeholder="ค้นหาชื่อ / เบอร์ / ห้อง"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-            />
-            <button className="btn btn-primary" onClick={handleSearch}>
-              ค้นหา
-            </button>
-            <button className="btn btn-outline-secondary" onClick={fetchUsers}>
-              รีเฟรช
-            </button>
-          </div>
-
-          {width >= 1400 ? (
-            <div className="responsive-table" style={{ overflowX: "auto" }}>
-              <table className="table table-sm table-striped align-middle text-center">
-                <thead className="table-dark">
-                  <tr>
-                    <th>#</th>
-                    <th>LINE</th>
-                    <th>ชื่อผู้จอง</th>
-                    <th>ประวัติ</th>
-                    <th>ลบ</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {paginated.map((card, idx) => (
-                    <tr key={`${card.customerId}-${card.fullName}`}>
-                      <td>{startIndex + idx + 1}</td>
-                      <td>{card.userName}</td>
-                      <td>{card.fullName}</td>
-                      <td>
-                        <button
-                          className="btn btn-info btn-sm text-white"
-                          onClick={() => {
-                            setSelectedUser({
-                              ...users.find(
-                                (u) => u.customerId === card.customerId,
-                              )!,
-                              bookings: card.bookings,
-                            });
-                            setShowDialog(true);
-                          }}
-                        >
-                          ดูประวัติ
-                        </button>
-                      </td>
-                      <td>
-                        {role === 0 && (
-                          <button
-                            className="btn btn-danger btn-sm"
-                            onClick={() => {
-                              setSelectedUser({
-                                ...users.find(
-                                  (u) => u.customerId === card.customerId,
-                                )!,
-                                bookings: card.bookings,
-                              });
-                              handleDeleteUser();
-                            }}
-                          >
-                            ลบ
-                          </button>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <div
+              className="input-group mb-3"
+              style={{ maxWidth: 600, margin: "0 auto" }}
+            >
+              <input
+                className="form-control"
+                placeholder="ค้นหาชื่อ / เบอร์ / ห้อง"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+              />
+              <button className="btn btn-primary" onClick={handleSearch}>
+                ค้นหา
+              </button>
+              <button
+                className="btn btn-outline-secondary"
+                onClick={fetchUsers}
+              >
+                รีเฟรช
+              </button>
             </div>
-          ) : (
-            <div className="row g-3">
-              {paginated.map((card, idx) => (
-                <div
-                  className="col-12 col-md-6 col-lg-4"
-                  key={`${card.customerId}-${card.fullName}`}
-                >
-                  <div className="card shadow-sm border-0 h-100">
-                    <div className="card-body text-center">
-                      <h5 className="fw-bold text-primary">
-                        #{startIndex + idx + 1}
-                      </h5>
-                      <p className="text-muted small mb-1">LINE</p>
-                      <p className="fw-semibold">{card.userName}</p>
-                      <hr />
-                      <h6 className="fw-bold">ชื่อผู้จอง</h6>
-                      <p>{card.fullName}</p>
-                      <div className="d-flex justify-content-between gap-2 mt-2">
-                        <button
-                          className="btn btn-info btn-sm text-white flex-fill"
-                          onClick={() => {
-                            setSelectedUser({
-                              ...users.find(
-                                (u) => u.customerId === card.customerId,
-                              )!,
-                              bookings: card.bookings,
-                            });
-                            setShowDialog(true);
-                          }}
-                        >
-                          ดูประวัติ
-                        </button>
 
-                        {role === 0 && (
+            {width >= 1400 ? (
+              <div className="responsive-table" style={{ overflowX: "auto" }}>
+                <table className="table table-sm table-striped align-middle text-center">
+                  <thead className="table-dark">
+                    <tr>
+                      <th>#</th>
+                      <th>LINE</th>
+                      <th>ชื่อผู้จอง</th>
+                      <th>ประวัติ</th>
+                      {role === 0 && <th>ลบ</th>}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {paginated.map((card, idx) => (
+                      <tr key={`${card.customerId}-${card.fullName}`}>
+                        <td>{startIndex + idx + 1}</td>
+                        <td>{card.userName}</td>
+                        <td>{card.fullName}</td>
+                        <td>
                           <button
-                            className="btn btn-danger btn-sm flex-fill"
+                            className="btn btn-info btn-sm text-white"
                             onClick={() => {
                               setSelectedUser({
                                 ...users.find(
@@ -368,136 +299,210 @@ export default function Users() {
                                 )!,
                                 bookings: card.bookings,
                               });
-                              handleDeleteUser();
+                              setShowDialog(true);
                             }}
                           >
-                            ลบ
+                            ดูประวัติ
                           </button>
+                        </td>
+                        {role === 0 && (
+                        <td>
+                          {role === 0 && (
+                            <button
+                              className="btn btn-danger btn-sm"
+                              onClick={() => {
+                                setSelectedUser({
+                                  ...users.find(
+                                    (u) => u.customerId === card.customerId,
+                                  )!,
+                                  bookings: card.bookings,
+                                });
+                                handleDeleteUser();
+                              }}
+                            >
+                              🗑️
+                            </button>
+                          )}
+                        </td>
                         )}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div className="row g-3">
+                {paginated.map((card, idx) => (
+                  <div
+                    className="col-12 col-md-6 col-lg-4"
+                    key={`${card.customerId}-${card.fullName}`}
+                  >
+                    <div className="card shadow-sm border-0 h-100">
+                      <div className="card-body text-center">
+                        <h5 className="fw-bold text-primary">
+                          #{startIndex + idx + 1}
+                        </h5>
+                        <p className="text-muted small mb-1">LINE</p>
+                        <p className="fw-semibold">{card.userName}</p>
+                        <hr />
+                        <h6 className="fw-bold">ชื่อผู้จอง</h6>
+                        <p>{card.fullName}</p>
+                        <div className="d-flex justify-content-between gap-2 mt-2">
+                          <button
+                            className="btn btn-info btn-sm text-white flex-fill"
+                            onClick={() => {
+                              setSelectedUser({
+                                ...users.find(
+                                  (u) => u.customerId === card.customerId,
+                                )!,
+                                bookings: card.bookings,
+                              });
+                              setShowDialog(true);
+                            }}
+                          >
+                            ดูประวัติ
+                          </button>
+
+                          {role === 0 && (
+                            <button
+                              className="btn btn-danger btn-sm flex-fill"
+                              onClick={() => {
+                                setSelectedUser({
+                                  ...users.find(
+                                    (u) => u.customerId === card.customerId,
+                                  )!,
+                                  bookings: card.bookings,
+                                });
+                                handleDeleteUser();
+                              }}
+                            >
+                              🗑️
+                            </button>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              ))}
-            </div>
-          )}
+                ))}
+              </div>
+            )}
 
-          <Pagination
-            currentPage={currentPage}
-            totalItems={userCards.length}
-            rowsPerPage={rowsPerPage}
-            onPageChange={setCurrentPage}
-            onRowsPerPageChange={(r) => {
-              setRowsPerPage(r);
-              setCurrentPage(1);
-            }}
-          />
-        </div>
-      </main>
+            <Pagination
+              currentPage={currentPage}
+              totalItems={userCards.length}
+              rowsPerPage={rowsPerPage}
+              onPageChange={setCurrentPage}
+              onRowsPerPageChange={(r) => {
+                setRowsPerPage(r);
+                setCurrentPage(1);
+              }}
+            />
+          </div>
+        </main>
 
-      <Dialog.Root open={showDialog} onOpenChange={setShowDialog}>
-        <Dialog.Portal>
-          <Dialog.Overlay
-            className="position-fixed top-0 start-0 w-100 h-100"
-            style={{ background: "rgba(0,0,0,0.85)", zIndex: 99 }}
-          />
+        <Dialog.Root open={showDialog} onOpenChange={setShowDialog}>
+          <Dialog.Portal>
+            <Dialog.Overlay
+              className="position-fixed top-0 start-0 w-100 h-100"
+              style={{ background: "rgba(0,0,0,0.85)", zIndex: 99 }}
+            />
 
-          <Dialog.Content
-            className="position-fixed bg-white rounded-4 shadow-lg"
-            style={{
-              top: "50%",
-              left: "50%",
-              transform: "translate(-50%, -50%)",
-              width: "90%",
-              maxWidth: "650px",
-              maxHeight: "85vh",
-              display: "flex",
-              flexDirection: "column",
-              zIndex: 1600,
-            }}
-          >
-            <Dialog.Title className="p-3 border-bottom fw-bold text-center">
-              ประวัติของ <br />
-              {selectedUser?.bookings?.[0]?.fullName}
-            </Dialog.Title>
+            <Dialog.Content
+              className="position-fixed bg-white rounded-4 shadow-lg"
+              style={{
+                top: "50%",
+                left: "50%",
+                transform: "translate(-50%, -50%)",
+                width: "90%",
+                maxWidth: "650px",
+                maxHeight: "85vh",
+                display: "flex",
+                flexDirection: "column",
+                zIndex: 1600,
+              }}
+            >
+              <Dialog.Title className="p-3 border-bottom fw-bold text-center">
+                ประวัติของ <br />
+                {selectedUser?.bookings?.[0]?.fullName}
+              </Dialog.Title>
 
-            <Dialog.Description className="visually-hidden">
-              แสดงรายละเอียดประวัติการจองของลูกค้า
-            </Dialog.Description>
+              <Dialog.Description className="visually-hidden">
+                แสดงรายละเอียดประวัติการจองของลูกค้า
+              </Dialog.Description>
 
-            <div className="p-3" style={{ overflowY: "auto", flexGrow: 1 }}>
-              {selectedUser?.bookings?.map((b, i) => (
-                <div
-                  key={b.bookingId}
-                  className="mb-3 rounded-4 shadow-sm border"
-                  style={{ overflow: "hidden" }}
-                >
+              <div className="p-3" style={{ overflowY: "auto", flexGrow: 1 }}>
+                {selectedUser?.bookings?.map((b, i) => (
                   <div
-                    className="px-3 py-2 fw-bold text-white"
-                    style={{ background: "#5a2d82" }}
+                    key={b.bookingId}
+                    className="mb-3 rounded-4 shadow-sm border"
+                    style={{ overflow: "hidden" }}
                   >
-                    รายการที่ {i + 1} • ห้อง {b.room?.number || "-"}
+                    <div
+                      className="px-3 py-2 fw-bold text-white"
+                      style={{ background: "#5a2d82" }}
+                    >
+                      รายการที่ {i + 1} • ห้อง {b.room?.number || "-"}
+                    </div>
+
+                    <div className="p-3 bg-white">
+                      <div className="d-flex justify-content-between mb-1">
+                        <span className="fw-semibold">ชื่อผู้เช่า</span>
+                        <span className="fw-semibold">{b.fullName || "-"}</span>
+                      </div>
+                      <div className="d-flex justify-content-between mb-1">
+                        <span className="fw-semibold">Line ผู้เช่า</span>
+                        <span className="fw-semibold">
+                          {selectedUser?.userName || "-"}
+                        </span>
+                      </div>
+                      <div className="d-flex justify-content-between mb-1">
+                        <span className="fw-semibold">เบอร์โทร</span>
+                        <span className="fw-semibold">{b.cphone || "-"}</span>
+                      </div>
+
+                      <div className="d-flex justify-content-between mb-1">
+                        <span className="fw-semibold">วันที่จอง</span>
+                        <span className="fw-semibold">
+                          {formatThaiDate(b.bookingDate)}
+                        </span>
+                      </div>
+
+                      <div className="d-flex justify-content-between mb-1">
+                        <span className="fw-semibold">วันที่ขอเข้าพัก</span>
+                        <span className="fw-semibold">
+                          {formatThaiDate(b.checkin)}
+                        </span>
+                      </div>
+
+                      <div className="d-flex justify-content-between">
+                        <span className="fw-semibold">เข้าพักจริง</span>
+                        <span className="fw-semibold">
+                          {formatThaiDate(b.checkinAt)}
+                        </span>
+                      </div>
+
+                      {role === 0 && (
+                        <button
+                          className="btn btn-danger btn-sm w-100 mt-3"
+                          onClick={() => handleDeleteBooking(b)}
+                        >
+                          ลบรายการนี้
+                        </button>
+                      )}
+                    </div>
                   </div>
+                ))}
+              </div>
 
-                  <div className="p-3 bg-white">
-                    <div className="d-flex justify-content-between mb-1">
-                      <span className="fw-semibold">ชื่อผู้เช่า</span>
-                      <span className="fw-semibold">{b.fullName || "-"}</span>
-                    </div>
-                    <div className="d-flex justify-content-between mb-1">
-                      <span className="fw-semibold">Line ผู้เช่า</span>
-                      <span className="fw-semibold">
-                        {selectedUser?.userName || "-"}
-                      </span>
-                    </div>
-                    <div className="d-flex justify-content-between mb-1">
-                      <span className="fw-semibold">เบอร์โทร</span>
-                      <span className="fw-semibold">{b.cphone || "-"}</span>
-                    </div>
-
-                    <div className="d-flex justify-content-between mb-1">
-                      <span className="fw-semibold">วันที่จอง</span>
-                      <span className="fw-semibold">
-                        {formatThaiDate(b.bookingDate)}
-                      </span>
-                    </div>
-
-                    <div className="d-flex justify-content-between mb-1">
-                      <span className="fw-semibold">วันที่ขอเข้าพัก</span>
-                      <span className="fw-semibold">
-                        {formatThaiDate(b.checkin)}
-                      </span>
-                    </div>
-
-                    <div className="d-flex justify-content-between">
-                      <span className="fw-semibold">เข้าพักจริง</span>
-                      <span className="fw-semibold">
-                        {formatThaiDate(b.checkinAt)}
-                      </span>
-                    </div>
-
-                    {role === 0 && (
-                      <button
-                        className="btn btn-danger btn-sm w-100 mt-3"
-                        onClick={() => handleDeleteBooking(b)}
-                      >
-                        ลบรายการนี้
-                      </button>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="p-3 border-top bg-light">
-              <Dialog.Close asChild>
-                <button className="btn btn-dark w-100">ปิด</button>
-              </Dialog.Close>
-            </div>
-          </Dialog.Content>
-        </Dialog.Portal>
-      </Dialog.Root>
-    </div>
+              <div className="p-3 border-top bg-light">
+                <Dialog.Close asChild>
+                  <button className="btn btn-dark w-100">ปิด</button>
+                </Dialog.Close>
+              </div>
+            </Dialog.Content>
+          </Dialog.Portal>
+        </Dialog.Root>
+      </div>
     </>
   );
 }

@@ -7,7 +7,6 @@ import Pagination from "../components/Pagination";
 import Swal from "sweetalert2";
 import { API_BASE } from "../config";
 import type { Admin } from "../types/admin";
-
 import { THEME } from "../components/Admin/AdminTheme";
 import MobileView from "../components/Admin/MobileView";
 import TabletView from "../components/Admin/TabletView";
@@ -21,9 +20,6 @@ export default function AdminManagement() {
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
-
-  const smartDormIcon =
-    "https://smartdorm-admin.biwbong.shop/assets/SmartDorm.png";
 
   const Toast = Swal.mixin({
     showConfirmButton: false,
@@ -86,7 +82,7 @@ export default function AdminManagement() {
         <div class="mb-2 text-start">
           <label class="fw-bold">สิทธิ์</label>
           <select id="add-role" class="form-select">
-            <option value="0">แอดมินหลัก</option>
+            <option value="0">แอดมิน</option>
             <option value="1" selected>พนักงาน</option>
           </select>
         </div>
@@ -129,7 +125,7 @@ export default function AdminManagement() {
 
       await fetchAdmins();
       Toast.fire({
-        iconHtml: `<img src="${smartDormIcon}" style="width:25px;height:25px;border-radius:50%">`,
+        icon: "success",
         title: `<b>${v.name}</b> ถูกเพิ่มแล้ว`,
       });
     } catch (e: any) {
@@ -158,7 +154,7 @@ export default function AdminManagement() {
         <select id="edit-role" class="form-select">
           <option value="0" ${
             admin.role === 0 ? "selected" : ""
-          }>แอดมินหลัก</option>
+          }>แอดมิน</option>
           <option value="1" ${
             admin.role === 1 ? "selected" : ""
           }>พนักงาน</option>
@@ -202,7 +198,7 @@ export default function AdminManagement() {
 
       await fetchAdmins();
       Toast.fire({
-        iconHtml: `<img src="${smartDormIcon}" style="width:25px;height:25px;border-radius:50%">`,
+        icon: "success",
         title: `อัปเดตข้อมูลสำเร็จ`,
       });
     } catch (e: any) {
@@ -284,7 +280,7 @@ export default function AdminManagement() {
               { key: "all", label: `ทั้งหมด (${admins.length})` },
               {
                 key: "admin",
-                label: `แอดมินหลัก (${
+                label: `แอดมิน (${
                   admins.filter((a) => a.role === 0).length
                 })`,
               },

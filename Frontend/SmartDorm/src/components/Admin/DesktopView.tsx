@@ -50,7 +50,7 @@ export default function DesktopView({
               <td>{(currentPage - 1) * rowsPerPage + i + 1}</td>
               <td>{a.username}</td>
               <td>{a.name}</td>
-              <td>{a.role === 0 ? "แอดมินหลัก" : "พนักงาน"}</td>
+              <td>{a.role === 0 ? "แอดมิน" : "พนักงาน"}</td>
 
               {role === 0 && (
                 <td>
@@ -68,7 +68,7 @@ export default function DesktopView({
                     className="btn btn-danger btn-sm"
                     onClick={() => handleDelete(a.adminId)}
                   >
-                    ลบ
+                    🗑️
                   </button>
                 </td>
               )}

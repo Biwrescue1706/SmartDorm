@@ -25,7 +25,7 @@ export default function MobileView({
               <b>ชื่อ :</b> {a.name}
             </p>
             <p>
-              <b>สิทธิ์ :</b> {a.role === 0 ? "แอดมินหลัก" : "พนักงาน"}
+              <b>สิทธิ์ :</b> {a.role === 0 ? "แอดมิน" : "พนักงาน"}
             </p>
 
             {role === 0 && (

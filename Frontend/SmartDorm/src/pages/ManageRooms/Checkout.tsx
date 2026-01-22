@@ -110,7 +110,7 @@ export default function Checkout() {
           <div className="mb-2">
             <h2 className="fw-bold text-center mt-3">จัดการการคืนห้อง</h2>
             <button
-              className="btn btn-outline-secondary btn-sm mt-2"
+              className="btn btn-outline-secondary btn-sm mt-2 justify-content-center d-flex mx-auto"
               onClick={() => window.location.reload()}
             >
               {loading ? "กำลังโหลด..." : "🔄 รีเฟรชข้อมูล"}
@@ -118,11 +118,20 @@ export default function Checkout() {
           </div>
 
           {/* FILTER CARDS */}
-          <CheckoutFilter
-            active={filter}
-            onChange={setFilter}
-            checkouts={checkouts}
-          />
+          <div
+            className="py-2 mb-3"
+            style={{
+              background: "#F3E5F5",
+              borderRadius: "12px",
+              border: "1px solid #E1BEE7",
+            }}
+          >
+            <CheckoutFilter
+              active={filter}
+              onChange={setFilter}
+              checkouts={checkouts}
+            />
+          </div>
 
           {/* < 1400px = CARD */}
           <div className="d-block d-xxl-none">

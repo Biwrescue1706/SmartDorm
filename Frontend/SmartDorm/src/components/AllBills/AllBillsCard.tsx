@@ -8,7 +8,7 @@ interface Props {
   onDelete: (id: string, room: string) => void;
   onEdit: (bill: Bill) => void;
   onManage: (bill: Bill) => void;
-  onOverdue: (billId: string, room: string) => void; // ⭐ เพิ่ม
+  onOverdue: (billId: string, room: string) => void;
 }
 
 export default function AllBillsCard({
@@ -72,15 +72,13 @@ export default function AllBillsCard({
         <b>ยอดรวม : </b> {bill.total.toLocaleString()} บาท
       </p>
 
-      {/* ⭐ เกินกำหนด + แจ้งเตือน */}
       {isUnpaid && overdueDays > 0 && (
-        <p className="mb-2 ">
+        <p className="mb-2">
           <b className="fw-semibold">เกินกำหนด : </b>
-          {overdueDays > 0 ? `${overdueDays} วัน` : "-"}
+          {`${overdueDays} วัน`}
         </p>
       )}
 
-      {/* STATUS */}
       {isPending && (
         <span className="badge bg-warning text-dark p-2">รอตรวจสอบ</span>
       )}
@@ -114,29 +112,24 @@ export default function AllBillsCard({
             แจ้งเตือน
           </button>
         )}
- {bill.billStatus != 0 && role === 0 && (
-        <div className="d-flex gap-2">
-          <button
-            className="btn btn-warning btn-sm w-50 fw-semibold"
-            onClick={() => onEdit(bill)}
-          >
-            ✏️ แก้ไข
-          </button>)}
 
-          {bill.billStatus === 0 && role === 0 && (
-            <button
-              className="btn btn-danger btn-sm w-50 fw-semibold"
-              onClick={() => onDelete(bill.billId, bill.room?.number ?? " ")}
-            >
-              🗑️ ลบ
-            </button>
-          )}
-        </div>
-
-            {role === 0 && (
+        {role === 0 && (
+          <div className="d-flex gap-2">
+            {bill.billStatus !== 0 && (
               <button
-                className="btn btn-danger btn-sm fw-semibold w-50"
-                onClick={() => onDelete(bill.billId, bill.room?.number ?? " ")}
+                className="btn btn-warning btn-sm w-50 fw-semibold"
+                onClick={() => onEdit(bill)}
+              >
+                ✏️ แก้ไข
+              </button>
+            )}
+
+            {bill.billStatus === 0 && (
+              <button
+                className="btn btn-danger btn-sm w-50 fw-semibold"
+                onClick={() =>
+                  onDelete(bill.billId, bill.room?.number ?? "-")
+                }
               >
                 🗑️ ลบ
               </button>

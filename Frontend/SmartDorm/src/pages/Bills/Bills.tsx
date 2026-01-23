@@ -253,12 +253,15 @@ export default function Bills() {
         </div>
       </main>
 
-      <BillDialog
-        open={openDialog}
-        onClose={() => setOpenDialog(false)}
-        room={selectedRoom}
-        reloadExistingBills={reloadAll}
-      />
+      {selectedRoom && (
+  <BillDialog
+    key={selectedRoom.roomId}
+    open={openDialog}
+    onClose={() => setOpenDialog(false)}
+    room={selectedRoom}
+    reloadExistingBills={reloadAll}
+  />
+)}
     </div>
   );
 }

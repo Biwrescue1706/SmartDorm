@@ -152,13 +152,24 @@ bill.post(
       });
       if (!booking) throw new Error("ไม่พบผู้เข้าพัก");
 
-      const prevBill = await prisma.bill.findFirst({
-        where: { roomId, month: { lt: billMonth } },
-        orderBy: { month: "desc" },
-      });
+      const room = await prisma.room.findUnique({
+  where: { roomId },
+});
 
-      const wBefore = prevBill ? prevBill.wAfter : 0;
-      const eBefore = prevBill ? prevBill.eAfter : 0;
+if (!room) throw new Error("ไม่พบห้อง");
+
+const prevBill = await prisma.bill.findFirst({
+  where: { roomId, month: { lt: billMonth } },
+  orderBy: { month: "desc" },
+});
+
+const wBefore = prevBill
+  ? prevBill.wAfter
+  : room.waterMeter ?? 0;
+
+const eBefore = prevBill
+  ? prevBill.eAfter
+  : room.electricMeter ?? 0;
 
       if (wAfter < wBefore) throw new Error("ค่าน้ำปัจจุบันต้องมากกว่าหรือเท่าก่อนหน้า");
       if (eAfter < eBefore) throw new Error("ค่าไฟปัจจุบันต้องมากกว่าหรือเท่าก่อนหน้า");

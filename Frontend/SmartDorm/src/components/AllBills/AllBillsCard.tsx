@@ -87,7 +87,7 @@ export default function AllBillsCard({
 
       {hasSlip && (
         <button
-          className="btn btn-outline-primary btn-sm w-100 mt-2"
+          className="btn btn-primary btn-sm w-100 mt-2"
           onClick={() => onViewSlip(bill)}
         >
           ดูสลิป

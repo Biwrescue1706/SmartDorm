@@ -163,13 +163,8 @@ const prevBill = await prisma.bill.findFirst({
   orderBy: { month: "desc" },
 });
 
-const wBefore = prevBill
-  ? prevBill.wAfter
-  : room.waterMeter ?? 0;
-
-const eBefore = prevBill
-  ? prevBill.eAfter
-  : room.electricMeter ?? 0;
+const wBefore = prevBill ? prevBill.wAfter : 0;
+const eBefore = prevBill ? prevBill.eAfter : 0;
 
       if (wAfter < wBefore) throw new Error("ค่าน้ำปัจจุบันต้องมากกว่าหรือเท่าก่อนหน้า");
       if (eAfter < eBefore) throw new Error("ค่าไฟปัจจุบันต้องมากกว่าหรือเท่าก่อนหน้า");

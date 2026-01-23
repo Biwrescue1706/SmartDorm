@@ -114,14 +114,14 @@ export default function AllBillsCard({
             แจ้งเตือน
           </button>
         )}
-
+ {bill.billStatus != 0 && role === 0 && (
         <div className="d-flex gap-2">
           <button
             className="btn btn-warning btn-sm w-50 fw-semibold"
             onClick={() => onEdit(bill)}
           >
             ✏️ แก้ไข
-          </button>
+          </button>)}
 
           {bill.billStatus === 0 && role === 0 && (
             <button
@@ -132,17 +132,6 @@ export default function AllBillsCard({
             </button>
           )}
         </div>
-
-        {bill.billStatus === 1 && (
-          <div className="d-flex gap-2">
-            {hasSlip && (
-              <button
-                className="btn btn-primary btn-sm fw-semibold w-50"
-                onClick={() => onViewSlip(bill)}
-              >
-                ดูสลิป
-              </button>
-            )}
 
             {role === 0 && (
               <button

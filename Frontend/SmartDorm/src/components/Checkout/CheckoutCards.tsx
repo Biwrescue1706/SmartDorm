@@ -34,13 +34,14 @@ export default function CheckoutCards({
   return (
     <div className="row g-3">
       {checkouts.map((c) => (
-        <div key={c.checkoutId} className="col-12 col-md-4">
+        <div key={c.checkoutId} className="col-12 col-md-5 col-lg-4 col-xl-3">
           <div className="card p-3 shadow-sm h-100">
-            <div className="fw-bold mb-1">ห้อง {c.room?.number}</div>
-            <div className="mb-1">ชื่อ: {c.booking?.fullName}</div>
-            <div className="mb-1">LINE: {c.customer?.userName}</div>
-            <div className="mb-1">วันที่ขอคืน: {thaiDate(c.checkout)}</div>
-            <div className="mb-2">
+            <div className="fw-bold mb-1 h5 text-center">ห้อง {c.room?.number}</div>
+            <hr />
+            <div className="mb-1 fw-bold h5">ชื่อ: {c.booking?.fullName}</div>
+            <div className="mb-1 fw-bold h5">LINE: {c.customer?.userName}</div>
+            <div className="mb-1 fw-bold h5">วันที่ขอคืน: {thaiDate(c.checkout)}</div>
+            <div className="mb-2 fw-bold h5">
               วันที่เช็คเอาท์จริง: {thaiDate(c.checkoutAt)}
             </div>
 
@@ -48,7 +49,7 @@ export default function CheckoutCards({
             <div className="mb-2">
               {c.ReturnApprovalStatus  === 0 && (
                 <button
-                  className="btn btn-warning btn-sm w-50"
+                  className="btn btn-warning btn-sm w-100"
                   onClick={() => onView(c)}
                 >
                   รออนุมัติ
@@ -57,7 +58,7 @@ export default function CheckoutCards({
 
               {c.ReturnApprovalStatus  === 1 && c.checkoutStatus === 0 && (
                 <button
-                  className="btn btn-primary btn-sm w-50"
+                  className="btn btn-primary btn-sm w-100"
                   onClick={() => onCheckout(c)}
                 >
                   รอเช็คเอาท์
@@ -65,11 +66,7 @@ export default function CheckoutCards({
               )}
 
               {c.checkoutStatus === 1 && (
-                <span className="badge bg-info w-50 py-2">คืนแล้ว</span>
-              )}
-
-              {c.ReturnApprovalStatus  === 2 && (
-                <span className="badge bg-danger w-50 py-2">ปฏิเสธ</span>
+                <span className="badge bg-info w-100 py-2 ">คืนแล้ว</span>
               )}
             </div>
 
@@ -86,7 +83,7 @@ export default function CheckoutCards({
                 )}
 
                 <button
-                  className="btn btn-danger btn-sm w-50"
+                  className="btn btn-danger btn-sm w-100"
                   onClick={() => onDelete(c.checkoutId)}
                 >
                   🗑️

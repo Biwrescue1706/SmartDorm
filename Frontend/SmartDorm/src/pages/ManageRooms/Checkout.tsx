@@ -109,28 +109,57 @@ export default function Checkout() {
           {/* HEADER */}
           <div className="mb-2">
             <h2 className="fw-bold text-center mt-3">จัดการการคืนห้อง</h2>
-            <button
-              className="btn btn-outline-secondary btn-sm mt-2 justify-content-center d-flex mx-auto"
-              onClick={() => window.location.reload()}
-            >
-              {loading ? "กำลังโหลด..." : "🔄 รีเฟรชข้อมูล"}
-            </button>
           </div>
 
           {/* FILTER CARDS */}
           <div
-            className="py-2 mb-3"
+            className="py-3 mb-3 d-flex justify-content-center"
             style={{
               background: "#F3E5F5",
               borderRadius: "12px",
               border: "1px solid #E1BEE7",
             }}
           >
-            <CheckoutFilter
-              active={filter}
-              onChange={setFilter}
-              checkouts={checkouts}
-            />
+            {/* < 1400px = กระชับตาม dropdown */}
+            <div
+              className="d-block d-xxl-none mx-2 my-2"
+              style={{ width: "fit-content" }}
+            >
+              <h5 className="mb-2 text-center">กรองสถานะการเช็คเอาท์</h5>
+
+              <div className="d-flex align-items-center justify-content-center gap-2">
+                <CheckoutFilter
+                  active={filter}
+                  onChange={setFilter}
+                  checkouts={checkouts}
+                />
+
+                <button
+                  className="btn btn-info btn-sm"
+                  onClick={() => window.location.reload()}
+                  style={{ height: 38 }}
+                >
+                  {loading ? "กำลังโหลด..." : "🔄 รีเฟรชข้อมูล"}
+                </button>
+              </div>
+
+              <div className="mt-2 text-center">
+                จำนวนผลลัพธ์: {filteredCheckouts.length} รายการ
+              </div>
+            </div>
+
+            {/* >= 1400px = เต็มความกว้างแบบเดิม */}
+            <div className="d-none d-xxl-block w-100">
+              <h4 className="text-center mb-3">กรองสถานะการเช็คเอาท์</h4>
+              <CheckoutFilter
+                active={filter}
+                onChange={setFilter}
+                checkouts={checkouts}
+              />
+              <div className="mt-2 text-center h4 ">
+                จำนวนผลลัพธ์: {filteredCheckouts.length} รายการ
+              </div>
+            </div>
           </div>
 
           {/* < 1400px = CARD */}

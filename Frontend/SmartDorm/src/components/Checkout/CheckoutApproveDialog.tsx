@@ -23,7 +23,6 @@ export default function CheckoutApproveDialog({
         <div className="modal-content">
           <div className="modal-header bg-warning">
             <h5>ตรวจสอบคำขอคืนห้อง</h5>
-            <button className="btn-close" onClick={onClose} />
           </div>
 
           <div className="modal-body">
@@ -33,6 +32,9 @@ export default function CheckoutApproveDialog({
           </div>
 
           <div className="modal-footer">
+            <button className="btn btn-dark" onClick={onClose} >
+              ปิด
+            </button>
             <button className="btn btn-danger" onClick={onReject}>
               ปฏิเสธ
             </button>

@@ -58,12 +58,12 @@ export default function AllBills() {
 
     if (filterMonth)
       result = result.filter(
-        (b) => new Date(b.month).toISOString().slice(0, 7) === filterMonth
+        (b) => new Date(b.month).toISOString().slice(0, 7) === filterMonth,
       );
 
     if (filterRoom)
       result = result.filter((b) =>
-        b.room?.number?.toString().includes(filterRoom)
+        b.room?.number?.toString().includes(filterRoom),
       );
 
     setFiltered(result);
@@ -126,7 +126,6 @@ export default function AllBills() {
         pendingCheckouts={pendingCheckouts}
       />
 
-
       <main className="main-content px-2 py-3 mt-6 mt-lg-7 flex-grow-1">
         <div className="mx-auto" style={{ maxWidth: "1400px" }}>
           <h2
@@ -141,48 +140,107 @@ export default function AllBills() {
             รายการบิลทั้งหมด
           </h2>
 
-          <div className="text-center mb-3">
-            <button
-              onClick={handleRefresh}
-              disabled={loading}
-              className="btn fw-semibold shadow-sm px-4 py-2"
-              style={{
-                background:
-                  "linear-gradient(135deg, #4A148C, #7B1FA2, #CE93D8)",
-                color: "#fff",
-                borderRadius: "10px",
-                border: "none",
-              }}
-            >
-              {loading ? "⏳ กำลังโหลด..." : "🔄 รีเซ็ตข้อมูล"}
-            </button>
-          </div>
+          {/* FILTER + SEARCH */}
+          <div
+            className="mb-3 p-3 rounded-3 shadow-sm"
+            style={{ background: "#fff" }}
+          >
+            {/* < 1400px = เรียงบรรทัดเดียว */}
+            <div className="d-block d-xxl-none">
+              <h2
+                className="fw-bold text-center py-2 mb-3"
+                style={{
+                  color: "#000000",
+                  width: "fit-content",
+                  margin: "0 auto",
+                }}
+              >
+                สถานะบิล
+              </h2>
 
-          <BillStatusCardFilter
-            filterStatus={filterStatus}
-            setFilterStatus={setFilterStatus}
-            unpaidCount={unpaidCount}
-            paidCount={paidCount}
-            pendingCount={pendingCount}
-          />
+              <div className="d-flex flex-wrap justify-content-center align-items-end gap-2">
+                <BillStatusCardFilter
+                  filterStatus={filterStatus}
+                  setFilterStatus={setFilterStatus}
+                  unpaidCount={unpaidCount}
+                  paidCount={paidCount}
+                  pendingCount={pendingCount}
+                />
 
-          <div className="d-flex gap-2 flex-wrap mb-3">
-            <input
-              type="month"
-              className="form-control shadow-sm"
-              style={{ width: 160, borderRadius: 8 }}
-              value={filterMonth}
-              onChange={(e) => setFilterMonth(e.target.value)}
-            />
+                <input
+                  type="month"
+                  className="form-control shadow-sm"
+                  style={{ width: 150, borderRadius: 8, height: 38 }}
+                  value={filterMonth}
+                  onChange={(e) => setFilterMonth(e.target.value)}
+                />
 
-            <input
-              type="text"
-              className="form-control shadow-sm"
-              style={{ width: 200, borderRadius: 8 }}
-              placeholder="ค้นหาห้อง..."
-              value={filterRoom}
-              onChange={(e) => setFilterRoom(e.target.value)}
-            />
+                <input
+                  type="text"
+                  className="form-control shadow-sm"
+                  style={{ width: 160, borderRadius: 8, height: 38 }}
+                  placeholder="ค้นหาห้อง..."
+                  value={filterRoom}
+                  onChange={(e) => setFilterRoom(e.target.value)}
+                />
+
+                <button
+                  onClick={handleRefresh}
+                  disabled={loading}
+                  className="btn fw-semibold shadow-sm px-3"
+                  style={{
+                    height: 38,
+                    borderRadius: 10,
+                    background:
+                      "linear-gradient(135deg, #4A148C, #7B1FA2, #CE93D8)",
+                    color: "#fff",
+                    border: "none",
+                  }}
+                >
+                  {loading ? "⏳ กำลังโหลด..." : "🔄 รีเซ็ตข้อมูล"}
+                </button>
+              </div>
+            </div>
+
+            {/* >= 1400px = แยกเหมือนเดิม */}
+            <div className="d-none d-xxl-block">
+              <h2
+                className="fw-bold text-center py-2 mb-3"
+                style={{
+                  color: "#000000",
+                  width: "fit-content",
+                  margin: "0 auto",
+                }}
+              >
+                สถานะบิล
+              </h2>
+              <BillStatusCardFilter
+                filterStatus={filterStatus}
+                setFilterStatus={setFilterStatus}
+                unpaidCount={unpaidCount}
+                paidCount={paidCount}
+                pendingCount={pendingCount}
+              />
+
+              <div className="d-flex gap-2 text-nowrap justify-content-center flex-wrap mb-2">
+                <input
+                  type="month"
+                  className="form-control shadow-sm"
+                  style={{ width: 200, borderRadius: 9, height: 45 }}
+                  value={filterMonth}
+                  onChange={(e) => setFilterMonth(e.target.value)}
+                />
+
+                <input
+                  type="text"
+                  className="form-control shadow-sm"
+                  style={{ width: 200, borderRadius: 9, height: 45 }}
+                  placeholder="ค้นหาห้อง..."
+                  value={filterRoom}
+                  onChange={(e) => setFilterRoom(e.target.value)}
+                />
+              </div>
+            </div>
           </div>
 
           {loading ? (

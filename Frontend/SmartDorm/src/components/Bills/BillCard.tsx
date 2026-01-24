@@ -34,22 +34,28 @@ export default function BillCard({
       }}
     >
       <h5
-        className="fw-bold text-center"
+        className="fw-bold text-center justify-content-center"
         style={{ color: SCB_PURPLE, marginBottom: "10px" }}
       >
         ห้อง {room.number}
       </h5>
 
-      <p className="mb-1">
+      <div className="fw-bold">
+        <hr />
+      </div>
+
+      <div className="mb-1 h6">
         <b>LINE :</b> {booking?.customer?.userName || "-"}
-      </p>
-<p className="mb-1">
+      </div>
+      <div className="mb-1 h6">
         <b>ชื่อ :</b> {booking?.fullName || "-"}
-      </p>
-      <p className="mb-3">
+      </div>
+      <div className="mb-3 h6">
         <b>เข้าพักจริง :</b>{" "}
         {booking?.checkinAt ? formatThaiDate(booking.checkinAt) : "-"}
-      </p>
+      </div>
+
+      <div className="fw-bold"><hr /></div>
 
       {!hasBill && booking?.checkinAt && canCreateBill && (
         <button
@@ -69,7 +75,7 @@ export default function BillCard({
 
       {hasBill && (
         <div className="text-center fw-bold mt-2" style={{ color: SCB_PURPLE }}>
-          ออกบิลแล้ว 
+          ออกบิลแล้ว
         </div>
       )}
     </div>

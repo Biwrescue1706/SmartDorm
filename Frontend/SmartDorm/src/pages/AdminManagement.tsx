@@ -278,7 +278,7 @@ export default function AdminManagement() {
           {/* FILTER */}
           {windowWidth < 1400 ? (
             <>
-              <div className="text-center fw-bold mb-2">สถานะแอดมิน</div>
+              <h4 className="text-center fw-bold mb-2">สถานะแอดมิน</h4>
               {/* < 1400 = Dropdown */}
               <div className="d-flex justify-content-center mb-4">
                 {(() => {

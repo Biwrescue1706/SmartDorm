@@ -78,24 +78,6 @@ export default function Booking() {
             จัดการการจอง
           </h2>
 
-          {/* -------- REFRESH BUTTON -------- */}
-          <div className="text-center mb-3">
-            <button
-              className="btn fw-semibold shadow-sm px-4 py-2"
-              style={{
-                background:
-                  "linear-gradient(135deg, #4A148C, #7B1FA2, #CE93D8)",
-                color: "#fff",
-                borderRadius: "10px",
-                border: "none",
-              }}
-              onClick={fetchBookings}
-              disabled={loading}
-            >
-              {loading ? "⏳ กำลังโหลด..." : "🔄 รีเฟรชข้อมูล"}
-            </button>
-          </div>
-
           {/* -------- FILTER BAR -------- */}
           <div
             className="py-2 mb-3"
@@ -105,10 +87,15 @@ export default function Booking() {
               border: "1px solid #E1BEE7",
             }}
           >
+            <h2 className="text-center mb-4 mt-2">สถานะการจอง</h2>
             <BookingFilter
               active={active}
               onChange={handleFilter}
               bookings={bookings}
+              onReset={() => {
+                setActive("pending");
+                fetchBookings();
+              }}
             />
           </div>
 

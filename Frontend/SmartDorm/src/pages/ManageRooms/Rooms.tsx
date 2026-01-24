@@ -11,9 +11,7 @@ import { useRooms } from "../../hooks/ManageRooms/useRooms";
 import { usePendingBookings } from "../../hooks/ManageRooms/usePendingBookings";
 import { usePendingCheckouts } from "../../hooks/ManageRooms/usePendingCheckouts";
 
-/* -------------------------------------------
-   🎨 SCB THEME สำหรับหน้า Rooms
--------------------------------------------- */
+//   🎨 SCB THEME สำหรับหน้า Rooms
 const THEME = {
   purple: "#4A0080",
   purpleLight: "#6A11CB",
@@ -43,9 +41,7 @@ export default function Rooms() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  /* -------------------------------------------
-     🔢 ฟังก์ชัน floor จากเลขห้อง
-  -------------------------------------------- */
+  //     🔢 ฟังก์ชัน floor จากเลขห้อง
   const getFloor = (roomNumber: string | number): number | null => {
     const num = Number(roomNumber);
     if (isNaN(num)) return null;
@@ -56,13 +52,11 @@ export default function Rooms() {
     new Set(
       rooms
         .map((r) => getFloor(r.number))
-        .filter((f): f is number => f !== null && f > 0)
-    )
+        .filter((f): f is number => f !== null && f > 0),
+    ),
   ).sort((a, b) => a - b);
 
-  /* -------------------------------------------
-     🎯 ฟิลเตอร์สถานะห้อง + ชั้น
-  -------------------------------------------- */
+  //     🎯 ฟิลเตอร์สถานะห้อง + ชั้น
   const [filter, setFilter] = useState<"all" | "available" | "booked">("all");
   const [selectedFloor, setSelectedFloor] = useState("ทั้งหมด");
 
@@ -84,9 +78,7 @@ export default function Rooms() {
     return true;
   });
 
-  /* -------------------------------------------
-     📄 Pagination
-  -------------------------------------------- */
+  //     📄 Pagination
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
@@ -98,9 +90,7 @@ export default function Rooms() {
     await fetchRooms();
   };
 
-  /* -------------------------------------------
-     🧩 Helper UI Components (ในไฟล์เดียว)
-  -------------------------------------------- */
+  //     🧩 Helper UI Components (ในไฟล์เดียว)
 
   const FloorSelector = () => (
     <div className="text-center mb-4">
@@ -155,13 +145,10 @@ export default function Rooms() {
     ></div>
   );
 
-  /* -------------------------------------------
-     🧠 Render หลัก
-  -------------------------------------------- */
+  //     🧠 Render หลัก
+  const pendingBookings = usePendingBookings();
+  const pendingCheckouts = usePendingCheckouts();
 
-    const pendingBookings = usePendingBookings();
-    const pendingCheckouts = usePendingCheckouts();
-    
   return (
     <div className="d-flex min-vh-100" style={{ background: THEME.bg }}>
       <Nav
@@ -190,18 +177,51 @@ export default function Rooms() {
 
           <StatsBar />
 
-          {/* เลือกชั้น */}
-          <FloorSelector />
+          {/* Filter Bar (มือถือ/แท็บเล็ต = แถวเดียว) */}
+          <div className="d-flex d-xxl-none flex-column align-items-center mb-3">
+            <h5 className="text-center mb-2 w-100">กรองสถานะห้อง</h5>
 
-          {/* Filter สถานะห้อง */}
-          <RoomFilter
-            activeFilter={filter}
-            counts={counts}
-            onFilterChange={(f) => {
-              setFilter(f as "all" | "available" | "booked");
-              setCurrentPage(1);
-            }}
-          />
+            <div className="d-flex justify-content-center align-items-center gap-2 flex-wrap">
+              <RoomFilter
+                activeFilter={filter}
+                counts={counts}
+                onFilterChange={(f) => {
+                  setFilter(f as "all" | "available" | "booked");
+                  setCurrentPage(1);
+                }}
+              />
+
+              <select
+                className="form-select fw-semibold shadow-sm"
+                style={{ width: "150px", borderRadius: "12px" }}
+                value={selectedFloor}
+                onChange={(e) => {
+                  setSelectedFloor(e.target.value);
+                  setCurrentPage(1);
+                }}
+              >
+                <option value="ทั้งหมด">ทุกชั้น</option>
+                {allFloors.map((f) => (
+                  <option key={f} value={f.toString()}>
+                    ชั้น {f}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {/* >= 1400 ใช้แบบเดิม */}
+          <div className="d-none d-xxl-block">
+            <FloorSelector />
+            <RoomFilter
+              activeFilter={filter}
+              counts={counts}
+              onFilterChange={(f) => {
+                setFilter(f as "all" | "available" | "booked");
+                setCurrentPage(1);
+              }}
+            />
+          </div>
 
           {/* Content: Loading / Table / Cards */}
           {loading ? (
@@ -257,8 +277,8 @@ export default function Rooms() {
                         windowWidth >= 992
                           ? "1fr 1fr 1fr"
                           : windowWidth >= 600
-                          ? "1fr 1fr"
-                          : "1fr",
+                            ? "1fr 1fr"
+                            : "1fr",
                       gap: "18px",
                       paddingLeft: "4px",
                       paddingRight: "4px",

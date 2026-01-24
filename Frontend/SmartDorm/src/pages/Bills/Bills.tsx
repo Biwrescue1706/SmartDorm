@@ -24,7 +24,7 @@ export default function Bills() {
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
   const [statusFilter, setStatusFilter] = useState<"billed" | "notBilled">(
-    "notBilled"
+    "notBilled",
   );
 
   const [canCreateBill, setCanCreateBill] = useState(false);
@@ -82,7 +82,7 @@ export default function Bills() {
 
   // จำนวนห้อง (รวมทั้งหมด ไม่ขึ้นอยู่กับการฟิลเตอร์)
   const billedCount = allBookedRooms.filter((r) =>
-    existingBills.includes(r.roomId)
+    existingBills.includes(r.roomId),
   ).length;
   const notBilledCount = allBookedRooms.length - billedCount;
 
@@ -99,7 +99,7 @@ export default function Bills() {
   const startIndex = (currentPage - 1) * rowsPerPage;
   const paginatedRooms = filteredRooms.slice(
     startIndex,
-    startIndex + rowsPerPage
+    startIndex + rowsPerPage,
   );
 
   useEffect(() => {
@@ -107,8 +107,8 @@ export default function Bills() {
     if (currentPage > totalPages && totalPages > 0) setCurrentPage(totalPages);
   }, [totalItems, rowsPerPage, currentPage]);
 
-    const pendingBookings = usePendingBookings();
-    const pendingCheckouts = usePendingCheckouts();
+  const pendingBookings = usePendingBookings();
+  const pendingCheckouts = usePendingCheckouts();
 
   return (
     <div
@@ -124,7 +124,6 @@ export default function Bills() {
         pendingCheckouts={pendingCheckouts}
       />
 
-
       <main className="main-content flex-grow-1 px-1 py-2 mt-6 mt-lg-7">
         <div className="mx-auto container-max">
           <h2 className="fw-bold text-center mb-2">สร้างบิลห้องพัก</h2>
@@ -133,61 +132,123 @@ export default function Bills() {
           </h5>
 
           {/* ⭐ จำนวนห้องรวม แสดงทันที ไม่ต้องกดอะไร */}
-          <div className="container mb-3">
-            <div className="row g-3 justify-content-center text-center">
-              {/* ยังไม่ได้ออกบิล */}
-              <div className="col-6 col-md-3">
-                <div
-                  className="p-3 rounded-4 shadow-sm fw-bold"
-                  onClick={() => {
-                    setStatusFilter("notBilled");
-                    setCurrentPage(1);
-                  }}
-                  style={{
-                    cursor: "pointer",
-                    background:
-                      statusFilter === "notBilled"
-                        ? "linear-gradient(135deg, #ef233c, #d90429)"
-                        : "#e9ecef",
-                    color: statusFilter === "notBilled" ? "white" : "#333",
-                    fontSize: "1.1rem",
-                    transform:
-                      statusFilter === "notBilled" ? "scale(1.05)" : "scale(1)",
-                    transition: "0.2s",
-                  }}
-                >
-                  ยังไม่ได้ออกบิล
-                  <div style={{ fontSize: "1.5rem" }}>{notBilledCount}</div>
+          {/* ⭐ FILTER สถานะบิล */}
+          {isDesktop ? (
+            // ≥ 1400 = Cards (แบบเดิม)
+            <div className="container mb-3">
+              <div className="row g-3 justify-content-center text-center">
+                <div className="col-6 col-md-3">
+                  <div
+                    className="p-3 rounded-4 shadow-sm fw-bold"
+                    onClick={() => {
+                      setStatusFilter("notBilled");
+                      setCurrentPage(1);
+                    }}
+                    style={{
+                      cursor: "pointer",
+                      background:
+                        statusFilter === "notBilled"
+                          ? "linear-gradient(135deg, #ef233c, #d90429)"
+                          : "#e9ecef",
+                      color: statusFilter === "notBilled" ? "white" : "#333",
+                      fontSize: "1.1rem",
+                      transform:
+                        statusFilter === "notBilled"
+                          ? "scale(1.05)"
+                          : "scale(1)",
+                      transition: "0.2s",
+                    }}
+                  >
+                    ยังไม่ได้ออกบิล
+                    <div style={{ fontSize: "1.5rem" }}>{notBilledCount}</div>
+                  </div>
                 </div>
-              </div>
 
-              {/* ออกบิลแล้ว */}
-              <div className="col-6 col-md-3">
-                <div
-                  className="p-3 rounded-4 shadow-sm fw-bold"
-                  onClick={() => {
-                    setStatusFilter("billed");
-                    setCurrentPage(1);
-                  }}
-                  style={{
-                    cursor: "pointer",
-                    background:
-                      statusFilter === "billed"
-                        ? "linear-gradient(135deg, #38b000, #008000)"
-                        : "#e9ecef",
-                    color: statusFilter === "billed" ? "white" : "#333",
-                    fontSize: "1.1rem",
-                    transform:
-                      statusFilter === "billed" ? "scale(1.05)" : "scale(1)",
-                    transition: "0.2s",
-                  }}
-                >
-                  ออกบิลแล้ว
-                  <div style={{ fontSize: "1.5rem" }}>{billedCount}</div>
+                <div className="col-6 col-md-3">
+                  <div
+                    className="p-3 rounded-4 shadow-sm fw-bold"
+                    onClick={() => {
+                      setStatusFilter("billed");
+                      setCurrentPage(1);
+                    }}
+                    style={{
+                      cursor: "pointer",
+                      background:
+                        statusFilter === "billed"
+                          ? "linear-gradient(135deg, #38b000, #008000)"
+                          : "#e9ecef",
+                      color: statusFilter === "billed" ? "white" : "#333",
+                      fontSize: "1.1rem",
+                      transform:
+                        statusFilter === "billed" ? "scale(1.05)" : "scale(1)",
+                      transition: "0.2s",
+                    }}
+                  >
+                    ออกบิลแล้ว
+                    <div style={{ fontSize: "1.5rem" }}>{billedCount}</div>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
+          ) : (
+            // < 1400 = Dropdown
+            <div className="d-flex justify-content-center mb-3">
+              {(() => {
+                const items = [
+                  {
+                    key: "notBilled",
+                    label: `ยังไม่ได้ออกบิล (${notBilledCount})`,
+                    color: "#d90429",
+                  },
+                  {
+                    key: "billed",
+                    label: `ออกบิลแล้ว (${billedCount})`,
+                    color: "#008000",
+                  },
+                ];
+
+                const activeItem =
+                  items.find((i) => i.key === statusFilter) ?? items[0];
+
+                return (
+                  <div className="dropdown">
+                    <button
+                      className="btn dropdown-toggle fw-bold px-4"
+                      data-bs-toggle="dropdown"
+                      style={{
+                        background: activeItem.color,
+                        color: "#fff",
+                        borderColor: activeItem.color,
+                        height: 38,
+                      }}
+                    >
+                      {activeItem.label}
+                    </button>
+
+                    <div className="dropdown-menu">
+                      {items.map((i) => (
+                        <button
+                          key={i.key}
+                          className="dropdown-item fw-bold"
+                          style={{
+                            background:
+                              statusFilter === i.key ? i.color : "transparent",
+                            color: statusFilter === i.key ? "#fff" : i.color,
+                          }}
+                          onClick={() => {
+                            setStatusFilter(i.key as any);
+                            setCurrentPage(1);
+                          }}
+                        >
+                          {i.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })()}
+            </div>
+          )}
           {/* ============================== */}
 
           {loading ? (
@@ -217,7 +278,7 @@ export default function Bills() {
                 >
                   {paginatedRooms.map((room) => {
                     const booking = bookings.find(
-                      (b) => b.room.number === room.number
+                      (b) => b.room.number === room.number,
                     );
                     const hasBill = existingBills.includes(room.roomId);
 
@@ -254,14 +315,14 @@ export default function Bills() {
       </main>
 
       {selectedRoom && (
-  <BillDialog
-    key={selectedRoom.roomId}
-    open={openDialog}
-    onClose={() => setOpenDialog(false)}
-    room={selectedRoom}
-    reloadExistingBills={reloadAll}
-  />
-)}
+        <BillDialog
+          key={selectedRoom.roomId}
+          open={openDialog}
+          onClose={() => setOpenDialog(false)}
+          room={selectedRoom}
+          reloadExistingBills={reloadAll}
+        />
+      )}
     </div>
   );
 }

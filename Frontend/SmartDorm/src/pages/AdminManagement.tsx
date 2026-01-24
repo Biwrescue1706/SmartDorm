@@ -275,39 +275,106 @@ export default function AdminManagement() {
             </div>
           )}
 
-          <div className="d-flex justify-content-center gap-3 flex-wrap mb-4">
-            {[
-              { key: "all", label: `ทั้งหมด (${admins.length})` },
-              {
-                key: "admin",
-                label: `แอดมิน (${
-                  admins.filter((a) => a.role === 0).length
-                })`,
-              },
-              {
-                key: "staff",
-                label: `พนักงาน (${admins.filter((a) => a.role === 1).length})`,
-              },
-            ].map((f) => (
-              <div
-                key={f.key}
-                className="px-4 py-2 fw-bold shadow-sm"
-                style={{
-                  cursor: "pointer",
-                  borderRadius: "10px",
-                  background:
-                    filterRole === f.key ? THEME.purple : THEME.cardBg,
-                  color: filterRole === f.key ? "#fff" : THEME.text,
-                  border:
-                    filterRole === f.key ? "2px solid #fff" : "1px solid #ddd",
-                  transition: ".3s",
-                }}
-                onClick={() => setFilterRole(f.key)}
-              >
-                {f.label}
+          {/* FILTER */}
+          {windowWidth < 1400 ? (
+            <>
+              <div className="text-center fw-bold mb-2">สถานะแอดมิน</div>
+              {/* < 1400 = Dropdown */}
+              <div className="d-flex justify-content-center mb-4">
+                {(() => {
+                  const items = [
+                    {
+                      key: "all",
+                      label: `ทั้งหมด (${admins.length})`,
+                      color: THEME.purple,
+                    },
+                    {
+                      key: "admin",
+                      label: `แอดมิน (${admins.filter((a) => a.role === 0).length})`,
+                      color: "#0D6EFD",
+                    },
+                    {
+                      key: "staff",
+                      label: `พนักงาน (${admins.filter((a) => a.role === 1).length})`,
+                      color: "#198754",
+                    },
+                  ];
+
+                  const activeItem =
+                    items.find((i) => i.key === filterRole) ?? items[0];
+
+                  return (
+                    <div className="dropdown">
+                      <button
+                        className="btn dropdown-toggle fw-bold px-4"
+                        data-bs-toggle="dropdown"
+                        style={{
+                          background: activeItem.color,
+                          color: "#fff",
+                          borderColor: activeItem.color,
+                          height: 38,
+                        }}
+                      >
+                        {activeItem.label}
+                      </button>
+
+                      <div className="dropdown-menu">
+                        {items.map((i) => (
+                          <button
+                            key={i.key}
+                            className="dropdown-item fw-bold"
+                            style={{
+                              background:
+                                filterRole === i.key ? i.color : "transparent",
+                              color: filterRole === i.key ? "#fff" : i.color,
+                            }}
+                            onClick={() => setFilterRole(i.key)}
+                          >
+                            {i.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })()}
               </div>
-            ))}
-          </div>
+            </>
+          ) : (
+            // ≥ 1400 = Cards (ของเดิม)
+            <div className="d-flex justify-content-center gap-3 flex-wrap mb-4">
+              {[
+                { key: "all", label: `ทั้งหมด (${admins.length})` },
+                {
+                  key: "admin",
+                  label: `แอดมิน (${admins.filter((a) => a.role === 0).length})`,
+                },
+                {
+                  key: "staff",
+                  label: `พนักงาน (${admins.filter((a) => a.role === 1).length})`,
+                },
+              ].map((f) => (
+                <div
+                  key={f.key}
+                  className="px-4 py-2 fw-bold shadow-sm"
+                  style={{
+                    cursor: "pointer",
+                    borderRadius: "10px",
+                    background:
+                      filterRole === f.key ? THEME.purple : THEME.cardBg,
+                    color: filterRole === f.key ? "#fff" : THEME.text,
+                    border:
+                      filterRole === f.key
+                        ? "2px solid #fff"
+                        : "1px solid #ddd",
+                    transition: ".3s",
+                  }}
+                  onClick={() => setFilterRole(f.key)}
+                >
+                  {f.label}
+                </div>
+              ))}
+            </div>
+          )}
 
           {loading ? (
             <p className="text-center">⏳ กำลังโหลดข้อมูล...</p>

@@ -18,7 +18,7 @@ import ChangePassword from "./pages/Profile/ChangePassword";
 import ForgotUsername from "./pages/ForgotPassword/ForgotUsername";
 import ResetPassword from "./pages/ForgotPassword/ResetPassword";
 import BookingHistory from "./pages/BookingHistory";
-import BillOverviewPage from "./pages/Bills/BillOverviewPage";
+import BillOverviewPage from "./pages/BillOverviewPage";
 
 function App() {
   return (

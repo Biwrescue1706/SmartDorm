@@ -235,6 +235,17 @@ export default function Nav({
             🧾 สร้างบิล
           </button>
 
+<button
+  className={`btn text-start ${
+    isActive("/bill-overview")
+      ? "btn-warning text-dark fw-bold"
+      : "btn-warning"
+  }`}
+  onClick={() => navigate("/bill-overview")}
+>
+  🧩 ภาพรวมบิล
+</button>
+
           <button
             className={`btn text-start ${
               isActive("/allbills")
@@ -366,6 +377,16 @@ export default function Nav({
               >
                 🧾 สร้างบิล
               </button>
+
+<button
+  className="btn btn-warning text-start"
+  onClick={() => {
+    navigate("/bill-overview");
+    setMenuOpen(false);
+  }}
+>
+  🧩 ภาพรวมบิล
+</button>
 
               <button
                 className="btn btn-warning text-start"

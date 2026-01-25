@@ -92,6 +92,7 @@ payments.post("/create", upload.single("slip"), async (req, res) => {
           billStatus: 2, // รอตรวจสอบ
           slipUrl,
           billDate: new Date(),
+          paidAt: new Date(),
         },
       }),
     ]);

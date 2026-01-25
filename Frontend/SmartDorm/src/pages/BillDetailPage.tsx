@@ -19,13 +19,24 @@ interface BillDetail {
   total: number;
   dueDate: string;
   billStatus: number;
+
+  rent: number;
+  service: number;
+  fine?: number;
+
+  wBefore: number;
+  wAfter: number;
+  wUnits: number;
+  waterCost: number;
+
+  eBefore: number;
+  eAfter: number;
+  eUnits: number;
+  electricCost: number;
+
   room?: {
     number: string;
   };
-  items?: {
-    name: string;
-    amount: number;
-  }[];
 }
 
 const formatThaiDate = (d?: string | null) => {
@@ -120,18 +131,19 @@ export default function BillDetailPage() {
             <h3 className="fw-bold" style={{ color: SCB_PURPLE }}>
               รายละเอียดบิล
             </h3>
-            <button className="btn btn-outline-secondary" onClick={() => navigate(-1)}>
+            <button
+              className="btn btn-outline-secondary"
+              onClick={() => navigate(-1)}
+            >
               ← กลับ
             </button>
           </div>
 
           <div className="card shadow-sm border-0">
             <div className="card-body">
-              <h5 className="fw-bold mb-3">
-                ห้อง {bill.room?.number ?? "-"}
-              </h5>
+              <h5 className="fw-bold mb-2">ห้อง {bill.room?.number ?? "-"}</h5>
 
-              <div className="row g-2 small">
+              <div className="row g-2 small mb-3">
                 <div className="col-md-4">
                   <b>รอบบิล:</b> {formatThaiDate(bill.month)}
                 </div>
@@ -143,36 +155,72 @@ export default function BillDetailPage() {
                 </div>
               </div>
 
-              <hr />
-
-              {bill.items && bill.items.length > 0 ? (
-                <table className="table table-sm">
-                  <thead>
+              <div className="table-responsive">
+                <table className="table table-sm table-bordered text-center align-middle">
+                  <thead className="table-light">
                     <tr>
                       <th>รายการ</th>
-                      <th className="text-end">จำนวนเงิน</th>
+                      <th>เลขมาตราครั้งก่อน</th>
+                      <th>เลขมาตราครั้งหลัง</th>
+                      <th>จำนวนที่ใช้</th>
+                      <th className="text-end">เป็นเงิน (บาท)</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {bill.items.map((it, i) => (
-                      <tr key={i}>
-                        <td>{it.name}</td>
-                        <td className="text-end">
-                          {it.amount.toLocaleString()}
-                        </td>
-                      </tr>
-                    ))}
-                    <tr className="fw-bold">
+                    <tr>
+                      <td>ค่าไฟฟ้า</td>
+                      <td>{bill.eBefore}</td>
+                      <td>{bill.eAfter}</td>
+                      <td>{bill.eUnits}</td>
+                      <td className="text-end">
+                        {bill.electricCost.toLocaleString()}
+                      </td>
+                    </tr>
+
+                    <tr>
+                      <td>ค่าน้ำประปา</td>
+                      <td>{bill.wBefore}</td>
+                      <td>{bill.wAfter}</td>
+                      <td>{bill.wUnits}</td>
+                      <td className="text-end">
+                        {bill.waterCost.toLocaleString()}
+                      </td>
+                    </tr>
+
+                    <tr>
+                      <td>ค่าส่วนกลาง</td>
+                      <td colSpan={3}>-</td>
+                      <td className="text-end">
+                        {bill.service.toLocaleString()}
+                      </td>
+                    </tr>
+
+                    <tr>
+                      <td>ค่าเช่าห้อง</td>
+                      <td colSpan={3}>-</td>
+                      <td className="text-end">
+                        {bill.rent.toLocaleString()}
+                      </td>
+                    </tr>
+
+                    <tr>
+                      <td>ค่าปรับ</td>
+                      <td colSpan={3}>-</td>
+                      <td className="text-end">
+                        {(bill.fine ?? 0).toLocaleString()}
+                      </td>
+                    </tr>
+
+                    <tr className="fw-bold table-secondary">
                       <td>รวมทั้งหมด</td>
+                      <td colSpan={3}></td>
                       <td className="text-end">
                         {bill.total.toLocaleString()}
                       </td>
                     </tr>
                   </tbody>
                 </table>
-              ) : (
-                <div className="text-muted small">ไม่มีรายการย่อย</div>
-              )}
+              </div>
             </div>
           </div>
         </div>

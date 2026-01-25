@@ -1,55 +1,26 @@
-import { google } from "googleapis";
-import stream from "stream";
+// src/utils/googleDrive.js
+import axios from "axios";
 
-const auth = new google.auth.GoogleAuth({
-  credentials: JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_JSON),
-  scopes: ["https://www.googleapis.com/auth/drive"],
-});
+const GAS_URL = process.env.GAS_UPLOAD_URL;
 
-const drive = google.drive({ version: "v3", auth });
+export const uploadToDrive = async (buffer, filename, mimeType, folderId) => {
+  const base64 = buffer.toString("base64");
 
-export const uploadToDrive = async (buffer, filename, mimeType, parentId) => {
-  const bufferStream = new stream.PassThrough();
-  bufferStream.end(buffer);
-
-  const response = await drive.files.create({
-    resource: {
-      name: filename,
-      parents: [parentId],
-    },
-    media: {
-      mimeType,
-      body: bufferStream,
-    },
-    supportsAllDrives: true,
+  const res = await axios.post(GAS_URL, {
+    filename,
+    mimeType,
+    folderId,
+    base64,
   });
 
-  const fileId = response.data.id;
+  if (!res.data?.ok) {
+    throw new Error(res.data?.error || "Upload failed");
+  }
 
-  await drive.permissions.create({
-    fileId,
-    requestBody: {
-      role: "reader",
-      type: "anyone",
-    },
-    supportsAllDrives: true,
-  });
-
-  return `https://drive.google.com/file/d/${fileId}/view`;
+  return res.data.url;
 };
 
-export const deleteFromDriveByUrl = async (url) => {
-  try {
-    if (!url) return;
-    const match = url.match(/\/d\/([^/]+)/);
-    if (!match) return;
-    const fileId = match[1];
-
-    await drive.files.delete({
-      fileId,
-      supportsAllDrives: true,
-    });
-  } catch (err) {
-    console.warn("ลบไฟล์ใน Google Drive ไม่สำเร็จ:", err.message);
-  }
+// ถ้ายังไม่จำเป็น ลบได้ หรือค่อยทำทีหลัง
+export const deleteFromDriveByUrl = async (_url) => {
+  // ยังไม่รองรับลบผ่าน GAS
 };

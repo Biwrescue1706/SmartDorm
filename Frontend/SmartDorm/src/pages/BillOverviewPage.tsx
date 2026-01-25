@@ -1,5 +1,5 @@
 // src/pages/Bills/BillOverviewPage.tsx
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import Nav from "../components/Nav";
 import { useAuth } from "../hooks/useAuth";
 import { usePendingBookings } from "../hooks/ManageRooms/usePendingBookings";
@@ -49,6 +49,19 @@ export default function BillOverviewPage() {
   const [month, setMonth] = useState<number>(now.getMonth() + 1);
 
   const { rooms, totalRooms, loading, error } = useOverview(year, month);
+
+  const floors = useMemo(() => {
+    const map = new Map<number, OverviewRoom[]>();
+
+    rooms.forEach((r) => {
+      const num = Number(r.number);
+      const floor = Math.floor(num / 100);
+      if (!map.has(floor)) map.set(floor, []);
+      map.get(floor)!.push(r);
+    });
+
+    return Array.from(map.entries()).sort((a, b) => b[0] - a[0]);
+  }, [rooms]);
 
   if (loading) {
     return (
@@ -145,43 +158,53 @@ export default function BillOverviewPage() {
             <div className="alert alert-danger text-center">{error}</div>
           )}
 
-          {/* Grid */}
-          <div className="row g-3">
-            {rooms.map((r: OverviewRoom) => {
-              const bill = r.bill;
+          {/* Floors */}
+          {floors.map(([floor, floorRooms]) => (
+            <div key={floor} className="mb-4">
+              <h5 className="fw-bold mb-2" style={{ color: SCB_PURPLE }}>
+                ชั้น {floor}
+              </h5>
 
-              let bg = "bg-secondary";
-              let text = "text-white";
+              <div className="row g-3">
+                {floorRooms.map((r: OverviewRoom) => {
+                  const bill = r.bill;
 
-              if (bill) {
-                if (bill.billStatus === 1) bg = "bg-success";
-                else bg = "bg-warning";
-                text = "text-dark";
-              }
+                  let bg = "bg-secondary";
+                  let text = "text-white";
 
-              return (
-                <div key={r.roomId} className="col-6 col-md-4 col-lg-2">
-                  <div
-                    className={`card h-100 text-center ${bg} ${text}`}
-                    style={{ minHeight: 120 }}
-                  >
-                    <div className="card-body d-flex flex-column justify-content-between p-2">
-                      <div className="fw-bold">ห้อง {r.number}</div>
+                  if (bill) {
+                    if (bill.billStatus === 1) bg = "bg-success";
+                    else bg = "bg-warning";
+                    text = "text-dark";
+                  }
 
-                      {bill ? (
-                        <div className="small">
-                          <div>รวม {bill.total.toLocaleString()} บาท</div>
-                          <div>ครบกำหนด {formatThaiDate(bill.dueDate)}</div>
+                  return (
+                    <div key={r.roomId} className="col-6 col-md-4 col-lg-2">
+                      <div
+                        className={`card h-100 text-center ${bg} ${text}`}
+                        style={{ minHeight: 120 }}
+                      >
+                        <div className="card-body d-flex flex-column justify-content-between p-2">
+                          <div className="fw-bold">ห้อง {r.number}</div>
+
+                          {bill ? (
+                            <div className="small">
+                              <div>รวม {bill.total.toLocaleString()} บาท</div>
+                              <div>
+                                ครบกำหนด {formatThaiDate(bill.dueDate)}
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="small opacity-75">ยังไม่มีบิล</div>
+                          )}
                         </div>
-                      ) : (
-                        <div className="small opacity-75">ยังไม่มีบิล</div>
-                      )}
+                      </div>
                     </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
         </div>
       </main>
     </div>

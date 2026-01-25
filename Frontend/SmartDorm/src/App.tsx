@@ -19,7 +19,7 @@ import ForgotUsername from "./pages/ForgotPassword/ForgotUsername";
 import ResetPassword from "./pages/ForgotPassword/ResetPassword";
 import BookingHistory from "./pages/BookingHistory";
 import BillOverviewPage from "./pages/BillOverviewPage";
-import BillDetailPage from "./pages/Bills/BillDetailPage";
+import BillDetailPage from "./pages/BillDetailPage";
 
 function App() {
   return (

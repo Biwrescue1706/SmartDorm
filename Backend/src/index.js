@@ -55,7 +55,9 @@ import checkoutRouter from "./modules/checkout.js";
 import paymentRouter from "./modules/payment.js";
 import qrRouter from "./modules/qr.js";
 import userRouter from "./modules/user.js";
+import overview from "./modules/overview.js";
 
+app.use("/overview", overview);
 app.use("/auth", authRouter);
 app.use("/admin", adminRouter);
 app.use("/room", roomRouter);

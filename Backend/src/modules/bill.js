@@ -11,7 +11,6 @@ import {
 } from "../config/rate.js";
 import { processOverdueManual } from "../services/overdue.manual.js";
 import { BASE_URL } from "../utils/api.js";
-import { deleteFromDriveByUrl } from "../utils/googleDrive.js";
 
 const bill = Router();
 

@@ -1,40 +1,41 @@
-// src/hooks/useBillOverview.ts
-import { useEffect, useMemo, useState } from "react";
+// src/hooks/useOverview.ts
+import { useEffect, useState } from "react";
 import axios from "axios";
 import { API_BASE } from "../config";
+import type {
+  OverviewRoom,
+  OverviewResponse,
+} from "../types/Overview";
 
-interface Room {
-  roomId: string;
-  number: string;
-}
-
-interface Bill {
-  billId: string;
-  roomId: string;
-  month: string;
-  total: number;
-  dueDate: string;
-  billStatus: number;
-}
-
-export function useBillOverview(year: number, month: number) {
-  const [rooms, setRooms] = useState<Room[]>([]);
-  const [bills, setBills] = useState<Bill[]>([]);
+export function useOverview(year: number, month: number) {
+  const [rooms, setRooms] = useState<OverviewRoom[]>([]);
+  const [totalRooms, setTotalRooms] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     let mounted = true;
 
     const load = async () => {
+      setLoading(true);
+      setError(null);
+
       try {
-        const [rRooms, rBills] = await Promise.all([
-          axios.get(`${API_BASE}/room/getall`),
-          axios.get(`${API_BASE}/bill/getall`),
-        ]);
+        const res = await axios.get<OverviewResponse>(
+          `${API_BASE}/overview`,
+          {
+            params: { year, month },
+            withCredentials: true,
+          }
+        );
 
         if (!mounted) return;
-        setRooms(rRooms.data);
-        setBills(rBills.data);
+
+        setRooms(res.data.data);
+        setTotalRooms(res.data.totalRooms);
+      } catch (err: any) {
+        if (!mounted) return;
+        setError(err?.response?.data?.error || "โหลดข้อมูลไม่สำเร็จ");
       } finally {
         if (mounted) setLoading(false);
       }
@@ -44,33 +45,12 @@ export function useBillOverview(year: number, month: number) {
     return () => {
       mounted = false;
     };
-  }, []);
-
-  const years = useMemo(() => {
-    const ys = bills.map((b) => new Date(b.month).getFullYear());
-    return Array.from(new Set(ys)).sort((a, b) => b - a);
-  }, [bills]);
-
-  const filteredBills = useMemo(() => {
-    return bills.filter((b) => {
-      const d = new Date(b.month);
-      if (d.getFullYear() !== year) return false;
-      if (d.getMonth() + 1 !== month) return false;
-      return true;
-    });
-  }, [bills, year, month]);
-
-  const billMap = useMemo(() => {
-    const m = new Map<string, Bill>();
-    filteredBills.forEach((b) => m.set(b.roomId, b));
-    return m;
-  }, [filteredBills]);
+  }, [year, month]);
 
   return {
     rooms,
-    bills,
-    years,
-    billMap,
+    totalRooms,
     loading,
+    error,
   };
 }

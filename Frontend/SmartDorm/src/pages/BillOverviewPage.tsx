@@ -4,7 +4,7 @@ import Nav from "../components/Nav";
 import { useAuth } from "../hooks/useAuth";
 import { usePendingBookings } from "../hooks/ManageRooms/usePendingBookings";
 import { usePendingCheckouts } from "../hooks/ManageRooms/usePendingCheckouts";
-import { useBillOverview } from "../hooks/useBillOverview";
+import { useOverview } from "../hooks/useOverview";
 import type { OverviewRoom } from "../types/Overview";
 
 // SCB THEME
@@ -24,6 +24,7 @@ const formatThaiDate = (d?: string | null) => {
 };
 
 const months = [
+  { v: 0, label: "ทุกเดือน" },
   { v: 1, label: "มกราคม" },
   { v: 2, label: "กุมภาพันธ์" },
   { v: 3, label: "มีนาคม" },
@@ -47,7 +48,7 @@ export default function BillOverviewPage() {
   const [year, setYear] = useState<number>(now.getFullYear());
   const [month, setMonth] = useState<number>(now.getMonth() + 1);
 
-  const { rooms, years, billMap, loading } = useBillOverview(year, month);
+  const { rooms, totalRooms, loading, error } = useOverview(year, month);
 
   if (loading) {
     return (
@@ -76,12 +77,29 @@ export default function BillOverviewPage() {
           className="container-fluid px-xl-5 py-4"
           style={{ background: BG_SOFT, borderRadius: 20 }}
         >
-          <h2
-            className="fw-bold text-center mb-4"
-            style={{ color: SCB_PURPLE }}
-          >
+          <h2 className="fw-bold text-center mb-2" style={{ color: SCB_PURPLE }}>
             🧾 ภาพรวมบิลรายเดือน
           </h2>
+
+          <div className="text-center small mb-3 text-muted">
+            ห้องทั้งหมด {totalRooms} ห้อง
+          </div>
+
+          {/* Legend */}
+          <div className="d-flex flex-wrap justify-content-center gap-3 mb-3 small">
+            <div className="d-flex align-items-center gap-1">
+              <span className="badge bg-secondary"> </span>
+              <span>ยังไม่มีบิล</span>
+            </div>
+            <div className="d-flex align-items-center gap-1">
+              <span className="badge bg-warning"> </span>
+              <span>มีบิล / ยังไม่ชำระ</span>
+            </div>
+            <div className="d-flex align-items-center gap-1">
+              <span className="badge bg-success"> </span>
+              <span>ชำระแล้ว</span>
+            </div>
+          </div>
 
           {/* Filters */}
           <div className="d-flex flex-wrap justify-content-center align-items-center gap-2 mb-4">
@@ -104,25 +122,40 @@ export default function BillOverviewPage() {
               value={year}
               onChange={(e) => setYear(Number(e.target.value))}
             >
-              {years.map((y) => (
+              {[year, year - 1, year - 2].map((y: number) => (
                 <option key={y} value={y}>
                   {y + 543}
                 </option>
               ))}
             </select>
+
+            <button
+              className="btn btn-outline-secondary fw-semibold"
+              onClick={() => {
+                const n = new Date();
+                setYear(n.getFullYear());
+                setMonth(n.getMonth() + 1);
+              }}
+            >
+              🔄 รีเซ็ตข้อมูล
+            </button>
           </div>
+
+          {error && (
+            <div className="alert alert-danger text-center">{error}</div>
+          )}
 
           {/* Grid */}
           <div className="row g-3">
-            {rooms.map((r) => {
-              const bill = billMap.get(r.roomId);
+            {rooms.map((r: OverviewRoom) => {
+              const bill = r.bill;
 
-              let bg = "bg-secondary"; // เทา
+              let bg = "bg-secondary";
               let text = "text-white";
 
               if (bill) {
-                if (bill.billStatus === 1) bg = "bg-success"; // เขียว
-                else bg = "bg-warning"; // เหลือง
+                if (bill.billStatus === 1) bg = "bg-success";
+                else bg = "bg-warning";
                 text = "text-dark";
               }
 

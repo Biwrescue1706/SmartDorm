@@ -5,6 +5,7 @@ import { useAuth } from "../hooks/useAuth";
 import { usePendingBookings } from "../hooks/ManageRooms/usePendingBookings";
 import { usePendingCheckouts } from "../hooks/ManageRooms/usePendingCheckouts";
 import { useBillOverview } from "../hooks/useBillOverview";
+import type { OverviewRoom } from "../types/Overview";
 
 // SCB THEME
 const SCB_PURPLE = "#4A0080";

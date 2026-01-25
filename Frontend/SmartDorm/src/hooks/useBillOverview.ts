@@ -1,6 +1,7 @@
 // src/hooks/useBillOverview.ts
 import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
+import { API_BASE } from "../config";
 
 interface Room {
   roomId: string;
@@ -16,8 +17,6 @@ interface Bill {
   billStatus: number;
 }
 
-const API = import.meta.env.VITE_API_BASE;
-
 export function useBillOverview(year: number, month: number) {
   const [rooms, setRooms] = useState<Room[]>([]);
   const [bills, setBills] = useState<Bill[]>([]);
@@ -29,8 +28,8 @@ export function useBillOverview(year: number, month: number) {
     const load = async () => {
       try {
         const [rRooms, rBills] = await Promise.all([
-          axios.get(`${API}/room/getall`),
-          axios.get(`${API}/bill/getall`),
+          axios.get(`${API_BASE}/room/getall`),
+          axios.get(`${API_BASE}/bill/getall`),
         ]);
 
         if (!mounted) return;

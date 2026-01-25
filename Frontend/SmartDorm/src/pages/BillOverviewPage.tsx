@@ -1,5 +1,6 @@
 // src/pages/Bills/BillOverviewPage.tsx
 import { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import Nav from "../components/Nav";
 import { useAuth } from "../hooks/useAuth";
 import { usePendingBookings } from "../hooks/ManageRooms/usePendingBookings";
@@ -40,6 +41,7 @@ const months = [
 ];
 
 export default function BillOverviewPage() {
+  const navigate = useNavigate();
   const { handleLogout, role, adminName, adminUsername } = useAuth();
   const pendingBookings = usePendingBookings();
   const pendingCheckouts = usePendingCheckouts();
@@ -60,7 +62,8 @@ export default function BillOverviewPage() {
       map.get(floor)!.push(r);
     });
 
-    return Array.from(map.entries()).sort((a, b) => b[0] - a[0]);
+    // เรียงชั้น 1 → 2 → 3 → ...
+    return Array.from(map.entries()).sort((a, b) => a[0] - b[0]);
   }, [rooms]);
 
   if (loading) {
@@ -109,6 +112,10 @@ export default function BillOverviewPage() {
               <span>มีบิล / ยังไม่ชำระ</span>
             </div>
             <div className="d-flex align-items-center gap-1">
+              <span className="badge bg-info"> </span>
+              <span>กำลังตรวจสอบ</span>
+            </div>
+            <div className="d-flex align-items-center gap-1">
               <span className="badge bg-success"> </span>
               <span>ชำระแล้ว</span>
             </div>
@@ -144,13 +151,14 @@ export default function BillOverviewPage() {
 
             <button
               className="btn btn-outline-secondary fw-semibold"
+              disabled={loading}
               onClick={() => {
                 const n = new Date();
                 setYear(n.getFullYear());
                 setMonth(n.getMonth() + 1);
               }}
             >
-              🔄 รีเซ็ตข้อมูล
+              {loading ? "⏳ กำลังโหลด..." : "🔄 รีเซ็ตข้อมูล"}
             </button>
           </div>
 
@@ -174,12 +182,24 @@ export default function BillOverviewPage() {
 
                   if (bill) {
                     if (bill.billStatus === 1) bg = "bg-success";
+                    else if (bill.billStatus === 2) bg = "bg-info";
                     else bg = "bg-warning";
                     text = "text-dark";
                   }
 
                   return (
-                    <div key={r.roomId} className="col-6 col-md-4 col-lg-2">
+                    <div
+                      key={r.roomId}
+                      className="col-6 col-md-4 col-lg-2"
+                      onClick={() => {
+                        if (!bill) {
+                          navigate("/bills");
+                        } else if ([0, 1, 2].includes(bill.billStatus)) {
+                          navigate(`/bills/${bill.billId}`);
+                        }
+                      }}
+                      style={{ cursor: "pointer" }}
+                    >
                       <div
                         className={`card h-100 text-center ${bg} ${text}`}
                         style={{ minHeight: 120 }}
@@ -187,15 +207,15 @@ export default function BillOverviewPage() {
                         <div className="card-body d-flex flex-column justify-content-between p-2">
                           <div className="fw-bold">ห้อง {r.number}</div>
 
-                          {bill ? (
+                          {bill && (
                             <div className="small">
-                              <div>รวม {bill.total.toLocaleString()} บาท</div>
+                              <div>
+                                รวม {bill.total.toLocaleString()} บาท
+                              </div>
                               <div>
                                 ครบกำหนด {formatThaiDate(bill.dueDate)}
                               </div>
                             </div>
-                          ) : (
-                            <div className="small opacity-75">ยังไม่มีบิล</div>
                           )}
                         </div>
                       </div>

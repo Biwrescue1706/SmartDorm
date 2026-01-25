@@ -18,6 +18,7 @@ import ChangePassword from "./pages/Profile/ChangePassword";
 import ForgotUsername from "./pages/ForgotPassword/ForgotUsername";
 import ResetPassword from "./pages/ForgotPassword/ResetPassword";
 import BookingHistory from "./pages/BookingHistory";
+import BillOverviewPage from "./pages/Bills/BillOverviewPage";
 
 function App() {
   return (
@@ -79,6 +80,24 @@ function App() {
         }
       />
 
+     <Route
+        path="/allbills"
+        element={
+          <ProtectedRoute>
+            <AllBills />
+          </ProtectedRoute>
+        }
+      />
+
+<Route
+  path="/bill-overview"
+  element={
+    <ProtectedRoute>
+      <BillOverviewPage />
+    </ProtectedRoute>
+  }
+/>
+
       <Route
         path="/bookings"
         element={
@@ -89,10 +108,10 @@ function App() {
       />
 
       <Route
-        path="/allbills"
+        path="/booking-history"
         element={
           <ProtectedRoute>
-            <AllBills />
+            <BookingHistory />
           </ProtectedRoute>
         }
       />
@@ -142,14 +161,6 @@ function App() {
         }
       />
       
-      <Route
-        path="/booking-history"
-        element={
-          <ProtectedRoute>
-            <BookingHistory />
-          </ProtectedRoute>
-        }
-      />
 
       {/*  ไม่เจอ route → ไปหน้า 404 */}
       <Route path="*" element={<NotFound />} />

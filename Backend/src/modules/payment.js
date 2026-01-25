@@ -2,15 +2,19 @@
 import { Router } from "express";
 import multer from "multer";
 import prisma from "../prisma.js";
+import { createClient } from "@supabase/supabase-js";
 import { verifyLineToken } from "../utils/verifyLineToken.js";
 import { sendFlexMessage } from "../utils/lineFlex.js";
 import { BASE_URL, ADMIN_URL } from "../utils/api.js";
-import { uploadToDrive } from "../utils/googleDrive.js";
 
 const payments = Router();
 const upload = multer({ storage: multer.memoryStorage() });
 
-const DRIVE_FOLDER_PAYMENT = "1svun0mZbLcHQSEn2SB5CTkdWW0L0psMq";
+// Supabase
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_KEY
+);
 
 // Helpers
 const logTime = () => new Date().toISOString().replace("T", " ").split(".")[0];
@@ -23,13 +27,15 @@ const formatThaiDate = (d) =>
       })
     : "-";
 
+// CREATE PAYMENT + UPLOAD SLIP
 payments.post("/create", upload.single("slip"), async (req, res) => {
   try {
     const { billId, accessToken } = req.body;
     const slip = req.file;
 
-    if (!billId || !accessToken || !slip)
-      throw new Error("ข้อมูลไม่ครบ");
+    if (!billId) throw new Error("ไม่พบรหัสบิล");
+    if (!accessToken) throw new Error("ไม่มี accessToken");
+    if (!slip) throw new Error("ต้องแนบสลิป");
 
     const { userId } = await verifyLineToken(accessToken);
 
@@ -40,27 +46,37 @@ payments.post("/create", upload.single("slip"), async (req, res) => {
       where: { billId },
       include: { room: true, booking: true, customer: true },
     });
-
     if (!bill) throw new Error("ไม่พบบิลนี้");
     if (bill.billStatus === 1) throw new Error("บิลนี้ชำระแล้ว");
     if (bill.billStatus === 2) throw new Error("บิลนี้รอตรวจสอบอยู่");
-    if (bill.customerId && bill.customerId !== customer.customerId)
+
+    // กันจ่ายบิลคนอื่น
+    if (bill.customerId && bill.customerId !== customer.customerId) {
       throw new Error("คุณไม่มีสิทธิ์ชำระบิลนี้");
+    }
 
     const created = new Date(bill.createdAt)
       .toISOString()
       .replace(/[:.]/g, "-");
 
-    const ext = slip.originalname.split(".").pop();
-    const filename = `Payment-slip_${bill.billId}_${created}.${ext}`;
+    const filename = `Payment-slips/Payment-slip_${bill.billId}_${created}`;
 
-    const slipUrl = await uploadToDrive(
-      slip.buffer,
-      filename,
-      slip.mimetype,
-      DRIVE_FOLDER_PAYMENT
-    );
+    const { error } = await supabase.storage
+      .from(process.env.SUPABASE_BUCKET)
+      .upload(filename, slip.buffer, {
+        contentType: slip.mimetype,
+        upsert: true,
+      });
 
+    if (error) throw new Error(error.message);
+
+    const { data } = supabase.storage
+      .from(process.env.SUPABASE_BUCKET)
+      .getPublicUrl(filename);
+
+    const slipUrl = data.publicUrl;
+
+    // สร้าง Payment + อัปเดต Bill
     const [payment, updatedBill] = await prisma.$transaction([
       prisma.payment.create({
         data: {
@@ -73,7 +89,7 @@ payments.post("/create", upload.single("slip"), async (req, res) => {
       prisma.bill.update({
         where: { billId },
         data: {
-          billStatus: 2,
+          billStatus: 2, // รอตรวจสอบ
           slipUrl,
           billDate: new Date(),
         },

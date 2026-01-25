@@ -2,19 +2,22 @@
 import { Router } from "express";
 import multer from "multer";
 import prisma from "../prisma.js";
+import { createClient } from "@supabase/supabase-js";
 import { verifyLineToken } from "../utils/verifyLineToken.js";
 import { sendFlexMessage } from "../utils/lineFlex.js";
 import { authMiddleware } from "../middleware/authMiddleware.js";
-import { BASE_URL, ADMIN_URL } from "../utils/api.js";
-import {
-  uploadToDrive,
-  deleteFromDriveByUrl,
-} from "../utils/googleDrive.js";
+
+import { BASE_URL , ADMIN_URL } from "../utils/api.js";
 
 const upload = multer({ storage: multer.memoryStorage() });
+
 const booking = Router();
 
-const DRIVE_FOLDER_BOOKING = "1CamGPGHmnj2YoAulxK0B53ojhMpasqMa";
+//Supabase
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_KEY
+);
 
 // ---------------- Utils ----------------
 export const deleteSlip = async (url) => {
@@ -234,7 +237,7 @@ booking.post("/create", async (req, res) => {
   }
 });
 
-// UPLOAD SLIP (Google Drive)
+// 📤 UPLOAD SLIP
 booking.post("/:bookingId/uploadSlip", upload.single("slip"), async (req, res) => {
   try {
     const { bookingId } = req.params;
@@ -242,25 +245,30 @@ booking.post("/:bookingId/uploadSlip", upload.single("slip"), async (req, res) =
     if (!data || !req.file) throw new Error("ข้อมูลไม่ครบ");
 
     const created = data.bookingDate.toISOString().replace(/[:.]/g, "-");
-    const fileName = `Booking-slip_${bookingId}_${created}.jpg`;
+    const fileName = `Booking-slips/Booking-slip_${bookingId}_${created}`;
 
-    const driveUrl = await uploadToDrive(
-      req.file.buffer,
-      fileName,
-      req.file.mimetype,
-      DRIVE_FOLDER_BOOKING // ⬅️ สำคัญมาก ต้องเป็นโฟลเดอร์ใน Shared Drive
-    );
+    await supabase.storage
+      .from(process.env.SUPABASE_BUCKET)
+      .upload(fileName, req.file.buffer, {
+        contentType: req.file.mimetype,
+        upsert: true,
+      });
+
+    const { data: pub } = supabase.storage
+      .from(process.env.SUPABASE_BUCKET)
+      .getPublicUrl(fileName);
 
     await prisma.booking.update({
       where: { bookingId },
-      data: { slipUrl: driveUrl },
+      data: { slipUrl: pub.publicUrl },
     });
 
-    res.json({ message: "อัปโหลดสลิปสำเร็จ", slipUrl: driveUrl });
+    res.json({ message: "อัปโหลดสลิปสำเร็จ", slipUrl: pub.publicUrl });
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
 });
+
 
 // ✅ APPROVE
 booking.put("/:bookingId/approve", async (req, res) => {
@@ -440,7 +448,7 @@ booking.put("/:bookingId", async (req, res) => {
   }
 });
 
-// DELETE
+// 🗑️ DELETE
 booking.delete("/:bookingId", async (req, res) => {
   try {
     const { bookingId } = req.params;
@@ -457,7 +465,7 @@ booking.delete("/:bookingId", async (req, res) => {
       });
     });
 
-    res.json({ message: "ลบการจองและไฟล์สลิปใน Google Drive สำเร็จ" });
+    res.json({ message: "ลบการจองและข้อมูล checkout สำเร็จ" });
   } catch (err) {
     res.status(400).json({ error: err.message });
   }

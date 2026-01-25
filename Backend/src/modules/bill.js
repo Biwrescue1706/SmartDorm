@@ -3,7 +3,6 @@ import { Router } from "express";
 import prisma from "../prisma.js";
 import { authMiddleware, roleMiddleware } from "../middleware/authMiddleware.js";
 import { sendFlexMessage } from "../utils/lineFlex.js";
-import { createClient } from "@supabase/supabase-js";
 import {
   WATER_PRICE,
   ELECTRIC_PRICE,
@@ -12,21 +11,14 @@ import {
 } from "../config/rate.js";
 import { processOverdueManual } from "../services/overdue.manual.js";
 import { BASE_URL } from "../utils/api.js";
+import { deleteFromDriveByUrl } from "../utils/googleDrive.js";
 
 const bill = Router();
 
-/* billStatus
-0 = ยังไม่จ่าย
-1 = จ่ายแล้ว
-2 = รอตรวจสอบ
-3 = ปฏิเสธ
+/* billStatus 0 = ยังไม่จ่าย
+1 = จ่ายแล้ว 2 = รอตรวจสอบ 3 = ปฏิเสธ
 */
 
-// Supabase
-const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_KEY
-);
 
 // Helpers
 const getDueDateNextMonth5th = (month) => {
@@ -37,18 +29,18 @@ const getDueDateNextMonth5th = (month) => {
 const formatThaiDate = (d) =>
   d
     ? new Date(d).toLocaleDateString("th-TH", {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-      })
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    })
     : "-";
 
 const formatThaiMonth = (d) =>
   d
     ? new Date(d).toLocaleDateString("th-TH", {
-        month: "long",
-        year: "numeric",
-      })
+      month: "long",
+      year: "numeric",
+    })
     : "-";
 
 const deleteSlip = async (url) => {
@@ -153,18 +145,18 @@ bill.post(
       if (!booking) throw new Error("ไม่พบผู้เข้าพัก");
 
       const room = await prisma.room.findUnique({
-  where: { roomId },
-});
+        where: { roomId },
+      });
 
-if (!room) throw new Error("ไม่พบห้อง");
+      if (!room) throw new Error("ไม่พบห้อง");
 
-const prevBill = await prisma.bill.findFirst({
-  where: { roomId, month: { lt: billMonth } },
-  orderBy: { month: "desc" },
-});
+      const prevBill = await prisma.bill.findFirst({
+        where: { roomId, month: { lt: billMonth } },
+        orderBy: { month: "desc" },
+      });
 
-const wBefore = prevBill ? prevBill.wAfter : 0;
-const eBefore = prevBill ? prevBill.eAfter : 0;
+      const wBefore = prevBill ? prevBill.wAfter : 0;
+      const eBefore = prevBill ? prevBill.eAfter : 0;
 
       if (wAfter < wBefore) throw new Error("ค่าน้ำปัจจุบันต้องมากกว่าหรือเท่าก่อนหน้า");
       if (eAfter < eBefore) throw new Error("ค่าไฟปัจจุบันต้องมากกว่าหรือเท่าก่อนหน้า");
@@ -429,7 +421,7 @@ bill.put(
         if (today > newDue) {
           const diffDays = Math.floor(
             (today.getTime() - newDue.getTime()) /
-              (1000 * 60 * 60 * 24)
+            (1000 * 60 * 60 * 24)
           );
           newOverdueDays = diffDays;
           newFine = diffDays * OVERDUE_FINE_PER_DAY;
@@ -511,7 +503,7 @@ bill.put(
   }
 );
 
-// ลบบิล
+// ลบบิล + payment
 bill.delete("/:billId", authMiddleware, roleMiddleware(0), async (req, res) => {
   try {
     const { billId } = req.params;

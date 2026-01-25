@@ -80,8 +80,9 @@ const PORT = process.env.PORT || 3000;
 
 async function startServer() {
   try {
+    console.log("🟡 กำลังเริ่มการเชื่อมต่อ Prisma...");
     await prisma.$connect();
-    console.log("✅ Prisma connected");
+    console.log("✅ เชื่อมต่อกับ MongoDB ผ่าน Prisma สำเร็จ");
 
     scheduleOverdueAuto();
 

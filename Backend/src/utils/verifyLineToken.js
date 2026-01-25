@@ -1,10 +1,10 @@
 import fetch from "node-fetch";
 
-/**
- * ตรวจสอบ Access Token ของ LINE LIFF ผ่าน API
- * - ถ้า token ถูกต้อง → คืน { userId, displayName }
- * - ถ้า token หมดอายุ / invalid → throw error ให้ frontend จัดการ
- */
+// ---------------- ตรวจสอบ LINE LIFF Access Token ----------------
+//  * ตรวจสอบ Access Token ของ LINE LIFF ผ่าน API
+//  * - ถ้า token ถูกต้อง → คืน { userId, displayName }
+//  * - ถ้า token หมดอายุ / invalid → throw error ให้ frontend จัดการ
+
 export async function verifyLineToken(accessToken) {
   if (!accessToken) {
     console.error("❌ ไม่พบ accessToken ที่ส่งมาจาก Frontend");

@@ -2,34 +2,25 @@
 import { Router } from "express";
 import multer from "multer";
 import prisma from "../prisma.js";
-import { createClient } from "@supabase/supabase-js";
 import { verifyLineToken } from "../utils/verifyLineToken.js";
 import { sendFlexMessage } from "../utils/lineFlex.js";
 import { authMiddleware } from "../middleware/authMiddleware.js";
-
-import { BASE_URL , ADMIN_URL } from "../utils/api.js";
+import { BASE_URL, ADMIN_URL } from "../utils/api.js";
+import {
+  uploadToDrive,
+  deleteFromDriveByUrl,
+} from "../utils/googleDrive.js";
 
 const upload = multer({ storage: multer.memoryStorage() });
-
 const booking = Router();
 
-//Supabase
-const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_KEY
-);
+const DRIVE_FOLDER_BOOKING = "1CamGPGHmnj2YoAulxK0B53ojhMpasqMa";
 
 // ---------------- Utils ----------------
 export const deleteSlip = async (url) => {
   try {
     if (!url) return;
-    const publicMarker = "/object/public/";
-    const idx = url.indexOf(publicMarker);
-    if (idx === -1) return;
-    const fullPath = url.substring(idx + publicMarker.length);
-    const bucket = fullPath.split("/")[0];
-    const filePath = fullPath.split("/").slice(1).join("/");
-    await supabase.storage.from(bucket).remove([filePath]);
+    await deleteFromDriveByUrl(url);
   } catch (err) {
     console.warn("ลบสลิปไม่สำเร็จ", err);
   }
@@ -38,10 +29,10 @@ export const deleteSlip = async (url) => {
 const formatThai = (d) =>
   d
     ? new Date(d).toLocaleDateString("th-TH", {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-      })
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    })
     : "-";
 
 // ROUTES
@@ -66,13 +57,13 @@ booking.get("/search", async (req, res) => {
     const results = await prisma.booking.findMany({
       where: keyword
         ? {
-            OR: [
-              { bookingId: { contains: keyword, mode: "insensitive" } },
-              { fullName: { contains: keyword, mode: "insensitive" } },
-              { cphone: { contains: keyword, mode: "insensitive" } },
-              { room: { number: { contains: keyword, mode: "insensitive" } } },
-            ],
-          }
+          OR: [
+            { bookingId: { contains: keyword, mode: "insensitive" } },
+            { fullName: { contains: keyword, mode: "insensitive" } },
+            { cphone: { contains: keyword, mode: "insensitive" } },
+            { room: { number: { contains: keyword, mode: "insensitive" } } },
+          ],
+        }
         : undefined,
       include: { room: true, customer: true },
       orderBy: { bookingDate: "desc" },
@@ -243,7 +234,7 @@ booking.post("/create", async (req, res) => {
   }
 });
 
-// 📤 UPLOAD SLIP
+// UPLOAD SLIP (Google Drive)
 booking.post("/:bookingId/uploadSlip", upload.single("slip"), async (req, res) => {
   try {
     const { bookingId } = req.params;
@@ -251,29 +242,27 @@ booking.post("/:bookingId/uploadSlip", upload.single("slip"), async (req, res) =
     if (!data || !req.file) throw new Error("ข้อมูลไม่ครบ");
 
     const created = data.bookingDate.toISOString().replace(/[:.]/g, "-");
-    const fileName = `Booking-slips/Booking-slip_${bookingId}_${created}`;
+    const ext = req.file.originalname.split(".").pop();
+    const fileName = `Booking-slip_${bookingId}_${created}.${ext}`;
 
-    await supabase.storage
-      .from(process.env.SUPABASE_BUCKET)
-      .upload(fileName, req.file.buffer, {
-        contentType: req.file.mimetype,
-        upsert: true,
-      });
-
-    const { data: pub } = supabase.storage
-      .from(process.env.SUPABASE_BUCKET)
-      .getPublicUrl(fileName);
+    const slipUrl = await uploadToDrive(
+      req.file.buffer,
+      fileName,
+      req.file.mimetype,
+      DRIVE_FOLDER_BOOKING
+    );
 
     await prisma.booking.update({
       where: { bookingId },
-      data: { slipUrl: pub.publicUrl },
+      data: { slipUrl },
     });
 
-    res.json({ message: "อัปโหลดสลิปสำเร็จ", slipUrl: pub.publicUrl });
+    res.json({ message: "อัปโหลดสลิปสำเร็จ", slipUrl });
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
 });
+
 
 // ✅ APPROVE
 booking.put("/:bookingId/approve", async (req, res) => {
@@ -408,9 +397,8 @@ booking.put("/:bookingId", async (req, res) => {
 
     let fullName = data.fullName;
     if (ctitle || cname || csurname) {
-      fullName = `${ctitle ?? data.ctitle ?? ""}${cname ?? data.cname ?? ""} ${
-        csurname ?? data.csurname ?? ""
-      }`.trim();
+      fullName = `${ctitle ?? data.ctitle ?? ""}${cname ?? data.cname ?? ""} ${csurname ?? data.csurname ?? ""
+        }`.trim();
     }
 
     const nextApproveStatus =
@@ -454,8 +442,7 @@ booking.put("/:bookingId", async (req, res) => {
   }
 });
 
-
-// 🗑️ DELETE
+// DELETE
 booking.delete("/:bookingId", async (req, res) => {
   try {
     const { bookingId } = req.params;
@@ -472,7 +459,7 @@ booking.delete("/:bookingId", async (req, res) => {
       });
     });
 
-    res.json({ message: "ลบการจองและข้อมูล checkout สำเร็จ" });
+    res.json({ message: "ลบการจองและไฟล์สลิปใน Google Drive สำเร็จ" });
   } catch (err) {
     res.status(400).json({ error: err.message });
   }

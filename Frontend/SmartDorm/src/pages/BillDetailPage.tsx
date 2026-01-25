@@ -247,35 +247,34 @@ export default function BillDetailPage() {
                     </tr>
                   </tbody>
                 </table>
+{bill.billStatus === 1 && bill.paidAt && (
+  <>
+    <hr />
+
+    <div className="row text-center mt-4">
+      <div className="col-md-6 mb-4">
+        <div className="fw-bold mb-2">ผู้รับเงิน</div>
+        <div>ภูวณัฐ พาหะละ</div>
+        <div className="mt-3">( นาย ภูวณัฐ พาหะละ )</div>
+        <div className="mt-2">
+          {formatThaiDate(bill.paidAt)}
+        </div>
+      </div>
+
+      <div className="col-md-6 mb-4">
+        <div className="fw-bold mb-2">ผู้จ่ายเงิน</div>
+        <div>{bill.fullName || "-"}</div>
+        <div className="mt-3">
+          ( {bill.fullName || "-"} )
+        </div>
+        <div className="mt-2">
+          {formatThaiDate(bill.paidAt)}
+        </div>
+      </div>
+    </div>
+  </>
+)}
               </div>
-
-              {bill.billStatus === 1 && bill.paidAt !== null && (
-                <>
-                  <hr />
-
-                  <div className="row text-center mt-4">
-                    <div className="col-md-6 mb-4">
-                      <div className="fw-bold mb-2">ผู้รับเงิน</div>
-                      <div>ภูวณัฐ พาหะละ</div>
-                      <div className="mt-3">( นาย ภูวณัฐ พาหะละ )</div>
-                      <div className="mt-2">
-                        {formatThaiDate(bill.paidAt)}
-                      </div>
-                    </div>
-
-                    <div className="col-md-6 mb-4">
-                      <div className="fw-bold mb-2">ผู้จ่ายเงิน</div>
-                      <div>{bill.fullName || "-"}</div>
-                      <div className="mt-3">
-                        ( {bill.fullName || "-"} )
-                      </div>
-                      <div className="mt-2">
-                        {formatThaiDate(bill.paidAt)}
-                      </div>
-                    </div>
-                  </div>
-                </>
-              )}
             </div>
           </div>
         </div>

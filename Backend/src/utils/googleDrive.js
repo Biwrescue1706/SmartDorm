@@ -2,13 +2,12 @@ import { google } from "googleapis";
 import stream from "stream";
 
 const auth = new google.auth.GoogleAuth({
-  keyFile: "./credentials.json", // path ไปไฟล์ service account
+  credentials: JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_JSON),
   scopes: ["https://www.googleapis.com/auth/drive"],
 });
 
 const drive = google.drive({ version: "v3", auth });
 
-// อัปโหลดไฟล์เข้า Google Drive
 export const uploadToDrive = async (buffer, filename, mimeType, parentId) => {
   const bufferStream = new stream.PassThrough();
   bufferStream.end(buffer);
@@ -26,7 +25,6 @@ export const uploadToDrive = async (buffer, filename, mimeType, parentId) => {
 
   const fileId = response.data.id;
 
-  // เปิดให้ดูได้สาธารณะ
   await drive.permissions.create({
     fileId,
     requestBody: {
@@ -38,13 +36,11 @@ export const uploadToDrive = async (buffer, filename, mimeType, parentId) => {
   return `https://drive.google.com/file/d/${fileId}/view`;
 };
 
-// ลบไฟล์จาก Google Drive ด้วย URL
 export const deleteFromDriveByUrl = async (url) => {
   try {
     if (!url) return;
     const match = url.match(/\/d\/([^/]+)/);
     if (!match) return;
-
     const fileId = match[1];
     await drive.files.delete({ fileId });
   } catch (err) {

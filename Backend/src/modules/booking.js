@@ -242,27 +242,25 @@ booking.post("/:bookingId/uploadSlip", upload.single("slip"), async (req, res) =
     if (!data || !req.file) throw new Error("ข้อมูลไม่ครบ");
 
     const created = data.bookingDate.toISOString().replace(/[:.]/g, "-");
-    const ext = req.file.originalname.split(".").pop();
-    const fileName = `Booking-slip_${bookingId}_${created}.${ext}`;
+    const fileName = `Booking-slip_${bookingId}_${created}.jpg`;
 
-    const slipUrl = await uploadToDrive(
+    const driveUrl = await uploadToDrive(
       req.file.buffer,
       fileName,
       req.file.mimetype,
-      DRIVE_FOLDER_BOOKING
+      DRIVE_FOLDER_BOOKING // ⬅️ สำคัญมาก ต้องเป็นโฟลเดอร์ใน Shared Drive
     );
 
     await prisma.booking.update({
       where: { bookingId },
-      data: { slipUrl },
+      data: { slipUrl: driveUrl },
     });
 
-    res.json({ message: "อัปโหลดสลิปสำเร็จ", slipUrl });
+    res.json({ message: "อัปโหลดสลิปสำเร็จ", slipUrl: driveUrl });
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
 });
-
 
 // ✅ APPROVE
 booking.put("/:bookingId/approve", async (req, res) => {

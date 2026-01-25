@@ -13,7 +13,7 @@ export const uploadToDrive = async (buffer, filename, mimeType, parentId) => {
   bufferStream.end(buffer);
 
   const response = await drive.files.create({
-    requestBody: {
+    resource: {
       name: filename,
       parents: [parentId],
     },
@@ -21,6 +21,7 @@ export const uploadToDrive = async (buffer, filename, mimeType, parentId) => {
       mimeType,
       body: bufferStream,
     },
+    supportsAllDrives: true,
   });
 
   const fileId = response.data.id;
@@ -31,6 +32,7 @@ export const uploadToDrive = async (buffer, filename, mimeType, parentId) => {
       role: "reader",
       type: "anyone",
     },
+    supportsAllDrives: true,
   });
 
   return `https://drive.google.com/file/d/${fileId}/view`;
@@ -42,7 +44,11 @@ export const deleteFromDriveByUrl = async (url) => {
     const match = url.match(/\/d\/([^/]+)/);
     if (!match) return;
     const fileId = match[1];
-    await drive.files.delete({ fileId });
+
+    await drive.files.delete({
+      fileId,
+      supportsAllDrives: true,
+    });
   } catch (err) {
     console.warn("ลบไฟล์ใน Google Drive ไม่สำเร็จ:", err.message);
   }

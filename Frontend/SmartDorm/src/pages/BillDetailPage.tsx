@@ -249,7 +249,7 @@ export default function BillDetailPage() {
                 </table>
               </div>
 
-              {bill.billStatus === 1 && bill.paidAt && (
+              {bill.billStatus === 1 && bill.paidAt !== null && (
                 <>
                   <hr />
 

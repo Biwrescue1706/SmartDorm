@@ -174,6 +174,11 @@ export default function BillDetailPage() {
                   <b>รอบบิล:</b> {formatThaiDate(bill.month)}
                 </div>
 
+
+<div className="col-md-4">
+                  <b>ห้อง {bill.room?.number ?? "-"}</b> </div>
+
+
                 {bill.billStatus === 0 && (
                   <div className="col-md-4">
                     <b>ครบกำหนด:</b> {formatThaiDate(bill.dueDate)}
@@ -184,8 +189,6 @@ export default function BillDetailPage() {
                   <b>สถานะ:</b> {statusText(bill.billStatus)}
                 </div>
 
-<div className="col-md-4">
-                  <b>ห้อง {bill.room?.number ?? "-"}</b> </div>
 
               </div>
 

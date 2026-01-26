@@ -146,18 +146,22 @@ export default function BillDetailPage() {
           <div className="card shadow-sm border-0">
             <div className="card-body">
               {bill.billStatus === 1 ? (
-                <h3 className="fw-bold" style={{ color: SCB_PURPLE }}>
+                <h3 className="text-center fw-bold" style={{ color: SCB_PURPLE }}>
                   ใบเสร็จรับเงิน
                 </h3>
+<h3 className="text-center fw-bold" style={{ color: SCB_PURPLE }}>
+                  SmartDorm
+                </h3>
               ) : (
-                <h3 className="fw-bold" style={{ color: SCB_PURPLE }}>
+                <h3 className="fw-bold  text-center" style={{ color: SCB_PURPLE }}>
                   ใบแจ้งหนี้
+                </h3>
+<h3 className="text-center fw-bold" style={{ color: SCB_PURPLE }}>
+                  SmartDorm
                 </h3>
               )}
 
-              <h5 className="fw-bold mb-2">ห้อง {bill.room?.number ?? "-"}</h5>
-
-              <div className="row g-2 small mb-3">
+              <div className="row g-2 mb-3">
                 <div className="col-md-4">
                   <b>ชื่อ - นามสกุล :</b> {bill.fullName || "-"}
                 </div>
@@ -175,6 +179,10 @@ export default function BillDetailPage() {
                 <div className="col-md-4">
                   <b>สถานะ:</b> {statusText(bill.billStatus)}
                 </div>
+
+<div className="col-md-4">
+                  <b>ห้อง {bill.room?.number ?? "-"}</b> </div>
+
               </div>
 
               <hr />
@@ -184,8 +192,8 @@ export default function BillDetailPage() {
                   <thead className="table-light">
                     <tr>
                       <th>รายการ</th>
+<th>เลขมาตราครั้งหลัง</th>
                       <th>เลขมาตราครั้งก่อน</th>
-                      <th>เลขมาตราครั้งหลัง</th>
                       <th>จำนวนที่ใช้</th>
                       <th className="text-center">เป็นเงิน</th>
                     </tr>
@@ -193,9 +201,11 @@ export default function BillDetailPage() {
                   <tbody>
                     <tr>
                       <td>ค่าไฟฟ้า</td>
+<td>{bill.eAfter}</td>
                       <td>{bill.eBefore}</td>
-                      <td>{bill.eAfter}</td>
-                      <td>{bill.eUnits}</td>
+<td>{bill.eUnits}</td>
+                      
+                      
                       <td className="text-center">
                         {bill.electricCost.toLocaleString()}
                       </td>
@@ -203,8 +213,9 @@ export default function BillDetailPage() {
 
                     <tr>
                       <td>ค่าน้ำประปา</td>
+ <td>{bill.wAfter}</td>
                       <td>{bill.wBefore}</td>
-                      <td>{bill.wAfter}</td>
+                     
                       <td>{bill.wUnits}</td>
                       <td className="text-center">
                         {bill.waterCost.toLocaleString()}

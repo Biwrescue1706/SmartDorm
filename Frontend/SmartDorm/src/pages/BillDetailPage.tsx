@@ -36,6 +36,8 @@ interface BillDetail {
   electricCost: number;
 
   paidAt?: string | null;
+  cname : string;
+  csurname : string;
   fullName?: string;
 
   room?: {
@@ -263,7 +265,7 @@ export default function BillDetailPage() {
 
       <div className="col-md-6 mb-4">
         <div className="fw-bold mb-2">ผู้จ่ายเงิน</div>
-        <div>{bill.fullName || "-"}</div>
+        <div>{bill.cname || "-"} {bill.csurname}</div>
         <div className="mt-3">
           ( {bill.fullName || "-"} )
         </div>

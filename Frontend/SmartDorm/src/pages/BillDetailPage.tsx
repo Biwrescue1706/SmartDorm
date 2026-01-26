@@ -146,20 +146,24 @@ export default function BillDetailPage() {
           <div className="card shadow-sm border-0">
             <div className="card-body">
               {bill.billStatus === 1 ? (
-                <h3 className="text-center fw-bold" style={{ color: SCB_PURPLE }}>
-                  ใบเสร็จรับเงิน
-                </h3>
-<h3 className="text-center fw-bold" style={{ color: SCB_PURPLE }}>
-                  SmartDorm
-                </h3>
-              ) : (
-                <h3 className="fw-bold  text-center" style={{ color: SCB_PURPLE }}>
-                  ใบแจ้งหนี้
-                </h3>
-<h3 className="text-center fw-bold" style={{ color: SCB_PURPLE }}>
-                  SmartDorm
-                </h3>
-              )}
+  <>
+    <h3 className="text-center fw-bold" style={{ color: SCB_PURPLE }}>
+      ใบเสร็จรับเงิน
+    </h3>
+    <h3 className="text-center fw-bold" style={{ color: SCB_PURPLE }}>
+      SmartDorm
+    </h3>
+  </>
+) : (
+  <>
+    <h3 className="fw-bold text-center" style={{ color: SCB_PURPLE }}>
+      ใบแจ้งหนี้
+    </h3>
+    <h3 className="text-center fw-bold" style={{ color: SCB_PURPLE }}>
+      SmartDorm
+    </h3>
+  </>
+)}
 
               <div className="row g-2 mb-3">
                 <div className="col-md-4">

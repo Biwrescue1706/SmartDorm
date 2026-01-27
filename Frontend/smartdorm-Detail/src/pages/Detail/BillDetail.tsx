@@ -50,46 +50,6 @@ export default function BillDetail() {
       ? "info"
       : "warning";
 
-  const isInvoice = bill.billStatus === 0;
-  const titleText = isInvoice ? "ใบแจ้งหนี้" : "ใบเสร็จรับเงิน";
-
-  const rows = [
-    {
-      name: "ค่าไฟฟ้า",
-      qty: bill.eUnits,
-      unit: 7,
-      price: bill.electricCost,
-    },
-    {
-      name: "ค่าน้ำ",
-      qty: bill.wUnits,
-      unit: 19,
-      price: bill.waterCost,
-    },
-    {
-      name: "ค่าเช่า",
-      qty: 1,
-      unit: bill.rent,
-      price: bill.rent,
-    },
-    {
-      name: "ค่าส่วนกลาง",
-      qty: 1,
-      unit: bill.service,
-      price: bill.service,
-    },
-    ...(bill.overdueDays > 0
-      ? [
-          {
-            name: "ค่าปรับ",
-            qty: bill.overdueDays,
-            unit: 50,
-            price: bill.fine,
-          },
-        ]
-      : []),
-  ];
-
   return (
     <>
       <BookingNav />
@@ -109,12 +69,36 @@ export default function BillDetail() {
             border: "1px solid #e2e8f0",
           }}
         >
-          {/* HEADER */}
+          {/* TITLE INVOICE / RECEIPT (เพิ่ม ไม่ตัดของเดิม) */}
           <div className="text-center my-2">
-            <h4 className="fw-bold mb-1">{titleText}</h4>
-            <div className="text-muted">
-              47/21 ม.1 ต.บ้านสวน อ.เมืองชลบุรี
-            </div>
+            {bill.billStatus === 0 && (
+              <>
+                <h4 className="fw-bold mb-1">ใบแจ้งหนี้</h4>
+                <div className="text-muted">
+                  47/21 ม.1 ต.บ้านสวน อ.เมืองชลบุรี
+                </div>
+              </>
+            )}
+
+            {bill.billStatus === 1 && (
+              <>
+                <h4 className="fw-bold mb-1">ใบเสร็จรับเงิน</h4>
+                <div className="text-muted">
+                  47/21 ม.1 ต.บ้านสวน อ.เมืองชลบุรี
+                </div>
+              </>
+            )}
+          </div>
+
+          {/* HEADER เดิม */}
+          <div
+            className="text-white text-center fw-bold py-3 rounded-4 shadow-sm"
+            style={{
+              background: "linear-gradient(135deg,#00C4FF,#0083FF)",
+              fontSize: "1.3rem",
+            }}
+          >
+            รายละเอียดบิลค่าเช่าห้อง
           </div>
 
           {/* BILL INFO */}
@@ -149,36 +133,128 @@ export default function BillDetail() {
           </div>
 
           {/* COST TABLE */}
-          <table className="table table-sm table-bordered text-center align-middle">
-            <thead className="table-light">
-              <tr>
-                <th>รายการ</th>
-                <th>จำนวน</th>
-                <th>หน่วยละ</th>
-                <th>ราคา</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((r, i) => (
-                <tr key={i}>
-                  <td>{r.name}</td>
-                  <td>{r.qty}</td>
-                  <td>{r.unit.toLocaleString()}</td>
-                  <td>{r.price.toLocaleString()}</td>
+          <h6 className="fw-bold text-primary text-center">
+            รายละเอียดค่าใช้จ่าย
+          </h6>
+
+          {(bill.billStatus === 0 || bill.billStatus === 1) ? (
+            /* ===== ตารางใหม่ ===== */
+            <table className="table table-sm table-bordered text-center align-middle">
+              <thead className="table-light">
+                <tr>
+                  <th>รายการ</th>
+                  <th>จำนวน</th>
+                  <th>หน่วยละ</th>
+                  <th>ราคา</th>
                 </tr>
-              ))}
-            </tbody>
-            <tfoot className="fw-bold">
-              <tr className="table-success">
-                <td colSpan={3} className="text-end">
-                  รวมทั้งหมด
-                </td>
-                <td className="text-primary fs-5 text-end">
-                  {bill.total.toLocaleString()}
-                </td>
-              </tr>
-            </tfoot>
-          </table>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>ค่าไฟฟ้า</td>
+                  <td>{bill.eUnits}</td>
+                  <td>7</td>
+                  <td>{bill.electricCost.toLocaleString()}</td>
+                </tr>
+                <tr>
+                  <td>ค่าน้ำ</td>
+                  <td>{bill.wUnits}</td>
+                  <td>19</td>
+                  <td>{bill.waterCost.toLocaleString()}</td>
+                </tr>
+                <tr>
+                  <td>ค่าเช่า</td>
+                  <td>1</td>
+                  <td>{bill.rent.toLocaleString()}</td>
+                  <td>{bill.rent.toLocaleString()}</td>
+                </tr>
+                <tr>
+                  <td>ค่าส่วนกลาง</td>
+                  <td>1</td>
+                  <td>{bill.service.toLocaleString()}</td>
+                  <td>{bill.service.toLocaleString()}</td>
+                </tr>
+
+                {bill.overdueDays > 0 && (
+                  <tr>
+                    <td>ค่าปรับ</td>
+                    <td>{bill.overdueDays}</td>
+                    <td>50</td>
+                    <td>{bill.fine.toLocaleString()}</td>
+                  </tr>
+                )}
+              </tbody>
+              <tfoot className="fw-bold">
+                <tr className="table-success">
+                  <td colSpan={3} className="text-end">
+                    รวมทั้งหมด
+                  </td>
+                  <td className="text-primary fs-5 text-end">
+                    {bill.total.toLocaleString()}
+                  </td>
+                </tr>
+              </tfoot>
+            </table>
+          ) : (
+            /* ===== ตารางเดิม (ยังอยู่ครบ) ===== */
+            <table className="table table-sm table-bordered text-center align-middle">
+              <thead className="table-light">
+                <tr>
+                  <th>รายการ</th>
+                  <th>มิเตอร์เดือนหลัง</th>
+                  <th>มิเตอร์เดือนก่อน</th>
+                  <th>จำนวนหน่วยที่ใช้</th>
+                  <th>จำนวนเงิน</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>ค่าไฟฟ้า</td>
+                  <td>{bill.eAfter}</td>
+                  <td>{bill.eBefore}</td>
+                  <td>{bill.eUnits}</td>
+                  <td>{bill.electricCost.toLocaleString()}</td>
+                </tr>
+                <tr>
+                  <td>ค่าน้ำ</td>
+                  <td>{bill.wAfter}</td>
+                  <td>{bill.wBefore}</td>
+                  <td>{bill.wUnits}</td>
+                  <td>{bill.waterCost.toLocaleString()}</td>
+                </tr>
+                <tr>
+                  <td>ค่าเช่า</td>
+                  <td>-</td>
+                  <td>-</td>
+                  <td>-</td>
+                  <td>{bill.rent.toLocaleString()}</td>
+                </tr>
+                <tr>
+                  <td>ค่าส่วนกลาง</td>
+                  <td>-</td>
+                  <td>-</td>
+                  <td>-</td>
+                  <td>{bill.service.toLocaleString()}</td>
+                </tr>
+                <tr>
+                  <td>ค่าปรับ</td>
+                  <td>-</td>
+                  <td>-</td>
+                  <td>-</td>
+                  <td>{bill.fine.toLocaleString()}</td>
+                </tr>
+              </tbody>
+              <tfoot className="table-success fw-bold">
+                <tr>
+                  <td colSpan={4} className="text-end">
+                    รวมทั้งหมด
+                  </td>
+                  <td className="text-primary fs-5">
+                    {bill.total.toLocaleString()}
+                  </td>
+                </tr>
+              </tfoot>
+            </table>
+          )}
 
           {/* SIGNATURE */}
           <div className="row mt-4 text-center">
@@ -190,6 +266,7 @@ export default function BillDetail() {
                 {bill.paidAt && formatThai(bill.paidAt)}
               </div>
             </div>
+
             <div className="col">
               <div className="fw-bold">ผู้จ่าย</div>
               <div>{`${bill.cname ?? ""} ${bill.csurname ?? ""}`}</div>

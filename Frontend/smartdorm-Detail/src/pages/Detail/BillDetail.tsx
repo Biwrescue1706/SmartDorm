@@ -81,16 +81,28 @@ export default function BillDetail() {
   const beforeVat = bill.total - vat;
   const thaiText = numberToThaiBaht(bill.total);
 
+  // ===== CHECK OVERDUE (เฉพาะการแสดงผล) =====
+  const today = new Date();
+  const due = new Date(bill.dueDate);
+  let isOverdue = false;
+  let overdueDays = 0;
+
+  if (bill.billStatus === 0 && today > due) {
+    isOverdue = true;
+    const diff = today.getTime() - due.getTime();
+    overdueDays = Math.ceil(diff / (1000 * 60 * 60 * 24));
+  }
+
   return (
     <>
       <BookingNav />
 
-      <div className="bg-light min-vh-100 py-3 pt-5 mt-5" style={{ fontFamily: "Prompt, sans-serif" }}>
+      <div className="bg-light min-vh-100 py-3 pt-3 mt-3" style={{ fontFamily: "Prompt, sans-serif" }}>
         <div className="container">
-          <div className="card shadow-lg border-0 rounded-4 mx-auto mt-5" style={{ maxWidth: 820 }}>
+          <div className="card shadow-lg border-0 rounded-4 mx-auto mt-4" style={{ maxWidth: 820 }}>
             <div className="card-body p-3 p-md-4">
 
-              {/* DOCUMENT HEADER */}
+              {/* HEADER */}
               <div className="text-center mb-2">
                 <h4 className="fw-bold mb-1">
                   {bill.billStatus === 0 ? "ใบแจ้งหนี้" : "ใบเสร็จรับเงิน"}
@@ -98,56 +110,47 @@ export default function BillDetail() {
                 <div className="small text-secondary">
                   47/21 ม.1 ต.บ้านสวน อ.เมืองชลบุรี จ.ชลบุรี 20000
                 </div>
-                {bill.billStatus === 1 && (
-                  <div className="small text-secondary">
-                    โทร : 061-174-7731 | เลขประจำตัวผู้เสียภาษี : 1209000088280
-                  </div>
-                )}
+                <div className="small text-secondary">
+                  โทร : 061-174-7731 | เลขประจำตัวผู้เสียภาษี : 1209000088280
+                </div>
               </div>
 
               <hr className="my-2" />
 
-              {/* META */}
               <div className="d-flex justify-content-between small mb-2">
                 <div>เลขที่เอกสาร: {bill.billId}</div>
-                <div>วันที่ออก: {formatThai(new Date().toISOString())}</div>
+                <div>วันที่ออก: {formatThai(bill.createdAt)}</div>
               </div>
 
-              {/* BILL INFO */}
+              {/* INFO */}
               <div className="row g-2 small border rounded-3 p-3 mb-3 bg-light">
-                <div className="col-12 col-md-6">
-                  <strong>Line ผู้เช่า :</strong> {bill.customer?.userName ?? "-"}
-                </div>
-                <div className="col-12 col-md-6">
-                  <strong>ผู้เช่า :</strong> {fullName}
-                </div>
-                <div className="col-6">
-                  <strong>ห้อง :</strong> {bill.room.number}
-                </div>
+                <div className="col-12 col-md-6"><strong>Line ผู้เช่า :</strong> {bill.customer?.userName ?? "-"}</div>
+                <div className="col-12 col-md-6"><strong>ผู้เช่า :</strong> {fullName}</div>
+                <div className="col-6"><strong>ห้อง :</strong> {bill.room.number}</div>
                 <div className="col-6">
                   <strong>ประจำเดือน :</strong>{" "}
-                  {new Date(bill.month).toLocaleDateString("th-TH", {
-                    year: "numeric",
-                    month: "long",
-                  })}
+                  {new Date(bill.month).toLocaleDateString("th-TH", { year: "numeric", month: "long" })}
                 </div>
 
                 {bill.billStatus === 0 && (
-                  <div className="col-12 text-danger fw-semibold">
-                    ครบกำหนดชำระ : {formatThai(bill.dueDate)}
+                  <div className={`col-12 fw-semibold ${isOverdue ? "text-danger" : ""}`}>
+                    {isOverdue
+                      ? <>เกินกำหนด {overdueDays} วัน (ครบกำหนด {formatThai(bill.dueDate)})</>
+                      : <>ครบกำหนดชำระ : {formatThai(bill.dueDate)}</>}
                   </div>
                 )}
 
                 <div className="col-12">
                   <strong>สถานะ :</strong>{" "}
-                  <span className={`badge bg-${statusColor}`}>{statusText}</span>
+                  {isOverdue ? (
+                    <span className="badge bg-danger">เกินกำหนด {overdueDays} วัน</span>
+                  ) : (
+                    <span className={`badge bg-${statusColor}`}>{statusText}</span>
+                  )}
                 </div>
               </div>
 
-              {/* COST TABLE */}
-              <h6 className="fw-bold text-primary text-center mb-2">
-                รายละเอียดค่าใช้จ่าย
-              </h6>
+              <h6 className="fw-bold text-primary text-center mb-2">รายละเอียดค่าใช้จ่าย</h6>
 
               {bill.billStatus === 0 ? (
                 <table className="table table-sm table-bordered align-middle mb-2">
@@ -206,12 +209,10 @@ export default function BillDetail() {
                     </tr>
                     <tr className="table-success">
                       <td colSpan={4} className="text-end">รวมทั้งหมด</td>
-                      <td className="text-end fs-6">{bill.total.toLocaleString()}</td>
+                      <td className="text-end">{bill.total.toLocaleString()}</td>
                     </tr>
                     <tr>
-                      <td colSpan={5} className="text-start ps-2">
-                        ({thaiText})
-                      </td>
+                      <td colSpan={5} className="text-start ps-2">({thaiText})</td>
                     </tr>
                   </tfoot>
                 </table>
@@ -270,64 +271,54 @@ export default function BillDetail() {
                     </tr>
                     <tr className="table-success">
                       <td colSpan={3} className="text-end">รวมทั้งหมด</td>
-                      <td className="text-end fs-6">{bill.total.toLocaleString()}</td>
+                      <td className="text-end">{bill.total.toLocaleString()}</td>
                     </tr>
                     <tr>
-                      <td colSpan={4} className="text-start ps-2">
-                        ({thaiText})
-                      </td>
+                      <td colSpan={4} className="text-start ps-2">({thaiText})</td>
                     </tr>
                   </tfoot>
                 </table>
               )}
 
-              {/* PAYMENT INFO */}
               {bill.billStatus === 1 && (
-                <div className="card border mt-3">
-                  <div className="card-header text-center fw-bold py-2">
-                    ข้อมูลการชำระเงิน / Payment Information
+                <>
+                  <div className="card border mt-3">
+                    <div className="card-header text-center fw-bold py-2">
+                      ข้อมูลการชำระเงิน / Payment Information
+                    </div>
+                    <div className="card-body small">
+                      <div className="d-flex justify-content-between">
+                        <span>วิธีการชำระ :</span>
+                        <span>โอนเงิน / Transfer</span>
+                      </div>
+                      <div className="d-flex justify-content-between">
+                        <span>ยอดที่ชำระ :</span>
+                        <span>{bill.total.toLocaleString()} บาท</span>
+                      </div>
+                      <div className="d-flex justify-content-between">
+                        <span>วันที่ชำระ :</span>
+                        <span>{bill.paidAt && formatThai(bill.paidAt)}</span>
+                      </div>
+                    </div>
                   </div>
-                  <div className="card-body small">
-                    <div className="d-flex justify-content-between">
-                      <span>วิธีการชำระ :</span>
-                      <span>โอนเงิน / Transfer</span>
+
+                  <div className="row mt-4 text-center">
+                    <div className="col">
+                      <div className="fw-bold">ผู้รับ</div>
+                      <div>ภูวณัฐ พาหะละ</div>
+                      <div>( นายภูวณัฐ พาหะละ )</div>
+                      <div className="text-muted">{bill.paidAt && formatThai(bill.paidAt)}</div>
                     </div>
-                    <div className="d-flex justify-content-between">
-                      <span>ยอดที่ชำระ :</span>
-                      <span>{bill.total.toLocaleString()} บาท</span>
-                    </div>
-                    <div className="d-flex justify-content-between">
-                      <span>วันที่ชำระ :</span>
-                      <span>{bill.paidAt && formatThai(bill.paidAt)}</span>
+                    <div className="col">
+                      <div className="fw-bold">ผู้จ่าย</div>
+                      <div>{`${bill.cname ?? ""} ${bill.csurname ?? ""}`}</div>
+                      <div>({bill.fullName})</div>
+                      <div className="text-muted">{bill.paidAt && formatThai(bill.paidAt)}</div>
                     </div>
                   </div>
-                </div>
+                </>
               )}
 
-              {/* SIGNATURE (เดิม) */}
-              {bill.billStatus === 1 && (
-                <div className="row mt-4 text-center">
-                  <div className="col">
-                    <div className="fw-bold">ผู้รับ</div>
-                    <div>ภูวณัฐ พาหะละ</div>
-                    <div>( นายภูวณัฐ พาหะละ )</div>
-                    <div className="text-muted">
-                      {bill.paidAt && formatThai(bill.paidAt)}
-                    </div>
-                  </div>
-
-                  <div className="col">
-                    <div className="fw-bold">ผู้จ่าย</div>
-                    <div>{`${bill.cname ?? ""} ${bill.csurname ?? ""}`}</div>
-                    <div>({bill.fullName})</div>
-                    <div className="text-muted">
-                      {bill.paidAt && formatThai(bill.paidAt)}
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* PAY BUTTON */}
               {bill.billStatus === 0 && (
                 <button
                   className="btn btn-success fw-bold w-100 py-3 mt-3"

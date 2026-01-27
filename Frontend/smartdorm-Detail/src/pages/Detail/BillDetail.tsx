@@ -10,6 +10,33 @@ export const formatThai = (d: string) =>
     day: "numeric",
   });
 
+/* ===================== NUMBER TO THAI BAHT ===================== */
+const numberToThaiBaht = (num: number) => {
+  const th = ["ศูนย์","หนึ่ง","สอง","สาม","สี่","ห้า","หก","เจ็ด","แปด","เก้า"];
+  const unit = ["","สิบ","ร้อย","พัน","หมื่น","แสน","ล้าน"];
+
+  const readInt = (n: number) => {
+    let s = "";
+    const str = n.toString();
+    for (let i = 0; i < str.length; i++) {
+      const d = parseInt(str[i]);
+      const u = unit[str.length - i - 1];
+      if (d === 0) continue;
+      if (u === "สิบ" && d === 1) s += "สิบ";
+      else if (u === "สิบ" && d === 2) s += "ยี่สิบ";
+      else if (u === "" && d === 1 && str.length > 1) s += "เอ็ด";
+      else s += th[d] + u;
+    }
+    return s;
+  };
+
+  const [i, f] = num.toFixed(2).split(".");
+  let result = readInt(parseInt(i)) + "บาท";
+  if (f === "00") result += "ถ้วน";
+  else result += readInt(parseInt(f)) + "สตางค์";
+  return result;
+};
+
 export default function BillDetail() {
   const { billId } = useParams<{ billId: string }>();
   const { bill, loading, error } = useBill(billId);
@@ -50,76 +77,48 @@ export default function BillDetail() {
       ? "info"
       : "warning";
 
-const vat = bill.total * 0.07;
-const beforeVat = bill.total - vat;
+  const vat = bill.total * 0.07;
+  const beforeVat = bill.total - vat;
+  const thaiText = numberToThaiBaht(bill.total);
 
   return (
     <>
       <BookingNav />
 
-      <div
-        style={{
-          background: "#F2F8FA",
-          minHeight: "100vh",
-          fontFamily: "Prompt, sans-serif",
-        }}
-      >
-        <div
-          className="container shadow-lg rounded-4 p-4 mt-5"
-          style={{
-            maxWidth: "650px",
-            background: "white",
-            border: "1px solid #e2e8f0",
-          }}
-        >
-          {/* HEADER เดิม */}
-          <div
-            className="text-white text-center fw-bold py-3 rounded-4 shadow-sm"
-            style={{
-              background: "linear-gradient(135deg,#00C4FF,#0083FF)",
-              fontSize: "1.3rem",
-            }}
-          >
-            รายละเอียดบิลค่าเช่าห้อง
-          </div>
-{/* TITLE */}
-          <div className="text-center my-2">
-            {bill.billStatus === 0 && (
-              <>
-                <h4 className="fw-bold mb-1">ใบแจ้งหนี้</h4>
-                <div className="text-muted">
-                  47/21 ม.1 ต.บ้านสวน อ.เมืองชลบุรี
-                </div>
-              </>
-            )}
+      <div style={{ background: "#F2F8FA", minHeight: "100vh", fontFamily: "Prompt, sans-serif" }}>
+        <div className="container shadow-lg rounded-4 p-4 mt-5" style={{ maxWidth: "650px", background: "white", border: "1px solid #e2e8f0" }}>
 
+          {/* DOCUMENT HEADER */}
+          <div className="text-center mb-2">
+            <h4 className="fw-bold mb-1">
+              {bill.billStatus === 0 ? "ใบแจ้งหนี้" : "ใบเสร็จรับเงิน"}
+            </h4>
+            <div className="small text-muted">
+              47/21 ม.1 ต.บ้านสวน อ.เมืองชลบุรี จ.ชลบุรี 20000
+            </div>
             {bill.billStatus === 1 && (
-              <>
-                <h4 className="fw-bold mb-1">ใบเสร็จรับเงิน</h4>
-                <div className="text-muted">
-                  47/21 ม.1 ต.บ้านสวน อ.เมืองชลบุรี
-                </div>
-              </>
+              <div className="small text-muted">
+                โทร : 061-174-7731 | เลขประจำตัวผู้เสียภาษี : 1209000088280
+              </div>
             )}
+          </div>
+
+          <hr />
+
+          {/* META */}
+          <div className="d-flex justify-content-between small mb-2">
+            <div>เลขที่เอกสาร: {bill.billId}</div>
+            <div>วันที่ออก: {formatThai(new Date().toISOString())}</div>
           </div>
 
           {/* BILL INFO */}
-          <div className="bg-light p-3 rounded border mb-3 mt-2">
-            <p className="mb-1">
-              <strong>Line ผู้เช่า :</strong> {bill.customer?.userName ?? "-"}
-            </p>
-            <p className="mb-1">
-              <strong>ผู้เช่า :</strong> {fullName}
-            </p>
-            <p className="mb-1">
-              <strong>ห้อง :</strong> {bill.room.number}
-            </p>
+          <div className="bg-light p-3 rounded border mb-3">
+            <p className="mb-1"><strong>Line ผู้เช่า :</strong> {bill.customer?.userName ?? "-"}</p>
+            <p className="mb-1"><strong>ผู้เช่า :</strong> {fullName}</p>
+            <p className="mb-1"><strong>ห้อง :</strong> {bill.room.number}</p>
             <p className="mb-1">
               <strong>ประจำเดือน :</strong>{" "}
-              {new Date(bill.month).toLocaleDateString("th-TH", {
-                year: "numeric",
-                month: "long",
-              })}
+              {new Date(bill.month).toLocaleDateString("th-TH", { year: "numeric", month: "long" })}
             </p>
 
             {bill.billStatus === 0 && (
@@ -135,12 +134,9 @@ const beforeVat = bill.total - vat;
           </div>
 
           {/* COST TABLE */}
-          <h6 className="fw-bold text-primary text-center">
-            รายละเอียดค่าใช้จ่าย
-          </h6>
+          <h6 className="fw-bold text-primary text-center">รายละเอียดค่าใช้จ่าย</h6>
 
           {bill.billStatus === 0 ? (
-            /* ===== ตารางเดิม (มีมิเตอร์) ===== */
             <table className="table table-sm table-bordered text-center align-middle">
               <thead className="table-light">
                 <tr>
@@ -168,45 +164,43 @@ const beforeVat = bill.total - vat;
                 </tr>
                 <tr>
                   <td>ค่าเช่า</td>
-                  <td>-</td>
-                  <td>-</td>
-                  <td>-</td>
+                  <td colSpan={3}>-</td>
                   <td>{bill.rent.toLocaleString()}</td>
                 </tr>
                 <tr>
                   <td>ค่าส่วนกลาง</td>
-                  <td>-</td>
-                  <td>-</td>
-                  <td>-</td>
+                  <td colSpan={3}>-</td>
                   <td>{bill.service.toLocaleString()}</td>
                 </tr>
                 <tr>
                   <td>ค่าปรับ</td>
-                  <td>-</td>
-                  <td>-</td>
-                  <td>-</td>
+                  {bill.overdueDays > 0 ? (
+                    <td colSpan={3}>ปรับ {bill.overdueDays} วัน</td>
+                  ) : (
+                    <td colSpan={3}>-</td>
+                  )}
                   <td>{bill.fine.toLocaleString()}</td>
                 </tr>
               </tbody>
               <tfoot className="fw-bold">
-  <tr>
-    <td colSpan={4} className="text-end">ราคาก่อนรวมภาษี</td>
-    <td className="text-end">{beforeVat.toFixed(2)}</td>
-  </tr>
-  <tr>
-    <td colSpan={4} className="text-end">ภาษี 7%</td>
-    <td className="text-end">{vat.toFixed(2)}</td>
-  </tr>
-  <tr className="table-success">
-    <td colSpan={4} className="text-end">รวมทั้งหมด</td>
-    <td className="text-primary fs-5">
-      {bill.total.toLocaleString()}
-    </td>
-  </tr>
-</tfoot>
+                <tr>
+                  <td colSpan={4} className="text-end">ราคาก่อนรวมภาษี</td>
+                  <td className="text-end">{beforeVat.toFixed(2)}</td>
+                </tr>
+                <tr>
+                  <td colSpan={4} className="text-end">ภาษี 7%</td>
+                  <td className="text-end">{vat.toFixed(2)}</td>
+                </tr>
+                <tr className="table-success">
+                  <td colSpan={4} className="text-end">รวมทั้งหมด</td>
+                  <td className="text-primary fs-5">{bill.total.toLocaleString()}</td>
+                </tr>
+                <tr>
+                  <td colSpan={5} className="text-start ps-3">({thaiText})</td>
+                </tr>
+              </tfoot>
             </table>
           ) : (
-            /* ===== ตารางใหม่ ===== */
             <table className="table table-sm table-bordered text-center align-middle">
               <thead className="table-light">
                 <tr>
@@ -241,7 +235,6 @@ const beforeVat = bill.total - vat;
                   <td>{bill.service.toLocaleString()}</td>
                   <td>{bill.service.toLocaleString()}</td>
                 </tr>
-
                 {bill.overdueDays > 0 && (
                   <tr>
                     <td>ค่าปรับ</td>
@@ -251,26 +244,48 @@ const beforeVat = bill.total - vat;
                   </tr>
                 )}
               </tbody>
-             <tfoot className="fw-bold">
-  <tr>
-    <td colSpan={3} className="text-end">ราคาก่อนรวมภาษี</td>
-    <td className="text-end">{beforeVat.toFixed(2)}</td>
-  </tr>
-  <tr>
-    <td colSpan={3} className="text-end">ภาษี 7%</td>
-    <td className="text-end">{vat.toFixed(2)}</td>
-  </tr>
-  <tr className="table-success">
-    <td colSpan={3} className="text-end">รวมทั้งหมด</td>
-    <td className="text-primary fs-5 text-end">
-      {bill.total.toLocaleString()}
-    </td>
-  </tr>
-</tfoot>
+              <tfoot className="fw-bold">
+                <tr>
+                  <td colSpan={3} className="text-end">ราคาก่อนรวมภาษี</td>
+                  <td className="text-end">{beforeVat.toFixed(2)}</td>
+                </tr>
+                <tr>
+                  <td colSpan={3} className="text-end">ภาษี 7%</td>
+                  <td className="text-end">{vat.toFixed(2)}</td>
+                </tr>
+                <tr className="table-success">
+                  <td colSpan={3} className="text-end">รวมทั้งหมด</td>
+                  <td className="text-primary fs-5 text-end">{bill.total.toLocaleString()}</td>
+                </tr>
+                <tr>
+                  <td colSpan={4} className="text-start ps-3">({thaiText})</td>
+                </tr>
+              </tfoot>
             </table>
           )}
 
-          {/* SIGNATURE เฉพาะใบเสร็จ */}
+          {/* PAYMENT INFO (เพิ่มใหม่) */}
+          {bill.billStatus === 1 && (
+            <div className="border rounded-3 p-3 mt-3">
+              <div className="fw-bold mb-2 text-center">
+                ข้อมูลการชำระเงิน / Payment Information
+              </div>
+              <div className="d-flex justify-content-between">
+                <div>วิธีการชำระ :</div>
+                <div>โอนเงิน / Transfer</div>
+              </div>
+              <div className="d-flex justify-content-between">
+                <div>ยอดที่ชำระ :</div>
+                <div>{bill.total.toLocaleString()} บาท</div>
+              </div>
+              <div className="d-flex justify-content-between">
+                <div>วันที่ชำระ :</div>
+                <div>{bill.paidAt && formatThai(bill.paidAt)}</div>
+              </div>
+            </div>
+          )}
+
+          {/* SIGNATURE เดิม (ไม่ตัดออก) */}
           {bill.billStatus === 1 && (
             <div className="row mt-4 text-center">
               <div className="col">

@@ -112,8 +112,8 @@ export default function Bills() {
 
   return (
     <div
-      className="d-flex flex-column"
-      style={{ backgroundColor: "#f4f7fb", minHeight: "100vh" }}
+      className="d-flex min-vh-100 mx-2 mt-0 mb-4"
+      style={{ fontFamily: "Sarabun, sans-serif" }}
     >
       <Nav
         onLogout={handleLogout}
@@ -124,9 +124,15 @@ export default function Bills() {
         pendingCheckouts={pendingCheckouts}
       />
 
-      <main className="main-content flex-grow-1 px-1 py-2 mt-6 mt-lg-7">
-        <div className="mx-auto container-max">
-          <h2 className="fw-bold text-center mb-2">สร้างบิลห้องพัก</h2>
+      <main
+        className="main-content flex-grow-1 px-2 py-3 mt-6 mt-lg-7"
+        style={{ paddingLeft: "20px", paddingRight: "20px" }}
+      >
+        <div
+          className="mx-auto"
+          style={{ borderRadius: 20, maxWidth: "1400px" }}
+        >
+          <h2 className="fw-bold text-center text-black mb-2">สร้างบิลห้องพัก</h2>
           <h5 className="text-center text-black mb-3">
             วันนี้: <b>{todayStr}</b>
           </h5>

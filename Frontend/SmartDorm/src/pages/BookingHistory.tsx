@@ -137,8 +137,8 @@ export default function BookingHistory() {
 
   return (
     <div
-      className="d-flex flex-column min-vh-100"
-      style={{ backgroundColor: "#F7F4FD", fontFamily: "Sarabun, sans-serif" }}
+      className="d-flex min-vh-100 mx-2 mt-0 mb-4"
+      style={{ fontFamily: "Sarabun, sans-serif" }}
     >
       <Nav
         onLogout={handleLogout}
@@ -149,10 +149,13 @@ export default function BookingHistory() {
         pendingCheckouts={pendingCheckouts}
       />
 
-      <main className="main-content mt-5 pt-4 px-2">
+      <main
+        className="main-content flex-grow-1 px-2 py-3 mt-6 mt-lg-7"
+        style={{ paddingLeft: "20px", paddingRight: "20px" }}
+      >
         <div
-          className="container-fluid px-xl-5 py-4"
-          style={{ background: BG_SOFT, borderRadius: 20 }}
+          className="mx-auto"
+          style={{ background: BG_SOFT, borderRadius: 20, maxWidth: "1400px" }}
         >
           <h2
             className="fw-bold text-center mb-4"

@@ -41,13 +41,13 @@
 
     <!-- Footer -->
     <footer
-      class="smart-footer text-center text-secondary py-2 w-100"
+      class="smart-footer text-center fw-bold  text-dark py-2 w-100"
       style="
         margin-top: 50px;
         font-size: 14px;
-        background: rgba(255, 255, 255, 0.6);
+        background: rgb(255, 255, 255);
         backdrop-filter: blur(8px);
-        border-top: 1px solid rgba(0, 0, 0, 0.15);
+        border-top: 1px solid rgb(0, 0, 0);
       "
     >
       © <span id="smartYear"></span> SmartDorm • All rights reserved.
@@ -57,23 +57,6 @@
       document.getElementById("smartYear").textContent =
         `2025 - ${new Date().getFullYear()}`;
     </script>
-
-    <!-- Ribbon Mourning -->
-    <!--
-    <img
-      src="https://github.com/KongNontawatDev/Black-Mourning-Ribbon/blob/2150640c0e623c7fbcca07024287b597f7999a84/ribbon_bottom_right.png?raw=true"
-      alt="Black mourning ribbon for websites, bottom right corner"
-      style="
-        position: fixed;
-        bottom: 4px;
-        right: 4px;
-        width: 75px;
-        opacity: .88;
-        z-index: 9999;
-        pointer-events: none;
-      "
-    />
--->
 
     <!-- App Script -->
     <script type="module" src="/src/main.tsx"></script>

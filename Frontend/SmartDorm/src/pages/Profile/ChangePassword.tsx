@@ -62,78 +62,83 @@ export default function ChangePassword() {
   };
   const pendingBookings = usePendingBookings();
   const pendingCheckouts = usePendingCheckouts();
-  
+
   return (
     <>
-      <Nav
-        onLogout={handleLogout}
-        role={role}
-        adminName={adminName}
-        adminUsername={adminUsername}
-        pendingBookings={pendingBookings}
-        pendingCheckouts={pendingCheckouts}
-      />
+      <div
+        className="d-flex min-vh-100 mx-2 mt-0 mb-4"
+        style={{ fontFamily: "Sarabun, sans-serif" }}
+      >
+        <Nav
+          onLogout={handleLogout}
+          role={role}
+          adminName={adminName}
+          adminUsername={adminUsername}
+          pendingBookings={pendingBookings}
+          pendingCheckouts={pendingCheckouts}
+        />
 
-      {/* Responsive container */}
-      <div className="container-fluid min-vh-100 d-flex justify-content-center align-items-center bg-light">
-        {/* RESPONSIVE CARD */}
-        <div className="card border-black shadow w-100 change-card">
-          <div className="card-body">
-            <h4 className="fw-bold text-center text-black mb-4">
-              🔐 เปลี่ยนรหัสผ่าน
-            </h4>
+        <main
+          className="main-content flex-grow-1 px-2 py-3 mt-6 mt-lg-7"
+          style={{ paddingLeft: "20px", paddingRight: "20px" }}
+        >
+          <div className="mx-auto" style={{ maxWidth: "1400px" }}>
+            {/* Responsive container */}
+            <div className="container-fluid min-vh-100 d-flex justify-content-center align-items-center bg-light">
+              <div className="card border-black shadow w-100 change-card">
+                <div className="card-body">
+                  <h4 className="fw-bold text-center text-black mb-4">
+                    🔐 เปลี่ยนรหัสผ่าน
+                  </h4>
 
-            <form onSubmit={submit}>
-              {PasswordInput(
-                "รหัสผ่านเดิม",
-                oldPassword,
-                setOld,
-                show.old,
-                () => setShow({ ...show, old: !show.old })
-              )}
-              {PasswordInput(
-                "รหัสผ่านใหม่",
-                newPassword,
-                setNew,
-                show.new,
-                () => setShow({ ...show, new: !show.new })
-              )}
-              {PasswordInput(
-                "ยืนยันรหัสผ่านใหม่",
-                confirmPassword,
-                setConfirm,
-                show.confirm,
-                () => setShow({ ...show, confirm: !show.confirm })
-              )}
+                  <form onSubmit={submit}>
+                    {PasswordInput(
+                      "รหัสผ่านเดิม",
+                      oldPassword,
+                      setOld,
+                      show.old,
+                      () => setShow({ ...show, old: !show.old }),
+                    )}
+                    {PasswordInput(
+                      "รหัสผ่านใหม่",
+                      newPassword,
+                      setNew,
+                      show.new,
+                      () => setShow({ ...show, new: !show.new }),
+                    )}
+                    {PasswordInput(
+                      "ยืนยันรหัสผ่านใหม่",
+                      confirmPassword,
+                      setConfirm,
+                      show.confirm,
+                      () => setShow({ ...show, confirm: !show.confirm }),
+                    )}
 
-              <button
-                type="submit"
-                className="btn btn-warning fw-bold w-100 py-2 mt-2"
-                disabled={loading}
-              >
-                💾 บันทึกรหัสผ่านใหม่
-              </button>
-            </form>
+                    <button
+                      type="submit"
+                      className="btn btn-warning fw-bold w-100 py-2 mt-2"
+                      disabled={loading}
+                    >
+                      💾 บันทึกรหัสผ่านใหม่
+                    </button>
+                  </form>
+                </div>
+              </div>
+
+              <style>{`
+              @media (max-width: 599px) {
+                .change-card { max-width: 100%; border-width: 2px; border-radius: 14px; }
+              }
+              @media (min-width: 600px) and (max-width: 1399px) {
+                .change-card { max-width: 70%; border-width: 3px; border-radius: 18px; }
+              }
+              @media (min-width: 1400px) {
+                .change-card { max-width: 40%; border-width: 4px; border-radius: 22px; }
+              }
+            `}</style>
+            </div>
           </div>
-        </div>
-
-        {/* Only Bootstrap Classes */}
-        <style>{`
-          /* Mobile <600px */
-          @media (max-width: 599px) {
-            .change-card { max-width: 100%; border-width: 2px; border-radius: 14px; }
-          }
-
-          /* Tablet 600–1399px */
-          @media (min-width: 600px) and (max-width: 1399px) {
-            .change-card { max-width: 70%; border-width: 3px; border-radius: 18px; }
-          }
-
-          /* Desktop ≥1400px */
-          @media (min-width: 1400px) {
-            .change-card { max-width: 40%; border-width: 4px; border-radius: 22px; }
-          }
-        `}</style>
+        </main>
       </div>
     </>
   );
@@ -147,7 +152,7 @@ function PasswordInput(
   value: string,
   setValue: (v: string) => void,
   show: boolean,
-  toggle: () => void
+  toggle: () => void,
 ) {
   return (
     <div className="mb-3 position-relative">

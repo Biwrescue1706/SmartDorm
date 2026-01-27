@@ -1,10 +1,16 @@
 // src/pages/Login.tsx
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 
 export default function Login() {
   const navigate = useNavigate();
+
+  useEffect(() => {
+    document.body.classList.add("login-page");
+    return () => document.body.classList.remove("login-page");
+  }, []);
+
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -25,6 +31,7 @@ export default function Login() {
         background: "linear-gradient(135deg, #2D006B, #4E2A8E, #200046)",
         backgroundSize: "200% 200%",
         animation: "moveBG 8s ease infinite",
+        height: "100vh",
       }}
     >
       {/* CARD */}
@@ -45,84 +52,91 @@ export default function Login() {
             alt="logo"
             width="60"
             height="60"
-            style={{ 
+            style={{
               borderRadius: "20px",
-              filter: "drop-shadow(0 3px 6px rgba(0,0,0,.45))" }}
+              filter: "drop-shadow(0 3px 6px rgba(0,0,0,.45))",
+            }}
           />
           <h2
             className="fw-bold text-warning m-0"
-            style={{ textShadow: "0px 2px 6px rgba(0,0,0,.45)" }}
+            style={{ textShadow: "0px 2px 6px rgb(0, 0, 0)" }}
           >
             SmartDorm
           </h2>
         </div>
 
-        <h5 className="text-light opacity-75 mb-4">
+        <h5 className="text-white mb-4 mx-3 my-3">
           ระบบจัดการหอพักสำหรับผู้ดูแล
         </h5>
 
-        {/* FORM */}
         <form onSubmit={handleSubmit}>
-          {/* USERNAME */}
           <div className="mb-3 text-start">
-            <label className="form-label text-warning fw-semibold">
+            <label className="form-label text-warning fw-semibold mx-3">
               ชื่อผู้ใช้
             </label>
             <input
               type="text"
-              className="form-control text-center"
+              className="form-control text-center text-white mx-3"
               placeholder="กรอกชื่อผู้ใช้"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               style={{
-                backgroundColor: "rgba(255,255,255,0.15)",
-                border: "none",
-                color: "white",
+                backgroundColor: "rgba(0,0,0,0.35)",
+                border: "1px solid rgba(255,255,255,0.15)",
+                color: "#ffffff",
+                width: "calc(100% - 30px)",
               }}
             />
+            <style>{`
+              input::placeholder {
+                color: rgba(255,255,255,0.7);
+              }
+            `}</style>
           </div>
 
-          {/* PASSWORD */}
-          <div className="mb-3 text-start">
+          <div className="mb-3 text-start mx-3">
             <label className="form-label text-warning fw-semibold">
               รหัสผ่าน
             </label>
+
             <div className="input-group">
               <input
                 type={showPassword ? "text" : "password"}
-                className="form-control text-center"
+                className="form-control text-center text-white"
                 placeholder="กรอกรหัสผ่าน"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 style={{
-                  backgroundColor: "rgba(255,255,255,0.15)",
-                  border: "none",
-                  color: "white",
+                  backgroundColor: "rgba(0,0,0,0.35)",
+                  border: "1px solid rgba(255,255,255,0.15)",
+                  color: "#ffffff", // ตัวหนังสือขาว
                 }}
               />
+
               <button
                 type="button"
-                className="btn btn-outline-warning"
+                className="btn btn-warning"
                 onClick={() => setShowPassword(!showPassword)}
-                style={{ borderRadius: "0 6px 6px 0" }}
+                style={{
+                  borderRadius: "0 6px 6px 0",
+                }}
               >
                 {showPassword ? "🔒" : "👁"}
               </button>
             </div>
           </div>
 
-          {/* SUBMIT */}
           <button
             type="submit"
-            className="btn btn-warning w-100 fw-bold text-dark mt-2"
+            className="btn btn-warning fw-bold text-dark mt-2 mx-3 my-0"
             disabled={!isValid || loading}
             style={{
               transition: "transform .2s, box-shadow .2s",
+              width: "calc(100% - 50px)",
             }}
             onMouseOver={(e) => {
               e.currentTarget.style.transform = "scale(1.04)";
-              e.currentTarget.style.boxShadow =
-                "0 4px 14px rgba(255,255,255,.45)";
+              e.currentTarget.style.boxShadow = "0 4px 14px rgba(255,193,7,.6)";
             }}
             onMouseOut={(e) => {
               e.currentTarget.style.transform = "scale(1)";
@@ -133,7 +147,6 @@ export default function Login() {
           </button>
         </form>
 
-        {/* FORGOT LINK */}
         <div className="mt-3">
           <Link
             to="/forgot-username"
@@ -144,7 +157,6 @@ export default function Login() {
         </div>
       </div>
 
-      {/* ANIMATION */}
       <style>{`
         @keyframes moveBG {
           0% { background-position: 0% 50%; }

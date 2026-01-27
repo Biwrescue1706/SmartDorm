@@ -150,7 +150,10 @@ export default function Rooms() {
   const pendingCheckouts = usePendingCheckouts();
 
   return (
-    <div className="d-flex min-vh-100" style={{ background: THEME.bg }}>
+    <div
+      className="d-flex min-vh-100 mx-2 mt-0 mb-4"
+      style={{ fontFamily: "Sarabun, sans-serif" }}
+    >
       <Nav
         onLogout={handleLogout}
         role={role}
@@ -164,7 +167,7 @@ export default function Rooms() {
         className="main-content flex-grow-1 px-2 py-3 mt-6 mt-lg-7"
         style={{ paddingLeft: "20px", paddingRight: "20px" }}
       >
-        <div className="mx-auto" style={{ maxWidth: "1200px" }}>
+        <div className="mx-auto" style={{ maxWidth: "1400px" }}>
           {/* Header */}
           <PageHeader />
 

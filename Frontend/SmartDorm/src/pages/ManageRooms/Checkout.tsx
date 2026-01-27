@@ -16,6 +16,8 @@ import type { Checkout } from "../../types/Checkout";
 import { usePendingCheckouts } from "../../hooks/ManageRooms/usePendingCheckouts";
 import { usePendingBookings } from "../../hooks/ManageRooms/usePendingBookings";
 
+const SCB_PURPLE = "#4A0080";
+
 export default function Checkout() {
   const { handleLogout, role, adminName, adminUsername } = useAuth();
 
@@ -94,7 +96,10 @@ export default function Checkout() {
   const pendingCheckouts = usePendingCheckouts();
 
   return (
-    <div className="d-flex min-vh-100 bg-white">
+    <div
+      className="d-flex min-vh-100 mx-2 mt-0 mb-4"
+      style={{ fontFamily: "Sarabun, sans-serif" }}
+    >
       <Nav
         onLogout={handleLogout}
         role={role}
@@ -104,11 +109,19 @@ export default function Checkout() {
         pendingCheckouts={pendingCheckouts}
       />
 
-      <main className="main-content flex-grow-1 px-2 py-3 mt-5 mt-lg-7">
+      <main
+        className="main-content flex-grow-1 px-2 py-3 mt-6 mt-lg-7"
+        style={{ paddingLeft: "20px", paddingRight: "20px" }}
+      >
         <div className="mx-auto" style={{ maxWidth: "1400px" }}>
           {/* HEADER */}
           <div className="mb-2">
-            <h2 className="fw-bold text-center mt-3">จัดการการคืนห้อง</h2>
+            <h2
+              className="fw-bold text-center mt-3"
+              style={{ color: SCB_PURPLE }}
+            >
+              จัดการการคืนห้อง
+            </h2>
           </div>
 
           {/* FILTER CARDS */}
@@ -125,7 +138,9 @@ export default function Checkout() {
               className="d-block d-xxl-none mx-2 my-2"
               style={{ width: "fit-content" }}
             >
-              <h5 className="mb-2 text-center">กรองสถานะการเช็คเอาท์</h5>
+              <h5 className="mb-2 text-center" style={{ color: SCB_PURPLE }}>
+                กรองสถานะการเช็คเอาท์
+              </h5>
 
               <div className="d-flex align-items-center justify-content-center gap-2">
                 <CheckoutFilter
@@ -143,7 +158,7 @@ export default function Checkout() {
                 </button>
               </div>
 
-              <div className="mt-2 text-center">
+              <div className="mt-2 text-center text-dark">
                 จำนวนผลลัพธ์: {filteredCheckouts.length} รายการ
               </div>
             </div>

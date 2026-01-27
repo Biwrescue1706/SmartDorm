@@ -1,3 +1,4 @@
+/*  src/index.css */
 /* ==================== Base Reset ==================== */
 * {
   margin: 0;
@@ -9,11 +10,11 @@ html,
 body {
   width: 100%;
   height: 100%;
-  background-color: #ffffff;
-  color: #000000;
+  background: linear-gradient(135deg, #2D006B, #4E2A8E, #200046);
+  color: #ffffff;
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
   scroll-behavior: smooth;
-  overflow-x: hidden; /* ป้องกันเลื่อนทั้งหน้าแนวนอน */
+  overflow-x: auto;
 }
 
 h1,
@@ -76,6 +77,22 @@ h5 {
   border-radius: 10px;
   box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
   padding: 8px;
+}
+
+/* ==================== Input ==================== */
+.responsive-input {
+  width: 350px !important;
+  display: block;
+  margin: 10px auto 10px auto;
+  text-align: center;
+  transition: width 0.3s ease;
+  
+}
+
+/* เฉพาะหน้า Login */
+body.login-page {
+  background: linear-gradient(135deg, #2D006B, #4E2A8E, #200046);
+  color: #ffffff;
 }
 
 /* Scrollbar style */
@@ -261,6 +278,12 @@ table td {
   display: inline-block;
   white-space: nowrap;
   animation: marquee-scroll 10.5s linear infinite;
+}
+
+
+body.login-page .form-control::placeholder {
+  color: #ffffff !important;
+  opacity: 1 !important;
 }
 
 /* ==================== Responsive ==================== */

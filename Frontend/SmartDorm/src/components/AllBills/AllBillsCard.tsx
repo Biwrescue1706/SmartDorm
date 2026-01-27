@@ -38,11 +38,11 @@ export default function AllBillsCard({
       }}
     >
       <div>
-        <h5 className="fw-bold mb-2 text-center justify-content-center">
+        <h5 className="fw-bold mb-2 text-center text-black justify-content-center">
           {" "}
           ห้อง {bill.room?.number}
         </h5>
-        <h5 className="fw-bold mb-2 text-center justify-content-center">
+        <h5 className="fw-bold mb-2 text-center text-black justify-content-center">
           <b>เดือน : </b>{" "}
           {new Date(bill.month).toLocaleDateString("th-TH", {
             month: "long",
@@ -52,21 +52,21 @@ export default function AllBillsCard({
       </div>
       <hr />
       <div>
-        <h5 className="fw-semibold text-center">รายละเอียดผู้เช่า</h5>
-        <div className="mb-1 h5">
+        <h5 className="fw-semibold text-black text-center">รายละเอียดผู้เช่า</h5>
+        <div className="mb-1 text-black h5">
           <b>ผู้เช่า : </b> {bill.fullName || " "}
         </div>
-        <div className="mb-1 h5">
+        <div className="mb-1 text-black h5">
           <b>LINE : </b> {bill.customer?.userName || " "}
         </div>
-        <div className="mb-1 h5">
+        <div className="mb-1 text-black h5">
           <b>เบอร์ : </b> {bill.cphone || " "}
         </div>
       </div>
       <hr />
       <div>
-        <h5 className="fw-semibold text-center">รายละเอียดบิล</h5>
-        <div className="mb-1 h5">
+        <h5 className="fw-semibold text-black text-center">รายละเอียดบิล</h5>
+        <div className="mb-1 text-black h5">
           <b>วันที่ออกบิล : </b>{" "}
           {new Date(bill.createdAt).toLocaleDateString("th-TH", {
             day: "numeric",
@@ -75,7 +75,7 @@ export default function AllBillsCard({
           })}
         </div>
         {!isPaid && !isPending && (
-          <div className="mb-1 h5">
+          <div className="mb-1 text-black h5">
             <b>กำหนดชำระ : </b>{" "}
             {new Date(bill.dueDate).toLocaleDateString("th-TH", {
               day: "numeric",
@@ -89,11 +89,11 @@ export default function AllBillsCard({
       <hr />
       <div>
 
-        <div className="mb-2 h5">
+        <div className="mb-2 text-black h5">
           <b>ยอดรวม : </b> {bill.total.toLocaleString()} บาท
         </div>
         {isUnpaid && overdueDays > 0 && (
-          <div className="mb-2 h5">
+          <div className="mb-2 text-black h5">
             <b className="fw-semibold">เกินกำหนด : </b>
             {`${overdueDays} วัน`}
           </div>
@@ -102,8 +102,8 @@ export default function AllBillsCard({
 
       <hr />
       <div>
-        <h5 className="fw-semibold text-center">สถานะการชำระเงิน</h5>
-        <div className="mb-2 h5">
+        <h5 className="fw-semibold text-black text-center">สถานะการชำระเงิน</h5>
+        <div className="mb-2 text-black h5">
           <b>สถานะ : </b>
           {isPending && (
             <span className="badge bg-warning text-dark p-2">รอตรวจสอบ</span>

@@ -52,8 +52,10 @@ export default function Booking() {
   const pendingBookings = usePendingBookings();
   const pendingCheckouts = usePendingCheckouts();
   return (
-    <div className="d-flex bg-white min-vh-100">
-      {/* -------- NAV -------- */}
+    <div
+      className="d-flex min-vh-100 mx-2 mt-0 mb-4"
+      style={{ fontFamily: "Sarabun, sans-serif" }}
+    >
       <Nav
         onLogout={handleLogout}
         role={role}
@@ -63,8 +65,10 @@ export default function Booking() {
         pendingCheckouts={pendingCheckouts}
       />
 
-      {/* -------- CONTENT -------- */}
-      <main className="main-content flex-grow-1 px-2 py-3 mt-5 mt-lg-7">
+      <main
+        className="main-content flex-grow-1 px-2 py-3 mt-6 mt-lg-7"
+        style={{ paddingLeft: "20px", paddingRight: "20px" }}
+      >
         <div className="mx-auto" style={{ maxWidth: "1400px" }}>
           <h2
             className="fw-bold text-center py-2 mt-1"
@@ -87,7 +91,7 @@ export default function Booking() {
               border: "1px solid #E1BEE7",
             }}
           >
-            <h2 className="text-center mb-4 mt-2">สถานะการจอง</h2>
+            <h2 className="text-center text-dark mb-4 mt-2">สถานะการจอง</h2>
             <BookingFilter
               active={active}
               onChange={handleFilter}

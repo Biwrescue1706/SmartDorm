@@ -11,6 +11,8 @@ import { THEME } from "../components/Admin/AdminTheme";
 import MobileView from "../components/Admin/MobileView";
 import TabletView from "../components/Admin/TabletView";
 import DesktopView from "../components/Admin/DesktopView";
+import { usePendingBookings } from "../hooks/ManageRooms/usePendingBookings";
+import { usePendingCheckouts } from "../hooks/ManageRooms/usePendingCheckouts";
 
 export default function AdminManagement() {
   const { admins, loading, fetchAdmins } = useAdmins();
@@ -20,6 +22,9 @@ export default function AdminManagement() {
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+
+  const pendingBookings = usePendingBookings();
+  const pendingCheckouts = usePendingCheckouts();
 
   const Toast = Swal.mixin({
     showConfirmButton: false,
@@ -241,18 +246,23 @@ export default function AdminManagement() {
 
   return (
     <div
-      className="d-flex flex-column min-vh-100"
-      style={{ backgroundColor: "#F7F4FD", fontFamily: "Sarabun, sans-serif" }}
+      className="d-flex min-vh-100 mx-2 mt-0 mb-4"
+      style={{ fontFamily: "Sarabun, sans-serif" }}
     >
-      {" "}
       <Nav
         onLogout={handleLogout}
         role={role}
         adminName={adminName}
         adminUsername={adminUsername}
+        pendingBookings={pendingBookings}
+        pendingCheckouts={pendingCheckouts}
       />
-      <main className="main-content flex-grow-1 px-4 py-4 mt-6 mt-lg-6">
-        <div className="mx-auto container-max">
+
+      <main
+        className="main-content flex-grow-1 px-2 py-3 mt-6 mt-lg-7"
+        style={{ paddingLeft: "20px", paddingRight: "20px" }}
+      >
+        <div className="mx-auto" style={{ maxWidth: "1400px" }}>
           <h2
             className="text-center fw-bold mb-4"
             style={{ color: THEME.purple }}

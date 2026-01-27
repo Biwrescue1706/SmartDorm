@@ -10,7 +10,7 @@ import type { OverviewRoom } from "../types/Overview";
 
 // SCB THEME
 const SCB_PURPLE = "#4A0080";
-const BG_SOFT = "#F8F5FC";
+const BG_SOFT = "#ffffff";
 
 const formatThaiDate = (d?: string | null) => {
   if (!d) return "-";
@@ -76,8 +76,8 @@ export default function BillOverviewPage() {
 
   return (
     <div
-      className="d-flex flex-column min-vh-100"
-      style={{ backgroundColor: "#F7F4FD", fontFamily: "Sarabun, sans-serif" }}
+      className="d-flex min-vh-100 mx-2 mt-0 mb-4"
+      style={{ fontFamily: "Sarabun, sans-serif" }}
     >
       <Nav
         onLogout={handleLogout}
@@ -88,12 +88,18 @@ export default function BillOverviewPage() {
         pendingCheckouts={pendingCheckouts}
       />
 
-      <main className="main-content mt-5 pt-4 px-2">
+      <main
+        className="main-content flex-grow-1 px-2 py-3 mt-6 mt-lg-7"
+        style={{ paddingLeft: "20px", paddingRight: "20px" }}
+      >
         <div
-          className="container-fluid px-xl-5 py-4"
-          style={{ background: BG_SOFT, borderRadius: 20 }}
+          className="mx-auto"
+          style={{ background: BG_SOFT, borderRadius: 20, maxWidth: "1400px" }}
         >
-          <h2 className="fw-bold text-center mb-2" style={{ color: SCB_PURPLE }}>
+          <h2
+            className="fw-bold text-center mb-2"
+            style={{ color: SCB_PURPLE }}
+          >
             🧾 ภาพรวมบิลรายเดือน
           </h2>
 
@@ -103,19 +109,19 @@ export default function BillOverviewPage() {
 
           {/* Legend */}
           <div className="d-flex flex-wrap justify-content-center gap-3 mb-3 small">
-            <div className="d-flex align-items-center gap-1">
+            <div className="d-flex align-items-center text-dark gap-1">
               <span className="badge bg-secondary"> </span>
               <span>ยังไม่มีบิล</span>
             </div>
-            <div className="d-flex align-items-center gap-1">
+            <div className="d-flex align-items-center text-dark gap-1">
               <span className="badge bg-warning"> </span>
               <span>มีบิล / ยังไม่ชำระ</span>
             </div>
-            <div className="d-flex align-items-center gap-1">
+            <div className="d-flex align-items-center text-dark gap-1">
               <span className="badge bg-info"> </span>
               <span>กำลังตรวจสอบ</span>
             </div>
-            <div className="d-flex align-items-center gap-1">
+            <div className="d-flex align-items-center text-dark gap-1">
               <span className="badge bg-success"> </span>
               <span>ชำระแล้ว</span>
             </div>
@@ -156,6 +162,8 @@ export default function BillOverviewPage() {
                 const n = new Date();
                 setYear(n.getFullYear());
                 setMonth(n.getMonth() + 1);
+                // รีเฟรชทั้งหน้า
+                window.location.reload();
               }}
             >
               {loading ? "⏳ กำลังโหลด..." : "🔄 รีเซ็ตข้อมูล"}
@@ -169,7 +177,10 @@ export default function BillOverviewPage() {
           {/* Floors */}
           {floors.map(([floor, floorRooms]) => (
             <div key={floor} className="mb-4">
-              <h5 className="fw-bold mb-2" style={{ color: SCB_PURPLE }}>
+              <h5
+                className="fw-bold mb-2 text-center"
+                style={{ color: "#000000" }}
+              >
                 ชั้น {floor}
               </h5>
 
@@ -184,7 +195,7 @@ export default function BillOverviewPage() {
                     if (bill.billStatus === 1) bg = "bg-success";
                     else if (bill.billStatus === 2) bg = "bg-info";
                     else bg = "bg-warning";
-                    text = "text-dark";
+                    text = "text-white";
                   }
 
                   return (
@@ -209,12 +220,8 @@ export default function BillOverviewPage() {
 
                           {bill && (
                             <div className="small">
-                              <div>
-                                รวม {bill.total.toLocaleString()} บาท
-                              </div>
-                              <div>
-                                ครบกำหนด {formatThaiDate(bill.dueDate)}
-                              </div>
+                              <div>รวม {bill.total.toLocaleString()} บาท</div>
+                              <div>ครบกำหนด {formatThaiDate(bill.dueDate)}</div>
                             </div>
                           )}
                         </div>

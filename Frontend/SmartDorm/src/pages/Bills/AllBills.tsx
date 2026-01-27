@@ -114,8 +114,8 @@ export default function AllBills() {
 
   return (
     <div
-      className="d-flex flex-column"
-      style={{ background: "#f5f3ff", minHeight: "100vh" }}
+      className="d-flex min-vh-100 mx-2 mt-0 mb-4"
+      style={{ fontFamily: "Sarabun, sans-serif" }}
     >
       <Nav
         onLogout={handleLogout}
@@ -126,8 +126,14 @@ export default function AllBills() {
         pendingCheckouts={pendingCheckouts}
       />
 
-      <main className="main-content px-2 py-3 mt-6 mt-lg-7 flex-grow-1">
-        <div className="mx-auto" style={{ maxWidth: "1400px" }}>
+      <main
+        className="main-content flex-grow-1 px-2 py-3 mt-6 mt-lg-7"
+        style={{ paddingLeft: "20px", paddingRight: "20px" }}
+      >
+        <div
+          className="mx-auto"
+          style={{ borderRadius: 20, maxWidth: "1400px" }}
+        >
           <h2
             className="fw-bold text-center py-2 mb-3"
             style={{

@@ -225,11 +225,8 @@ export default function Users() {
   return (
     <>
       <div
-        className="d-flex flex-column min-vh-100"
-        style={{
-          backgroundColor: "#F7F4FD",
-          fontFamily: "Sarabun, sans-serif",
-        }}
+        className="d-flex min-vh-100 mx-2 mt-0 mb-4"
+        style={{ fontFamily: "Sarabun, sans-serif" }}
       >
         <Nav
           onLogout={handleLogout}
@@ -240,8 +237,11 @@ export default function Users() {
           pendingCheckouts={pendingCheckouts}
         />
 
-        <main className="main-content mt-5 pt-4 px-2">
-          <div className="container-max mx-auto" style={{ maxWidth: "1450px" }}>
+        <main
+          className="main-content flex-grow-1 px-2 py-3 mt-6 mt-lg-7"
+          style={{ paddingLeft: "20px", paddingRight: "20px" }}
+        >
+          <div className="mx-auto" style={{ maxWidth: "1400px" }}>
             <h2
               className="fw-bold text-center mt-3 mb-4"
               style={{ color: "#46007A" }}
@@ -306,24 +306,24 @@ export default function Users() {
                           </button>
                         </td>
                         {role === 0 && (
-                        <td>
-                          {role === 0 && (
-                            <button
-                              className="btn btn-danger btn-sm"
-                              onClick={() => {
-                                setSelectedUser({
-                                  ...users.find(
-                                    (u) => u.customerId === card.customerId,
-                                  )!,
-                                  bookings: card.bookings,
-                                });
-                                handleDeleteUser();
-                              }}
-                            >
-                              🗑️
-                            </button>
-                          )}
-                        </td>
+                          <td>
+                            {role === 0 && (
+                              <button
+                                className="btn btn-danger btn-sm"
+                                onClick={() => {
+                                  setSelectedUser({
+                                    ...users.find(
+                                      (u) => u.customerId === card.customerId,
+                                    )!,
+                                    bookings: card.bookings,
+                                  });
+                                  handleDeleteUser();
+                                }}
+                              >
+                                🗑️
+                              </button>
+                            )}
+                          </td>
                         )}
                       </tr>
                     ))}

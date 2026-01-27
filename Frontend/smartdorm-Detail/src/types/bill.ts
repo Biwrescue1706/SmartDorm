@@ -38,6 +38,7 @@ export interface Bill {
   csurname?: string;          // นามสกุลผู้จ่าย
   fullName?: string;          // ชื่อเต็มผู้จ่าย (ถ้ามีจาก backend)
 
+createdAt : string;
   room: Room;
   booking?: Booking;
   customer?: Customer;

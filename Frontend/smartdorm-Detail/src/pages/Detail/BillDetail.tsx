@@ -50,6 +50,9 @@ export default function BillDetail() {
       ? "info"
       : "warning";
 
+const vat = bill.total * 0.07;
+const beforeVat = bill.total - vat;
+
   return (
     <>
       <BookingNav />
@@ -185,16 +188,22 @@ export default function BillDetail() {
                   <td>{bill.fine.toLocaleString()}</td>
                 </tr>
               </tbody>
-              <tfoot className="table-success fw-bold">
-                <tr>
-                  <td colSpan={4} className="text-end">
-                    รวมทั้งหมด
-                  </td>
-                  <td className="text-primary fs-5">
-                    {bill.total.toLocaleString()}
-                  </td>
-                </tr>
-              </tfoot>
+              <tfoot className="fw-bold">
+  <tr>
+    <td colSpan={4} className="text-end">ราคาก่อนรวมภาษี</td>
+    <td className="text-end">{beforeVat.toFixed(2)}</td>
+  </tr>
+  <tr>
+    <td colSpan={4} className="text-end">ภาษี 7%</td>
+    <td className="text-end">{vat.toFixed(2)}</td>
+  </tr>
+  <tr className="table-success">
+    <td colSpan={4} className="text-end">รวมทั้งหมด</td>
+    <td className="text-primary fs-5">
+      {bill.total.toLocaleString()}
+    </td>
+  </tr>
+</tfoot>
             </table>
           ) : (
             /* ===== ตารางใหม่ ===== */
@@ -243,15 +252,21 @@ export default function BillDetail() {
                 )}
               </tbody>
               <tfoot className="fw-bold">
-                <tr className="table-success">
-                  <td colSpan={3} className="text-end">
-                    รวมทั้งหมด
-                  </td>
-                  <td className="text-primary fs-5 text-end">
-                    {bill.total.toLocaleString()}
-                  </td>
-                </tr>
-              </tfoot>
+  <tr>
+    <td colSpan={4} className="text-end">ราคาก่อนรวมภาษี</td>
+    <td className="text-end">{beforeVat.toFixed(2)}</td>
+  </tr>
+  <tr>
+    <td colSpan={4} className="text-end">ภาษี 7%</td>
+    <td className="text-end">{vat.toFixed(2)}</td>
+  </tr>
+  <tr className="table-success">
+    <td colSpan={4} className="text-end">รวมทั้งหมด</td>
+    <td className="text-primary fs-5">
+      {bill.total.toLocaleString()}
+    </td>
+  </tr>
+</tfoot>
             </table>
           )}
 

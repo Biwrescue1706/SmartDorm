@@ -31,6 +31,13 @@ export interface Bill {
   dueDate: string;
   billStatus: number;
 
+  // เพิ่มให้ตรงกับที่ใช้ในหน้าแสดงผล
+  overdueDays: number;        // จำนวนวันที่ค้างชำระ
+  paidAt?: string;            // วันที่ชำระ (อาจยังไม่มี)
+  cname?: string;             // ชื่อผู้จ่าย
+  csurname?: string;          // นามสกุลผู้จ่าย
+  fullName?: string;          // ชื่อเต็มผู้จ่าย (ถ้ามีจาก backend)
+
   room: Room;
   booking?: Booking;
   customer?: Customer;

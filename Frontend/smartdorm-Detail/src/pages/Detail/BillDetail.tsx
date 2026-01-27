@@ -251,18 +251,18 @@ const beforeVat = bill.total - vat;
                   </tr>
                 )}
               </tbody>
-              <tfoot className="fw-bold">
+             <tfoot className="fw-bold">
   <tr>
-    <td colSpan={4} className="text-end">ราคาก่อนรวมภาษี</td>
+    <td colSpan={3} className="text-end">ราคาก่อนรวมภาษี</td>
     <td className="text-end">{beforeVat.toFixed(2)}</td>
   </tr>
   <tr>
-    <td colSpan={4} className="text-end">ภาษี 7%</td>
+    <td colSpan={3} className="text-end">ภาษี 7%</td>
     <td className="text-end">{vat.toFixed(2)}</td>
   </tr>
   <tr className="table-success">
-    <td colSpan={4} className="text-end">รวมทั้งหมด</td>
-    <td className="text-primary fs-5">
+    <td colSpan={3} className="text-end">รวมทั้งหมด</td>
+    <td className="text-primary fs-5 text-end">
       {bill.total.toLocaleString()}
     </td>
   </tr>

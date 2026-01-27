@@ -85,9 +85,9 @@ export default function BillDetail() {
     <>
       <BookingNav />
 
-      <div className="bg-light min-vh-100 py-3" style={{ fontFamily: "Prompt, sans-serif" }}>
+      <div className="bg-light min-vh-100 py-3 pt-5 mt-5" style={{ fontFamily: "Prompt, sans-serif" }}>
         <div className="container">
-          <div className="card shadow-lg border-0 rounded-4 mx-auto" style={{ maxWidth: 820 }}>
+          <div className="card shadow-lg border-0 rounded-4 mx-auto mt-5" style={{ maxWidth: 820 }}>
             <div className="card-body p-3 p-md-4">
 
               {/* DOCUMENT HEADER */}

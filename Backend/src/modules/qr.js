@@ -1,39 +1,17 @@
 // src/modules/qr.js
 import { Router } from "express";
 import fetch from "node-fetch";
-import crypto from "crypto";
 
 const Qr = Router();
 
-const SCB_BASE = "https://api-sandbox.partners.scb";
-const API_KEY = process.env.SCB_API_KEY;
-const API_SECRET = process.env.SCB_API_SECRET;
-const BILLER_ID = process.env.SCB_BILLER_ID || "259434802061397";
+const KB_BASE = "https://openapi-sandbox.kasikornbank.com";
 
-// ขอ Access Token จาก SCB
-async function getAccessToken() {
-  const res = await fetch(`${SCB_BASE}/v1/oauth/token`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      requestUId: crypto.randomUUID(),
-      resourceOwnerId: API_KEY,
-    },
-    body: JSON.stringify({
-      applicationKey: API_KEY,
-      applicationSecret: API_SECRET,
-    }),
-  });
+// ค่าตามโจทย์ Exercise
+const PARTNER_ID = "PTR1051673";
+const PARTNER_SECRET = "d4bded59200547bc85903574a293831b";
+const MERCHANT_ID = "KB102057149704";
 
-  const data = await res.json();
-  if (!res.ok) {
-    throw new Error(data?.status?.description || "ขอ token ไม่สำเร็จ");
-  }
-
-  return data.data.accessToken;
-}
-
-// สร้าง QR จากจำนวนเงิน
+// ฟังก์ชันสร้าง Thai QR ด้วย KBank
 Qr.get("/:amount", async (req, res) => {
   try {
     const { amount } = req.params;
@@ -42,65 +20,55 @@ Qr.get("/:amount", async (req, res) => {
       return res.status(400).send("จำนวนเงินไม่ถูกต้อง");
     }
 
-    const token = await getAccessToken();
+    // ต้องมี access token จากขั้นตอน Get Credential
+    const token = process.env.KBANK_ACCESS_TOKEN;
+    if (!token) {
+      return res.status(500).send("ยังไม่ได้ตั้งค่า KBANK_ACCESS_TOKEN");
+    }
 
     const body = {
-      qrType: "PP",
-      ppType: "BILLERID",
-      ppId: BILLER_ID,
+      partnerTransactionUid: "PARTNERTEST0001",
+      partnerId: PARTNER_ID,
+      partnerSecret: PARTNER_SECRET,
+      requestDt: new Date().toISOString(),
+      merchantId: MERCHANT_ID,
+      qrType: "3",
       amount: Number(amount).toFixed(2),
-      ref1: "SMARTDORM",
-      ref2: Date.now().toString(),
-      ref3: "QR",
+      currencyCode: "THB",
+      reference1: "INV001",
+      reference2: "HELLOWORLD",
+      reference3: "INV001",
+      reference4: "INV001",
     };
 
-    const scbRes = await fetch(`${SCB_BASE}/v2/payment/qrcode/create`, {
+    const kbRes = await fetch(`${KB_BASE}/v1/qrpayment/request`, {
       method: "POST",
       headers: {
+        Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
-        authorization: `Bearer ${token}`,
-        requestUId: crypto.randomUUID(),
-        resourceOwnerId: API_KEY,
+        "x-test-mode": "true",
+        "env-id": "QR002",
       },
       body: JSON.stringify(body),
     });
 
-    const data = await scbRes.json();
-    if (!scbRes.ok) {
-      throw new Error(data?.status?.description || "สร้าง QR ไม่สำเร็จ");
+    const data = await kbRes.json();
+    if (!kbRes.ok) {
+      throw new Error(data?.message || "สร้าง QR ไม่สำเร็จ");
     }
 
-    const { qrImage, qrUrl } = data.data;
-
-    // ถ้า SCB ส่งเป็น URL
-    if (qrUrl) {
-      return res.json({ qrUrl });
-    }
-
-    // ถ้า SCB ส่งเป็น base64 image
-    if (qrImage) {
-      const buffer = Buffer.from(qrImage, "base64");
+    // KBank จะส่ง qrImage (base64) กลับมา
+    if (data.qrImage) {
+      const buffer = Buffer.from(data.qrImage, "base64");
       res.setHeader("Content-Type", "image/png");
       return res.send(buffer);
     }
 
-    throw new Error("ไม่พบข้อมูล QR จาก SCB");
+    // หรือส่งเป็นข้อมูลดิบกลับไป
+    return res.json(data);
   } catch (err) {
-    console.error("❌ [SCB QR] Error:", err.message);
-
-    // fallback เป็น QR PromptPay ปกติแทน
-    const promptpayId = "0611747731"; // เบอร์หอ
-    const { amount } = req.params;
-    const url = `https://promptpay.io/${promptpayId}/${amount}.png`;
-
-    try {
-      const r = await fetch(url);
-      const buf = Buffer.from(await r.arrayBuffer());
-      res.setHeader("Content-Type", "image/png");
-      return res.send(buf);
-    } catch {
-      return res.status(500).send("ไม่สามารถสร้าง QR ได้");
-    }
+    console.error("❌ [KBANK QR] Error:", err.message);
+    res.status(500).send(err.message || "ไม่สามารถสร้าง QR Code ได้");
   }
 });
 

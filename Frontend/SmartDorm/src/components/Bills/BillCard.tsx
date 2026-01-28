@@ -40,22 +40,22 @@ export default function BillCard({
         ห้อง {room.number}
       </h5>
 
-      <div className="fw-bold">
+      <div className="fw-bold text-black">
         <hr />
       </div>
 
-      <div className="mb-1 h6">
+      <div className="mb-1 text-black h6">
         <b>LINE :</b> {booking?.customer?.userName || "-"}
       </div>
-      <div className="mb-1 h6">
+      <div className="mb-1 text-black h6">
         <b>ชื่อ :</b> {booking?.fullName || "-"}
       </div>
-      <div className="mb-3 h6">
+      <div className="mb-3 text-black h6">
         <b>เข้าพักจริง :</b>{" "}
         {booking?.checkinAt ? formatThaiDate(booking.checkinAt) : "-"}
       </div>
 
-      <div className="fw-bold"><hr /></div>
+      <div className="fw-bold text-black "><hr /></div>
 
       {!hasBill && booking?.checkinAt && canCreateBill && (
         <button

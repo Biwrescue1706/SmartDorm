@@ -87,7 +87,20 @@ Qr.get("/:amount", async (req, res) => {
     throw new Error("ไม่พบข้อมูล QR จาก SCB");
   } catch (err) {
     console.error("❌ [SCB QR] Error:", err.message);
-    res.status(500).send(err.message || "ไม่สามารถสร้าง QR Code ได้");
+
+    // fallback เป็น QR PromptPay ปกติแทน
+    const promptpayId = "0611747731"; // เบอร์หอ
+    const { amount } = req.params;
+    const url = `https://promptpay.io/${promptpayId}/${amount}.png`;
+
+    try {
+      const r = await fetch(url);
+      const buf = Buffer.from(await r.arrayBuffer());
+      res.setHeader("Content-Type", "image/png");
+      return res.send(buf);
+    } catch {
+      return res.status(500).send("ไม่สามารถสร้าง QR ได้");
+    }
   }
 });
 

@@ -20,6 +20,7 @@ import ResetPassword from "./pages/ForgotPassword/ResetPassword";
 import BookingHistory from "./pages/BookingHistory";
 import BillOverviewPage from "./pages/BillOverviewPage";
 import BillDetailPage from "./pages/BillDetailPage";
+import CreateBills from "./pages/Bills/CreateBills";
 
 function App() {
   return (
@@ -71,6 +72,15 @@ function App() {
           </ProtectedRoute>
         }
       />
+
+<Route
+  path="/create-bills"
+  element={
+    <ProtectedRoute>
+      <CreateBills />
+    </ProtectedRoute>
+  }
+/>
 
       <Route
         path="/bills"

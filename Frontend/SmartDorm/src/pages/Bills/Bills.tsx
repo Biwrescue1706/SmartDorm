@@ -14,8 +14,8 @@ import { usePendingBookings } from "../../hooks/ManageRooms/usePendingBookings";
 export default function Bills() {
   const { handleLogout, role, adminName, adminUsername } = useAuth();
 
-  const { rooms, bookings, existingBills, loading, reloadAll } =
-    useCreateBill();
+  // 🔧 ตัด existingBills ออก
+  const { rooms, bookings, loading, reloadAll } = useCreateBill();
 
   const [openDialog, setOpenDialog] = useState(false);
   const [selectedRoom, setSelectedRoom] = useState<any>(null);
@@ -23,11 +23,6 @@ export default function Bills() {
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
-  const [statusFilter, setStatusFilter] = useState<"billed" | "notBilled">(
-    "notBilled",
-  );
-
-  const [canCreateBill, setCanCreateBill] = useState(false);
   const [todayStr, setTodayStr] = useState("");
 
   // Responsive
@@ -65,10 +60,8 @@ export default function Bills() {
   useEffect(() => {
     const now = new Date();
     setTodayStr(formatThaiDate(now.toISOString()));
-    setCanCreateBill(now.getDate() >= 1 && now.getDate() <= 31);
   }, []);
 
-  // เปิด dialog
   const handleOpenDialog = (room: any) => {
     setSelectedRoom(room);
     setOpenDialog(true);
@@ -80,24 +73,10 @@ export default function Bills() {
     return booking && booking.approveStatus !== 0;
   });
 
-  // จำนวนห้อง (รวมทั้งหมด ไม่ขึ้นอยู่กับการฟิลเตอร์)
-  const billedCount = allBookedRooms.filter((r) =>
-    existingBills.includes(r.roomId),
-  ).length;
-  const notBilledCount = allBookedRooms.length - billedCount;
-
-  // ห้องตามฟิลเตอร์บนปุ่ม
-  const filteredRooms = allBookedRooms.filter((room) => {
-    const hasBill = existingBills.includes(room.roomId);
-    if (statusFilter === "billed") return hasBill;
-    if (statusFilter === "notBilled") return !hasBill;
-    return true;
-  });
-
   // Pagination
-  const totalItems = filteredRooms.length;
+  const totalItems = allBookedRooms.length;
   const startIndex = (currentPage - 1) * rowsPerPage;
-  const paginatedRooms = filteredRooms.slice(
+  const paginatedRooms = allBookedRooms.slice(
     startIndex,
     startIndex + rowsPerPage,
   );
@@ -137,126 +116,6 @@ export default function Bills() {
             วันนี้: <b>{todayStr}</b>
           </h5>
 
-          {/* ⭐ จำนวนห้องรวม แสดงทันที ไม่ต้องกดอะไร */}
-          {/* ⭐ FILTER สถานะบิล */}
-          {isDesktop ? (
-            // ≥ 1400 = Cards (แบบเดิม)
-            <div className="container mb-3">
-              <div className="row g-3 justify-content-center text-center">
-                <div className="col-6 col-md-3">
-                  <div
-                    className="p-3 rounded-4 shadow-sm fw-bold"
-                    onClick={() => {
-                      setStatusFilter("notBilled");
-                      setCurrentPage(1);
-                    }}
-                    style={{
-                      cursor: "pointer",
-                      background:
-                        statusFilter === "notBilled"
-                          ? "linear-gradient(135deg, #ef233c, #d90429)"
-                          : "#e9ecef",
-                      color: statusFilter === "notBilled" ? "white" : "#333",
-                      fontSize: "1.1rem",
-                      transform:
-                        statusFilter === "notBilled"
-                          ? "scale(1.05)"
-                          : "scale(1)",
-                      transition: "0.2s",
-                    }}
-                  >
-                    ยังไม่ได้ออกบิล
-                    <div style={{ fontSize: "1.5rem" }}>{notBilledCount}</div>
-                  </div>
-                </div>
-
-                <div className="col-6 col-md-3">
-                  <div
-                    className="p-3 rounded-4 shadow-sm fw-bold"
-                    onClick={() => {
-                      setStatusFilter("billed");
-                      setCurrentPage(1);
-                    }}
-                    style={{
-                      cursor: "pointer",
-                      background:
-                        statusFilter === "billed"
-                          ? "linear-gradient(135deg, #38b000, #008000)"
-                          : "#e9ecef",
-                      color: statusFilter === "billed" ? "white" : "#333",
-                      fontSize: "1.1rem",
-                      transform:
-                        statusFilter === "billed" ? "scale(1.05)" : "scale(1)",
-                      transition: "0.2s",
-                    }}
-                  >
-                    ออกบิลแล้ว
-                    <div style={{ fontSize: "1.5rem" }}>{billedCount}</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          ) : (
-            // < 1400 = Dropdown
-            <div className="d-flex justify-content-center mb-3">
-              {(() => {
-                const items = [
-                  {
-                    key: "notBilled",
-                    label: `ยังไม่ได้ออกบิล (${notBilledCount})`,
-                    color: "#d90429",
-                  },
-                  {
-                    key: "billed",
-                    label: `ออกบิลแล้ว (${billedCount})`,
-                    color: "#008000",
-                  },
-                ];
-
-                const activeItem =
-                  items.find((i) => i.key === statusFilter) ?? items[0];
-
-                return (
-                  <div className="dropdown">
-                    <button
-                      className="btn dropdown-toggle fw-bold px-4"
-                      data-bs-toggle="dropdown"
-                      style={{
-                        background: activeItem.color,
-                        color: "#fff",
-                        borderColor: activeItem.color,
-                        height: 38,
-                      }}
-                    >
-                      {activeItem.label}
-                    </button>
-
-                    <div className="dropdown-menu">
-                      {items.map((i) => (
-                        <button
-                          key={i.key}
-                          className="dropdown-item fw-bold"
-                          style={{
-                            background:
-                              statusFilter === i.key ? i.color : "transparent",
-                            color: statusFilter === i.key ? "#fff" : i.color,
-                          }}
-                          onClick={() => {
-                            setStatusFilter(i.key as any);
-                            setCurrentPage(1);
-                          }}
-                        >
-                          {i.label}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                );
-              })()}
-            </div>
-          )}
-          {/* ============================== */}
-
           {loading ? (
             <p className="text-center text-secondary mt-3">
               กำลังโหลดข้อมูล...
@@ -267,8 +126,6 @@ export default function Bills() {
                 <BillTable
                   rooms={paginatedRooms}
                   bookings={bookings}
-                  existingBills={existingBills}
-                  canCreateBill={canCreateBill}
                   formatThaiDate={formatThaiDate}
                   onCreateBill={handleOpenDialog}
                 />
@@ -286,15 +143,12 @@ export default function Bills() {
                     const booking = bookings.find(
                       (b) => b.room.number === room.number,
                     );
-                    const hasBill = existingBills.includes(room.roomId);
 
                     return (
                       <BillCard
                         key={room.roomId}
                         room={room}
                         booking={booking}
-                        hasBill={hasBill}
-                        canCreateBill={canCreateBill}
                         formatThaiDate={formatThaiDate}
                         onCreateBill={handleOpenDialog}
                       />

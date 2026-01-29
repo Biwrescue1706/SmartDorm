@@ -56,8 +56,13 @@ export default function CreateBills() {
     );
   }, []);
 
-  // โหลดบิลล่าสุดของทุกห้อง เพื่อเอามิเตอร์ "ครั้งก่อน"
+  // โหลด "ครั้งก่อน" ตามเดือนที่เลือก (บิลล่าสุดที่ < เดือนที่เลือก)
   useEffect(() => {
+    if (!month) {
+      setPrev({});
+      return;
+    }
+
     (async () => {
       try {
         const res = await fetch(
@@ -66,13 +71,15 @@ export default function CreateBills() {
         );
         const data = await res.json();
 
+        const target = new Date(month);
+
         const latest: any = {};
         for (const b of data) {
-          if (
-            !latest[b.roomId] ||
-            new Date(b.month) > new Date(latest[b.roomId].month)
-          ) {
-            latest[b.roomId] = b;
+          const bm = new Date(b.month);
+          if (bm < target) {
+            if (!latest[b.roomId] || bm > new Date(latest[b.roomId].month)) {
+              latest[b.roomId] = b;
+            }
           }
         }
 
@@ -90,7 +97,7 @@ export default function CreateBills() {
         setPrev({});
       }
     })();
-  }, []);
+  }, [month]);
 
   // เมื่อเลือกเดือน → หา roomId ที่มีบิลของเดือนนั้น
   useEffect(() => {
@@ -160,7 +167,6 @@ export default function CreateBills() {
 
     const wUnits = Number(m.wAfter) - p.wBefore;
     const eUnits = Number(m.eAfter) - p.eBefore;
-
     if (wUnits < 0 || eUnits < 0) return 0;
 
     return (

@@ -231,6 +231,160 @@ bill.post(
   }
 );
 
+// ------------------ สร้างบิลจากทุกห้องที่ status = 1 และยังไม่มีบิลของเดือนนั้น ------------------
+bill.post(
+  "/createFromActiveRooms",
+  authMiddleware,
+  roleMiddleware(0),
+  async (req, res) => {
+    try {
+      const { month, meters } = req.body; // meters = [{ roomId, wAfter, eAfter }]
+      if (!month) throw new Error("กรุณาระบุเดือน");
+      const billMonth = new Date(month);
+
+      const rooms = await prisma.room.findMany({
+        where: {
+          status: 1,
+          bills: {
+            none: { month: billMonth },
+          },
+        },
+      });
+
+      if (!rooms.length)
+        throw new Error("ไม่มีห้องที่สามารถสร้างบิลได้");
+
+      const results = [];
+      const errors = [];
+
+      for (const room of rooms) {
+        try {
+          const meter = meters?.find((m) => m.roomId === room.roomId);
+          if (!meter) throw new Error("ไม่มีค่ามิเตอร์ของห้องนี้");
+
+          const { wAfter, eAfter } = meter;
+
+          const booking = await prisma.booking.findFirst({
+            where: { roomId: room.roomId, checkinStatus: 1 },
+            orderBy: { createdAt: "desc" },
+            include: { customer: true, room: true },
+          });
+          if (!booking) throw new Error("ไม่พบผู้เข้าพัก");
+
+          const prevBill = await prisma.bill.findFirst({
+            where: { roomId: room.roomId, month: { lt: billMonth } },
+            orderBy: { month: "desc" },
+          });
+
+          const wBefore = prevBill ? prevBill.wAfter : 0;
+          const eBefore = prevBill ? prevBill.eAfter : 0;
+
+          if (wAfter < wBefore)
+            throw new Error("ค่าน้ำปัจจุบันต้องมากกว่าหรือเท่าก่อนหน้า");
+          if (eAfter < eBefore)
+            throw new Error("ค่าไฟปัจจุบันต้องมากกว่าหรือเท่าก่อนหน้า");
+
+          const wUnits = wAfter - wBefore;
+          const eUnits = eAfter - eBefore;
+
+          const waterCost = wUnits * WATER_PRICE;
+          const electricCost = eUnits * ELECTRIC_PRICE;
+
+          const rent = booking.room.rent;
+          const service = SERVICE_FEE;
+          const total = rent + service + waterCost + electricCost;
+
+          const billCreated = await prisma.bill.create({
+            data: {
+              roomId: room.roomId,
+              bookingId: booking.bookingId,
+              customerId: booking.customerId,
+              ctitle: booking.ctitle,
+              cname: booking.cname,
+              csurname: booking.csurname,
+              fullName: booking.fullName,
+              cphone: booking.cphone,
+              month: billMonth,
+              dueDate: getDueDateNextMonth5th(billMonth),
+              rent,
+              service,
+              wBefore,
+              wAfter,
+              wUnits,
+              waterCost,
+              eBefore,
+              eAfter,
+              eUnits,
+              electricCost,
+              total,
+              billStatus: 0,
+              billDate: new Date(),
+              createdBy: req.admin.adminId,
+            },
+          });
+
+          // แจ้ง LINE
+          const detailedBill = `${BASE_URL}/bill/${billCreated.billId}`;
+          if (booking.customer?.userId) {
+            await sendFlexMessage(
+              booking.customer.userId,
+              `📄 แจ้งบิลค่าเช่าห้อง ประจำเดือน ${formatThaiMonth(
+                billCreated.month
+              )}`,
+              [
+                { label: "ห้อง", value: booking.room.number },
+                { label: "ค่าเช่าห้อง", value: `${rent} บาท` },
+                {
+                  label: "ค่าน้ำ",
+                  value: `${billCreated.wUnits} หน่วย (${billCreated.waterCost} บาท)`,
+                },
+                {
+                  label: "ค่าไฟ",
+                  value: `${billCreated.eUnits} หน่วย (${billCreated.electricCost} บาท)`,
+                },
+                { label: "ค่าส่วนกลาง", value: `${service} บาท` },
+                {
+                  label: "ยอดรวมทั้งหมด",
+                  value: `${billCreated.total.toLocaleString()} บาท`,
+                },
+                {
+                  label: "ครบกำหนดชำระ",
+                  value: formatThaiDate(billCreated.dueDate),
+                },
+                {
+                  label: "สถานะ",
+                  value: getBillStatusText(billCreated.billStatus),
+                  color: getBillStatusColour(billCreated.billStatus),
+                },
+              ],
+              [{ label: "ดูรายละเอียดและชำระเงิน", url: detailedBill }]
+            );
+          }
+
+          results.push(billCreated);
+        } catch (e) {
+          errors.push({
+            roomId: room.roomId,
+            roomNumber: room.number,
+            error: e.message,
+          });
+        }
+      }
+
+      res.json({
+        message: "สร้างบิลจากห้องที่มีผู้พักและยังไม่มีบิลของเดือนนี้แล้ว",
+        success: results.length,
+        failed: errors.length,
+        results,
+        errors,
+      });
+    } catch (err) {
+      res.status(400).json({ error: err.message });
+    }
+  }
+);
+
+
 // แจ้งค้างชำระ (manual)
 bill.put(
   "/overdue/:billId",

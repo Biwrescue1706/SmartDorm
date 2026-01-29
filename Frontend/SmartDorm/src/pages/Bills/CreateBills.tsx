@@ -1,5 +1,5 @@
 // src/pages/Bills/CreateBills.tsx
-import { useMemo, useState, useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useCreateBill } from "../../hooks/Bill/useCreateBill";
 import type { Room } from "../../types/Room";
 import { useNavigate } from "react-router-dom";
@@ -14,7 +14,7 @@ const SERVICE_FEE = 50;
 
 type PrevMap = Record<
   string,
-  { wBefore: number; eBefore: number; rent: number; month?: string }
+  { wBefore: number; eBefore: number; rent: number }
 >;
 
 export default function CreateBills() {
@@ -26,7 +26,6 @@ export default function CreateBills() {
   const pendingCheckouts = usePendingCheckouts();
 
   const [todayStr, setTodayStr] = useState("");
-
   const [month, setMonth] = useState("");
   const [meters, setMeters] = useState<
     Record<string, { wAfter: string; eAfter: string }>
@@ -34,8 +33,6 @@ export default function CreateBills() {
   const [prev, setPrev] = useState<PrevMap>({});
   const [billedOfMonth, setBilledOfMonth] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
-
-  const [allBills, setAllBills] = useState<any[]>([]);
 
   useEffect(() => {
     const d = new Date();
@@ -58,75 +55,74 @@ export default function CreateBills() {
     );
   }, []);
 
-  // โหลดบิลทั้งหมดครั้งเดียว
-  const loadAllBills = async () => {
-    try {
-      const res = await fetch(
-        `${import.meta.env.VITE_API_BASE}/bill/getall`,
-        { credentials: "include" },
-      );
-      const data = await res.json();
-      setAllBills(data || []);
-    } catch {
-      setAllBills([]);
-    }
-  };
-
+  // โหลดบิลทั้งหมดเพื่อหา "ครั้งก่อน"
   useEffect(() => {
-    loadAllBills();
+    (async () => {
+      try {
+        const res = await fetch(
+          `${import.meta.env.VITE_API_BASE}/bill/getall`,
+          { credentials: "include" },
+        );
+        const data = await res.json();
+
+        const latest: any = {};
+        for (const b of data) {
+          if (
+            !latest[b.roomId] ||
+            new Date(b.month) > new Date(latest[b.roomId].month)
+          ) {
+            latest[b.roomId] = b;
+          }
+        }
+
+        const map: PrevMap = {};
+        for (const k in latest) {
+          map[k] = {
+            wBefore: latest[k].wAfter ?? 0,
+            eBefore: latest[k].eAfter ?? 0,
+            rent: latest[k].rent ?? 0,
+          };
+        }
+        setPrev(map);
+      } catch {
+        setPrev({});
+      }
+    })();
   }, []);
 
-  // เมื่อเลือกเดือน → คำนวณ
-  // 1) ห้องที่มีบิลของเดือนนั้น
-  // 2) ค่า "ครั้งก่อน" จากบิลที่อยู่ก่อนเดือนที่เลือก
+  // เมื่อเลือกเดือน → หา roomId ที่มีบิลของเดือนนั้น
   useEffect(() => {
     if (!month) {
       setBilledOfMonth([]);
-      setPrev({});
       return;
     }
 
-    const [y, m] = month.split("-").map(Number);
+    (async () => {
+      try {
+        const res = await fetch(
+          `${import.meta.env.VITE_API_BASE}/bill/getall`,
+          { credentials: "include" },
+        );
+        const data = await res.json();
 
-    const billedIds: string[] = [];
-    const latestBefore: Record<string, any> = {};
+        const d = new Date(month);
+        const m = d.getMonth();
+        const y = d.getFullYear();
 
-    for (const b of allBills) {
-      const d = new Date(b.month);
-      const by = d.getFullYear();
-      const bm = d.getMonth() + 1;
+        const roomIds = data
+          .filter((b: any) => {
+            const bm = new Date(b.month);
+            return bm.getMonth() === m && bm.getFullYear() === y;
+          })
+          .map((b: any) => b.roomId);
 
-      // บิลของ "เดือนที่เลือก"
-      if (by === y && bm === m) {
-        billedIds.push(b.roomId);
+        setBilledOfMonth(roomIds);
+      } catch {
+        setBilledOfMonth([]);
       }
+    })();
+  }, [month]);
 
-      // บิลที่ "ก่อนเดือนที่เลือก"
-      if (by < y || (by === y && bm < m)) {
-        if (
-          !latestBefore[b.roomId] ||
-          new Date(b.month) > new Date(latestBefore[b.roomId].month)
-        ) {
-          latestBefore[b.roomId] = b;
-        }
-      }
-    }
-
-    const map: PrevMap = {};
-    for (const k in latestBefore) {
-      map[k] = {
-        wBefore: latestBefore[k].wAfter ?? 0,
-        eBefore: latestBefore[k].eAfter ?? 0,
-        rent: latestBefore[k].rent ?? 0,
-        month: latestBefore[k].month,
-      };
-    }
-
-    setBilledOfMonth(billedIds);
-    setPrev(map);
-  }, [month, allBills]);
-
-  // ห้องที่มีผู้พักจริง
   const bookedRooms = useMemo(() => {
     return rooms.filter((r: Room) =>
       bookings.find(
@@ -135,7 +131,6 @@ export default function CreateBills() {
     );
   }, [rooms, bookings]);
 
-  // ห้องที่ยังไม่มีบิลของเดือนที่เลือก
   const notBilledRooms = bookedRooms.filter(
     (r: Room) => !billedOfMonth.includes(r.roomId),
   );
@@ -229,10 +224,7 @@ export default function CreateBills() {
   };
 
   return (
-    <div
-      className="d-flex min-vh-100 mx-2 mt-0 mb-4"
-      style={{ fontFamily: "Sarabun, sans-serif" }}
-    >
+    <div className="d-flex min-vh-100 mx-2 mt-0 mb-4">
       <Nav
         onLogout={handleLogout}
         role={role}
@@ -242,19 +234,21 @@ export default function CreateBills() {
         pendingCheckouts={pendingCheckouts}
       />
 
-      <main
-        className="main-content flex-grow-1 px-2 py-3 mt-6 mt-lg-7"
-        style={{ paddingLeft: "20px", paddingRight: "20px" }}
-      >
-        <div className="mx-auto" style={{ borderRadius: 20, maxWidth: "1400px" }}>
-          <h2 className="fw-bold text-center text-black mb-2">
-            สร้างบิลห้องพักทั้งหมด
-          </h2>
-          <h5 className="text-center text-black mb-3">
+      <main className="main-content flex-grow-1 px-2 py-3 mt-6 mt-lg-7">
+        <div className="mx-auto" style={{ maxWidth: 1400 }}>
+          <h2 className="fw-bold text-center mb-2">สร้างบิลห้องพักทั้งหมด</h2>
+          <h5 className="text-center mb-3">
             วันนี้: <b>{todayStr}</b>
           </h5>
 
-          <div className="d-flex align-items-end gap-2 mb-3">
+          <div className="d-flex gap-2 mb-3">
+            <button
+              className="btn btn-outline-secondary"
+              onClick={() => window.location.reload()}
+            >
+              รีเฟรชข้อมูล
+            </button>
+
             <div style={{ maxWidth: 260 }}>
               <label className="fw-bold">เดือน</label>
               <input
@@ -264,13 +258,6 @@ export default function CreateBills() {
                 onChange={(e) => setMonth(e.target.value)}
               />
             </div>
-
-            <button
-              className="btn btn-outline-secondary mb-1"
-              onClick={() => window.location.reload()}
-            >
-              🔄 รีเฟรชข้อมูล
-            </button>
           </div>
 
           {loading ? (
@@ -285,10 +272,10 @@ export default function CreateBills() {
                 <thead>
                   <tr>
                     <th>ห้อง</th>
-                    <th>น้ำ (ครั้งก่อน)</th>
-                    <th>น้ำ (ครั้งหลัง)</th>
-                    <th>ไฟ (ครั้งก่อน)</th>
-                    <th>ไฟ (ครั้งหลัง)</th>
+                    <th>น้ำ (ก่อน)</th>
+                    <th>น้ำ (หลัง)</th>
+                    <th>ไฟ (ก่อน)</th>
+                    <th>ไฟ (หลัง)</th>
                     <th>ยอดรวม</th>
                   </tr>
                 </thead>
@@ -304,7 +291,6 @@ export default function CreateBills() {
                     return (
                       <tr key={r.roomId}>
                         <td className="fw-bold">{r.number}</td>
-
                         <td>{p.wBefore}</td>
                         <td>
                           <input
@@ -316,7 +302,6 @@ export default function CreateBills() {
                             }
                           />
                         </td>
-
                         <td>{p.eBefore}</td>
                         <td>
                           <input
@@ -328,7 +313,6 @@ export default function CreateBills() {
                             }
                           />
                         </td>
-
                         <td className="fw-bold">
                           {total > 0 ? total.toLocaleString() + " บาท" : "-"}
                         </td>
@@ -338,7 +322,7 @@ export default function CreateBills() {
                 </tbody>
               </table>
 
-              <div className="d-flex justify-content-end gap-2">
+              <div className="text-end">
                 <button
                   className="btn btn-primary px-4"
                   onClick={submitAll}

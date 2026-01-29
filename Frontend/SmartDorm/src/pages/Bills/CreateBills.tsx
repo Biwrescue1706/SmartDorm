@@ -3,6 +3,10 @@ import { useMemo, useState, useEffect } from "react";
 import { useCreateBill } from "../../hooks/Bill/useCreateBill";
 import type { Room } from "../../types/Room";
 import { useNavigate } from "react-router-dom";
+import Nav from "../../components/Nav";
+import { useAuth } from "../../hooks/useAuth";
+import { usePendingBookings } from "../../hooks/ManageRooms/usePendingBookings";
+import { usePendingCheckouts } from "../../hooks/ManageRooms/usePendingCheckouts";
 
 const WATER_PRICE = 19;
 const ELECTRIC_PRICE = 7;
@@ -17,6 +21,12 @@ export default function CreateBills() {
   const { rooms, bookings, loading } = useCreateBill();
   const navigate = useNavigate();
 
+  const { handleLogout, role, adminName, adminUsername } = useAuth();
+  const pendingBookings = usePendingBookings();
+  const pendingCheckouts = usePendingCheckouts();
+
+  const [todayStr, setTodayStr] = useState("");
+
   const [month, setMonth] = useState("");
   const [meters, setMeters] = useState<
     Record<string, { wAfter: string; eAfter: string }>
@@ -24,6 +34,27 @@ export default function CreateBills() {
   const [prev, setPrev] = useState<PrevMap>({});
   const [billedOfMonth, setBilledOfMonth] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    const d = new Date();
+    const monthsThai = [
+      "ม.ค.",
+      "ก.พ.",
+      "มี.ค.",
+      "เม.ย.",
+      "พ.ค.",
+      "มิ.ย.",
+      "ก.ค.",
+      "ส.ค.",
+      "ก.ย.",
+      "ต.ค.",
+      "พ.ย.",
+      "ธ.ค.",
+    ];
+    setTodayStr(
+      `${d.getDate()} ${monthsThai[d.getMonth()]} ${d.getFullYear() + 543}`,
+    );
+  }, []);
 
   // โหลดบิลล่าสุดของทุกห้อง เพื่อเอามิเตอร์ "ครั้งก่อน"
   useEffect(() => {
@@ -197,85 +228,33 @@ export default function CreateBills() {
   };
 
   return (
-    <div className="p-3" style={{ fontFamily: "Sarabun, sans-serif" }}>
-      <h2 className="fw-bold mb-3">สร้างบิลทั้งหมด</h2>
+    <div
+      className="d-flex min-vh-100 mx-2 mt-0 mb-4"
+      style={{ fontFamily: "Sarabun, sans-serif" }}
+    >
+      <Nav
+        onLogout={handleLogout}
+        role={role}
+        adminName={adminName}
+        adminUsername={adminUsername}
+        pendingBookings={pendingBookings}
+        pendingCheckouts={pendingCheckouts}
+      />
 
-      <div className="mb-3" style={{ maxWidth: 260 }}>
-        <label className="fw-bold">เดือน</label>
-        <input
-          type="month"
-          className="form-control"
-          value={month}
-          onChange={(e) => setMonth(e.target.value)}
-        />
-      </div>
+      <main
+        className="main-content flex-grow-1 px-2 py-3 mt-6 mt-lg-7"
+        style={{ paddingLeft: "20px", paddingRight: "20px" }}
+      >
+        <div className="mx-auto" style={{ borderRadius: 20, maxWidth: "1400px" }}>
+          <h2 className="fw-bold text-center text-black mb-2">
+            สร้างบิลห้องพักทั้งหมด
+          </h2>
+          <h5 className="text-center text-black mb-3">
+            วันนี้: <b>{todayStr}</b>
+          </h5>
 
-      {loading ? (
-        <p>กำลังโหลด...</p>
-      ) : !month ? (
-        <p className="text-muted">กรุณาเลือกเดือนก่อน</p>
-      ) : notBilledRooms.length === 0 ? (
-        <p className="text-muted">ทุกห้องมีบิลของเดือนนี้แล้ว</p>
-      ) : (
-        <>
-          <table className="table table-bordered align-middle">
-            <thead>
-              <tr>
-                <th>ห้อง</th>
-                <th>น้ำ (ครั้งก่อน)</th>
-                <th>น้ำ (ครั้งหลัง)</th>
-                <th>ไฟ (ครั้งก่อน)</th>
-                <th>ไฟ (ครั้งหลัง)</th>
-                <th>ยอดรวม</th>
-              </tr>
-            </thead>
-            <tbody>
-              {notBilledRooms.map((r: Room) => {
-                const p = prev[r.roomId] || {
-                  wBefore: 0,
-                  eBefore: 0,
-                  rent: r.rent,
-                };
-                const total = calcTotal(r);
-
-                return (
-                  <tr key={r.roomId}>
-                    <td className="fw-bold">{r.number}</td>
-
-                    <td>{p.wBefore}</td>
-                    <td>
-                      <input
-                        type="number"
-                        className="form-control"
-                        value={meters[r.roomId]?.wAfter || ""}
-                        onChange={(e) =>
-                          setMeter(r.roomId, "wAfter", e.target.value)
-                        }
-                      />
-                    </td>
-
-                    <td>{p.eBefore}</td>
-                    <td>
-                      <input
-                        type="number"
-                        className="form-control"
-                        value={meters[r.roomId]?.eAfter || ""}
-                        onChange={(e) =>
-                          setMeter(r.roomId, "eAfter", e.target.value)
-                        }
-                      />
-                    </td>
-
-                    <td className="fw-bold">
-                      {total > 0 ? total.toLocaleString() + " บาท" : "-"}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-
-          <div className="d-flex justify-content-end gap-2">
+          {/* รีเฟรชก่อนเลือกเดือน */}
+          <div className="mb-2">
             <button
               className="btn btn-outline-secondary px-3"
               onClick={() => window.location.reload()}
@@ -283,17 +262,104 @@ export default function CreateBills() {
             >
               🔄 รีเฟรชข้อมูล
             </button>
-
-            <button
-              className="btn btn-primary px-4"
-              onClick={submitAll}
-              disabled={saving}
-            >
-              {saving ? "กำลังสร้าง..." : "สร้างบิลทั้งหมด"}
-            </button>
           </div>
-        </>
-      )}
+
+          <div className="mb-3" style={{ maxWidth: 260 }}>
+            <label className="fw-bold">เดือน</label>
+            <input
+              type="month"
+              className="form-control"
+              value={month}
+              onChange={(e) => setMonth(e.target.value)}
+            />
+          </div>
+
+          {loading ? (
+            <p>กำลังโหลด...</p>
+          ) : !month ? (
+            <p className="text-muted">กรุณาเลือกเดือนก่อน</p>
+          ) : notBilledRooms.length === 0 ? (
+            <p className="text-muted">ทุกห้องมีบิลของเดือนนี้แล้ว</p>
+          ) : (
+            <>
+              <table className="table table-bordered align-middle">
+                <thead>
+                  <tr>
+                    <th>ห้อง</th>
+                    <th>น้ำ (ครั้งก่อน)</th>
+                    <th>น้ำ (ครั้งหลัง)</th>
+                    <th>ไฟ (ครั้งก่อน)</th>
+                    <th>ไฟ (ครั้งหลัง)</th>
+                    <th>ยอดรวม</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {notBilledRooms.map((r: Room) => {
+                    const p = prev[r.roomId] || {
+                      wBefore: 0,
+                      eBefore: 0,
+                      rent: r.rent,
+                    };
+                    const total = calcTotal(r);
+
+                    return (
+                      <tr key={r.roomId}>
+                        <td className="fw-bold">{r.number}</td>
+
+                        <td>{p.wBefore}</td>
+                        <td>
+                          <input
+                            type="number"
+                            className="form-control"
+                            min={p.wBefore}
+                            value={meters[r.roomId]?.wAfter || ""}
+                            onChange={(e) => {
+                              const v = e.target.value;
+                              if (v === "" || Number(v) >= p.wBefore) {
+                                setMeter(r.roomId, "wAfter", v);
+                              }
+                            }}
+                          />
+                        </td>
+
+                        <td>{p.eBefore}</td>
+                        <td>
+                          <input
+                            type="number"
+                            className="form-control"
+                            min={p.eBefore}
+                            value={meters[r.roomId]?.eAfter || ""}
+                            onChange={(e) => {
+                              const v = e.target.value;
+                              if (v === "" || Number(v) >= p.eBefore) {
+                                setMeter(r.roomId, "eAfter", v);
+                              }
+                            }}
+                          />
+                        </td>
+
+                        <td className="fw-bold">
+                          {total > 0 ? total.toLocaleString() + " บาท" : "-"}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+
+              <div className="d-flex justify-content-end gap-2">
+                <button
+                  className="btn btn-primary px-4"
+                  onClick={submitAll}
+                  disabled={saving}
+                >
+                  {saving ? "กำลังสร้าง..." : "สร้างบิลทั้งหมด"}
+                </button>
+              </div>
+            </>
+          )}
+        </div>
+      </main>
     </div>
   );
 }

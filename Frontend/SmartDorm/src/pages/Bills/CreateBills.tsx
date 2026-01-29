@@ -69,7 +69,7 @@ export default function CreateBills() {
     );
   }, [rooms, bookings]);
 
-  // ห้องที่ยังไม่มีบิลของเดือนปัจจุบัน
+  // ห้องที่ยังไม่มีบิลของเดือนนี้
   const notBilledRooms = bookedRooms.filter(
     (r: Room) => !existingBills.includes(r.roomId),
   );
@@ -88,27 +88,22 @@ export default function CreateBills() {
     }));
   };
 
-  const calcUnits = (r: Room) => {
+  const calcTotal = (r: Room) => {
     const p = prev[r.roomId] || { wBefore: 0, eBefore: 0, rent: r.rent };
     const m = meters[r.roomId];
-    if (!m?.wAfter || !m?.eAfter) {
-      return { wUnits: 0, eUnits: 0, total: 0 };
-    }
+    if (!m?.wAfter || !m?.eAfter) return 0;
 
     const wUnits = Number(m.wAfter) - p.wBefore;
     const eUnits = Number(m.eAfter) - p.eBefore;
 
-    if (wUnits < 0 || eUnits < 0) {
-      return { wUnits, eUnits, total: 0 };
-    }
+    if (wUnits < 0 || eUnits < 0) return 0;
 
-    const total =
+    return (
       p.rent +
       SERVICE_FEE +
       wUnits * WATER_PRICE +
-      eUnits * ELECTRIC_PRICE;
-
-    return { wUnits, eUnits, total };
+      eUnits * ELECTRIC_PRICE
+    );
   };
 
   const submitAll = async () => {
@@ -159,10 +154,6 @@ export default function CreateBills() {
         `สร้างบิลสำเร็จ ${data.success} ห้อง\nไม่สำเร็จ ${data.failed} ห้อง`,
       );
 
-      if (data.failed > 0) {
-        console.table(data.errors);
-      }
-
       navigate("/bills");
     } catch (e: any) {
       alert(e.message);
@@ -172,7 +163,7 @@ export default function CreateBills() {
   };
 
   return (
-    <div className="p-3">
+    <div className="p-3" style={{ fontFamily: "Sarabun, sans-serif" }}>
       <h2 className="fw-bold mb-3">สร้างบิลทั้งหมด</h2>
 
       <div className="mb-3" style={{ maxWidth: 260 }}>
@@ -199,8 +190,6 @@ export default function CreateBills() {
                 <th>น้ำ (ครั้งหลัง)</th>
                 <th>ไฟ (ครั้งก่อน)</th>
                 <th>ไฟ (ครั้งหลัง)</th>
-                <th>หน่วยน้ำ</th>
-                <th>หน่วยไฟ</th>
                 <th>ยอดรวม</th>
               </tr>
             </thead>
@@ -211,7 +200,7 @@ export default function CreateBills() {
                   eBefore: 0,
                   rent: r.rent,
                 };
-                const { wUnits, eUnits, total } = calcUnits(r);
+                const total = calcTotal(r);
 
                 return (
                   <tr key={r.roomId}>
@@ -241,13 +230,6 @@ export default function CreateBills() {
                       />
                     </td>
 
-                    <td className={wUnits < 0 ? "text-danger" : ""}>
-                      {wUnits > 0 ? wUnits : wUnits < 0 ? "ผิดพลาด" : "-"}
-                    </td>
-                    <td className={eUnits < 0 ? "text-danger" : ""}>
-                      {eUnits > 0 ? eUnits : eUnits < 0 ? "ผิดพลาด" : "-"}
-                    </td>
-
                     <td className="fw-bold">
                       {total > 0 ? total.toLocaleString() + " บาท" : "-"}
                     </td>
@@ -257,7 +239,15 @@ export default function CreateBills() {
             </tbody>
           </table>
 
-          <div className="text-end">
+          <div className="d-flex justify-content-end gap-2">
+            <button
+              className="btn btn-outline-secondary px-3"
+              onClick={() => window.location.reload()}
+              disabled={saving}
+            >
+              🔄 รีเฟรชข้อมูล
+            </button>
+
             <button
               className="btn btn-primary px-4"
               onClick={submitAll}

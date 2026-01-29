@@ -1,4 +1,4 @@
-// src/hooks/bill/useCreateBill.ts
+// src/hooks/Bill/useCreateBill.ts
 import { useState, useEffect } from "react";
 import { API_BASE } from "../../config";
 import type { Room } from "../../types/Room";

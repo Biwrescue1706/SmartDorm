@@ -1,7 +1,7 @@
 //src/pages/CreateBills.tsx
 
 import { useMemo, useState } from "react";
-import { useCreateBills } from "../../hooks/Bill/useCreateBills";
+import { useCreateBill } from "../../hooks/Bill/useCreateBill";
 import type { Room } from "../../types/BillCreate";
 
 export default function CreateBills() {

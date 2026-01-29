@@ -231,7 +231,8 @@ bill.post(
   }
 );
 
-// สร้างบิลจากทุกห้องที่ยังไม่มีบิลของเดือนนั้น
+
+// ------------------ สร้างบิลจากทุกห้อง (ไล่เดือนต่อเนื่อง) ------------------
 bill.post(
   "/createFromActiveRooms",
   authMiddleware,
@@ -242,17 +243,10 @@ bill.post(
       if (!month) throw new Error("กรุณาระบุเดือน");
 
       const billMonth = new Date(month);
-      const start = new Date(
-        billMonth.getFullYear(),
-        billMonth.getMonth(),
-        1,
-      );
-      const end = new Date(
-        billMonth.getFullYear(),
-        billMonth.getMonth() + 1,
-        1,
-      );
+      const start = new Date(billMonth.getFullYear(), billMonth.getMonth(), 1);
+      const end = new Date(billMonth.getFullYear(), billMonth.getMonth() + 1, 1);
 
+      // เอาเฉพาะห้องที่ "ยังไม่มีบิลของเดือนที่เลือก"
       const rooms = await prisma.room.findMany({
         where: {
           status: 1,
@@ -284,8 +278,12 @@ bill.post(
           });
           if (!booking) throw new Error("ไม่พบผู้เข้าพัก");
 
+          // หา "บิลล่าสุดก่อนเดือนที่เลือก" (ไม่ว่าจะกี่เดือนก่อน)
           const prevBill = await prisma.bill.findFirst({
-            where: { roomId: room.roomId, month: { lt: billMonth } },
+            where: {
+              roomId: room.roomId,
+              month: { lt: start },
+            },
             orderBy: { month: "desc" },
           });
 
@@ -347,7 +345,7 @@ bill.post(
       }
 
       res.json({
-        message: "สร้างบิลจากห้องที่มีผู้พักและยังไม่มีบิลของเดือนนี้แล้ว",
+        message: "สร้างบิลจากห้องที่ยังไม่มีบิลของเดือนนี้แล้ว",
         success: results.length,
         failed: errors.length,
         results,

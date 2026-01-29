@@ -26,7 +26,6 @@ export default function CreateBills() {
   const pendingCheckouts = usePendingCheckouts();
 
   const [todayStr, setTodayStr] = useState("");
-
   const [month, setMonth] = useState("");
   const [meters, setMeters] = useState<
     Record<string, { wAfter: string; eAfter: string }>
@@ -38,25 +37,13 @@ export default function CreateBills() {
   useEffect(() => {
     const d = new Date();
     const monthsThai = [
-      "ม.ค.",
-      "ก.พ.",
-      "มี.ค.",
-      "เม.ย.",
-      "พ.ค.",
-      "มิ.ย.",
-      "ก.ค.",
-      "ส.ค.",
-      "ก.ย.",
-      "ต.ค.",
-      "พ.ย.",
-      "ธ.ค.",
+      "ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.",
+      "ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค.",
     ];
-    setTodayStr(
-      `${d.getDate()} ${monthsThai[d.getMonth()]} ${d.getFullYear() + 543}`,
-    );
+    setTodayStr(`${d.getDate()} ${monthsThai[d.getMonth()]} ${d.getFullYear() + 543}`);
   }, []);
 
-  // โหลด "ครั้งก่อน" ตามเดือนที่เลือก (บิลล่าสุดที่ < เดือนที่เลือก)
+  // โหลด "ครั้งก่อน" ตามเดือนที่เลือก (เทียบปี-เดือน)
   useEffect(() => {
     if (!month) {
       setPrev({});
@@ -71,13 +58,20 @@ export default function CreateBills() {
         );
         const data = await res.json();
 
-        const target = new Date(month);
-
+        const [y, m] = month.split("-").map(Number); // เช่น 2026-02
         const latest: any = {};
+
         for (const b of data) {
           const bm = new Date(b.month);
-          if (bm < target) {
-            if (!latest[b.roomId] || bm > new Date(latest[b.roomId].month)) {
+          const by = bm.getFullYear();
+          const bmon = bm.getMonth() + 1;
+
+          // เอาเฉพาะบิลที่ "ก่อนเดือนที่เลือก"
+          if (by < y || (by === y && bmon < m)) {
+            if (
+              !latest[b.roomId] ||
+              new Date(b.month) > new Date(latest[b.roomId].month)
+            ) {
               latest[b.roomId] = b;
             }
           }
@@ -114,14 +108,12 @@ export default function CreateBills() {
         );
         const data = await res.json();
 
-        const d = new Date(month);
-        const m = d.getMonth();
-        const y = d.getFullYear();
+        const [y, m] = month.split("-").map(Number);
 
         const roomIds = data
           .filter((b: any) => {
             const bm = new Date(b.month);
-            return bm.getMonth() === m && bm.getFullYear() === y;
+            return bm.getFullYear() === y && bm.getMonth() + 1 === m;
           })
           .map((b: any) => b.roomId);
 
@@ -135,9 +127,7 @@ export default function CreateBills() {
   // ห้องที่มีผู้พักจริง
   const bookedRooms = useMemo(() => {
     return rooms.filter((r: Room) =>
-      bookings.find(
-        (b: any) => b.roomId === r.roomId && b.approveStatus !== 0,
-      ),
+      bookings.find((b: any) => b.roomId === r.roomId && b.approveStatus !== 0),
     );
   }, [rooms, bookings]);
 
@@ -169,12 +159,7 @@ export default function CreateBills() {
     const eUnits = Number(m.eAfter) - p.eBefore;
     if (wUnits < 0 || eUnits < 0) return 0;
 
-    return (
-      p.rent +
-      SERVICE_FEE +
-      wUnits * WATER_PRICE +
-      eUnits * ELECTRIC_PRICE
-    );
+    return p.rent + SERVICE_FEE + wUnits * WATER_PRICE + eUnits * ELECTRIC_PRICE;
   };
 
   const submitAll = async () => {
@@ -221,10 +206,7 @@ export default function CreateBills() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "สร้างบิลไม่สำเร็จ");
 
-      alert(
-        `สร้างบิลสำเร็จ ${data.success} ห้อง\nไม่สำเร็จ ${data.failed} ห้อง`,
-      );
-
+      alert(`สร้างบิลสำเร็จ ${data.success} ห้อง\nไม่สำเร็จ ${data.failed} ห้อง`);
       navigate("/bills");
     } catch (e: any) {
       alert(e.message);
@@ -234,10 +216,7 @@ export default function CreateBills() {
   };
 
   return (
-    <div
-      className="d-flex min-vh-100 mx-2 mt-0 mb-4"
-      style={{ fontFamily: "Sarabun, sans-serif" }}
-    >
+    <div className="d-flex min-vh-100 mx-2 mt-0 mb-4" style={{ fontFamily: "Sarabun, sans-serif" }}>
       <Nav
         onLogout={handleLogout}
         role={role}
@@ -247,19 +226,11 @@ export default function CreateBills() {
         pendingCheckouts={pendingCheckouts}
       />
 
-      <main
-        className="main-content flex-grow-1 px-2 py-3 mt-6 mt-lg-7"
-        style={{ paddingLeft: "20px", paddingRight: "20px" }}
-      >
-        <div className="mx-auto" style={{ borderRadius: 20, maxWidth: "1400px" }}>
-          <h2 className="fw-bold text-center text-black mb-2">
-            สร้างบิลห้องพักทั้งหมด
-          </h2>
-          <h5 className="text-center text-black mb-3">
-            วันนี้: <b>{todayStr}</b>
-          </h5>
+      <main className="main-content flex-grow-1 px-2 py-3 mt-6 mt-lg-7" style={{ paddingLeft: 20, paddingRight: 20 }}>
+        <div className="mx-auto" style={{ borderRadius: 20, maxWidth: 1400 }}>
+          <h2 className="fw-bold text-center text-black mb-2">สร้างบิลห้องพักทั้งหมด</h2>
+          <h5 className="text-center text-black mb-3">วันนี้: <b>{todayStr}</b></h5>
 
-          {/* รีเฟรชก่อนเลือกเดือน */}
           <div className="mb-2">
             <button
               className="btn btn-outline-secondary px-3"
@@ -301,49 +272,30 @@ export default function CreateBills() {
                 </thead>
                 <tbody>
                   {notBilledRooms.map((r: Room) => {
-                    const p = prev[r.roomId] || {
-                      wBefore: 0,
-                      eBefore: 0,
-                      rent: r.rent,
-                    };
+                    const p = prev[r.roomId] || { wBefore: 0, eBefore: 0, rent: r.rent };
                     const total = calcTotal(r);
 
                     return (
                       <tr key={r.roomId}>
                         <td className="fw-bold">{r.number}</td>
-
                         <td>{p.wBefore}</td>
                         <td>
                           <input
                             type="number"
                             className="form-control"
-                            min={p.wBefore}
                             value={meters[r.roomId]?.wAfter || ""}
-                            onChange={(e) => {
-                              const v = e.target.value;
-                              if (v === "" || Number(v) >= p.wBefore) {
-                                setMeter(r.roomId, "wAfter", v);
-                              }
-                            }}
+                            onChange={(e) => setMeter(r.roomId, "wAfter", e.target.value)}
                           />
                         </td>
-
                         <td>{p.eBefore}</td>
                         <td>
                           <input
                             type="number"
                             className="form-control"
-                            min={p.eBefore}
                             value={meters[r.roomId]?.eAfter || ""}
-                            onChange={(e) => {
-                              const v = e.target.value;
-                              if (v === "" || Number(v) >= p.eBefore) {
-                                setMeter(r.roomId, "eAfter", v);
-                              }
-                            }}
+                            onChange={(e) => setMeter(r.roomId, "eAfter", e.target.value)}
                           />
                         </td>
-
                         <td className="fw-bold">
                           {total > 0 ? total.toLocaleString() + " บาท" : "-"}
                         </td>

@@ -1,11 +1,12 @@
-//src/pages/CreateBills.tsx
+// src/pages/Bills/CreateBills.tsx
 
 import { useMemo, useState } from "react";
 import { useCreateBill } from "../../hooks/Bill/useCreateBill";
-import type { Room } from "../../types/BillCreate";
+import type { Room } from "../../types/Room";
 
 export default function CreateBills() {
-  const { rooms, bookings, bills, loading, createBill } = useCreateBills();
+  const { rooms, bookings, existingBills, loading, reloadAll } =
+    useCreateBill();
 
   const [filter, setFilter] = useState<"not" | "done">("not");
   const [open, setOpen] = useState(false);
@@ -17,20 +18,15 @@ export default function CreateBills() {
   const [saving, setSaving] = useState(false);
 
   const bookedRooms = useMemo(() => {
-    return rooms.filter((r) =>
+    return rooms.filter((r: Room) =>
       bookings.find(
-        (b) => b.roomId === r.roomId && b.approveStatus !== 0,
+        (b: any) => b.roomId === r.roomId && b.approveStatus !== 0,
       ),
     );
   }, [rooms, bookings]);
 
-  const billedRoomIds = useMemo(
-    () => bills.map((b) => b.roomId),
-    [bills],
-  );
-
-  const filtered = bookedRooms.filter((r) => {
-    const has = billedRoomIds.includes(r.roomId);
+  const filtered = bookedRooms.filter((r: Room) => {
+    const has = existingBills.includes(r.roomId);
     return filter === "not" ? !has : has;
   });
 
@@ -51,14 +47,27 @@ export default function CreateBills() {
 
     setSaving(true);
     try {
-      await createBill(room.roomId, {
-        month,
-        wAfter: Number(wAfter),
-        eAfter: Number(eAfter),
-      });
+      const res = await fetch(
+        `${import.meta.env.VITE_API_BASE}/bill/createFromRoom/${room.roomId}`,
+        {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            month,
+            wAfter: Number(wAfter),
+            eAfter: Number(eAfter),
+          }),
+        },
+      );
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "สร้างบิลไม่สำเร็จ");
+
       setOpen(false);
+      await reloadAll();
     } catch (e: any) {
-      alert(e.response?.data?.error || "สร้างบิลไม่สำเร็จ");
+      alert(e.message);
     } finally {
       setSaving(false);
     }
@@ -70,13 +79,17 @@ export default function CreateBills() {
 
       <div className="mb-3">
         <button
-          className={`btn me-2 ${filter === "not" ? "btn-danger" : "btn-outline-danger"}`}
+          className={`btn me-2 ${
+            filter === "not" ? "btn-danger" : "btn-outline-danger"
+          }`}
           onClick={() => setFilter("not")}
         >
           ยังไม่ได้ออกบิล
         </button>
         <button
-          className={`btn ${filter === "done" ? "btn-success" : "btn-outline-success"}`}
+          className={`btn ${
+            filter === "done" ? "btn-success" : "btn-outline-success"
+          }`}
           onClick={() => setFilter("done")}
         >
           ออกบิลแล้ว
@@ -95,8 +108,8 @@ export default function CreateBills() {
             </tr>
           </thead>
           <tbody>
-            {filtered.map((r) => {
-              const has = billedRoomIds.includes(r.roomId);
+            {filtered.map((r: Room) => {
+              const has = existingBills.includes(r.roomId);
               return (
                 <tr key={r.roomId}>
                   <td>{r.number}</td>

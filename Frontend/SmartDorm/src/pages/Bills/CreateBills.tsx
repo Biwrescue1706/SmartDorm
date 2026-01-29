@@ -1,4 +1,4 @@
-// src/pages/Bills/CreateBills.tsx
+//src/pages/Bills/CreateBills.tsx
 import { useEffect, useMemo, useState } from "react";
 import { useCreateBill } from "../../hooks/Bill/useCreateBill";
 import type { Room } from "../../types/Room";
@@ -131,6 +131,7 @@ export default function CreateBills() {
     );
   }, [rooms, bookings]);
 
+  // ห้องที่ "ยังไม่มีบิลของเดือนที่เลือก"
   const notBilledRooms = bookedRooms.filter(
     (r: Room) => !billedOfMonth.includes(r.roomId),
   );

@@ -14,7 +14,7 @@ type PrevMap = Record<
 >;
 
 export default function CreateBills() {
-  const { rooms, bookings, existingBills, loading } = useCreateBill();
+  const { rooms, bookings, loading } = useCreateBill();
   const navigate = useNavigate();
 
   const [month, setMonth] = useState("");
@@ -22,6 +22,7 @@ export default function CreateBills() {
     Record<string, { wAfter: string; eAfter: string }>
   >({});
   const [prev, setPrev] = useState<PrevMap>({});
+  const [billedOfMonth, setBilledOfMonth] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
 
   // โหลดบิลล่าสุดของทุกห้อง เพื่อเอามิเตอร์ "ครั้งก่อน"
@@ -60,6 +61,39 @@ export default function CreateBills() {
     })();
   }, []);
 
+  // เมื่อเลือกเดือน → หา roomId ที่มีบิลของเดือนนั้น
+  useEffect(() => {
+    if (!month) {
+      setBilledOfMonth([]);
+      return;
+    }
+
+    (async () => {
+      try {
+        const res = await fetch(
+          `${import.meta.env.VITE_API_BASE}/bill/getall`,
+          { credentials: "include" },
+        );
+        const data = await res.json();
+
+        const d = new Date(month);
+        const m = d.getMonth();
+        const y = d.getFullYear();
+
+        const roomIds = data
+          .filter((b: any) => {
+            const bm = new Date(b.month);
+            return bm.getMonth() === m && bm.getFullYear() === y;
+          })
+          .map((b: any) => b.roomId);
+
+        setBilledOfMonth(roomIds);
+      } catch {
+        setBilledOfMonth([]);
+      }
+    })();
+  }, [month]);
+
   // ห้องที่มีผู้พักจริง
   const bookedRooms = useMemo(() => {
     return rooms.filter((r: Room) =>
@@ -69,9 +103,9 @@ export default function CreateBills() {
     );
   }, [rooms, bookings]);
 
-  // ห้องที่ยังไม่มีบิลของเดือนนี้
+  // ห้องที่ยัง "ไม่มีบิลของเดือนที่เลือก"
   const notBilledRooms = bookedRooms.filter(
-    (r: Room) => !existingBills.includes(r.roomId),
+    (r: Room) => !billedOfMonth.includes(r.roomId),
   );
 
   const setMeter = (
@@ -178,8 +212,10 @@ export default function CreateBills() {
 
       {loading ? (
         <p>กำลังโหลด...</p>
+      ) : !month ? (
+        <p className="text-muted">กรุณาเลือกเดือนก่อน</p>
       ) : notBilledRooms.length === 0 ? (
-        <p className="text-muted">ไม่มีห้องที่ต้องสร้างบิล</p>
+        <p className="text-muted">ทุกห้องมีบิลของเดือนนี้แล้ว</p>
       ) : (
         <>
           <table className="table table-bordered align-middle">

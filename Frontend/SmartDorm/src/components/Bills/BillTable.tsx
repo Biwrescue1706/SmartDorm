@@ -6,8 +6,8 @@ import BillRow from "./BillRows";
 interface BillTableProps {
   rooms: Room[];
   bookings: Booking[];
-  existingBills: string[];
-  canCreateBill: boolean;
+  existingBills?: string[];   // ← ทำให้ optional
+  canCreateBill?: boolean;    // ← ทำให้ optional
   formatThaiDate: (d: string) => string;
   onCreateBill: (room: Room) => void;
 }
@@ -15,8 +15,8 @@ interface BillTableProps {
 export default function BillTable({
   rooms,
   bookings,
-  existingBills,
-  canCreateBill,
+  existingBills = [],       // ← default
+  canCreateBill = true,     // ← default
   formatThaiDate,
   onCreateBill,
 }: BillTableProps) {

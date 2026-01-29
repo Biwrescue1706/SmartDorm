@@ -5,8 +5,8 @@ import type { Booking } from "../../types/Booking";
 interface Props {
   room: Room;
   booking?: Booking;
-  hasBill: boolean;
-  canCreateBill: boolean;
+  hasBill?: boolean;        // ← optional
+  canCreateBill?: boolean; // ← optional
   formatThaiDate: (date: string) => string;
   onCreateBill: (room: Room) => void;
 }
@@ -14,8 +14,8 @@ interface Props {
 export default function BillCard({
   room,
   booking,
-  hasBill,
-  canCreateBill,
+  hasBill = false,        // ← default
+  canCreateBill = true,   // ← default
   formatThaiDate,
   onCreateBill,
 }: Props) {
@@ -55,7 +55,9 @@ export default function BillCard({
         {booking?.checkinAt ? formatThaiDate(booking.checkinAt) : "-"}
       </div>
 
-      <div className="fw-bold text-black "><hr /></div>
+      <div className="fw-bold text-black ">
+        <hr />
+      </div>
 
       {!hasBill && booking?.checkinAt && canCreateBill && (
         <button

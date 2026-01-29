@@ -231,22 +231,35 @@ bill.post(
   }
 );
 
-// ------------------ สร้างบิลจากทุกห้องที่ status = 1 และยังไม่มีบิลของเดือนนั้น ------------------
+// สร้างบิลจากทุกห้องที่ยังไม่มีบิลของเดือนนั้น
 bill.post(
   "/createFromActiveRooms",
   authMiddleware,
   roleMiddleware(0),
   async (req, res) => {
     try {
-      const { month, meters } = req.body; // meters = [{ roomId, wAfter, eAfter }]
+      const { month, meters } = req.body;
       if (!month) throw new Error("กรุณาระบุเดือน");
+
       const billMonth = new Date(month);
+      const start = new Date(
+        billMonth.getFullYear(),
+        billMonth.getMonth(),
+        1,
+      );
+      const end = new Date(
+        billMonth.getFullYear(),
+        billMonth.getMonth() + 1,
+        1,
+      );
 
       const rooms = await prisma.room.findMany({
         where: {
           status: 1,
           bills: {
-            none: { month: billMonth },
+            none: {
+              month: { gte: start, lt: end },
+            },
           },
         },
       });
@@ -323,44 +336,6 @@ bill.post(
             },
           });
 
-          // แจ้ง LINE
-          const detailedBill = `${BASE_URL}/bill/${billCreated.billId}`;
-          if (booking.customer?.userId) {
-            await sendFlexMessage(
-              booking.customer.userId,
-              `📄 แจ้งบิลค่าเช่าห้อง ประจำเดือน ${formatThaiMonth(
-                billCreated.month
-              )}`,
-              [
-                { label: "ห้อง", value: booking.room.number },
-                { label: "ค่าเช่าห้อง", value: `${rent} บาท` },
-                {
-                  label: "ค่าน้ำ",
-                  value: `${billCreated.wUnits} หน่วย (${billCreated.waterCost} บาท)`,
-                },
-                {
-                  label: "ค่าไฟ",
-                  value: `${billCreated.eUnits} หน่วย (${billCreated.electricCost} บาท)`,
-                },
-                { label: "ค่าส่วนกลาง", value: `${service} บาท` },
-                {
-                  label: "ยอดรวมทั้งหมด",
-                  value: `${billCreated.total.toLocaleString()} บาท`,
-                },
-                {
-                  label: "ครบกำหนดชำระ",
-                  value: formatThaiDate(billCreated.dueDate),
-                },
-                {
-                  label: "สถานะ",
-                  value: getBillStatusText(billCreated.billStatus),
-                  color: getBillStatusColour(billCreated.billStatus),
-                },
-              ],
-              [{ label: "ดูรายละเอียดและชำระเงิน", url: detailedBill }]
-            );
-          }
-
           results.push(billCreated);
         } catch (e) {
           errors.push({
@@ -381,7 +356,7 @@ bill.post(
     } catch (err) {
       res.status(400).json({ error: err.message });
     }
-  }
+  },
 );
 
 

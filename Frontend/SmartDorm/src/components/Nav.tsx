@@ -181,37 +181,44 @@ export default function Nav({
             🏘️ จัดการห้องพัก
           </button>
 
-          <button
-            className={`btn text-start ${
-              isActive("/bookings")
-                ? "btn-warning text-dark fw-bold"
-                : "btn-warning"
-            }`}
-            onClick={() => navigate("/bookings")}
-          >
-            📑 การจอง
-            {pendingBookings > 0 && (
-              <span className="badge bg-danger position-absolute top-0 end-0">
-                {pendingBookings}
-              </span>
-            )}
-          </button>
+          {/* ===== กลุ่ม: จัดการการจองและคืน ===== */}
+  <div className="mt-2">
+    <div className="text-warning fw-bold small px-1 mb-1">
+      📑 จัดการการจองและคืน
+    </div>
 
-          <button
-            className={`btn text-start ${
-              isActive("/checkout")
-                ? "btn-warning text-dark fw-bold"
-                : "btn-warning"
-            }`}
-            onClick={() => navigate("/checkout")}
-          >
-            🔄 หน้าคืน
-            {pendingCheckouts > 0 && (
-              <span className="badge bg-danger position-absolute top-0 end-0">
-                {pendingCheckouts}
-              </span>
-            )}
-          </button>
+    <button
+      className={`btn text-start w-100 ${
+        isActive("/bookings")
+          ? "btn-warning text-dark fw-bold"
+          : "btn-warning"
+      }`}
+      onClick={() => navigate("/bookings")}
+    >
+      ▸ การจอง
+      {pendingBookings > 0 && (
+        <span className="badge bg-danger position-absolute top-0 end-0">
+          {pendingBookings}
+        </span>
+      )}
+    </button>
+
+    <button
+      className={`btn text-start w-100 ${
+        isActive("/checkout")
+          ? "btn-warning text-dark fw-bold"
+          : "btn-warning"
+      }`}
+      onClick={() => navigate("/checkout")}
+    >
+      ▸ หน้าคืน
+      {pendingCheckouts > 0 && (
+        <span className="badge bg-danger position-absolute top-0 end-0">
+          {pendingCheckouts}
+        </span>
+      )}
+    </button>
+  </div>
 
           <button
             className={`btn text-start ${
@@ -224,16 +231,34 @@ export default function Nav({
             🕘 ประวัติการจอง
           </button>
 
-          <button
-            className={`btn text-start ${
-              isActive("/bills")
-                ? "btn-warning text-dark fw-bold"
-                : "btn-warning"
-            }`}
-            onClick={() => navigate("/bills")}
-          >
-            🧾 สร้างบิล
-          </button>
+          {/* ===== กลุ่ม: สร้างบิล ===== */}
+  <div className="mt-2">
+    <div className="text-warning fw-bold small px-1 mb-1">
+      🧾 สร้างบิล
+    </div>
+
+    <button
+      className={`btn text-start w-100 ${
+        isActive("/bills")
+          ? "btn-warning text-dark fw-bold"
+          : "btn-warning"
+      }`}
+      onClick={() => navigate("/bills")}
+    >
+      ▸ สร้างบิล
+    </button>
+
+    <button
+      className={`btn text-start w-100 ${
+        isActive("/create-bills")
+          ? "btn-warning text-dark fw-bold"
+          : "btn-warning"
+      }`}
+      onClick={() => navigate("/create-bills")}
+    >
+      ▸ สร้างบิลทั้งหมด
+    </button>
+  </div>
 
 <button
   className={`btn text-start ${
@@ -322,41 +347,38 @@ export default function Nav({
                 🏠 หน้าแรก
               </button>
 
-              <button
-                className="btn btn-warning text-start"
-                onClick={() => {
-                  navigate("/rooms");
-                  setMenuOpen(false);
-                }}
-              >
-                🏘️ จัดการห้องพัก
-              </button>
+              {/* ===== กลุ่ม: จัดการการจองและคืน ===== */}
+  <div className="mt-2">
+    <div className="text-warning fw-bold small px-1 mb-1">
+      📑 จัดการการจองและคืน
+    </div>
 
-              <button
-                className="btn btn-warning text-start d-flex justify-content-between align-items-center"
-                onClick={() => {
-                  navigate("/bookings");
-                  setMenuOpen(false);
-                }}
-              >
-                <span>📑 การจอง</span>
-                {pendingBookings > 0 && (
-                  <span className="badge bg-danger">{pendingBookings}</span>
-                )}
-              </button>
+    <button
+      className="btn btn-warning text-start d-flex justify-content-between align-items-center"
+      onClick={() => {
+        navigate("/bookings");
+        setMenuOpen(false);
+      }}
+    >
+      <span>▸ การจอง</span>
+      {pendingBookings > 0 && (
+        <span className="badge bg-danger">{pendingBookings}</span>
+      )}
+    </button>
 
-              <button
-                className="btn btn-warning text-start d-flex justify-content-between align-items-center"
-                onClick={() => {
-                  navigate("/checkout");
-                  setMenuOpen(false);
-                }}
-              >
-                <span>🔄 หน้าคืน</span>
-                {pendingCheckouts > 0 && (
-                  <span className="badge bg-danger">{pendingCheckouts}</span>
-                )}
-              </button>
+    <button
+      className="btn btn-warning text-start d-flex justify-content-between align-items-center"
+      onClick={() => {
+        navigate("/checkout");
+        setMenuOpen(false);
+      }}
+    >
+      <span>▸ หน้าคืน</span>
+      {pendingCheckouts > 0 && (
+        <span className="badge bg-danger">{pendingCheckouts}</span>
+      )}
+    </button>
+  </div>
 
               <button
                 className="btn btn-warning text-start"
@@ -368,15 +390,32 @@ export default function Nav({
                 🕘 ประวัติการจอง
               </button>
 
-              <button
-                className="btn btn-warning text-start"
-                onClick={() => {
-                  navigate("/bills");
-                  setMenuOpen(false);
-                }}
-              >
-                🧾 สร้างบิล
-              </button>
+              {/* ===== กลุ่ม: สร้างบิล ===== */}
+  <div className="mt-2">
+    <div className="text-warning fw-bold small px-1 mb-1">
+      🧾 สร้างบิล
+    </div>
+
+    <button
+      className="btn btn-warning text-start"
+      onClick={() => {
+        navigate("/bills");
+        setMenuOpen(false);
+      }}
+    >
+      ▸ สร้างบิล
+    </button>
+
+    <button
+      className="btn btn-warning text-start"
+      onClick={() => {
+        navigate("/create-bills");
+        setMenuOpen(false);
+      }}
+    >
+      ▸ สร้างบิลทั้งหมด
+    </button>
+  </div>
 
 <button
   className="btn btn-warning text-start"

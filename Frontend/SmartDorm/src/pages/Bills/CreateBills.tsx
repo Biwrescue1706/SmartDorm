@@ -4,9 +4,9 @@ import { useCreateBill } from "../../hooks/Bill/useCreateBill";
 import type { Room } from "../../types/Room";
 import { useNavigate } from "react-router-dom";
 
-const WATER_PRICE = 20;
-const ELECTRIC_PRICE = 8;
-const SERVICE_FEE = 200;
+const WATER_PRICE = 19;
+const ELECTRIC_PRICE = 7;
+const SERVICE_FEE = 50;
 
 type PrevMap = Record<
   string,

@@ -1,22 +1,66 @@
 // src/pages/Bills/CreateBills.tsx
-
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { useCreateBill } from "../../hooks/Bill/useCreateBill";
 import type { Room } from "../../types/Room";
+import { useNavigate } from "react-router-dom";
+
+const WATER_PRICE = 20;
+const ELECTRIC_PRICE = 8;
+const SERVICE_FEE = 200;
+
+type PrevMap = Record<
+  string,
+  { wBefore: number; eBefore: number; rent: number; month?: string }
+>;
 
 export default function CreateBills() {
-  const { rooms, bookings, existingBills, loading, reloadAll } =
-    useCreateBill();
-
-  const [filter, setFilter] = useState<"not" | "done">("not");
-  const [open, setOpen] = useState(false);
-  const [room, setRoom] = useState<Room | null>(null);
+  const { rooms, bookings, existingBills, loading } = useCreateBill();
+  const navigate = useNavigate();
 
   const [month, setMonth] = useState("");
-  const [wAfter, setWAfter] = useState("");
-  const [eAfter, setEAfter] = useState("");
+  const [meters, setMeters] = useState<
+    Record<string, { wAfter: string; eAfter: string }>
+  >({});
+  const [prev, setPrev] = useState<PrevMap>({});
   const [saving, setSaving] = useState(false);
 
+  // โหลดบิลล่าสุดของทุกห้อง เพื่อเอามิเตอร์ "ครั้งก่อน"
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch(
+          `${import.meta.env.VITE_API_BASE}/bill/getall`,
+          { credentials: "include" },
+        );
+        const data = await res.json();
+
+        const latest: any = {};
+        for (const b of data) {
+          if (
+            !latest[b.roomId] ||
+            new Date(b.month) > new Date(latest[b.roomId].month)
+          ) {
+            latest[b.roomId] = b;
+          }
+        }
+
+        const map: PrevMap = {};
+        for (const k in latest) {
+          map[k] = {
+            wBefore: latest[k].wAfter ?? 0,
+            eBefore: latest[k].eAfter ?? 0,
+            rent: latest[k].rent ?? 0,
+            month: latest[k].month,
+          };
+        }
+        setPrev(map);
+      } catch {
+        setPrev({});
+      }
+    })();
+  }, []);
+
+  // ห้องที่มีผู้พักจริง
   const bookedRooms = useMemo(() => {
     return rooms.filter((r: Room) =>
       bookings.find(
@@ -25,47 +69,101 @@ export default function CreateBills() {
     );
   }, [rooms, bookings]);
 
-  const filtered = bookedRooms.filter((r: Room) => {
-    const has = existingBills.includes(r.roomId);
-    return filter === "not" ? !has : has;
-  });
+  // ห้องที่ยังไม่มีบิลของเดือนปัจจุบัน
+  const notBilledRooms = bookedRooms.filter(
+    (r: Room) => !existingBills.includes(r.roomId),
+  );
 
-  const openDialog = (r: Room) => {
-    setRoom(r);
-    setMonth("");
-    setWAfter("");
-    setEAfter("");
-    setOpen(true);
+  const setMeter = (
+    roomId: string,
+    key: "wAfter" | "eAfter",
+    value: string,
+  ) => {
+    setMeters((prev) => ({
+      ...prev,
+      [roomId]: {
+        ...(prev[roomId] || { wAfter: "", eAfter: "" }),
+        [key]: value,
+      },
+    }));
   };
 
-  const submit = async () => {
-    if (!room) return;
-    if (!month || !wAfter || !eAfter) {
-      alert("กรอกข้อมูลให้ครบ");
+  const calcUnits = (r: Room) => {
+    const p = prev[r.roomId] || { wBefore: 0, eBefore: 0, rent: r.rent };
+    const m = meters[r.roomId];
+    if (!m?.wAfter || !m?.eAfter) {
+      return { wUnits: 0, eUnits: 0, total: 0 };
+    }
+
+    const wUnits = Number(m.wAfter) - p.wBefore;
+    const eUnits = Number(m.eAfter) - p.eBefore;
+
+    if (wUnits < 0 || eUnits < 0) {
+      return { wUnits, eUnits, total: 0 };
+    }
+
+    const total =
+      p.rent +
+      SERVICE_FEE +
+      wUnits * WATER_PRICE +
+      eUnits * ELECTRIC_PRICE;
+
+    return { wUnits, eUnits, total };
+  };
+
+  const submitAll = async () => {
+    if (!month) {
+      alert("กรุณาเลือกเดือน");
       return;
     }
+
+    for (const r of notBilledRooms) {
+      const m = meters[r.roomId];
+      if (!m?.wAfter || !m?.eAfter) {
+        alert(`กรุณากรอกมิเตอร์ให้ครบ ห้อง ${r.number}`);
+        return;
+      }
+
+      const p = prev[r.roomId] || { wBefore: 0, eBefore: 0 };
+      if (Number(m.wAfter) < p.wBefore || Number(m.eAfter) < p.eBefore) {
+        alert(`มิเตอร์ต้องไม่น้อยกว่าครั้งก่อน ห้อง ${r.number}`);
+        return;
+      }
+    }
+
+    const payload = {
+      month,
+      meters: notBilledRooms.map((r) => ({
+        roomId: r.roomId,
+        wAfter: Number(meters[r.roomId].wAfter),
+        eAfter: Number(meters[r.roomId].eAfter),
+      })),
+    };
 
     setSaving(true);
     try {
       const res = await fetch(
-        `${import.meta.env.VITE_API_BASE}/bill/createFromRoom/${room.roomId}`,
+        `${import.meta.env.VITE_API_BASE}/bill/createFromActiveRooms`,
         {
           method: "POST",
           credentials: "include",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            month,
-            wAfter: Number(wAfter),
-            eAfter: Number(eAfter),
-          }),
+          body: JSON.stringify(payload),
         },
       );
 
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "สร้างบิลไม่สำเร็จ");
 
-      setOpen(false);
-      await reloadAll();
+      alert(
+        `สร้างบิลสำเร็จ ${data.success} ห้อง\nไม่สำเร็จ ${data.failed} ห้อง`,
+      );
+
+      if (data.failed > 0) {
+        console.table(data.errors);
+      }
+
+      navigate("/bills");
     } catch (e: any) {
       alert(e.message);
     } finally {
@@ -75,116 +173,100 @@ export default function CreateBills() {
 
   return (
     <div className="p-3">
-      <h2 className="fw-bold mb-3">สร้างบิลห้องพัก</h2>
+      <h2 className="fw-bold mb-3">สร้างบิลทั้งหมด</h2>
 
-      <div className="mb-3">
-        <button
-          className={`btn me-2 ${
-            filter === "not" ? "btn-danger" : "btn-outline-danger"
-          }`}
-          onClick={() => setFilter("not")}
-        >
-          ยังไม่ได้ออกบิล
-        </button>
-        <button
-          className={`btn ${
-            filter === "done" ? "btn-success" : "btn-outline-success"
-          }`}
-          onClick={() => setFilter("done")}
-        >
-          ออกบิลแล้ว
-        </button>
+      <div className="mb-3" style={{ maxWidth: 260 }}>
+        <label className="fw-bold">เดือน</label>
+        <input
+          type="month"
+          className="form-control"
+          value={month}
+          onChange={(e) => setMonth(e.target.value)}
+        />
       </div>
 
       {loading ? (
         <p>กำลังโหลด...</p>
+      ) : notBilledRooms.length === 0 ? (
+        <p className="text-muted">ไม่มีห้องที่ต้องสร้างบิล</p>
       ) : (
-        <table className="table table-bordered">
-          <thead>
-            <tr>
-              <th>ห้อง</th>
-              <th>ค่าเช่า</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            {filtered.map((r: Room) => {
-              const has = existingBills.includes(r.roomId);
-              return (
-                <tr key={r.roomId}>
-                  <td>{r.number}</td>
-                  <td>{r.rent}</td>
-                  <td>
-                    {!has && (
-                      <button
-                        className="btn btn-sm btn-primary"
-                        onClick={() => openDialog(r)}
-                      >
-                        สร้างบิล
-                      </button>
-                    )}
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      )}
+        <>
+          <table className="table table-bordered align-middle">
+            <thead>
+              <tr>
+                <th>ห้อง</th>
+                <th>น้ำ (ครั้งก่อน)</th>
+                <th>น้ำ (ครั้งหลัง)</th>
+                <th>ไฟ (ครั้งก่อน)</th>
+                <th>ไฟ (ครั้งหลัง)</th>
+                <th>หน่วยน้ำ</th>
+                <th>หน่วยไฟ</th>
+                <th>ยอดรวม</th>
+              </tr>
+            </thead>
+            <tbody>
+              {notBilledRooms.map((r: Room) => {
+                const p = prev[r.roomId] || {
+                  wBefore: 0,
+                  eBefore: 0,
+                  rent: r.rent,
+                };
+                const { wUnits, eUnits, total } = calcUnits(r);
 
-      {open && room && (
-        <div className="modal d-block" style={{ background: "rgba(0,0,0,.5)" }}>
-          <div className="modal-dialog">
-            <div className="modal-content p-3">
-              <h5 className="fw-bold mb-3">สร้างบิล ห้อง {room.number}</h5>
+                return (
+                  <tr key={r.roomId}>
+                    <td className="fw-bold">{r.number}</td>
 
-              <div className="mb-2">
-                <label>เดือน</label>
-                <input
-                  type="month"
-                  className="form-control"
-                  value={month}
-                  onChange={(e) => setMonth(e.target.value)}
-                />
-              </div>
+                    <td>{p.wBefore}</td>
+                    <td>
+                      <input
+                        type="number"
+                        className="form-control"
+                        value={meters[r.roomId]?.wAfter || ""}
+                        onChange={(e) =>
+                          setMeter(r.roomId, "wAfter", e.target.value)
+                        }
+                      />
+                    </td>
 
-              <div className="mb-2">
-                <label>เลขมิเตอร์น้ำปัจจุบัน</label>
-                <input
-                  type="number"
-                  className="form-control"
-                  value={wAfter}
-                  onChange={(e) => setWAfter(e.target.value)}
-                />
-              </div>
+                    <td>{p.eBefore}</td>
+                    <td>
+                      <input
+                        type="number"
+                        className="form-control"
+                        value={meters[r.roomId]?.eAfter || ""}
+                        onChange={(e) =>
+                          setMeter(r.roomId, "eAfter", e.target.value)
+                        }
+                      />
+                    </td>
 
-              <div className="mb-3">
-                <label>เลขมิเตอร์ไฟปัจจุบัน</label>
-                <input
-                  type="number"
-                  className="form-control"
-                  value={eAfter}
-                  onChange={(e) => setEAfter(e.target.value)}
-                />
-              </div>
+                    <td className={wUnits < 0 ? "text-danger" : ""}>
+                      {wUnits > 0 ? wUnits : wUnits < 0 ? "ผิดพลาด" : "-"}
+                    </td>
+                    <td className={eUnits < 0 ? "text-danger" : ""}>
+                      {eUnits > 0 ? eUnits : eUnits < 0 ? "ผิดพลาด" : "-"}
+                    </td>
 
-              <div className="text-end">
-                <button
-                  className="btn btn-secondary me-2"
-                  onClick={() => setOpen(false)}
-                >
-                  ยกเลิก
-                </button>
-                <button
-                  className="btn btn-primary"
-                  onClick={submit}
-                  disabled={saving}
-                >
-                  {saving ? "กำลังสร้าง..." : "สร้างบิล"}
-                </button>
-              </div>
-            </div>
+                    <td className="fw-bold">
+                      {total > 0 ? total.toLocaleString() + " บาท" : "-"}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+
+          <div className="text-end">
+            <button
+              className="btn btn-primary px-4"
+              onClick={submitAll}
+              disabled={saving}
+            >
+              {saving ? "กำลังสร้าง..." : "สร้างบิลทั้งหมด"}
+            </button>
           </div>
-        </div>
+        </>
       )}
     </div>
   );

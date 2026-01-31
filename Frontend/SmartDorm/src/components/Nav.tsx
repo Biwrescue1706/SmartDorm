@@ -24,6 +24,7 @@ export default function Nav({
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+const [bookingMenuOpen, setBookingMenuOpen] = useState(false);
 
   const shortName = (name?: string) => {
     if (!name) return "-";
@@ -47,6 +48,12 @@ export default function Nav({
     document.addEventListener("mousedown", close);
     return () => document.removeEventListener("mousedown", close);
   }, []);
+
+useEffect(() => {
+  if (isActive("/bookings") || isActive("/checkout")) {
+    setBookingMenuOpen(true);
+  }
+}, [location.pathname]);
 
   return (
     <>
@@ -181,44 +188,48 @@ export default function Nav({
             🏘️ จัดการห้องพัก
           </button>
 
-          {/* ===== กลุ่ม: จัดการการจองและคืน ===== */}
-          <div className="mt-2">
-            <div className="text-warning fw-bold small px-1 mb-1">
-              📑 จัดการการจองและคืน
-            </div>
+          {/* ===== กลุ่ม: จัดการการจองและคืน (Dropdown) ===== */}
+<div className="mt-2">
+  <button
+    className="btn btn-warning text-start w-100 fw-bold d-flex justify-content-between align-items-center"
+    onClick={() => setBookingMenuOpen(!bookingMenuOpen)}
+  >
+    <span>📑 จัดการการจองและคืน</span>
+    <span>{bookingMenuOpen ? "▲" : "▼"}</span>
+  </button>
 
-            <button
-              className={`btn text-start w-100 ${
-                isActive("/bookings")
-                  ? "btn-warning text-dark fw-bold"
-                  : "btn-warning"
-              }`}
-              onClick={() => navigate("/bookings")}
-            >
-              ▸ การจอง
-              {pendingBookings > 0 && (
-                <span className="badge bg-danger position-absolute top-0 end-0">
-                  {pendingBookings}
-                </span>
-              )}
-            </button>
+  {bookingMenuOpen && (
+    <div className="mt-2 d-flex flex-column gap-2 ps-3">
+      <button
+        className={`btn text-start w-100 ${
+          isActive("/bookings")
+            ? "btn-warning text-dark fw-bold"
+            : "btn-warning"
+        }`}
+        onClick={() => navigate("/bookings")}
+      >
+        ▸ การจอง
+        {pendingBookings > 0 && (
+          <span className="badge bg-danger ms-2">{pendingBookings}</span>
+        )}
+      </button>
 
-            <button
-              className={`btn text-start w-100 ${
-                isActive("/checkout")
-                  ? "btn-warning text-dark fw-bold"
-                  : "btn-warning"
-              }`}
-              onClick={() => navigate("/checkout")}
-            >
-              ▸ หน้าคืน
-              {pendingCheckouts > 0 && (
-                <span className="badge bg-danger position-absolute top-0 end-0">
-                  {pendingCheckouts}
-                </span>
-              )}
-            </button>
-          </div>
+      <button
+        className={`btn text-start w-100 ${
+          isActive("/checkout")
+            ? "btn-warning text-dark fw-bold"
+            : "btn-warning"
+        }`}
+        onClick={() => navigate("/checkout")}
+      >
+        ▸ หน้าคืน
+        {pendingCheckouts > 0 && (
+          <span className="badge bg-danger ms-2">{pendingCheckouts}</span>
+        )}
+      </button>
+    </div>
+  )}
+</div>
 
           <button
             className={`btn text-start ${
@@ -346,38 +357,46 @@ export default function Nav({
                 🏠 จัดการห้องพัก
               </button>
 
-              {/* ===== กลุ่ม: จัดการการจองและคืน ===== */}
-              <div className="mt-2">
-                <div className="text-warning fw-bold small px-1 mb-1">
-                  📑 จัดการการจองและคืน
-                </div>
+              {/* ===== กลุ่ม: จัดการการจองและคืน (Dropdown) ===== */}
+<div className="mt-2">
+  <button
+    className="btn btn-warning text-start w-100 fw-bold d-flex justify-content-between align-items-center"
+    onClick={() => setBookingMenuOpen(!bookingMenuOpen)}
+  >
+    <span>📑 จัดการการจองและคืน</span>
+    <span>{bookingMenuOpen ? "▲" : "▼"}</span>
+  </button>
 
-                <button
-                  className="btn btn-warning text-start d-flex justify-content-between align-items-center"
-                  onClick={() => {
-                    navigate("/bookings");
-                    setMenuOpen(false);
-                  }}
-                >
-                  <span>▸ การจอง</span>
-                  {pendingBookings > 0 && (
-                    <span className="badge bg-danger">{pendingBookings}</span>
-                  )}
-                </button>
+  {bookingMenuOpen && (
+    <div className="mt-2 d-flex flex-column gap-2 ps-3">
+      <button
+        className="btn btn-warning text-start d-flex justify-content-between align-items-center"
+        onClick={() => {
+          navigate("/bookings");
+          setMenuOpen(false);
+        }}
+      >
+        <span>▸ การจอง</span>
+        {pendingBookings > 0 && (
+          <span className="badge bg-danger">{pendingBookings}</span>
+        )}
+      </button>
 
-                <button
-                  className="btn btn-warning text-start d-flex justify-content-between align-items-center"
-                  onClick={() => {
-                    navigate("/checkout");
-                    setMenuOpen(false);
-                  }}
-                >
-                  <span>▸ หน้าคืน</span>
-                  {pendingCheckouts > 0 && (
-                    <span className="badge bg-danger">{pendingCheckouts}</span>
-                  )}
-                </button>
-              </div>
+      <button
+        className="btn btn-warning text-start d-flex justify-content-between align-items-center"
+        onClick={() => {
+          navigate("/checkout");
+          setMenuOpen(false);
+        }}
+      >
+        <span>▸ หน้าคืน</span>
+        {pendingCheckouts > 0 && (
+          <span className="badge bg-danger">{pendingCheckouts}</span>
+        )}
+      </button>
+    </div>
+  )}
+</div>
 
               <button
                 className="btn btn-warning text-start"

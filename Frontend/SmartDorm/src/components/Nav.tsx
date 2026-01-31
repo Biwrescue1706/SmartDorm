@@ -160,7 +160,7 @@ useEffect(() => {
           height: "100vh",
           marginTop: 0, // กัน Topbar
           marginLeft: 0, // mobile
-          paddingTop: 80,
+          paddingTop: 60,
           backgroundColor: "#4A0080",
           zIndex: 1500,
         }}
@@ -310,17 +310,21 @@ useEffect(() => {
       {menuOpen && (
         <>
           <div
-            className="position-fixed text-white p-3 shadow"
-            style={{
-              width: 200,
-              height: "100vh",
-              marginTop: 0, // กัน Topbar
-              marginLeft: 0, // mobile
-              paddingTop: 80,
-              backgroundColor: "#4A0080",
-              zIndex: 1500,
-            }}
-          >
+  className="position-fixed text-white p-3 shadow"
+  style={{
+    width: 200,
+    height: "100vh",
+    marginTop: 0,
+    marginLeft: 0,
+    paddingTop: 60,
+    backgroundColor: "#4A0080",
+    zIndex: 1500,
+
+    // ✅ เพิ่ม 2 บรรทัดนี้
+    overflowY: "auto",
+    overscrollBehavior: "contain",
+  }}
+>
             <button
               className="btn btn-warning btn-sm mb-3 fw-bold ms-auto d-flex align-items-center gap-2"
               onClick={() => setMenuOpen(false)}

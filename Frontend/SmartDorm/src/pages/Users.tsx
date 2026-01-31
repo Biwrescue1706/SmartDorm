@@ -244,7 +244,12 @@ export default function Users() {
           <div className="mx-auto" style={{ maxWidth: "1400px" }}>
             <h2
               className="fw-bold text-center mt-3 mb-4"
-              style={{ color: "#46007A" }}
+              style={{
+                color: "#4A0080",
+                borderBottom: "3px solid #CE93D8",
+                width: "fit-content",
+                margin: "0 auto",
+              }}
             >
               รายชื่อลูกค้าทั้งหมด
             </h2>
@@ -343,9 +348,11 @@ export default function Users() {
                           #{startIndex + idx + 1}
                         </h5>
                         <p className="text-muted small mb-1">LINE</p>
-                        <p className="fw-semibold">{card.userName}</p>
+                        <p className="fw-semibold text-black">
+                          {card.userName}
+                        </p>
                         <hr />
-                        <h6 className="fw-bold">ชื่อผู้จอง</h6>
+                        <h6 className="fw-bold text-black">ชื่อผู้จอง</h6>
                         <p>{card.fullName}</p>
                         <div className="d-flex justify-content-between gap-2 mt-2">
                           <button
@@ -421,7 +428,15 @@ export default function Users() {
                 zIndex: 1600,
               }}
             >
-              <Dialog.Title className="p-3 border-bottom fw-bold text-center">
+              <Dialog.Title
+                className="p-3 border-bottom fw-bold text-center text-black"
+                style={{
+                  color : "#000000",
+                  borderBottom: "3px solid #000000",
+                  width: "fit-content",
+                  margin: "0 auto",
+                }}
+              >
                 ประวัติของ <br />
                 {selectedUser?.bookings?.[0]?.fullName}
               </Dialog.Title>
@@ -444,7 +459,7 @@ export default function Users() {
                       รายการที่ {i + 1} • ห้อง {b.room?.number || "-"}
                     </div>
 
-                    <div className="p-3 bg-white">
+                    <div className="p-3 bg-white text-black">
                       <div className="d-flex justify-content-between mb-1">
                         <span className="fw-semibold">ชื่อผู้เช่า</span>
                         <span className="fw-semibold">{b.fullName || "-"}</span>

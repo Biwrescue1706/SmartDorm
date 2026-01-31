@@ -11,6 +11,18 @@ interface Props {
   onOverdue: (billId: string, room: string) => void;
 }
 
+const Divider = () => (
+  <hr
+    className=" my-3  mb-3 mt-3"
+    style={{
+      border: "none",
+      borderTop: "2px solid #000000",
+      opacity: 1,
+      margin: "10px 0",
+    }}
+  />
+);
+
 export default function AllBillsCard({
   bill,
   role,
@@ -50,9 +62,11 @@ export default function AllBillsCard({
           })}
         </h5>
       </div>
-      <hr />
+      <Divider />
       <div>
-        <h5 className="fw-semibold text-black text-center">รายละเอียดผู้เช่า</h5>
+        <h5 className="fw-semibold text-black text-center">
+          รายละเอียดผู้เช่า
+        </h5>
         <div className="mb-1 text-black h5">
           <b>ผู้เช่า : </b> {bill.fullName || " "}
         </div>
@@ -63,7 +77,7 @@ export default function AllBillsCard({
           <b>เบอร์ : </b> {bill.cphone || " "}
         </div>
       </div>
-      <hr />
+      <Divider />
       <div>
         <h5 className="fw-semibold text-black text-center">รายละเอียดบิล</h5>
         <div className="mb-1 text-black h5">
@@ -86,9 +100,8 @@ export default function AllBillsCard({
         )}
       </div>
 
-      <hr />
+      <Divider />
       <div>
-
         <div className="mb-2 text-black h5">
           <b>ยอดรวม : </b> {bill.total.toLocaleString()} บาท
         </div>
@@ -100,7 +113,7 @@ export default function AllBillsCard({
         )}
       </div>
 
-      <hr />
+      <Divider />
       <div>
         <h5 className="fw-semibold text-black text-center">สถานะการชำระเงิน</h5>
         <div className="mb-2 text-black h5">
@@ -112,7 +125,6 @@ export default function AllBillsCard({
           {isUnpaid && <span className="badge bg-danger p-2">ค้างชำระ</span>}
         </div>
       </div>
-
 
       {hasSlip && (
         <button

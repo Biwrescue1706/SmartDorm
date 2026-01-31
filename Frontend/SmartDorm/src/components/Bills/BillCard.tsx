@@ -2,24 +2,40 @@
 import type { Room } from "../../types/Room";
 import type { Booking } from "../../types/Booking";
 
+interface Bill {
+  month: string;
+  createdAt: string;
+}
+
 interface Props {
   room: Room;
   booking?: Booking;
 
-  // ✅ บิลของห้องนี้ (ส่งมาจาก Bills.tsx)
-  bill?: any;
-
+  // บิลของห้องนี้
+  bill?: Bill;
   hasBill: boolean;
 
-  // มีรอบบิลหรือยัง (วันนี้ >= 25)
+  // วันนี้ >= 25
   canCreateBill: boolean;
 
-  // rule 25
+  // rule 25 ต่อ booking
   canCreateBillForBooking: (booking: Booking) => boolean;
 
   formatThaiDate: (date: string) => string;
   onCreateBill: (room: Room) => void;
 }
+
+const Divider = () => (
+  <hr
+    className=" py-2 pb-2 pt-3"
+    style={{
+      border: "none",
+      borderTop: "2px solid #000000",
+      opacity: 1,
+      margin: "10px 0",
+    }}
+  />
+);
 
 export default function BillCard({
   room,
@@ -37,7 +53,8 @@ export default function BillCard({
   // เงื่อนไขแสดงปุ่มออกบิล
   const canShowCreateButton =
     !hasBill &&
-    booking?.checkinAt &&
+    !!booking &&
+    !!booking.checkinAt &&
     canCreateBill &&
     canCreateBillForBooking(booking);
 
@@ -55,13 +72,9 @@ export default function BillCard({
         ห้อง {room.number}
       </h5>
 
-      <p className="mb-1 text-black text-center">
-        <hr />
-      </p>
+      <Divider />
 
-      <p className="mb-1 text-black text-center">
-        <b>รายละเอียดผู้เช่า</b>
-      </p>
+      <p className="mb-1 text-black text-center fw-bold">รายละเอียดผู้เช่า</p>
 
       <p className="mb-1 text-black">
         <b>LINE :</b> {booking?.customer?.userName || "-"}
@@ -76,19 +89,18 @@ export default function BillCard({
         {booking?.checkinAt ? formatThaiDate(booking.checkinAt) : "-"}
       </p>
 
-      {/* ✅ แสดงข้อมูลบิล (ถ้ามี) */}
+      {/* แสดงข้อมูลบิล */}
       {hasBill && bill && (
         <>
-          <p className="mb-1 text-black text-center">
-            <hr />
-          </p>
-          <p className="mb-1 text-black text-center">
-            <b>รายละเอียดบิล</b>
-          </p>
+          <Divider />
+
+          <p className="mb-1 text-black text-center fw-bold">รายละเอียดบิล</p>
+
           <p className="mb-1 text-black">
             <b>เดือนที่ออกบิล :</b>{" "}
             {bill.month ? formatThaiDate(bill.month) : "-"}
           </p>
+
           <p className="mb-3 text-black">
             <b>วันที่ออกบิล :</b>{" "}
             {bill.createdAt ? formatThaiDate(bill.createdAt) : "-"}
@@ -96,7 +108,7 @@ export default function BillCard({
         </>
       )}
 
-      {/* ✅ ปุ่มออกบิล (ถ้ายังไม่มีบิล) */}
+      {/* ปุ่มออกบิล */}
       {canShowCreateButton && (
         <button
           className="btn w-100 fw-bold mt-3"

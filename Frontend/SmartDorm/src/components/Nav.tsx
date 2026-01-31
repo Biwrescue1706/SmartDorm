@@ -336,6 +336,16 @@ export default function Nav({
                 🏠 หน้าแรก
               </button>
 
+              <button
+                className="btn btn-warning text-start"
+                onClick={() => {
+                  navigate("/rooms");
+                  setMenuOpen(false);
+                }}
+              >
+                🏠 จัดการห้องพัก
+              </button>
+
               {/* ===== กลุ่ม: จัดการการจองและคืน ===== */}
               <div className="mt-2">
                 <div className="text-warning fw-bold small px-1 mb-1">

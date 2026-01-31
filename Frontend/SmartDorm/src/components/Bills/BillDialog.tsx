@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import type { Room } from "../../types/Room";
 import { API_BASE } from "../../config";
 import Swal from "sweetalert2";
+import { useNavigate } from "react-router-dom";
 
 interface BillDialogProps {
   open: boolean;
@@ -32,10 +33,9 @@ export default function BillDialog({
   });
 
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
-  // -------------------------------
   // โหลดค่ามิเตอร์ครั้งก่อน
-  // -------------------------------
   useEffect(() => {
     if (!room) return;
 
@@ -50,7 +50,7 @@ export default function BillDialog({
           .filter((b: any) => b.roomId === room.roomId)
           .sort(
             (a: any, b: any) =>
-              new Date(b.month).getTime() - new Date(a.month).getTime()
+              new Date(b.month).getTime() - new Date(a.month).getTime(),
           )[0];
 
         if (latest) {
@@ -68,9 +68,7 @@ export default function BillDialog({
     loadPrev();
   }, [room]);
 
-  // -------------------------------
   // เปลี่ยนค่า input
-  // -------------------------------
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value, type } = e.target;
     setForm((prev) => ({
@@ -79,9 +77,7 @@ export default function BillDialog({
     }));
   };
 
-  // -------------------------------
   // ปิด dialog + reset ค่า
-  // -------------------------------
   const handleClose = () => {
     setForm((prev) => ({
       ...prev,
@@ -92,18 +88,21 @@ export default function BillDialog({
     onClose();
   };
 
-  // -------------------------------
   // บันทึกบิล (สำคัญที่สุด)
-  // -------------------------------
   const handleSubmit = async () => {
     if (!room) return;
 
     if (!form.month) {
-      Swal.fire("กรุณาเลือกเดือนก่อนออกบิล", "", "error");
+      onClose(); // ❌ ปิดก่อน
+      Swal.fire({
+        title: "กรุณาเลือกเดือนก่อนออกบิล",
+        icon: "error",
+        timer: 1500,
+        showConfirmButton: false,
+      });
       return;
     }
 
-    // ✅ normalize เดือน → วันที่ 1 เสมอ
     const selected = new Date(form.month);
     const billMonth = new Date(
       selected.getFullYear(),
@@ -111,7 +110,7 @@ export default function BillDialog({
       1,
       0,
       0,
-      0
+      0,
     );
 
     setLoading(true);
@@ -126,9 +125,9 @@ export default function BillDialog({
           body: JSON.stringify({
             wAfter: form.wAfter,
             eAfter: form.eAfter,
-            month: billMonth.toISOString(), // ✅ ตรง 100%
+            month: billMonth.toISOString(),
           }),
-        }
+        },
       );
 
       const data = await res.json();
@@ -137,9 +136,25 @@ export default function BillDialog({
       await reloadExistingBills();
       onClose();
 
-      Swal.fire("สร้างบิลสำเร็จแล้ว", "", "success");
+      // ✅ สำเร็จ → แจ้งเตือน + redirect
+      Swal.fire({
+        title: "สร้างบิลสำเร็จแล้ว",
+        icon: "success",
+        timer: 1200,
+        showConfirmButton: false,
+      }).then(() => {
+        navigate("/bill-overview");
+      });
     } catch (err: any) {
-      Swal.fire("เกิดข้อผิดพลาด", err.message, "error");
+      onClose(); // ❌ ปิด dialog ก่อน
+
+      Swal.fire({
+        title: "เกิดข้อผิดพลาด",
+        text: err.message,
+        icon: "error",
+        timer: 1800,
+        showConfirmButton: false,
+      });
     } finally {
       setLoading(false);
     }

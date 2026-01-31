@@ -76,7 +76,6 @@ export default function Bills() {
 
   const currentBillMonth = useMemo(() => {
     const now = new Date();
-    if (now.getDate() < 25) return null;
     return new Date(now.getFullYear(), now.getMonth() + 1, 1);
   }, []);
 

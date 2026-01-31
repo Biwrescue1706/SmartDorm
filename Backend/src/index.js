@@ -89,11 +89,21 @@ async function startServer() {
     scheduleOverdueAuto();
 
     app.listen(PORT, () => {
+
       const env = process.env.NODE_ENV || "development";
-      console.log(`🚀 Server running in ${env}`);
+
+      if (env === "production") {
+        console.log("✅ โหมดการทำงาน : Production");
+        console.log(`🚀 เซิร์ฟเวอร์กำลังทำงานอยู่ ${env}`);
+        console.log(`🚀 เซิร์ฟเวอร์กำลังทำงานอยู่ที่ https://hub.smartdorm-biwboong.shop`);
+      } else {
+        console.log("✅ โหมดการทำงาน : Development");
+        console.log(`🚀 เซิร์ฟเวอร์กำลังทำงานอยู่ ${env}`);
+        console.log(`🚀 เซิร์ฟเวอร์กำลังทำงานอยู่ที่พอร์ต http://localhost:${PORT}`);
+      }
     });
   } catch (err) {
-    console.error("❌ Start failed:", err);
+    console.error("❌ เริ่มต้นล้มเหลว\n :", err);
     process.exit(1);
   }
 }

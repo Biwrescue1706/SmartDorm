@@ -18,7 +18,7 @@ overview.get("/", async (req, res) => {
       return res.status(400).json({ error: "year is required" });
     }
 
-    // ดึงห้องทั้งหมด (ไม่มี limit)
+    // 1️⃣ ดึงห้องทั้งหมด
     const rooms = await prisma.room.findMany({
       orderBy: { number: "asc" },
       select: {
@@ -27,11 +27,9 @@ overview.get("/", async (req, res) => {
       },
     });
 
-    // สร้างช่วงเวลา
+    // 2️⃣ สร้างช่วงเวลา bill
     let whereBill;
-
     if (month && month > 0) {
-      // เฉพาะเดือนที่เลือก
       whereBill = {
         month: {
           gte: new Date(year, month - 1, 1),
@@ -39,7 +37,6 @@ overview.get("/", async (req, res) => {
         },
       };
     } else {
-      // ทั้งปี
       whereBill = {
         month: {
           gte: new Date(year, 0, 1),
@@ -48,6 +45,7 @@ overview.get("/", async (req, res) => {
       };
     }
 
+    // 3️⃣ ดึง bill
     const bills = await prisma.bill.findMany({
       where: whereBill,
       select: {
@@ -60,14 +58,30 @@ overview.get("/", async (req, res) => {
       },
     });
 
-    // map bill ตาม roomId
     const billMap = new Map();
     bills.forEach((b) => billMap.set(b.roomId, b));
 
+    // 4️⃣ ดึง booking ที่ "ยังมีคนพักอยู่"
+    const bookings = await prisma.booking.findMany({
+      where: {
+        approveStatus: 1,
+        checkinAt: {
+          not: null, // 🔥 สำคัญมาก ไม่งั้น hasBooking จะ false หมด
+        },
+      },
+      select: {
+        roomId: true,
+      },
+    });
+
+    const bookingSet = new Set(bookings.map((b) => b.roomId));
+
+    // 5️⃣ รวมข้อมูล
     const data = rooms.map((r) => ({
       roomId: r.roomId,
       number: r.number,
       bill: billMap.get(r.roomId) || null,
+      hasBooking: bookingSet.has(r.roomId), // ✅ key หลัก
     }));
 
     res.json({

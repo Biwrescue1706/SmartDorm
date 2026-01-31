@@ -41,16 +41,17 @@ const months = [
 ];
 
 export default function BillOverviewPage() {
-  const navigate = useNavigate();
   const { handleLogout, role, adminName, adminUsername } = useAuth();
-  const pendingBookings = usePendingBookings();
-  const pendingCheckouts = usePendingCheckouts();
-
   const now = new Date();
   const [year, setYear] = useState<number>(now.getFullYear());
   const [month, setMonth] = useState<number>(now.getMonth() + 1);
-
   const { rooms, totalRooms, loading, error } = useOverview(year, month);
+
+  const navigate = useNavigate();
+  const pendingBookings = usePendingBookings();
+  const pendingCheckouts = usePendingCheckouts();
+
+  const [selectedFloor, setSelectedFloor] = useState<number | "all">("all");
 
   const floors = useMemo(() => {
     const map = new Map<number, OverviewRoom[]>();
@@ -65,6 +66,10 @@ export default function BillOverviewPage() {
     // เรียงชั้น 1 → 2 → 3 → ...
     return Array.from(map.entries()).sort((a, b) => a[0] - b[0]);
   }, [rooms]);
+
+  const floorNumbers = useMemo(() => {
+    return floors.map(([floor]) => floor);
+  }, [floors]);
 
   if (loading) {
     return (
@@ -111,16 +116,25 @@ export default function BillOverviewPage() {
           <div className="d-flex flex-wrap justify-content-center gap-3 mb-3 small">
             <div className="d-flex align-items-center text-dark gap-1">
               <span className="badge bg-secondary"> </span>
-              <span>ยังไม่มีบิล</span>
+              <span>ห้องว่าง</span>
             </div>
+
+            {/* ✅ เพิ่มอันนี้ */}
+            <div className="d-flex align-items-center text-dark gap-1">
+              <span className="badge bg-primary"> </span>
+              <span>มีการจอง / ยังไม่ออกบิล</span>
+            </div>
+
             <div className="d-flex align-items-center text-dark gap-1">
               <span className="badge bg-warning"> </span>
               <span>มีบิล / ยังไม่ชำระ</span>
             </div>
+
             <div className="d-flex align-items-center text-dark gap-1">
               <span className="badge bg-info"> </span>
               <span>กำลังตรวจสอบ</span>
             </div>
+
             <div className="d-flex align-items-center text-dark gap-1">
               <span className="badge bg-success"> </span>
               <span>ชำระแล้ว</span>
@@ -155,6 +169,24 @@ export default function BillOverviewPage() {
               ))}
             </select>
 
+            <select
+              className="form-select shadow-sm"
+              style={{ width: 120 }}
+              value={selectedFloor}
+              onChange={(e) =>
+                setSelectedFloor(
+                  e.target.value === "all" ? "all" : Number(e.target.value),
+                )
+              }
+            >
+              <option value="all">ทุกชั้น</option>
+              {floorNumbers.map((f) => (
+                <option key={f} value={f}>
+                  ชั้น {f}
+                </option>
+              ))}
+            </select>
+
             <button
               className="btn btn-outline-secondary fw-semibold"
               disabled={loading}
@@ -166,7 +198,7 @@ export default function BillOverviewPage() {
                 window.location.reload();
               }}
             >
-              {loading ? "⏳ กำลังโหลด..." : "🔄 รีเซ็ตข้อมูล"}
+              {loading ? "⏳ กำลังโหลด..." : "🔄 รีเฟรชข้อมูล"}
             </button>
           </div>
 
@@ -175,63 +207,81 @@ export default function BillOverviewPage() {
           )}
 
           {/* Floors */}
-          {floors.map(([floor, floorRooms]) => (
-            <div key={floor} className="mb-4">
-              <h5
-                className="fw-bold mb-2 text-center"
-                style={{ color: "#000000" }}
-              >
-                ชั้น {floor}
-              </h5>
+          {floors
+            .filter(([f]) => selectedFloor === "all" || f === selectedFloor)
+            .map(([floor, floorRooms]) => (
+              <div key={floor} className="mb-4">
+                <h5
+                  className="fw-bold mb-2 text-center"
+                  style={{ color: "#000000" }}
+                >
+                  ชั้น {floor}
+                </h5>
 
-              <div className="row g-3">
-                {floorRooms.map((r: OverviewRoom) => {
-                  const bill = r.bill;
+                <div className="row g-3">
+                  {floorRooms.map((r: OverviewRoom) => {
+                    const bill = r.bill;
+                    const hasBooking = r.hasBooking;
+                    let bg = "bg-secondary";
+                    let text = "text-black";
 
-                  let bg = "bg-secondary";
-                  let text = "text-white";
+                    // ✅ มี booking แต่ยังไม่มีบิล
+                    if (hasBooking && !bill) {
+                      bg = "bg-primary";
+                      text = "text-white";
+                    } else if (bill) {
+                      if (bill.billStatus === 1) bg = "bg-success";
+                      else if (bill.billStatus === 2) bg = "bg-info";
+                      else bg = "bg-warning";
+                      text = "text-white";
+                    }
 
-                  if (bill) {
-                    if (bill.billStatus === 1) bg = "bg-success";
-                    else if (bill.billStatus === 2) bg = "bg-info";
-                    else bg = "bg-warning";
-                    text = "text-white";
-                  }
-
-                  return (
-                    <div
-                      key={r.roomId}
-                      className="col-6 col-md-4 col-lg-2"
-                      onClick={() => {
-                        if (!bill) {
-                          navigate("/bills");
-                        } else if ([0, 1, 2].includes(bill.billStatus)) {
-                          navigate(`/bills/${bill.billId}`);
-                        }
-                      }}
-                      style={{ cursor: "pointer" }}
-                    >
+                    return (
                       <div
-                        className={`card h-100 text-center ${bg} ${text}`}
-                        style={{ minHeight: 120 }}
+                        key={r.roomId}
+                        className="col-6 col-md-4 col-lg-2"
+                        onClick={() => {
+                          if (!hasBooking) return; // ✅ ใช้ hasBooking จาก backend
+                          if (!bill) {
+                            navigate("/bills");
+                          } else if ([0, 1, 2].includes(bill.billStatus)) {
+                            navigate(`/bills/${bill.billId}`);
+                          }
+                        }}
+                        style={{
+                          cursor: hasBooking ? "pointer" : "not-allowed",
+                        }}
                       >
-                        <div className="card-body d-flex flex-column justify-content-between p-2">
-                          <div className="fw-bold">ห้อง {r.number}</div>
+                        <div
+                          className={`card h-100 text-center ${bg} ${text}`}
+                          style={{ minHeight: 120 }}
+                        >
+                          <div className="card-body d-flex flex-column justify-content-between  p-2">
+                            <div className="fw-bold">ห้อง {r.number}</div>
 
-                          {bill && (
-                            <div className="small">
-                              <div>รวม {bill.total.toLocaleString()} บาท</div>
-                              <div>ครบกำหนด {formatThaiDate(bill.dueDate)}</div>
-                            </div>
-                          )}
+                            {/* ✅ ห้องว่าง */}
+                            {!hasBooking && (
+                              <div className="small text-black mt-2">
+                                ห้องว่าง
+                              </div>
+                            )}
+
+                            {bill && (
+                              <div className="small">
+                                <div>รวม {bill.total.toLocaleString()} บาท</div>
+                                <div>
+                                  ครบกำหนด {formatThaiDate(bill.dueDate)}
+                                </div>
+                              </div>
+                            )}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })}
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
         </div>
       </main>
     </div>

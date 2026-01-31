@@ -9,9 +9,11 @@ export interface OverviewBill {
 }
 
 export interface OverviewRoom {
+  booking: any;          // 👈 ตัวนี้แหละคือ key
   roomId: string;
   number: string;
   bill: OverviewBill | null;
+  hasBooking: boolean;
 }
 
 export interface OverviewResponse {

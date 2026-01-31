@@ -310,16 +310,16 @@ useEffect(() => {
 {menuOpen && (
   <>
     <div
-      className="position-fixed text-white p-3 shadow vh-100 overflow-auto"
-      style={{
-        width: 200,
-        marginTop: 0,
-        marginLeft: 0,
-        paddingTop: 60,
-        backgroundColor: "#4A0080",
-        zIndex: 1500,
-      }}
-    >
+  className="position-fixed text-white p-3 shadow overflow-auto"
+  style={{
+    width: 200,
+    top: 60,
+    height: "calc(100vh - 60px)",
+    backgroundColor: "#4A0080",
+    zIndex: 1500,
+    WebkitOverflowScrolling: "touch",
+  }}
+>
       <button
         className="btn btn-warning btn-sm mb-3 fw-bold ms-auto d-flex align-items-center gap-2"
         onClick={() => setMenuOpen(false)}

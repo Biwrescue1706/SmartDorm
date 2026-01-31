@@ -136,7 +136,7 @@ export default function BookingRow({
   // ------------------------------ CARD MODE ------------------------------
   if (mode === "card") {
     return (
-      <div className="shadow-sm rounded-4 p-3 bg-light border text-center mb-2">
+      <div className="shadow-sm rounded-4 p-3 bg-light text-black border text-center mb-2">
         <h5 className="fw-bold">ห้อง {booking.room.number}</h5>
 
         <p className="mt-2 mb-1">

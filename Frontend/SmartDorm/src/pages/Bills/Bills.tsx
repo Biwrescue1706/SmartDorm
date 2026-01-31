@@ -1,5 +1,5 @@
-// src/pages/Bills.tsx
-import { useState, useEffect } from "react";
+// src/pages/Bills/Bills.tsx
+import { useState, useEffect, useMemo } from "react";
 import Nav from "../../components/Nav";
 import { useAuth } from "../../hooks/useAuth";
 import { useCreateBill } from "../../hooks/Bill/useCreateBill";
@@ -8,36 +8,47 @@ import BillCard from "../../components/Bills/BillCard";
 import BillDialog from "../../components/Bills/BillDialog";
 import Pagination from "../../components/Pagination";
 import "bootstrap/dist/css/bootstrap.min.css";
-import { usePendingCheckouts } from "../../hooks/ManageRooms/usePendingCheckouts";
-import { usePendingBookings } from "../../hooks/ManageRooms/usePendingBookings";
+
+const canBillThisCycle = (booking: any, billMonth: Date) => {
+  if (!booking?.checkinAt) return false;
+
+  const cutoff = new Date(
+    billMonth.getFullYear(),
+    billMonth.getMonth() - 1,
+    25,
+    23,
+    59,
+    59,
+  );
+
+  return new Date(booking.checkinAt) <= cutoff;
+};
 
 export default function Bills() {
   const { handleLogout, role, adminName, adminUsername } = useAuth();
-
-  // 🔧 ตัด existingBills ออก
-  const { rooms, bookings, loading, reloadAll } = useCreateBill();
-
+  const { rooms, bookings, existingBills, loading, reloadAll } =
+    useCreateBill();
   const [openDialog, setOpenDialog] = useState(false);
   const [selectedRoom, setSelectedRoom] = useState<any>(null);
-
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
+  const [statusFilter, setStatusFilter] = useState<"billed" | "notBilled">(
+    "notBilled",
+  );
+
+  // today string
   const [todayStr, setTodayStr] = useState("");
 
-  // Responsive
-  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
-  useEffect(() => {
-    const handleResize = () => setWindowWidth(window.innerWidth);
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
-  const isDesktop = windowWidth >= 1400;
-  const isThreeCols = windowWidth >= 600 && windowWidth < 1400;
+  // ✅ grid column control (สำคัญมาก)
+  const getGridColumns = () => {
+    if (windowWidth >= 600) return "repeat(3, 1fr)";
+    if (windowWidth >= 481) return "repeat(2, 1fr)";
+    return "1fr";
+  };
 
-  // Thai date
-  const formatThaiDate = (dateString: string) => {
-    const date = new Date(dateString);
+  // helper: format thai date
+  const formatThaiDate = (date: Date) => {
     const monthsThai = [
       "ม.ค.",
       "ก.พ.",
@@ -57,91 +68,207 @@ export default function Bills() {
     }`;
   };
 
+  // วันนี้
   useEffect(() => {
     const now = new Date();
-    setTodayStr(formatThaiDate(now.toISOString()));
+    setTodayStr(formatThaiDate(now));
   }, []);
 
-  const handleOpenDialog = (room: any) => {
-    setSelectedRoom(room);
-    setOpenDialog(true);
+  const currentBillMonth = useMemo(() => {
+    const now = new Date();
+    if (now.getDate() < 25) return null;
+    return new Date(now.getFullYear(), now.getMonth() + 1, 1);
+  }, []);
+
+  // rule 25 ต่อ booking
+  const canCreateBillForBooking = (booking: any) => {
+    if (!booking?.checkinAt) return false;
+    if (!currentBillMonth) return false;
+
+    const cutoff = new Date(
+      currentBillMonth.getFullYear(),
+      currentBillMonth.getMonth() - 1,
+      25,
+      23,
+      59,
+      59,
+    );
+
+    return new Date(booking.checkinAt) <= cutoff;
   };
 
-  // ห้องที่มี booking อนุมัติแล้วทั้งหมด
+  // bills ของรอบปัจจุบัน (object เต็ม)
+  const billsOfCurrentCycle = useMemo(() => {
+    if (!currentBillMonth) return [];
+
+    return existingBills.filter((b: any) => {
+      const bm = new Date(b.month);
+      return (
+        bm.getFullYear() === currentBillMonth.getFullYear() &&
+        bm.getMonth() === currentBillMonth.getMonth()
+      );
+    });
+  }, [existingBills, currentBillMonth]);
+
+  // roomId ที่ออกบิลแล้วในรอบนี้
+  const billedRoomIdsOfCurrentMonth = useMemo(() => {
+    return billsOfCurrentCycle.map((b: any) => b.roomId);
+  }, [billsOfCurrentCycle]);
+
+  // ห้องที่มี booking และผ่าน rule รอบบิล
   const allBookedRooms = rooms.filter((room) => {
-    const booking = bookings.find((b) => b.room.number === room.number);
-    return booking && booking.approveStatus !== 0;
+    const booking = bookings.find((b) => b.roomId === room.roomId);
+    if (!booking || booking.approveStatus !== 1) return false;
+    if (!currentBillMonth) return false;
+    return canBillThisCycle(booking, currentBillMonth);
   });
 
-  // Pagination
-  const totalItems = allBookedRooms.length;
+  // count
+  const billedCount = allBookedRooms.filter((r) =>
+    billedRoomIdsOfCurrentMonth.includes(r.roomId),
+  ).length;
+
+  const notBilledCount = allBookedRooms.length - billedCount;
+
+  // filter rooms
+  const filteredRooms = allBookedRooms.filter((room) => {
+    const hasBill = billedRoomIdsOfCurrentMonth.includes(room.roomId);
+    if (statusFilter === "billed") return hasBill;
+    if (statusFilter === "notBilled") return !hasBill;
+    return true;
+  });
+
+  // pagination logic
+  const totalItems = filteredRooms.length;
   const startIndex = (currentPage - 1) * rowsPerPage;
-  const paginatedRooms = allBookedRooms.slice(
+  const paginatedRooms = filteredRooms.slice(
     startIndex,
     startIndex + rowsPerPage,
   );
 
   useEffect(() => {
     const totalPages = Math.ceil(totalItems / rowsPerPage);
-    if (currentPage > totalPages && totalPages > 0) setCurrentPage(totalPages);
+    if (currentPage > totalPages && totalPages > 0) {
+      setCurrentPage(totalPages);
+    }
   }, [totalItems, rowsPerPage, currentPage]);
 
-  const pendingBookings = usePendingBookings();
-  const pendingCheckouts = usePendingCheckouts();
+  // dialog handler
+  const handleOpenDialog = (room: any) => {
+    setSelectedRoom(room);
+    setOpenDialog(true);
+  };
 
+  // responsive
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+  useEffect(() => {
+    const handleResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  const isDesktop = windowWidth >= 1400;
+  // render
   return (
-    <div
-      className="d-flex min-vh-100 mx-2 mt-0 mb-4"
-      style={{ fontFamily: "Sarabun, sans-serif" }}
-    >
+    <div className="d-flex min-vh-100 mx-4 my-3">
       <Nav
         onLogout={handleLogout}
         role={role}
         adminName={adminName}
         adminUsername={adminUsername}
-        pendingBookings={pendingBookings}
-        pendingCheckouts={pendingCheckouts}
       />
 
-      <main
-        className="main-content flex-grow-1 px-2 py-3 mt-6 mt-lg-7"
-        style={{ paddingLeft: "20px", paddingRight: "20px" }}
-      >
-        <div
-          className="mx-auto"
-          style={{ borderRadius: 20, maxWidth: "1400px" }}
-        >
-          <h2 className="fw-bold text-center text-black mb-2">สร้างบิลห้องพัก</h2>
+      <main className="main-content flex-grow-1 px-1 py-2 mt-6 mt-lg-7">
+        <div className="mx-auto container-max">
+          <h2 className="fw-bold text-center text-black mb-2">
+            สร้างบิลห้องพัก
+          </h2>
           <h5 className="text-center text-black mb-3">
             วันนี้: <b>{todayStr}</b>
           </h5>
 
+          {/* summary */}
+          <div className="container mb-3">
+            <div className="row g-3 justify-content-center text-center">
+              <div className="col-6 col-md-3">
+                <div
+                  className="p-3 rounded-4 shadow-sm fw-bold"
+                  onClick={() => {
+                    setStatusFilter("notBilled");
+                    setCurrentPage(1);
+                  }}
+                  style={{
+                    cursor: "pointer",
+                    fontSize: "1.5rem",
+                    background:
+                      statusFilter === "notBilled"
+                        ? "linear-gradient(135deg, #ef233c, #650011)"
+                        : "linear-gradient(135deg, #6c0011, #ef233c)",
+                    color: statusFilter === "notBilled" ? "white" : "white",
+                  }}
+                >
+                  ยังไม่ได้ออกบิล
+                  <div style={{ fontSize: "1.5rem" }}>{notBilledCount}</div>
+                </div>
+              </div>
+
+              <div className="col-6 col-md-3">
+                <div
+                  className="p-3 rounded-4 shadow-sm fw-bold"
+                  onClick={() => {
+                    setStatusFilter("billed");
+                    setCurrentPage(1);
+                  }}
+                  style={{
+                    fontSize: "1.5rem",
+                    cursor: "pointer",
+                    background:
+                      statusFilter === "billed"
+                        ? "linear-gradient(135deg, #38b000, #008000)"
+                        : "linear-gradient(135deg, #008000, #91ff5e)",
+                    color: statusFilter === "billed" ? "white" : "white",
+                  }}
+                >
+                  ออกบิลแล้ว
+                  <div style={{ fontSize: "1.5rem" }}>{billedCount}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
           {loading ? (
-            <p className="text-center text-secondary mt-3">
-              กำลังโหลดข้อมูล...
-            </p>
+            <p className="text-center">กำลังโหลดข้อมูล...</p>
           ) : (
             <>
               {isDesktop ? (
                 <BillTable
                   rooms={paginatedRooms}
                   bookings={bookings}
-                  formatThaiDate={formatThaiDate}
+                  existingBills={billsOfCurrentCycle}
+                  canCreateBill={!!currentBillMonth}
+                  showBillDateColumn={statusFilter === "billed"}
+                  showActionColumn={statusFilter === "notBilled"}
+                  canCreateBillForBooking={canCreateBillForBooking}
+                  formatThaiDate={(d) => formatThaiDate(new Date(d))}
                   onCreateBill={handleOpenDialog}
                 />
               ) : (
                 <div
                   className="d-grid"
                   style={{
-                    gridTemplateColumns: isThreeCols ? "repeat(3, 1fr)" : "1fr",
-                    gap: "16px",
-                    paddingLeft: "8px",
-                    paddingRight: "8px",
+                    gridTemplateColumns: getGridColumns(),
+                    gap: 16,
                   }}
                 >
                   {paginatedRooms.map((room) => {
                     const booking = bookings.find(
-                      (b) => b.room.number === room.number,
+                      (b) => b.roomId === room.roomId,
+                    );
+                    const hasBill = billedRoomIdsOfCurrentMonth.includes(
+                      room.roomId,
+                    );
+                    const bill = billsOfCurrentCycle.find(
+                      (b: any) => b.roomId === room.roomId,
                     );
 
                     return (
@@ -149,7 +276,11 @@ export default function Bills() {
                         key={room.roomId}
                         room={room}
                         booking={booking}
-                        formatThaiDate={formatThaiDate}
+                        bill={bill}
+                        hasBill={hasBill}
+                        canCreateBill={!!currentBillMonth}
+                        canCreateBillForBooking={canCreateBillForBooking}
+                        formatThaiDate={(d) => formatThaiDate(new Date(d))}
                         onCreateBill={handleOpenDialog}
                       />
                     );
@@ -174,15 +305,12 @@ export default function Bills() {
         </div>
       </main>
 
-      {selectedRoom && (
-        <BillDialog
-          key={selectedRoom.roomId}
-          open={openDialog}
-          onClose={() => setOpenDialog(false)}
-          room={selectedRoom}
-          reloadExistingBills={reloadAll}
-        />
-      )}
+      <BillDialog
+        open={openDialog}
+        onClose={() => setOpenDialog(false)}
+        room={selectedRoom}
+        reloadExistingBills={reloadAll}
+      />
     </div>
   );
 }

@@ -1,4 +1,3 @@
-// src/components/Bills/BillDialog.tsx
 import * as Dialog from "@radix-ui/react-dialog";
 import { useState, useEffect } from "react";
 import type { Room } from "../../types/Room";
@@ -25,7 +24,7 @@ export default function BillDialog({
   const TEXT_DARK = "#2D1A47";
 
   const [form, setForm] = useState({
-    month: "",
+    month: "", // yyyy-mm-dd จาก input type="date"
     wBefore: 0,
     wAfter: 0,
     eBefore: 0,
@@ -34,7 +33,9 @@ export default function BillDialog({
 
   const [loading, setLoading] = useState(false);
 
-  // โหลดค่าเดิม
+  // -------------------------------
+  // โหลดค่ามิเตอร์ครั้งก่อน
+  // -------------------------------
   useEffect(() => {
     if (!room) return;
 
@@ -55,17 +56,21 @@ export default function BillDialog({
         if (latest) {
           setForm((prev) => ({
             ...prev,
-            wBefore: latest.wAfter,
-            eBefore: latest.eAfter,
+            wBefore: latest.wAfter ?? 0,
+            eBefore: latest.eAfter ?? 0,
           }));
         }
-      } catch {}
+      } catch {
+        // เงียบไว้ ไม่ต้องเด้ง error
+      }
     };
 
     loadPrev();
   }, [room]);
 
+  // -------------------------------
   // เปลี่ยนค่า input
+  // -------------------------------
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value, type } = e.target;
     setForm((prev) => ({
@@ -74,7 +79,9 @@ export default function BillDialog({
     }));
   };
 
-  // ปิด dialog + reset เฉพาะค่าปัจจุบัน
+  // -------------------------------
+  // ปิด dialog + reset ค่า
+  // -------------------------------
   const handleClose = () => {
     setForm((prev) => ({
       ...prev,
@@ -85,13 +92,27 @@ export default function BillDialog({
     onClose();
   };
 
-  // บันทึกบิล
+  // -------------------------------
+  // บันทึกบิล (สำคัญที่สุด)
+  // -------------------------------
   const handleSubmit = async () => {
     if (!room) return;
+
     if (!form.month) {
       Swal.fire("กรุณาเลือกเดือนก่อนออกบิล", "", "error");
       return;
     }
+
+    // ✅ normalize เดือน → วันที่ 1 เสมอ
+    const selected = new Date(form.month);
+    const billMonth = new Date(
+      selected.getFullYear(),
+      selected.getMonth(),
+      1,
+      0,
+      0,
+      0
+    );
 
     setLoading(true);
 
@@ -103,8 +124,9 @@ export default function BillDialog({
           credentials: "include",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            ...form,
-            month: new Date(form.month).toISOString(),
+            wAfter: form.wAfter,
+            eAfter: form.eAfter,
+            month: billMonth.toISOString(), // ✅ ตรง 100%
           }),
         }
       );
@@ -126,10 +148,10 @@ export default function BillDialog({
   return (
     <Dialog.Root open={open} onOpenChange={onClose}>
       <Dialog.Portal>
-        {/* ฉากดำด้านหลัง */}
+        {/* Overlay */}
         <Dialog.Overlay className="position-fixed top-0 start-0 w-100 h-100 bg-dark bg-opacity-50" />
 
-        {/* กล่อง Dialog */}
+        {/* Dialog */}
         <Dialog.Content
           className="position-fixed start-50 top-50 translate-middle shadow-lg rounded-4"
           style={{
@@ -141,24 +163,19 @@ export default function BillDialog({
             zIndex: 11000,
           }}
         >
-          {/* หัว Dialog */}
           <Dialog.Title
             className="fw-bold text-center text-white py-2"
-            style={{
-              background: SCB_PURPLE,
-              fontSize: "1.1rem",
-            }}
+            style={{ background: SCB_PURPLE }}
           >
             ออกบิลห้อง {room?.number}
           </Dialog.Title>
 
-          {/* 🟢 เพิ่ม Description ตรงนี้เพื่อแก้ Warning */}
           <Dialog.Description className="visually-hidden">
-            แบบฟอร์มสร้างบิลห้องพัก กรุณากรอกข้อมูลหน่วยน้ำและหน่วยไฟ
+            ฟอร์มออกบิลห้องพัก
           </Dialog.Description>
 
-          {/* FORM CONTENT */}
-          <div className="p-4">
+          {/* FORM */}
+          <div className="p-4 text-black">
             <label className="fw-semibold">เดือนที่ออกบิล</label>
             <input
               id="month"
@@ -168,16 +185,15 @@ export default function BillDialog({
               onChange={handleChange}
             />
 
-            <label className="fw-semibold">หน่วยน้ำก่อนหน้า</label>
+            <label className="fw-semibold">มิเตอร์ปะปา (ครั้งก่อน)</label>
             <input
-              id="wBefore"
               type="number"
               className="form-control shadow-sm mb-3"
               value={form.wBefore}
               disabled
             />
 
-            <label className="fw-semibold">หน่วยน้ำปัจจุบัน</label>
+            <label className="fw-semibold">มิเตอร์ปะปา (ครั้งหลัง)</label>
             <input
               id="wAfter"
               type="number"
@@ -186,16 +202,15 @@ export default function BillDialog({
               onChange={handleChange}
             />
 
-            <label className="fw-semibold">หน่วยไฟก่อนหน้า</label>
+            <label className="fw-semibold">มิเตอร์ไฟฟ้า (ครั้งก่อน)</label>
             <input
-              id="eBefore"
               type="number"
               className="form-control shadow-sm mb-3"
               value={form.eBefore}
               disabled
             />
 
-            <label className="fw-semibold">หน่วยไฟปัจจุบัน</label>
+            <label className="fw-semibold">มิเตอร์ไฟฟ้า (ครั้งหลัง)</label>
             <input
               id="eAfter"
               type="number"
@@ -205,7 +220,7 @@ export default function BillDialog({
             />
           </div>
 
-          {/* ปุ่มท้าย */}
+          {/* Buttons */}
           <div className="d-flex justify-content-between border-top p-3">
             <Dialog.Close asChild>
               <button

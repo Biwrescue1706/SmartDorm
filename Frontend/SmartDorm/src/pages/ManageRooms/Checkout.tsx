@@ -16,7 +16,7 @@ import type { Checkout } from "../../types/Checkout";
 import { usePendingCheckouts } from "../../hooks/ManageRooms/usePendingCheckouts";
 import { usePendingBookings } from "../../hooks/ManageRooms/usePendingBookings";
 
-const SCB_PURPLE = "#4A0080";
+const SCB_PURPLE = "#9500ff";
 
 export default function Checkout() {
   const { handleLogout, role, adminName, adminUsername } = useAuth();
@@ -135,10 +135,10 @@ export default function Checkout() {
           >
             {/* < 1400px = กระชับตาม dropdown */}
             <div
-              className="d-block d-xxl-none mx-2 my-2"
+              className="d-block d-xxl-none mx-2 my-2 text-black"
               style={{ width: "fit-content" }}
             >
-              <h5 className="mb-2 text-center" style={{ color: SCB_PURPLE }}>
+              <h5 className="mb-2 text-center text-black">
                 กรองสถานะการเช็คเอาท์
               </h5>
 
@@ -158,20 +158,29 @@ export default function Checkout() {
                 </button>
               </div>
 
-              <div className="mt-2 text-center text-dark">
+              <div className="mt-2 text-center text-black">
                 จำนวนผลลัพธ์: {filteredCheckouts.length} รายการ
               </div>
             </div>
 
             {/* >= 1400px = เต็มความกว้างแบบเดิม */}
             <div className="d-none d-xxl-block w-100">
-              <h4 className="text-center mb-3">กรองสถานะการเช็คเอาท์</h4>
+              <h4 className="text-center mb-3 text-black">
+                กรองสถานะการเช็คเอาท์
+              </h4>
               <CheckoutFilter
                 active={filter}
                 onChange={setFilter}
                 checkouts={checkouts}
               />
-              <div className="mt-2 text-center h4 ">
+              <button
+                className="btn btn-info btn-sm mt-3 justify-content-center align-items-center d-flex mx-auto"
+                onClick={() => window.location.reload()}
+                style={{ height: 38 }}
+              >
+                {loading ? "กำลังโหลด..." : "🔄 รีเฟรชข้อมูล"}
+              </button>
+              <div className="mt-2 text-center h4 text-black ">
                 จำนวนผลลัพธ์: {filteredCheckouts.length} รายการ
               </div>
             </div>

@@ -152,8 +152,8 @@ bill.post(
       // ✅ FIX: normalize month → วันที่ 1 ของเดือนเสมอ
       const input = new Date(month);
       const billMonth = new Date(
-        input.getFullYear(),
-        input.getMonth(),
+          input.getFullYear(),
+          input.getMonth(),
         1,
         7, 0, 0
       );
@@ -240,41 +240,41 @@ bill.post(
 
       const detailedBill = `${BASE_URL}/bill/${billCreated.billId}`;
 
-      // if (booking.customer?.userId) {
-      //   await sendFlexMessage(
-      //     booking.customer.userId,
-      //     `📄 แจ้งบิลค่าเช่าห้อง ประจำเดือน ${formatThaiMonth(
-      //       billCreated.month
-      //     )}`,
-      //     [
-      //       { label: "ห้อง", value: booking.room.number },
-      //       { label: "ค่าเช่าห้อง", value: `${rent} บาท` },
-      //       {
-      //         label: "ค่าน้ำ",
-      //         value: `${billCreated.wUnits} หน่วย (${billCreated.waterCost} บาท)`,
-      //       },
-      //       {
-      //         label: "ค่าไฟ",
-      //         value: `${billCreated.eUnits} หน่วย (${billCreated.electricCost} บาท)`,
-      //       },
-      //       { label: "ค่าส่วนกลาง", value: `${service} บาท` },
-      //       {
-      //         label: "ยอดรวมทั้งหมด",
-      //         value: `${billCreated.total.toLocaleString()} บาท`,
-      //       },
-      //       {
-      //         label: "ครบกำหนดชำระ",
-      //         value: formatThaiDate(billCreated.dueDate),
-      //       },
-      //       {
-      //         label: "สถานะ",
-      //         value: getBillStatusText(billCreated.billStatus),
-      //         color: getBillStatusColour(billCreated.billStatus),
-      //       },
-      //     ],
-      //     [{ label: "ดูรายละเอียดและชำระเงิน", url: detailedBill }]
-      //   );
-      // }
+      if (booking.customer?.userId) {
+        await sendFlexMessage(
+          booking.customer.userId,
+          `📄 แจ้งบิลค่าเช่าห้อง ประจำเดือน ${formatThaiMonth(
+            billCreated.month
+          )}`,
+          [
+            { label: "ห้อง", value: booking.room.number },
+            { label: "ค่าเช่าห้อง", value: `${rent} บาท` },
+            {
+              label: "ค่าน้ำ",
+              value: `${billCreated.wUnits} หน่วย (${billCreated.waterCost} บาท)`,
+            },
+            {
+              label: "ค่าไฟ",
+              value: `${billCreated.eUnits} หน่วย (${billCreated.electricCost} บาท)`,
+            },
+            { label: "ค่าส่วนกลาง", value: `${service} บาท` },
+            {
+              label: "ยอดรวมทั้งหมด",
+              value: `${billCreated.total.toLocaleString()} บาท`,
+            },
+            {
+              label: "ครบกำหนดชำระ",
+              value: formatThaiDate(billCreated.dueDate),
+            },
+            {
+              label: "สถานะ",
+              value: getBillStatusText(billCreated.billStatus),
+              color: getBillStatusColour(billCreated.billStatus),
+            },
+          ],
+          [{ label: "ดูรายละเอียดและชำระเงิน", url: detailedBill }]
+        );
+      }
 
       res.json({ message: "สร้างบิลจากห้องสำเร็จ", bill: billCreated });
     } catch (err) {
@@ -325,9 +325,7 @@ bill.put(
         if (billData.payment) {
           await tx.payment.update({
             where: { billId },
-            data: {
-              updatedAt: new Date(),
-            },
+            data: { updatedAt: new Date() },
           });
         }
 
@@ -512,6 +510,7 @@ bill.put(
           billDate: new Date(),
         },
       });
+
       const detailedBill = `${BASE_URL}/bill/${updated.billId}`;
 
       if (billData.customer?.userId) {

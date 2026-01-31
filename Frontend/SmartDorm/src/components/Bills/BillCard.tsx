@@ -5,8 +5,18 @@ import type { Booking } from "../../types/Booking";
 interface Props {
   room: Room;
   booking?: Booking;
-  hasBill?: boolean;        // ← optional
-  canCreateBill?: boolean; // ← optional
+
+  // ✅ บิลของห้องนี้ (ส่งมาจาก Bills.tsx)
+  bill?: any;
+
+  hasBill: boolean;
+
+  // มีรอบบิลหรือยัง (วันนี้ >= 25)
+  canCreateBill: boolean;
+
+  // rule 25
+  canCreateBillForBooking: (booking: Booking) => boolean;
+
   formatThaiDate: (date: string) => string;
   onCreateBill: (room: Room) => void;
 }
@@ -14,13 +24,22 @@ interface Props {
 export default function BillCard({
   room,
   booking,
-  hasBill = false,        // ← default
-  canCreateBill = true,   // ← default
+  bill,
+  hasBill,
+  canCreateBill,
+  canCreateBillForBooking,
   formatThaiDate,
   onCreateBill,
 }: Props) {
   const SCB_PURPLE = "#4A0080";
   const SCB_GOLD = "#FFC800";
+
+  // เงื่อนไขแสดงปุ่มออกบิล
+  const canShowCreateButton =
+    !hasBill &&
+    booking?.checkinAt &&
+    canCreateBill &&
+    canCreateBillForBooking(booking);
 
   return (
     <div
@@ -30,55 +49,67 @@ export default function BillCard({
         borderLeft: `6px solid ${SCB_PURPLE}`,
         borderRadius: "14px",
         boxShadow: "0 4px 8px rgba(0,0,0,.12)",
-        transition: ".25s",
       }}
     >
-      <h5
-        className="fw-bold text-center justify-content-center"
-        style={{ color: SCB_PURPLE, marginBottom: "10px" }}
-      >
+      <h5 className="fw-bold text-center mb-2" style={{ color: SCB_PURPLE }}>
         ห้อง {room.number}
       </h5>
 
-      <div className="fw-bold text-black">
+      <p className="mb-1 text-black text-center">
         <hr />
-      </div>
+      </p>
 
-      <div className="mb-1 text-black h6">
+      <p className="mb-1 text-black text-center">
+        <b>รายละเอียดผู้เช่า</b>
+      </p>
+
+      <p className="mb-1 text-black">
         <b>LINE :</b> {booking?.customer?.userName || "-"}
-      </div>
-      <div className="mb-1 text-black h6">
+      </p>
+
+      <p className="mb-1 text-black">
         <b>ชื่อ :</b> {booking?.fullName || "-"}
-      </div>
-      <div className="mb-3 text-black h6">
+      </p>
+
+      <p className="mb-2 text-black">
         <b>เข้าพักจริง :</b>{" "}
         {booking?.checkinAt ? formatThaiDate(booking.checkinAt) : "-"}
-      </div>
+      </p>
 
-      <div className="fw-bold text-black ">
-        <hr />
-      </div>
+      {/* ✅ แสดงข้อมูลบิล (ถ้ามี) */}
+      {hasBill && bill && (
+        <>
+          <p className="mb-1 text-black text-center">
+            <hr />
+          </p>
+          <p className="mb-1 text-black text-center">
+            <b>รายละเอียดบิล</b>
+          </p>
+          <p className="mb-1 text-black">
+            <b>เดือนที่ออกบิล :</b>{" "}
+            {bill.month ? formatThaiDate(bill.month) : "-"}
+          </p>
+          <p className="mb-3 text-black">
+            <b>วันที่ออกบิล :</b>{" "}
+            {bill.createdAt ? formatThaiDate(bill.createdAt) : "-"}
+          </p>
+        </>
+      )}
 
-      {!hasBill && booking?.checkinAt && canCreateBill && (
+      {/* ✅ ปุ่มออกบิล (ถ้ายังไม่มีบิล) */}
+      {canShowCreateButton && (
         <button
-          className="btn w-100 fw-bold"
+          className="btn w-100 fw-bold mt-3"
           style={{
             background: SCB_GOLD,
             color: "#2D1A47",
             borderRadius: "10px",
             border: "none",
-            boxShadow: "0 2px 6px rgba(0,0,0,.15)",
           }}
           onClick={() => onCreateBill(room)}
         >
           ออกบิล
         </button>
-      )}
-
-      {hasBill && (
-        <div className="text-center fw-bold mt-2" style={{ color: SCB_PURPLE }}>
-          ออกบิลแล้ว
-        </div>
       )}
     </div>
   );

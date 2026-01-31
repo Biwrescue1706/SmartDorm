@@ -179,9 +179,9 @@ export default function EditBookingDialog({ booking, onSuccess }: Props) {
           </Dialog.Description>
 
           {/* ฟอร์ม */}
-          <div className="px-4 pb-3">
+          <div className="px-4 pb-3 text-center text-black">
             {/* คำนำหน้า */}
-            <div className="row align-items-center mb-3">
+            <div className="row align-items-center text-center  mb-3">
               <label className="col-4 col-form-label fw-bold text-center">
                 คำนำหน้า
               </label>

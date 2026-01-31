@@ -6,8 +6,14 @@ import BillRow from "./BillRows";
 interface BillTableProps {
   rooms: Room[];
   bookings: Booking[];
-  existingBills?: string[];   // ← ทำให้ optional
-  canCreateBill?: boolean;    // ← ทำให้ optional
+  existingBills: any[];
+  canCreateBill: boolean;
+  canCreateBillForBooking: (booking: Booking) => boolean;
+
+  // ✅ เพิ่ม 2 ตัวนี้
+  showBillDateColumn: boolean;
+  showActionColumn: boolean;
+
   formatThaiDate: (d: string) => string;
   onCreateBill: (room: Room) => void;
 }
@@ -15,8 +21,11 @@ interface BillTableProps {
 export default function BillTable({
   rooms,
   bookings,
-  existingBills = [],       // ← default
-  canCreateBill = true,     // ← default
+  existingBills,
+  canCreateBill,
+  canCreateBillForBooking,
+  showBillDateColumn,
+  showActionColumn,
   formatThaiDate,
   onCreateBill,
 }: BillTableProps) {
@@ -50,23 +59,45 @@ export default function BillTable({
             <th style={{ width: "18%" }}>LINE</th>
             <th style={{ width: "18%" }}>ชื่อ</th>
             <th style={{ width: "20%" }}>วันเข้าพัก</th>
-            <th style={{ width: "15%" }}>ออกบิล</th>
+            {showBillDateColumn && (
+              <th style={{ width: "13%" }}>เดือนที่ออกบิล</th>
+            )}
+            {showBillDateColumn && (
+              <th style={{ width: "13%" }}>วันที่ออกบิล</th>
+            )}
+
+            {showActionColumn && <th style={{ width: "15%" }}>จัดการ</th>}
           </tr>
         </thead>
 
         <tbody>
           {rooms.map((room, index) => {
-            const booking = bookings.find((b) => b.room.number === room.number);
-            const hasBill = existingBills.includes(room.roomId);
+            const booking = bookings.find((b) => b.roomId === room.roomId);
+
+            // ✅ หา "บิลล่าสุด" ของห้องนี้
+            const bill = existingBills
+              .filter((b: any) => b.roomId === room.roomId)
+              .sort(
+                (a: any, b: any) =>
+                  new Date(b.createdAt).getTime() -
+                  new Date(a.createdAt).getTime(),
+              )[0];
+            ;
+
+            const hasBill = !!bill;
 
             return (
               <BillRow
                 key={room.roomId}
                 index={index}
                 room={room}
+                bill={bill}
                 booking={booking}
                 hasBill={hasBill}
+                showBillDateColumn={showBillDateColumn}
+                showActionColumn={showActionColumn}
                 canCreateBill={canCreateBill}
+                canCreateBillForBooking={canCreateBillForBooking}
                 formatThaiDate={formatThaiDate}
                 onCreateBill={onCreateBill}
               />

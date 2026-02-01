@@ -169,16 +169,25 @@ export default function Bills() {
   const isDesktop = windowWidth >= 1400;
   // render
   return (
-    <div className="d-flex min-vh-100 mx-4 my-3">
+    <div
+      className="d-flex min-vh-100 mx-2 mt-0 mb-4"
+      style={{ fontFamily: "Sarabun, sans-serif" }}
+    >
       <Nav
         onLogout={handleLogout}
         role={role}
         adminName={adminName}
         adminUsername={adminUsername}
       />
-
-      <main className="main-content flex-grow-1 px-1 py-2 mt-6 mt-lg-7">
-        <div className="mx-auto container-max">
+      <main className="main-content flex-grow-1 px-2 py-3 mt-6 mt-lg-7">
+        <div
+          className="mx-auto container-max"
+          style={{
+            borderRadius: 20,
+            maxWidth: "1400px",
+            padding: "20px",
+          }}
+        >
           <h2 className="fw-bold text-center text-black mb-2">
             สร้างบิลห้องพัก
           </h2>
@@ -303,7 +312,6 @@ export default function Bills() {
           )}
         </div>
       </main>
-
       <BillDialog
         open={openDialog}
         onClose={() => setOpenDialog(false)}

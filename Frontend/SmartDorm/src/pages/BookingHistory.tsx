@@ -13,10 +13,10 @@ const BG_SOFT = "#F8F5FC";
 
 //   Utils
 const formatThaiDate = (d?: string | null) => {
-  if (!d) return "- รอการเข้าพัก -";
+  if (!d) return "- ยังเช่าอยู่ -";
   const date = new Date(d);
   return isNaN(date.getTime())
-    ? "- รอการเข้าพัก -"
+    ? "- รออนุมัติ -"
     : date.toLocaleDateString("th-TH", {
         year: "numeric",
         month: "short",
@@ -53,6 +53,17 @@ const months = [
   { v: 11, label: "พฤศจิกายน" },
   { v: 12, label: "ธันวาคม" },
 ];
+
+const Divider = () => (
+  <hr
+    className="mt-3 mb-3 pt-0"
+    style={{
+      border: "none",
+      borderTop: "2px solid #000000",
+      opacity: 1,
+    }}
+  />
+);
 
 //   Page
 export default function BookingHistory() {
@@ -155,7 +166,12 @@ export default function BookingHistory() {
       >
         <div
           className="mx-auto"
-          style={{ background: BG_SOFT, borderRadius: 20, maxWidth: "1400px" }}
+          style={{
+            background: BG_SOFT,
+            borderRadius: 20,
+            maxWidth: "1400px",
+            padding: "20px",
+          }}
         >
           <h2
             className="fw-bold text-center mb-4"
@@ -345,7 +361,11 @@ export default function BookingHistory() {
               {paged.map((b) => (
                 <div
                   key={b.bookingId}
-                  className={`col-12 ${isMobile ? "" : "col-md-4"}`}
+                  className={`col-12 ${isMobile ? "" : "col-md-5"} px-1`}
+                  style={{
+                    border: "2px solid #000",
+                    borderRadius: "12px",
+                  }}
                 >
                   <div className="card h-100 shadow-sm border-0">
                     <div className="card-body">
@@ -355,59 +375,58 @@ export default function BookingHistory() {
                       >
                         ห้อง {b.room?.number}
                       </h5>
-
-                      <hr />
+                      <Divider />
                       <h5 className="fw-bold mb-2 text-center justify-content-center">
                         รายละเอียดผู้เช่า
                       </h5>
 
-                      <div className="small">
-                        <b>ชื่อ :</b> {b.fullName}
+                      <div className="fw-bold h6">ชื่อ : {b.fullName}</div>
+                      <div className="fw-bold h6">
+                        LINE : {b.customer?.userName || "-"}
                       </div>
-                      <div className="small">
-                        <b>LINE :</b> {b.customer?.userName || "-"}
+                      <div className="fw-bold h6">
+                        เบอร์ : {b.cphone || "-"}
                       </div>
-                      <div className="small">
-                        <b>เบอร์ :</b> {b.cphone || "-"}
+                      <div className="fw-bold h6">
+                        จอง : {formatThaiDate(b.bookingDate)}
                       </div>
-                      <div className="small">
-                        <b>จอง :</b> {formatThaiDate(b.bookingDate)}
+                      <div className="fw-bold h6">
+                        แจ้งเข้าพัก : {formatThaiDate(b.checkin)}
                       </div>
-                      <div className="small">
-                        <b>แจ้งเข้าพัก :</b> {formatThaiDate(b.checkin)}
+                      <div className="fw-bold h6 mb-3">
+                        เข้าพักจริง : {formatThaiDate(b.checkinAt)}
                       </div>
-                      <div className="small">
-                        <b>เข้าพักจริง :</b> {formatThaiDate(b.checkinAt)}
-                      </div>
-                      <br />
-                      <hr />
+
                       {b.checkout === null ? (
-                        <div className="text-primary fw-semibold mt-3 mb-3 text-center justify-content-center">
-                          กำลังเช่าอยู่
-                        </div>
+                        <>
+                          <Divider />
+                          <div className="text-primary fw-semibold mt-3 mb-3 text-center justify-content-center">
+                            กำลังเช่าอยู่
+                          </div>
+                        </>
                       ) : (
                         <>
-                          <h5 className="fw-bold mb-2 text-center justify-content-center">
+                          <Divider />
+                          <h5 className="fw-bold text-center justify-content-center">
                             รายละเอียดการคืนห้อง
                           </h5>
                           <br />
-                          <div className="small">
-                            <b>ขอคืน :</b> {formatThaiDate(b.checkout)}
+                          <div className="fw-bold h6">
+                            ขอคืน : {formatThaiDate(b.checkout)}
                           </div>
-                          <div className="small">
-                            <b>สถานะการอนุมัติคืน :</b>{" "}
+                          <div className="fw-bold h6">
+                            สถานะการอนุมัติคืน :{" "}
                             {approvalText(b.ReturnApprovalStatus)}
                           </div>
-                          <div className="small">
-                            <b>วันอนุมัติการคืน :</b>{" "}
+                          <div className="fw-bold h6">
+                            วันอนุมัติการคืน :{" "}
                             {formatThaiDate(b.RefundApprovalDate)}
                           </div>
-                          <div className="small">
-                            <b>สถานะคืนกุญแจ :</b>{" "}
-                            {checkoutText(b.checkoutStatus)}
+                          <div className="fw-bold h6">
+                            สถานะคืนกุญแจ : {checkoutText(b.checkoutStatus)}
                           </div>
-                          <div className="small">
-                            <b>วันคืนกุญแจ :</b> {formatThaiDate(b.checkoutAt)}
+                          <div className="fw-bold h6">
+                            วันคืนกุญแจ : {formatThaiDate(b.checkoutAt)}
                           </div>
                         </>
                       )}

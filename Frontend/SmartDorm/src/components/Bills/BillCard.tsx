@@ -64,8 +64,9 @@ export default function BillCard({
       style={{
         background: "#FFFFFF",
         borderLeft: `6px solid ${SCB_PURPLE}`,
+        border: "2px solid #000",
         borderRadius: "14px",
-        boxShadow: "0 4px 8px rgba(0,0,0,.12)",
+        boxShadow: "2px 4px 8px rgb(0, 0, 0)",
       }}
     >
       <h5 className="fw-bold text-center mb-2" style={{ color: SCB_PURPLE }}>

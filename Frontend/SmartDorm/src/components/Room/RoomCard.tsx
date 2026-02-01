@@ -23,14 +23,15 @@ export default function RoomCard({ room, role, onUpdated }: Props) {
 
   return (
     <div
-      className="card shadow-sm border-0 mb-3"
+      className="card shadow-sm mb-3"
       style={{
-        borderRadius: "15px",
         minHeight: "260px",
         backgroundColor: "#f1f3f5",
         position: "relative",
         paddingBottom: "70px",
-        textAlign: "center", // ⭐ จัดข้อความอยู่กลาง
+        textAlign: "center",
+        border: "2px solid #000",
+        borderRadius: "12px",
       }}
     >
       <div className="card-body" style={{ padding: "20px" }}>

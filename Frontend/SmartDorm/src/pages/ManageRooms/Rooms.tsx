@@ -167,7 +167,14 @@ export default function Rooms() {
         className="main-content flex-grow-1 px-2 py-3 mt-6 mt-lg-7"
         style={{ paddingLeft: "20px", paddingRight: "20px" }}
       >
-        <div className="mx-auto" style={{ maxWidth: "1400px" }}>
+        <div
+          className="mx-auto container-max"
+          style={{
+            borderRadius: 20,
+            maxWidth: "1400px",
+            padding: "20px",
+          }}
+        >
           {/* Header */}
           <PageHeader />
 
@@ -232,7 +239,9 @@ export default function Rooms() {
               <div
                 className="spinner-border"
                 role="status"
-                style={{ color: THEME.purple }}
+                style={{ color: THEME.purple 
+                  
+                }}
               ></div>
               <p className="mt-3 text-muted">กำลังโหลดข้อมูลห้องพัก...</p>
             </div>
@@ -285,6 +294,7 @@ export default function Rooms() {
                       gap: "18px",
                       paddingLeft: "4px",
                       paddingRight: "4px",
+                      
                     }}
                   >
                     {currentRooms.map((room) => (

@@ -189,7 +189,7 @@ export default function Rooms() {
 
           {/* Filter Bar (มือถือ/แท็บเล็ต = แถวเดียว) */}
           <div className="d-flex d-xxl-none flex-column align-items-center mb-3">
-            <h5 className="text-center mb-2 w-100">กรองสถานะห้อง</h5>
+            <h5 className="text-center mb-2 w-100 text-black">กรองสถานะห้อง</h5>
 
             <div className="d-flex justify-content-center align-items-center gap-2 flex-wrap">
               <RoomFilter
@@ -239,9 +239,7 @@ export default function Rooms() {
               <div
                 className="spinner-border"
                 role="status"
-                style={{ color: THEME.purple 
-                  
-                }}
+                style={{ color: THEME.purple }}
               ></div>
               <p className="mt-3 text-muted">กำลังโหลดข้อมูลห้องพัก...</p>
             </div>
@@ -264,6 +262,7 @@ export default function Rooms() {
                         startIndex={indexOfFirst}
                         onUpdated={handleRefresh}
                         role={role}
+                        filter={filter}
                       />
                     </div>
                   </div>
@@ -294,7 +293,6 @@ export default function Rooms() {
                       gap: "18px",
                       paddingLeft: "4px",
                       paddingRight: "4px",
-                      
                     }}
                   >
                     {currentRooms.map((room) => (

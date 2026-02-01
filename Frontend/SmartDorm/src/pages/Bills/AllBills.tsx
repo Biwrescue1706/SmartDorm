@@ -40,7 +40,7 @@ export default function AllBills() {
   const pendingCount = bills.filter((b) => b.billStatus === 2).length;
 
   const [page, setPage] = useState(1);
-  const [rows, setRows] = useState(12);
+  const [rows, setRows] = useState(15);
 
   const [width, setWidth] = useState(window.innerWidth);
   useEffect(() => {

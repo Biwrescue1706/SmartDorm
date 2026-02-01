@@ -20,8 +20,7 @@ export default function AdminManagement() {
 
   const [filterRole, setFilterRole] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+  const [rowsPerPage, setRowsPerPage] = useState(15);  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
 
   const pendingBookings = usePendingBookings();
   const pendingCheckouts = usePendingCheckouts();

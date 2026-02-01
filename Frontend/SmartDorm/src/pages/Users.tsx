@@ -73,8 +73,7 @@ export default function Users() {
   const [showDialog, setShowDialog] = useState(false);
 
   const [currentPage, setCurrentPage] = useState(1);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
-
+  const [rowsPerPage, setRowsPerPage] = useState(15);
   const startIndex = (currentPage - 1) * rowsPerPage;
 
   /* ---------------- Lock body scroll when dialog open ---------------- */

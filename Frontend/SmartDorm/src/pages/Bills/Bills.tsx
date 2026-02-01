@@ -31,8 +31,7 @@ export default function Bills() {
   const [openDialog, setOpenDialog] = useState(false);
   const [selectedRoom, setSelectedRoom] = useState<any>(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
-
+  const [rowsPerPage, setRowsPerPage] = useState(15);
   const [statusFilter, setStatusFilter] = useState<"billed" | "notBilled">(
     "notBilled",
   );

@@ -57,7 +57,7 @@ export default function Pagination({
           value={rowsPerPage}
           onChange={(e) => onRowsPerPageChange(Number(e.target.value))}
         >
-          {[10, 20, 30, 40, 50].map((n) => (
+          {[15, 20, 30, 40, 50].map((n) => (
             <option key={n} value={n}>
               {n}
             </option>

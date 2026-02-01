@@ -117,17 +117,6 @@ export default function BillDetailPage() {
   const beforeVat = bill.total - vat;
   const thaiText = numberToThaiBaht(bill.total);
 
-  const today = new Date();
-  const due = new Date(bill.dueDate);
-  let isOverdue = false;
-  let overdueDays = 0;
-
-  if (bill.billStatus === 0 && today > due) {
-    isOverdue = true;
-    const diff = today.getTime() - due.getTime();
-    overdueDays = Math.ceil(diff / (1000 * 60 * 60 * 24));
-  }
-
   const handleExportPDF = () => {
     if (!pdfRef.current) return;
 

@@ -49,16 +49,16 @@ export default function CheckoutCards({
             <div className="mb-2">
               {c.ReturnApprovalStatus  === 0 && (
                 <button
-                  className="btn btn-warning btn-sm w-100"
+                  className="btn btn-warning btn-sm w-50"
                   onClick={() => onView(c)}
                 >
-                  รออนุมัติ
+                  จัดการ
                 </button>
               )}
 
               {c.ReturnApprovalStatus  === 1 && c.checkoutStatus === 0 && (
                 <button
-                  className="btn btn-primary btn-sm w-100"
+                  className="btn btn-primary btn-sm w-50"
                   onClick={() => onCheckout(c)}
                 >
                   รอเช็คเอาท์
@@ -66,7 +66,7 @@ export default function CheckoutCards({
               )}
 
               {c.checkoutStatus === 1 && (
-                <span className="badge bg-info w-100 py-2 ">คืนแล้ว</span>
+                <span className="badge bg-info w-50 py-2 ">คืนแล้ว</span>
               )}
             </div>
 
@@ -75,7 +75,7 @@ export default function CheckoutCards({
               <div className="d-flex gap-2">
                 {canShowEdit && (
                   <button
-                    className="btn btnprimary btn-sm w-50"
+                    className="btn btn-primary btn-sm w-50"
                     onClick={() => onEdit(c)}
                   >
                     ✏️
@@ -83,7 +83,7 @@ export default function CheckoutCards({
                 )}
 
                 <button
-                  className="btn btn-danger btn-sm w-100"
+                  className="btn btn-danger btn-sm w-50"
                   onClick={() => onDelete(c.checkoutId)}
                 >
                   🗑️

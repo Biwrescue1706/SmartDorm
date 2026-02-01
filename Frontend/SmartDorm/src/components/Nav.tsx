@@ -333,9 +333,9 @@ export default function Nav({
             style={{
   width: "60%",
   maxWidth: 220,
-  top: 60,
+  top: 0,
   left: 0,
-  height: "calc(100vh - 60px)",
+  height: "calc(100vh - 95px)",
   backgroundColor: "#4A0080",
   zIndex: 1500,
   overflowY: "auto",

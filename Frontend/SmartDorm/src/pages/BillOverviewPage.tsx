@@ -211,12 +211,12 @@ export default function BillOverviewPage() {
             .filter(([f]) => selectedFloor === "all" || f === selectedFloor)
             .map(([floor, floorRooms]) => (
               <div key={floor} className="mb-4">
-                <h5
+                <h3
                   className="fw-bold mb-2 text-center"
                   style={{ color: "#000000" }}
                 >
                   ชั้น {floor}
-                </h5>
+                </h3>
 
                 <div className="row g-3">
                   {floorRooms.map((r: OverviewRoom) => {

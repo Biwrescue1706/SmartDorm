@@ -39,32 +39,32 @@ export default function RoomTable({
             <th scope="col" style={{ width: "20%" }}>
               #
             </th>
-            <th scope="col" style={{ width: "35%" }}>
+            <th scope="col" style={{ width: "30%" }}>
               ห้อง
             </th>
-            <th scope="col" style={{ width: "80%" }}>
-              ขนาด
+            <th scope="col" style={{ width: "50%" }}>
+              ขนาด ( กว้าง x ยาว)
             </th>
-            <th scope="col" style={{ width: "45%" }}>
+            <th scope="col" style={{ width: "40%" }}>
               ค่าเช่า
             </th>
             {!hideTenant && (
-              <th scope="col" style={{ width: "45%" }}>
+              <th scope="col" style={{ width: "60%" }}>
                 ผู้เช่า
               </th>
             )}
-            <th scope="col" style={{ width: "45%" }}>
+            <th scope="col" style={{ width: "40%" }}>
               ผู้สร้าง
             </th>
-            <th scope="col" style={{ width: "45%" }}>
+            <th scope="col" style={{ width: "40%" }}>
               ผู้แก้ไข
             </th>
-            <th scope="col" style={{ width: "45%" }}>
+            <th scope="col" style={{ width: "40%" }}>
               สถานะ
             </th>
-            {isSuperAdmin && <th style={{ width: "45%" }}>แก้ไข</th>}
+            {isSuperAdmin && <th style={{ width: "35%" }}>แก้ไข</th>}
             {isSuperAdmin && !hideDelete && (
-              <th style={{ width: "45%" }}>ลบ</th>
+              <th style={{ width: "35%" }}>ลบ</th>
             )}
           </tr>
         </thead>

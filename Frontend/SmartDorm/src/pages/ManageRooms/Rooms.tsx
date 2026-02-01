@@ -281,14 +281,10 @@ export default function Rooms() {
                 <>
                   {/* MOBILE / TABLET: CARD GRID */}
                   <div
-                    className="d-grid mb-3"
+                    className="d-grid mb-2"
                     style={{
                       gridTemplateColumns:
-                        windowWidth >= 992
-                          ? "1fr 1fr 1fr"
-                          : windowWidth >= 600
-                            ? "1fr 1fr"
-                            : "1fr",
+                        "repeat(auto-fill, minmax(130px, 1fr))",
                       gap: "18px",
                       paddingLeft: "4px",
                       paddingRight: "4px",

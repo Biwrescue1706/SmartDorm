@@ -37,44 +37,45 @@ export default function RoomCard({ room, role, onUpdated }: Props) {
     >
       <div className="card-body" style={{ padding: "2px 4px" }}>
         {/* 🏷️ ชื่อห้องใหญ่ขึ้น (fs-4) */}
-        <h4 className="fw-bold mb-1 mt-2" style={{ fontSize: "12px" ,lineHeight: "1.5" }}>
+        <h4 className="fw-bold mb-1 mt-2" style={{ fontSize: "20px" ,lineHeight: "1.5" }}>
           ห้อง {room.number}
         </h4>
 
         {/* ⭐ ข้อมูลใหญ่ขึ้น → fs-5 */}
-        <p className="mb-0" style={{ fontSize: "12px", lineHeight: "1.5" }}>
-          <b>ขนาด : </b> {room.size}
+        <p className="mb-1" style={{ fontSize: "15.5px", lineHeight: "1.5" }}>
+          <b>ขนาด ( กว้าง x ยาว) : </b> {room.size}
         </p>
 
-        <p className="mb-0" style={{ fontSize: "12px", lineHeight: "1.5" }}>
+        <p className="mb-1" style={{ fontSize: "15.5px", lineHeight: "1.5" }}>
           <b>ค่าเช่า :</b> {room.rent.toLocaleString("th-TH")}
         </p>
 
         {room.status === 1 && (
-          <p className="mb-0" style={{ fontSize: "12px", lineHeight: "1.5" }}>
+          <p className="mb-1" style={{ fontSize: "15.5px", lineHeight: "1.5" }}>
             <b>ผู้เช่า :</b>{" "}
             {room.status === 1 ? room.booking?.fullName || " " : " "}
           </p>
         )}
 
-        <p className="mb-0" style={{ fontSize: "12px", lineHeight: "1.5" }}>
+        <p className="mb-1" style={{ fontSize: "15.5px", lineHeight: "1.5" }}>
           <b>ผู้สร้าง :</b> {room.adminCreated?.name || " "}
         </p>
 
         {room.adminUpdated != null && (
-          <p className="mb-0" style={{ fontSize: "12px", lineHeight: "1.5" }}>
+          <p className="mb-1" style={{ fontSize: "15.5px", lineHeight: "1.5" }}>
             <b>ผู้แก้ไข :</b> {room.adminUpdated?.name || " "}
           </p>
         )}
 
-        <p className="mb-0" style={{ fontSize: "12px", lineHeight: "1.5" }}>
+        <p className="mb-3 " style={{ fontSize: "15.5px", lineHeight: "1.5" }}>
           <b>สถานะ :</b>{" "}
           <span
             className={`badge px-3 py-1 ${
               room.status === 0
                 ? "bg-success text-whlie"
                 : "bg-danger text-whlie"
-            }`}
+            }
+            `}style={{ fontSize: "15.5px"}}
           >
             {room.status === 0 ? "ว่าง" : "เต็ม"}
           </span>
@@ -88,10 +89,10 @@ export default function RoomCard({ room, role, onUpdated }: Props) {
           style={{
             width: "100%",
             position: "absolute",
-            bottom: "15px",
+            bottom: "10px",
             left: "50%",
             transform: "translateX(-50%)",
-            padding: "0 20px",
+            padding: "0 10px",
           }}
         >
           <EditRoomDialog roomId={room.roomId} onSuccess={onUpdated} />

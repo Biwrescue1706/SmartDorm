@@ -51,27 +51,27 @@ export default function AddRoomDialog({ onSuccess }: AddRoomDialogProps) {
   // 🧩 ตั้งราคาตามขนาด
   const setPriceBySize = (size: string) => {
     switch (size) {
-      case "ก. 3.5 ม. * ย. 5.5 ม.":
+      case "3.5 × 5.5 ม.":
         setRent(2500);
         setDeposit(2500);
         setBookingFee(500);
         break;
-      case "ก. 4.5 ม. * ย. 5.5 ม.":
+      case "4.5 × 5.5 ม.":
         setRent(3200);
         setDeposit(3200);
         setBookingFee(500);
         break;
-      case "ก. 5.5 ม. * ย. 6.5 ม.":
+      case "5.5 × 6.5 ม.":
         setRent(4000);
         setDeposit(4000);
         setBookingFee(500);
         break;
-      case "ก. 6.5 ม. * ย. 7.5 ม.":
+      case "6.5 × 7.5 ม.":
         setRent(4500);
         setDeposit(4500);
         setBookingFee(500);
         break;
-      case "ก. 7.5 ม. * ย. 8.5 ม.":
+      case "7.5 × 8.5 ม.":
         setRent(5000);
         setDeposit(5000);
         setBookingFee(500);
@@ -89,27 +89,27 @@ export default function AddRoomDialog({ onSuccess }: AddRoomDialogProps) {
     const num = parseInt(roomNum.slice(-2));
 
     if (num >= 1 && num <= 4) {
-      setSize("ก. 3.5 ม. * ย. 5.5 ม.");
+      setSize("3.5 × 5.5 ม.");
       setRent(2500);
       setDeposit(2500);
       setBookingFee(500);
     } else if (num >= 5 && num <= 8) {
-      setSize("ก. 4.5 ม. * ย. 5.5 ม.");
+      setSize("4.5 × 5.5 ม.");
       setRent(3200);
       setDeposit(3200);
       setBookingFee(500);
     } else if (num >= 9 && num <= 12) {
-      setSize("ก. 5.5 ม. * ย. 6.5 ม.");
+      setSize("5.5 × 6.5 ม.");
       setRent(4000);
       setDeposit(4000);
       setBookingFee(500);
     } else if (num >= 13 && num <= 16) {
-      setSize("ก. 6.5 ม. * ย. 7.5 ม.");
+      setSize("6.5 × 7.5 ม.");
       setRent(4500);
       setDeposit(4500);
       setBookingFee(500);
     } else if (num >= 17 && num <= 20) {
-      setSize("ก. 7.5 ม. * ย. 8.5 ม.");
+      setSize("7.5 × 8.5 ม.");
       setRent(5000);
       setDeposit(5000);
       setBookingFee(500);
@@ -244,7 +244,7 @@ export default function AddRoomDialog({ onSuccess }: AddRoomDialogProps) {
 
                   {/* ขนาดห้อง */}
                   <div className="mb-2">
-                    <label className="fw-semibold mb-1">ขนาดห้อง</label>
+                    <label className="fw-semibold mb-1">ขนาดห้อง ( กว้าง x ยาว )</label>
                     <input
                       list="room-sizes"
                       type="text"
@@ -258,11 +258,11 @@ export default function AddRoomDialog({ onSuccess }: AddRoomDialogProps) {
                       required
                     />
                     <datalist id="room-sizes">
-                      <option value="ก. 3.5 ม. * ย. 5.5 ม." />
-                      <option value="ก. 4.5 ม. * ย. 5.5 ม." />
-                      <option value="ก. 5.5 ม. * ย. 6.5 ม." />
-                      <option value="ก. 6.5 ม. * ย. 7.5 ม." />
-                      <option value="ก. 7.5 ม. * ย. 8.5 ม." />
+                      <option value="3.5 × 5.5 ม." />
+                      <option value="4.5 × 5.5 ม." />
+                      <option value="5.5 × 6.5 ม." />
+                      <option value="6.5 × 7.5 ม." />
+                      <option value="7.5 × 8.5 ม." />
                     </datalist>
                   </div>
 

@@ -76,7 +76,7 @@ export default function EditRoomDialog({ roomId, onSuccess }: Props) {
     <>
       {/* ปุ่มเปิด modal */}
       <button
-        className="btn btn-sm fw-semibold text-white px-2 mx-2 my-2 py-1"
+        className="btn btn-sm  text-white px-2 mx-2 my-2 py-1"
         style={{
           background: "linear-gradient(100deg, #26ff05ff, #f9d849ff)",
           border: "none",
@@ -118,10 +118,10 @@ export default function EditRoomDialog({ roomId, onSuccess }: Props) {
                   </div>
 
                   {/* Body */}
-                  <div className="modal-body p-4">
+                  <div className="modal-body p-4 text-center fw-bold h6">
                     {/* หมายเลขห้อง */}
-                    <div className="mb-3">
-                      <label className="form-label fw-semibold">
+                    <div className="mb-3 ">
+                      <label className="form-label  h6">
                         หมายเลขห้อง
                       </label>
                       <input
@@ -138,7 +138,7 @@ export default function EditRoomDialog({ roomId, onSuccess }: Props) {
 
                     {/* ขนาด */}
                     <div className="mb-3">
-                      <label className="form-label fw-semibold">ขนาด</label>
+                      <label className="form-label">ขนาด</label>
                       <input
                         className="form-control text-center"
                         value={form.size}
@@ -153,7 +153,7 @@ export default function EditRoomDialog({ roomId, onSuccess }: Props) {
 
                     {/* ค่าเช่า */}
                     <div className="mb-3">
-                      <label className="form-label fw-semibold">
+                      <label className="form-label ">
                         ค่าเช่า (บาท)
                       </label>
                       <input
@@ -173,7 +173,7 @@ export default function EditRoomDialog({ roomId, onSuccess }: Props) {
 
                     {/* เงินมัดจำ */}
                     <div className="mb-3">
-                      <label className="form-label fw-semibold">
+                      <label className="form-label ">
                         เงินมัดจำ
                       </label>
                       <input
@@ -193,7 +193,7 @@ export default function EditRoomDialog({ roomId, onSuccess }: Props) {
 
                     {/* ค่าจอง */}
                     <div className="mb-3">
-                      <label className="form-label fw-semibold">ค่าจอง</label>
+                      <label className="form-label ">ค่าจอง</label>
                       <input
                         type="number"
                         className="form-control text-center"
@@ -211,7 +211,7 @@ export default function EditRoomDialog({ roomId, onSuccess }: Props) {
 
                     {/* สถานะ */}
                     <div className="mb-3">
-                      <label className="form-label fw-semibold">สถานะ</label>
+                      <label className="form-label ">สถานะ</label>
                       <select
                         className="form-select text-center"
                         value={form.status}
@@ -233,7 +233,7 @@ export default function EditRoomDialog({ roomId, onSuccess }: Props) {
                   <div className="modal-footer d-flex justify-content-between px-4 pb-3">
                     <button
                       type="button"
-                      className="btn fw-semibold text-white px-4"
+                      className="btn  text-white px-4"
                       style={{
                         background: "linear-gradient(135deg, #ff512f, #dd2476)",
                       }}
@@ -244,7 +244,7 @@ export default function EditRoomDialog({ roomId, onSuccess }: Props) {
 
                     <button
                       type="submit"
-                      className="btn fw-semibold text-white px-4"
+                      className="btn  text-white px-4"
                       style={{
                         background: "linear-gradient(135deg, #11998e, #38ef7d)",
                       }}

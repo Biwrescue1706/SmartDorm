@@ -1,4 +1,5 @@
 import type { Admin } from "../../types/admin";
+import { roleStyle } from "../../pages/AdminManagement";
 
 interface Props {
   admins: Admin[];
@@ -18,9 +19,9 @@ export default function TabletView({
   return (
     <div className="row g-3">
       {admins.map((a) => (
-        <div key={a.adminId} className="col-12 col-sm-6 col-lg-4">
-          <div className="card p-3 shadow-sm" style={{ borderRadius: "14px" }}>
-            <h5 className="fw-bold">{a.username}</h5>
+        <div key={a.adminId} className="col-6 col-md-4 col-lg-2">
+          <div className="card p-3 shadow-sm" style={roleStyle(a.role)}>
+            <h5 className="fw-bold align-center">{a.username}</h5>
             <p>
               <b>ชื่อ :</b> {a.name}
             </p>

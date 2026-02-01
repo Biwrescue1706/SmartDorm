@@ -34,7 +34,7 @@ export const DeleteRoom = (id: string) => `/room/${id}`;
 /* ==================== 💵 BILL ==================== */
 export const GetAllBill = "/bill/getall";
 export const CreateBill = "/bill/create";
-export const UpdateBill = (id: string) => `/bill/${id}`;
+export const UpdateBill = (id: string) => `/bill/edit/${id}`;
 export const DeleteBill = (id: string) => `/bill/${id}`;
 
 /* ==================== 💰 PAYMENT ==================== */

@@ -152,8 +152,8 @@ bill.post(
       // ✅ FIX: normalize month → วันที่ 1 ของเดือนเสมอ
       const input = new Date(month);
       const billMonth = new Date(
-          input.getFullYear(),
-          input.getMonth(),
+        input.getFullYear(),
+        input.getMonth(),
         1,
         7, 0, 0
       );
@@ -425,6 +425,7 @@ bill.put(
 );
 
 // ✏️ แก้ไขบิล
+// ✏️ แก้ไขบิล (แก้ได้ทุกค่า)
 bill.put(
   "/edit/:billId",
   authMiddleware,
@@ -432,7 +433,15 @@ bill.put(
   async (req, res) => {
     try {
       const { billId } = req.params;
-      const { wAfter, eAfter, month, dueDate, billStatus } = req.body;
+      const {
+        wBefore,
+        wAfter,
+        eBefore,
+        eAfter,
+        month,
+        dueDate,
+        billStatus,
+      } = req.body;
 
       const billData = await prisma.bill.findUnique({
         where: { billId },
@@ -445,19 +454,29 @@ bill.put(
         throw new Error("ไม่สามารถแก้ไขบิลนี้ได้");
       }
 
-      const wBefore = billData.wBefore;
-      const eBefore = billData.eBefore;
+      // ✅ ใช้ค่าที่ส่งมา หรือ fallback ค่าเดิม
+      const newWBefore =
+        wBefore !== undefined ? Number(wBefore) : billData.wBefore;
 
-      const newWAfter = wAfter ?? billData.wAfter;
-      const newEAfter = eAfter ?? billData.eAfter;
+      const newWAfter =
+        wAfter !== undefined ? Number(wAfter) : billData.wAfter;
 
-      if (newWAfter < wBefore)
-        throw new Error("ค่าน้ำปัจจุบันต้องมากกว่าหรือเท่าก่อนหน้า");
-      if (newEAfter < eBefore)
-        throw new Error("ค่าไฟปัจจุบันต้องมากกว่าหรือเท่าก่อนหน้า");
+      const newEBefore =
+        eBefore !== undefined ? Number(eBefore) : billData.eBefore;
 
-      const wUnits = newWAfter - wBefore;
-      const eUnits = newEAfter - eBefore;
+      const newEAfter =
+        eAfter !== undefined ? Number(eAfter) : billData.eAfter;
+
+      // ✅ validation
+      if (newWAfter < newWBefore)
+        throw new Error("ค่าน้ำหลังต้องมากกว่าหรือเท่าก่อน");
+
+      if (newEAfter < newEBefore)
+        throw new Error("ค่าไฟหลังต้องมากกว่าหรือเท่าก่อน");
+
+      // ✅ คำนวณใหม่
+      const wUnits = newWAfter - newWBefore;
+      const eUnits = newEAfter - newEBefore;
 
       const waterCost = wUnits * WATER_PRICE;
       const electricCost = eUnits * ELECTRIC_PRICE;
@@ -472,7 +491,7 @@ bill.put(
         if (today > newDue) {
           const diffDays = Math.floor(
             (today.getTime() - newDue.getTime()) /
-            (1000 * 60 * 60 * 24)
+              (1000 * 60 * 60 * 24)
           );
           newOverdueDays = diffDays;
           newFine = diffDays * OVERDUE_FINE_PER_DAY;
@@ -492,9 +511,11 @@ bill.put(
       const updated = await prisma.bill.update({
         where: { billId },
         data: {
+          wBefore: newWBefore,
           wAfter: newWAfter,
           wUnits,
           waterCost,
+          eBefore: newEBefore,
           eAfter: newEAfter,
           eUnits,
           electricCost,

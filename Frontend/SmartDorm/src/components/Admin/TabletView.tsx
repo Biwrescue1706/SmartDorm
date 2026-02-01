@@ -43,7 +43,7 @@ export default function TabletView({
                     className="btn btn-sm btn-danger"
                     onClick={() => handleDelete(a.adminId)}
                   >
-                    ลบ
+                    🗑️
                   </button>
                 )}
               </div>

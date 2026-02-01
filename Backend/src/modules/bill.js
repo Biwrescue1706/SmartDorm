@@ -55,7 +55,7 @@ const getDueDateNextMonth5th = (month) => {
   // 5 ของเดือนถัดไป เวลา 08:00 ไทย
   return new Date(Date.UTC(
     d.getUTCFullYear(),
-    d.getUTCMonth() + 1,
+    d.getUTCMonth(),
     5,
     8, 0, 0
   ));
@@ -424,7 +424,6 @@ bill.put(
   }
 );
 
-// ✏️ แก้ไขบิล
 // ✏️ แก้ไขบิล (แก้ได้ทุกค่า)
 bill.put(
   "/edit/:billId",

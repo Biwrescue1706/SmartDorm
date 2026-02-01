@@ -265,7 +265,8 @@ export default function AllBills() {
             <div
               className="d-grid"
               style={{
-                gridTemplateColumns: width < 600 ? "1fr" : "repeat(3, 1fr)",
+                gridTemplateColumns:
+                  width < 600 ? "repeat(2, 1fr)" : "repeat(6, 1fr)",
                 gap: "14px",
               }}
             >

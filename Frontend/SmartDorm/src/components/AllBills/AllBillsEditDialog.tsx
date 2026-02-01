@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Swal from "sweetalert2";
 import type { Bill } from "../../types/Bill";
 
@@ -8,16 +8,39 @@ interface Props {
   onClose: () => void;
 }
 
-export default function AllBillsEditDialog({ bill, onSave, onClose }: Props) {
-  if (!bill) return null;
+// ✅ ป้องกัน timezone เลื่อนวัน
+const toISO = (dateStr: string) => {
+  const [y, m, d] = dateStr.split("-");
+  return new Date(Date.UTC(+y, +m - 1, +d)).toISOString();
+};
 
+export default function AllBillsEditDialog({ bill, onSave, onClose }: Props) {
   const [form, setForm] = useState({
-    wBefore: bill.wBefore ?? 0,
-    wAfter: bill.wAfter ?? 0,
-    eBefore: bill.eBefore ?? 0,
-    eAfter: bill.eAfter ?? 0,
-    billStatus: bill.billStatus ?? 0, // ✅ แก้ตรงนี้
+    wBefore: 0,
+    wAfter: 0,
+    eBefore: 0,
+    eAfter: 0,
+    billStatus: 0,
+    month: "",
+    dueDate: "",
   });
+
+  // ✅ sync bill → form
+  useEffect(() => {
+    if (!bill) return;
+
+    setForm({
+      wBefore: bill.wBefore ?? 0,
+      wAfter: bill.wAfter ?? 0,
+      eBefore: bill.eBefore ?? 0,
+      eAfter: bill.eAfter ?? 0,
+      billStatus: bill.billStatus ?? 0,
+      month: bill.month ? bill.month.slice(0, 10) : "",
+      dueDate: bill.dueDate ? bill.dueDate.slice(0, 10) : "",
+    });
+  }, [bill]);
+
+  if (!bill) return null;
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,7 +50,16 @@ export default function AllBillsEditDialog({ bill, onSave, onClose }: Props) {
       return;
     }
 
-    await onSave(bill.billId, form);
+    await onSave(bill.billId, {
+      wBefore: Number(form.wBefore),
+      wAfter: Number(form.wAfter),
+      eBefore: Number(form.eBefore),
+      eAfter: Number(form.eAfter),
+      billStatus: Number(form.billStatus),
+      month: form.month ? toISO(form.month) : undefined,
+      dueDate: form.dueDate ? toISO(form.dueDate) : undefined,
+    });
+
     onClose();
   };
 
@@ -37,11 +69,13 @@ export default function AllBillsEditDialog({ bill, onSave, onClose }: Props) {
       style={{ backgroundColor: "#00000080" }}
     >
       <div
-        className="modal-dialog modal-dialog-centered"
-        style={{ maxWidth: 600 }}
+        className="modal-body p-4 mt-5"
+        style={{
+          overflowY: "auto",
+          maxHeight: "100vh",
+        }}
       >
-        <div className="modal-content shadow-lg rounded-4 border-0">
-          {/* Header */}
+        <div className="modal-content shadow-lg mx-3 rounded-3 border-0">
           <div
             className="modal-header text-white"
             style={{
@@ -59,11 +93,19 @@ export default function AllBillsEditDialog({ bill, onSave, onClose }: Props) {
             ></button>
           </div>
 
-          {/* Form */}
           <form onSubmit={submit}>
             <div className="modal-body p-4">
-              {/* น้ำ */}
-              <label className="form-label fw-semibold">หน่วยน้ำก่อน</label>
+              <label className="form-label fw-semibold">เดือนบิล</label>
+              <input
+                type="date"
+                className="form-control text-center"
+                value={form.month}
+                onChange={(e) => setForm({ ...form, month: e.target.value })}
+              />
+
+              <label className="form-label fw-semibold mt-2">
+                หน่วยน้ำก่อน
+              </label>
               <input
                 type="number"
                 className="form-control text-center"
@@ -85,7 +127,6 @@ export default function AllBillsEditDialog({ bill, onSave, onClose }: Props) {
                 }
               />
 
-              {/* ไฟ */}
               <label className="form-label fw-semibold mt-3">หน่วยไฟก่อน</label>
               <input
                 type="number"
@@ -106,11 +147,18 @@ export default function AllBillsEditDialog({ bill, onSave, onClose }: Props) {
                 }
               />
 
-              {/* สถานะบิล */}
+              <label className="form-label fw-semibold mt-2">วันครบกำหนด</label>
+              <input
+                type="date"
+                className="form-control text-center"
+                value={form.dueDate}
+                onChange={(e) => setForm({ ...form, dueDate: e.target.value })}
+              />
+
               <label className="form-label fw-semibold mt-3">สถานะบิล</label>
               <select
                 className="form-select text-center"
-                value={form.billStatus} // ✅ แก้ตรงนี้
+                value={form.billStatus}
                 onChange={(e) =>
                   setForm({ ...form, billStatus: Number(e.target.value) })
                 }
@@ -121,7 +169,6 @@ export default function AllBillsEditDialog({ bill, onSave, onClose }: Props) {
               </select>
             </div>
 
-            {/* Footer */}
             <div className="modal-footer d-flex justify-content-between px-4 pb-3">
               <button
                 type="button"

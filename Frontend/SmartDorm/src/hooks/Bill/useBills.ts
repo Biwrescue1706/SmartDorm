@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import Swal from "sweetalert2";
 import axios from "axios";
 import { API_BASE } from "../../config";
-import { GetAllBill, UpdateBill, DeleteBill } from "../../apis/endpoint.api";
 import type { Bill } from "../../types/Bill";
 import { toast } from "../../utils/toast";
 
@@ -14,7 +13,7 @@ export function useBills() {
   const fetchBills = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${API_BASE}${GetAllBill}`, {
+      const res = await fetch(`${API_BASE}/bill/getall`, {
         method: "GET",
         credentials: "include",
       });
@@ -38,10 +37,11 @@ export function useBills() {
     try {
       Swal.fire({
         title: "กำลังอัปเดต...",
+        allowOutsideClick: false,
         didOpen: () => Swal.showLoading(),
       });
 
-      const res = await fetch(`${API_BASE}${UpdateBill(billId)}`, {
+      const res = await fetch(`${API_BASE}/bill/edit/${billId}`, {
         method: "PUT",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
@@ -50,9 +50,11 @@ export function useBills() {
 
       if (!res.ok) throw new Error();
 
+      Swal.close(); // ⭐ สำคัญมาก
       toast("success", "อัปเดตสำเร็จ", "ระบบได้บันทึกข้อมูลบิลแล้ว");
       await fetchBills();
     } catch {
+      Swal.close(); // ⭐ ปิดแม้ error
       toast("error", "อัปเดตไม่สำเร็จ", "กรุณาลองใหม่อีกครั้ง");
     }
   };
@@ -70,7 +72,7 @@ export function useBills() {
     if (!ok.isConfirmed) return;
 
     try {
-      const res = await fetch(`${API_BASE}${DeleteBill(billId)}`, {
+      const res = await fetch(`${API_BASE}/bill/${billId}`, {
         method: "DELETE",
         credentials: "include",
         headers: {
@@ -104,7 +106,7 @@ export function useBills() {
       await axios.put(
         `${API_BASE}/bill/approve/${billId}`,
         {},
-        { withCredentials: true }
+        { withCredentials: true },
       );
       toast("success", "อนุมัติการชำระแล้ว", `บิลห้อง ${room} ถูกอนุมัติ`);
       await fetchBills();
@@ -129,7 +131,7 @@ export function useBills() {
       await axios.put(
         `${API_BASE}/bill/reject/${billId}`,
         {},
-        { withCredentials: true }
+        { withCredentials: true },
       );
       toast("info", "ปฏิเสธสำเร็จ", "สถานะกลับเป็นยังไม่ชำระ");
       await fetchBills();
@@ -155,16 +157,20 @@ export function useBills() {
       await axios.put(
         `${API_BASE}/bill/overdue/${billId}`,
         {},
-        { withCredentials: true }
+        { withCredentials: true },
       );
 
-      toast("success", "แจ้งเตือนแล้ว", `บิลห้อง ${room} ถูกอัปเดตเป็นค้างชำระ`);
+      toast(
+        "success",
+        "แจ้งเตือนแล้ว",
+        `บิลห้อง ${room} ถูกอัปเดตเป็นค้างชำระ`,
+      );
       await fetchBills();
     } catch (err: any) {
       toast(
         "error",
         "แจ้งเตือนไม่สำเร็จ",
-        err?.response?.data?.error || "ไม่สามารถแจ้งเตือนบิลได้"
+        err?.response?.data?.error || "ไม่สามารถแจ้งเตือนบิลได้",
       );
     }
   };

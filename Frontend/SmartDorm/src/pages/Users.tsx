@@ -338,10 +338,16 @@ export default function Users() {
               <div className="row g-3">
                 {paginated.map((card, idx) => (
                   <div
-                    className="col-12 col-md-6 col-lg-4"
                     key={`${card.customerId}-${card.fullName}`}
+                    className="col-6 col-lg-2"
                   >
-                    <div className="card shadow-sm border-0 h-100">
+                    <div
+                      className="card shadow-sm h-100"
+                      style={{
+                        border: "2px solid #000",
+                        borderRadius: "14px",
+                      }}
+                    >
                       <div className="card-body text-center">
                         <h5 className="fw-bold text-primary">
                           #{startIndex + idx + 1}
@@ -430,7 +436,7 @@ export default function Users() {
               <Dialog.Title
                 className="p-3 border-bottom fw-bold text-center text-black"
                 style={{
-                  color : "#000000",
+                  color: "#000000",
                   borderBottom: "3px solid #000000",
                   width: "fit-content",
                   margin: "0 auto",

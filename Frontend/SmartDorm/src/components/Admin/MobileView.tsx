@@ -44,7 +44,7 @@ export default function MobileView({
                     className="btn btn-sm btn-danger mx-2"
                     onClick={() => handleDelete(a.adminId)}
                   >
-                    ลบ
+                    🗑️
                   </button>
                 )}
               </div>

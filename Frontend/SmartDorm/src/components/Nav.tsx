@@ -201,7 +201,7 @@ export default function Nav({
               className="btn btn-warning text-start w-100 fw-bold d-flex justify-content-between align-items-center"
               onClick={() => setBookingMenuOpen(!bookingMenuOpen)}
             >
-              <span>📑 จัดการการจองและคืน</span>
+              <span>📑 การจองและคืน</span>
               <span>{bookingMenuOpen ? "▲" : "▼"}</span>
             </button>
 
@@ -331,15 +331,16 @@ export default function Nav({
           <div
             className="position-fixed text-white p-3 shadow overflow-auto"
             style={{
-              width: "75%",
-              maxWidth: 220,
-              top: 0,
-              left: 0,
-              height: "calc(200vh - 60px)",
-              backgroundColor: "#4A0080",
-              zIndex: 1500,
-              WebkitOverflowScrolling: "touch",
-            }}
+  width: "60%",
+  maxWidth: 220,
+  top: 60,
+  left: 0,
+  height: "calc(100vh - 60px)",
+  backgroundColor: "#4A0080",
+  zIndex: 1500,
+  overflowY: "auto",
+  WebkitOverflowScrolling: "touch",
+}}
           >
             <button
               className="btn btn-warning btn-sm mb-3 fw-bold ms-auto d-flex align-items-center gap-2"
@@ -383,7 +384,7 @@ export default function Nav({
                   className="btn btn-warning text-start w-100 fw-bold d-flex justify-content-between align-items-center"
                   onClick={() => setBookingMenuOpen(!bookingMenuOpen)}
                 >
-                  <span>📑 จัดการการจองและคืน</span>
+                  <span>📑 การจองและคืน</span>
                   <span>{bookingMenuOpen ? "▲" : "▼"}</span>
                 </button>
 

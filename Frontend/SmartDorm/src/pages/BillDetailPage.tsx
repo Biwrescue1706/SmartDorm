@@ -233,7 +233,11 @@ const isOverdue = overdueDays > 0;
 
                   {bill.billStatus !== 1 && (
                     <div className="col-md-4">
-                      <b>สถานะ:</b> {statusText(bill.billStatus)}
+                      <b>สถานะ:</b> {isOverdue ? (
+                    <span className="badge bg-danger">เกินกำหนด {overdueDays} วัน</span>
+                  ) : (
+                    <span className={`badge bg-${statusColor}`}>{statusText}</span>
+                  )}
                     </div>
                   )}
                 </div>

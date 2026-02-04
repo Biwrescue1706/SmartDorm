@@ -75,6 +75,13 @@ const statusText = (s: number) => {
   return "-";
 };
 
+const statusColor = (s: number) => {
+  if (s === 0) return "warning" ;
+  if (s === 1) return "success" ;
+  if (s === 2) return "info" ;
+  return "-";
+};
+
 const Divider = () => (
   <hr
     className="mt-3 mb-3 pt-0"
@@ -232,14 +239,19 @@ const isOverdue = overdueDays > 0;
                 )}
 
                   {bill.billStatus !== 1 && (
-                    <div className="col-md-4">
-                      <b>สถานะ:</b> {isOverdue ? (
-                    <span className="badge bg-danger">เกินกำหนด {overdueDays} วัน</span>
-                  ) : (
-                    <span className={`badge bg-${statusColor}`}>{statusText}</span>
-                  )}
-                    </div>
-                  )}
+  <div className="col-md-4">
+    <b>สถานะ:</b>{" "}
+    {isOverdue ? (
+      <span className="badge bg-danger">
+        เกินกำหนด {overdueDays} วัน
+      </span>
+    ) : (
+      <span className={`badge bg-${statusColor(bill.billStatus)}`}>
+        {statusText(bill.billStatus)}
+      </span>
+    )}
+  </div>
+)}
                 </div>
 
                 <Divider />

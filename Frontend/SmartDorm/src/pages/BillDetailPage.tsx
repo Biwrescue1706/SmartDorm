@@ -117,14 +117,7 @@ export default function BillDetailPage() {
 const beforeVat = bill.total - vat;
 const thaiText = numberToThaiBaht(bill.total);
 
-const today = new Date();
-const due = bill.dueDate ? new Date(bill.dueDate) : null;
-
-const overdueDays =
-  due && today > due
-    ? Math.floor((today.getTime() - due.getTime()) / (1000 * 60 * 60 * 24))
-    : 0;
-
+const overdueDays = bill.overdueDays ?? 0;
 const isOverdue = overdueDays > 0;
 
   const handleExportPDF = () => {
@@ -307,7 +300,7 @@ const isOverdue = overdueDays > 0;
                             <td>ค่าปรับ</td>
                               <td colSpan={3}>ปรับ {bill.overdueDays} วัน</td>
 <td className="text-center">
-                            {bill.fine.toLocaleString()}
+                            {(bill.fine ?? 0).toLocaleString()}
                           </td>
                           </tr>
                         )}
@@ -408,8 +401,8 @@ const isOverdue = overdueDays > 0;
                             <td>{bill.overdueDays}</td>
                             <td>50</td>
                             <td className="text-center">
-                              {(bill.fine ?? 0).toLocaleString()}
-                            </td>
+  {(bill.fine ?? 0).toLocaleString()}
+</td>
                           </tr>
                         )}
                       </tbody>

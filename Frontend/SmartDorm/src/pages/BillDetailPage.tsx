@@ -114,8 +114,18 @@ export default function BillDetailPage() {
 
   // ✅ คำนวณหลังจากมี bill แน่นอน
   const vat = bill.total * 0.07;
-  const beforeVat = bill.total - vat;
-  const thaiText = numberToThaiBaht(bill.total);
+const beforeVat = bill.total - vat;
+const thaiText = numberToThaiBaht(bill.total);
+
+const today = new Date();
+const due = bill.dueDate ? new Date(bill.dueDate) : null;
+
+const overdueDays =
+  due && today > due
+    ? Math.floor((today.getTime() - due.getTime()) / (1000 * 60 * 60 * 24))
+    : 0;
+
+const isOverdue = overdueDays > 0;
 
   const handleExportPDF = () => {
     if (!pdfRef.current) return;
@@ -221,10 +231,12 @@ export default function BillDetailPage() {
                   </div>
 
                   {bill.billStatus === 0 && (
-                    <div className="col-md-4">
-                      <b>ครบกำหนด:</b> {formatThaiDate(bill.dueDate)}
-                    </div>
-                  )}
+                  <div className={`col-12 fw-semibold ${isOverdue ? "text-danger" : ""}`}>
+                    {isOverdue
+                      ? <>เกินกำหนด {overdueDays} วัน (ครบกำหนด {formatThai(bill.dueDate)})</>
+                      : <>ครบกำหนดชำระ : {formatThai(bill.dueDate)}</>}
+                  </div>
+                )}
 
                   {bill.billStatus !== 1 && (
                     <div className="col-md-4">
@@ -293,11 +305,10 @@ export default function BillDetailPage() {
                         {bill.overdueDays !== 0 && (
                           <tr>
                             <td>ค่าปรับ</td>
-                            {bill.overdueDays && bill.overdueDays !== 0 ? (
                               <td colSpan={3}>ปรับ {bill.overdueDays} วัน</td>
-                            ) : (
-                              <td colSpan={3}>-</td>
-                            )}
+<td className="text-center">
+                            {bill.fine.toLocaleString()}
+                          </td>
                           </tr>
                         )}
                       </tbody>

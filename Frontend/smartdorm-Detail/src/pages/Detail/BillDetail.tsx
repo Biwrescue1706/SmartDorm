@@ -243,9 +243,9 @@ export default function BillDetail() {
                     </div>
                   </div>
 
-                  <h6 className="fw-bold text-primary text-center mb-2">
+                  <h3 className="fw-bold text-primary text-center mb-2">
                     รายละเอียดค่าใช้จ่าย
-                  </h6>
+                  </h3>
 
                   {bill.billStatus === 0 ? (
                     <table className="table table-sm table-bordered align-middle mb-2">

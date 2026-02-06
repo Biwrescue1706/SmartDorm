@@ -76,9 +76,9 @@ const statusText = (s: number) => {
 };
 
 const statusColor = (s: number) => {
-  if (s === 0) return "warning" ;
-  if (s === 1) return "success" ;
-  if (s === 2) return "info" ;
+  if (s === 0) return "warning";
+  if (s === 1) return "success";
+  if (s === 2) return "info";
   return "-";
 };
 
@@ -121,11 +121,11 @@ export default function BillDetailPage() {
 
   // ✅ คำนวณหลังจากมี bill แน่นอน
   const vat = bill.total * 0.07;
-const beforeVat = bill.total - vat;
-const thaiText = numberToThaiBaht(bill.total);
+  const beforeVat = bill.total - vat;
+  const thaiText = numberToThaiBaht(bill.total);
 
-const overdueDays = bill.overdueDays ?? 0;
-const isOverdue = overdueDays > 0;
+  const overdueDays = bill.overdueDays ?? 0;
+  const isOverdue = overdueDays > 0;
 
   const handleExportPDF = () => {
     if (!pdfRef.current) return;
@@ -190,6 +190,19 @@ const isOverdue = overdueDays > 0;
               📄 ออก PDF
             </button>
 
+            {/* <h3 className="fw-bold m-0" style={{ color: SCB_PURPLE }}>
+              รายละเอียดบิล
+            </h3> */}
+          </div>
+          <div className="d-flex justify-content-center align-items-center mb-3 gap-3">
+            {/* <button className="btn btn-secondary" onClick={() => navigate(-1)}>
+              ← กลับ
+            </button>
+
+            <button className="btn btn-primary" onClick={handleExportPDF}>
+              📄 ออก PDF
+            </button> */}
+
             <h3 className="fw-bold m-0" style={{ color: SCB_PURPLE }}>
               รายละเอียดบิล
             </h3>
@@ -231,27 +244,36 @@ const isOverdue = overdueDays > 0;
                   </div>
 
                   {bill.billStatus === 0 && (
-                  <div className={`col-12 fw-semibold ${isOverdue ? "text-danger" : ""}`}>
-                    {isOverdue
-                      ? <>เกินกำหนด {overdueDays} วัน (ครบกำหนด {formatThai(bill.dueDate)})</>
-                      : <>ครบกำหนดชำระ : {formatThai(bill.dueDate)}</>}
-                  </div>
-                )}
+                    <div
+                      className={`col-12 fw-semibold ${isOverdue ? "text-danger" : ""}`}
+                    >
+                      {isOverdue ? (
+                        <>
+                          เกินกำหนด {overdueDays} วัน (ครบกำหนด{" "}
+                          {formatThai(bill.dueDate)})
+                        </>
+                      ) : (
+                        <>ครบกำหนดชำระ : {formatThai(bill.dueDate)}</>
+                      )}
+                    </div>
+                  )}
 
                   {bill.billStatus !== 1 && (
-  <div className="col-md-4">
-    <b>สถานะ:</b>{" "}
-    {isOverdue ? (
-      <span className="badge bg-danger">
-        เกินกำหนด {overdueDays} วัน
-      </span>
-    ) : (
-      <span className={`badge bg-${statusColor(bill.billStatus)}`}>
-        {statusText(bill.billStatus)}
-      </span>
-    )}
-  </div>
-)}
+                    <div className="col-md-4">
+                      <b>สถานะ:</b>{" "}
+                      {isOverdue ? (
+                        <span className="badge bg-danger">
+                          เกินกำหนด {overdueDays} วัน
+                        </span>
+                      ) : (
+                        <span
+                          className={`badge bg-${statusColor(bill.billStatus)}`}
+                        >
+                          {statusText(bill.billStatus)}
+                        </span>
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 <Divider />
@@ -314,10 +336,10 @@ const isOverdue = overdueDays > 0;
                         {bill.overdueDays !== 0 && (
                           <tr>
                             <td>ค่าปรับ</td>
-                              <td colSpan={3}>ปรับ {bill.overdueDays} วัน</td>
-<td className="text-center">
-                            {(bill.fine ?? 0).toLocaleString()}
-                          </td>
+                            <td colSpan={3}>ปรับ {bill.overdueDays} วัน</td>
+                            <td className="text-center">
+                              {(bill.fine ?? 0).toLocaleString()}
+                            </td>
                           </tr>
                         )}
                       </tbody>
@@ -417,8 +439,8 @@ const isOverdue = overdueDays > 0;
                             <td>{bill.overdueDays}</td>
                             <td>50</td>
                             <td className="text-center">
-  {(bill.fine ?? 0).toLocaleString()}
-</td>
+                              {(bill.fine ?? 0).toLocaleString()}
+                            </td>
                           </tr>
                         )}
                       </tbody>

@@ -33,35 +33,44 @@ export default function PaymentSearch() {
   };
 
   return (
-    <div className="container py-5">
+    <>
       <NavBar />
-      <div className="text-center mb-4 mt-5">
-        <h3 className="fw-bold mb-3">ชำระบิลค่าห้อง</h3>
-        <p className="text-white-50 mb-4">
-          กรอกรหัสบิลเพื่อดูรายละเอียดและชำระเงิน
-        </p>
 
-        <form
-          onSubmit={handleSearch}
-          className="w-100"
-          style={{ maxWidth: "380px" }}
-        >
-          <input
-            type="text"
-            className="form-control form-control-lg text-center mb-3 rounded-4 border-0"
-            placeholder="กรอกรหัสบิล เช่น BL24001"
-            value={billId}
-            onChange={(e) => setBillId(e.target.value)}
-          />
-          <button
-            type="submit"
-            className="btn btn-primary w-100"
-            disabled={loading}
-          >
-            {loading ? "กำลังค้นหา..." : "ค้นหาบิล"}
-          </button>
-        </form>
+      <div
+        className="container-fluid d-flex justify-content-center align-items-center"
+        style={{ minHeight: "calc(100vh - 70px)" }}
+      >
+        <div className="col-12 col-sm-10 col-md-6 col-lg-4">
+
+          <div className="card shadow border-0 rounded-4 p-4 text-center">
+
+            <h3 className="fw-bold mb-3">ชำระบิลค่าห้อง</h3>
+
+            <p className="text-muted mb-4">
+              กรอกรหัสบิลเพื่อดูรายละเอียดและชำระเงิน
+            </p>
+
+            <form onSubmit={handleSearch}>
+              <input
+                type="text"
+                className="form-control form-control-lg text-center mb-3 rounded-4"
+                placeholder="กรอกรหัสบิล เช่น BL24001"
+                value={billId}
+                onChange={(e) => setBillId(e.target.value)}
+              />
+
+              <button
+                type="submit"
+                className="btn btn-primary w-100 fw-bold"
+                disabled={loading}
+              >
+                {loading ? "กำลังค้นหา..." : "ค้นหาบิล"}
+              </button>
+            </form>
+
+          </div>
+        </div>
       </div>
-    </div>
+    </>
   );
 }

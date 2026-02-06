@@ -5,7 +5,8 @@ export default function Home() {
 
   return (
     <div className="min-vh-100 d-flex flex-column justify-content-center align-items-center text-center">
-      <h2 className="fw-bold mb-4">ระบบหอพัก 🏫 SmartDorm 🎉</h2>
+      <h2 className="fw-bold mb-4">ระบบหอพัก</h2>
+      <h2 className="fw-bold mb-4">🏫 SmartDorm 🎉</h2>
 
       <div
         className="d-grid gap-3"
@@ -22,7 +23,7 @@ export default function Home() {
         {/* ปุ่มคืนห้อง */}
         <button
           className="btn btn-success fw-bold py-3 rounded-4 shadow-sm"
-          onClick={() => navigate("/return")}
+          onClick={() => navigate("/checkout")}
         >
           🔄 คืนห้อง
         </button>

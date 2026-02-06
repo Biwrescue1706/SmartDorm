@@ -1,5 +1,6 @@
 // src/components/AllBills/AllBillsCard.tsx
 import type { Bill } from "../../types/Bill";
+import { useNavigate } from "react-router-dom";
 
 interface Props {
   bill: Bill;
@@ -37,6 +38,22 @@ export default function AllBillsCard({
   const isUnpaid = bill.billStatus === 0;
   const hasSlip = bill.payment?.slipUrl || bill.slipUrl;
   const overdueDays = bill.overdueDays ?? 0;
+  const navigate = useNavigate();
+  const getOverdueDays = (dueDate: string) => {
+    const today = new Date();
+    const due = new Date(dueDate);
+
+    // ตัดเวลาออก ให้เหลือแค่วัน ป้องกัน timezone เพี้ยน
+    today.setHours(0, 0, 0, 0);
+    due.setHours(0, 0, 0, 0);
+
+    const diff = today.getTime() - due.getTime();
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+
+    return days > 0 ? days : 0;
+  };
+
+  const overdueDayss = getOverdueDays(bill.dueDate);
 
   return (
     <div
@@ -131,8 +148,6 @@ export default function AllBillsCard({
             {bill.total.toLocaleString()} บาท
           </div>
         </div>
-
-        
       </div>
 
       <div className="mb-2 mt-1 text-black">
@@ -145,12 +160,25 @@ export default function AllBillsCard({
         <div className="mb-2 mt-3">
           {/* <div className="fw-bold h6 ">สถานะ : </div> */}
           <div className="fw-bold h6 text-primary text-center">
-            {isPending && (
+            {isPending ? (
               <span className="badge bg-warning text-dark p-2">รอตรวจสอบ</span>
+            ) : isPaid ? (
+              <span className="badge bg-success p-2">ชำระแล้ว</span>
+            ) : overdueDays > 0 ? (
+              <span className="badge bg-danger p-2">เกินกำหนด</span>
+            ) : (
+              isUnpaid && <span className="badge bg-danger p-2">ค้างชำระ</span>
             )}
-            {isPaid && <span className="badge bg-success p-2">ชำระแล้ว</span>}
-            {isUnpaid && <span className="badge bg-danger p-2">ค้างชำระ</span>}
           </div>
+
+          {overdueDays > 0 && (
+            <div className="mb-2 mt-3">
+              <div className="fw-bold h5 text-center text-black">เกินกำหนด</div>
+              <div className="fw-bold h5 text-primary text-center">
+                {overdueDayss} วัน
+              </div>
+            </div>
+          )}
         </div>
         <Divider />
       </div>
@@ -182,17 +210,26 @@ export default function AllBillsCard({
           </>
         )}
 
-        {isUnpaid && overdueDays > 0 && role === 0 && (
-          <>
-            <button
-              className="btn btn-info btn-sm fw-semibold w-50 text-white"
-              onClick={() => onOverdue(bill.billId, bill.room?.number ?? "-")}
-            >
-              แจ้งเตือน
-            </button>
-            <Divider />
-          </>
-        )}
+        <div className="d-flex gap-2">
+          <button
+            className="btn btn-success btn-sm fw-semibold w-100 text-white"
+            onClick={() => navigate(`/bills/${bill.billId}`)}
+          >
+            ดูรายละเอียดบิล
+          </button>
+          {isUnpaid && overdueDays > 0 && role === 0 && (
+            <>
+              {/* <Divider /> */}
+              <button
+                className="btn btn-info btn-sm fw-semibold w-50 text-white"
+                onClick={() => onOverdue(bill.billId, bill.room?.number ?? "-")}
+              >
+                แจ้งเตือน
+              </button>
+              <Divider />
+            </>
+          )}
+        </div>
 
         {role === 0 && (
           <div className="d-flex gap-2">

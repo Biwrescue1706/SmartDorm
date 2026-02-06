@@ -63,6 +63,17 @@ export default function BillDetail() {
 
   const pdfRef = useRef<HTMLDivElement>(null);
 
+/* ===== ตรวจว่าเปิดใน LINE ===== */
+const isLine = /Line/.test(navigator.userAgent);
+
+/* ===== เปิด Chrome ===== */
+const openInChrome = () => {
+  window.location.href =
+    "intent://" +
+    window.location.href.replace(/^https?:\/\//, "") +
+    "#Intent;scheme=https;package=com.android.chrome;end";
+};
+
   if (loading)
     return (
       <>
@@ -156,11 +167,18 @@ export default function BillDetail() {
       >
         <div className="d-flex justify-content-center no-pdf">
           <button
-            className="btn btn-primary fw-bold px-5 py-2 mt-3"
-            onClick={exportPdf}
-          >
-            ดาวน์โหลด PDF
-          </button>
+  className="btn btn-primary fw-bold px-5 py-2 mt-3"
+  onClick={() => {
+    if (isLine) {
+      alert("LINE ไม่รองรับการดาวน์โหลด PDF กรุณาเปิดใน Chrome");
+      openInChrome();
+    } else {
+      exportPdf();
+    }
+  }}
+>
+  ดาวน์โหลด PDF
+</button>
         </div>
         <div className="container-fluid" ref={pdfRef}>
           <div className="row justify-content-center">

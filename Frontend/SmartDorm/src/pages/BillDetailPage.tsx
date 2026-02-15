@@ -1,20 +1,23 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { useRef } from "react";
-
 import Nav from "../components/Nav";
 import { useAuth } from "../hooks/useAuth";
 import { usePendingBookings } from "../hooks/ManageRooms/usePendingBookings";
 import { usePendingCheckouts } from "../hooks/ManageRooms/usePendingCheckouts";
 import { useBillDetail } from "../hooks/useBillDetail";
+import { useExportBillPDF } from "../hooks/useExportBillPDF";
 
-import { useBillMath } from "../hooks/useBillMath";
-import { useBillPDF } from "../hooks/useBillPDF";
-
-import { BillTables } from "../components/BillTables";
+import BillTables from "../components/BillTables";
 import BillPayment from "../components/BillPayment";
 
-import { formatThai, formatThaiDate } from "../utils/billFormat";
+import {
+  formatThai,
+  formatThaiDate,
+  numberToThaiBaht,
+} from "../utils/billFormat";
 
+import { useRef } from "react";
+
+// SCB THEME
 const SCB_PURPLE = "#4A0080";
 const BG_SOFT = "#F8F5FC";
 
@@ -28,13 +31,14 @@ const Divider = () => (
 export default function BillDetailPage() {
   const { billId } = useParams();
   const navigate = useNavigate();
+
   const { handleLogout, role, adminName, adminUsername } = useAuth();
   const pendingBookings = usePendingBookings();
   const pendingCheckouts = usePendingCheckouts();
 
-  const pdfRef = useRef<HTMLDivElement>(null);
-
   const { bill, loading } = useBillDetail(billId);
+  const pdfRef = useRef<HTMLDivElement>(null);
+  const exportPDF = useExportBillPDF();
 
   if (loading) {
     return (
@@ -48,17 +52,22 @@ export default function BillDetailPage() {
     return (
       <div className="text-center mt-5">
         <h5>ไม่พบข้อมูลบิล</h5>
-        <button className="btn btn-secondary mt-3" onClick={() => navigate(-1)}>
+        <button
+          className="btn btn-secondary mt-3"
+          onClick={() => navigate(-1)}
+        >
           กลับ
         </button>
       </div>
     );
   }
 
-  const { vat, beforeVat, overdueDays, isOverdue } = useBillMath(bill);
-  const exportPDF = useBillPDF();
+  const vat = bill.total * 0.07;
+  const beforeVat = bill.total - vat;
+  const thaiText = numberToThaiBaht(bill.total);
 
-  const handleExportPDF = () => exportPDF(bill, pdfRef);
+  const overdueDays = bill.overdueDays ?? 0;
+  const isOverdue = overdueDays > 0;
 
   return (
     <div
@@ -87,13 +96,16 @@ export default function BillDetailPage() {
               ← กลับ
             </button>
 
-            <button className="btn btn-primary" onClick={handleExportPDF}>
+            <button
+              className="btn btn-primary"
+              onClick={() => exportPDF(bill, pdfRef)}
+            >
               📄 ออก PDF
             </button>
           </div>
 
-          <div className="text-center mb-3">
-            <h3 className="fw-bold" style={{ color: SCB_PURPLE }}>
+          <div className="d-flex justify-content-center mb-3">
+            <h3 className="fw-bold m-0" style={{ color: SCB_PURPLE }}>
               รายละเอียดบิล
             </h3>
           </div>
@@ -101,26 +113,33 @@ export default function BillDetailPage() {
           <div ref={pdfRef}>
             <div className="card shadow-sm border-0">
               <div className="card-body">
-
                 <div className="text-center mb-2">
+                  <img
+                    src="/assets/SmartDorm.webp"
+                    alt="logo"
+                    width={40}
+                    height={40}
+                  />
                   <h3 className="fw-bold mb-1">
                     {bill.billStatus === 0
                       ? "ใบแจ้งหนี้ ( Invoice )"
                       : "ใบเสร็จรับเงิน ( Receipt )"}
                   </h3>
+                  <div className="small text-secondary">
+                    47/21 ม.1 ต.บ้านสวน อ.เมืองชลบุรี จ.ชลบุรี 20000
+                  </div>
                 </div>
 
                 <div className="d-flex justify-content-between small mb-2">
                   <div>เลขที่เอกสาร: {bill.billId}</div>
                   <div>วันที่ออก : {formatThai(bill.createdAt)}</div>
-                  <div>พนักงาน : {bill.adminCreated?.name ?? "-"}</div>
                 </div>
 
                 <Divider />
 
                 <div className="row g-2 mb-3">
                   <div className="col-md-4">
-                    <b>ชื่อ:</b> {bill.fullName || "-"}
+                    <b>ชื่อ - นามสกุล :</b> {bill.fullName || "-"}
                   </div>
 
                   <div className="col-md-4">
@@ -128,14 +147,23 @@ export default function BillDetailPage() {
                   </div>
 
                   <div className="col-md-4">
-                    ห้อง {bill.room?.number ?? "-"}
+                    <b>ห้อง {bill.room?.number ?? "-"}</b>
                   </div>
 
                   {bill.billStatus === 0 && (
-                    <div className={`col-12 ${isOverdue ? "text-danger" : ""}`}>
-                      {isOverdue
-                        ? `เกินกำหนด ${overdueDays} วัน`
-                        : `ครบกำหนด ${formatThai(bill.dueDate)}`}
+                    <div
+                      className={`col-12 fw-semibold ${
+                        isOverdue ? "text-danger" : ""
+                      }`}
+                    >
+                      {isOverdue ? (
+                        <>
+                          เกินกำหนด {overdueDays} วัน (ครบกำหนด{" "}
+                          {formatThai(bill.dueDate)})
+                        </>
+                      ) : (
+                        <>ครบกำหนดชำระ : {formatThai(bill.dueDate)}</>
+                      )}
                     </div>
                   )}
                 </div>
@@ -144,17 +172,15 @@ export default function BillDetailPage() {
 
                 <BillTables
                   bill={bill}
-                  beforeVat={beforeVat}
                   vat={vat}
-                  thaiText=""
+                  beforeVat={beforeVat}
+                  thaiText={thaiText}
                 />
 
-                <BillPayment bill={bill} formatThai={formatThai} />
-
+                <BillPayment bill={bill} />
               </div>
             </div>
           </div>
-
         </div>
       </main>
     </div>

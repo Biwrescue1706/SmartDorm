@@ -9,7 +9,7 @@
     "start": "node src/index.js",
     "prisma:generate": "npx prisma generate",
     "prisma:push": "npx prisma db push",
-     "deploy": "npx prisma generate && npx prisma db push && npx prisma db seed",
+    "deploy": "npx prisma generate && npx prisma db push && npx prisma db seed",
     "seed": "node prisma/seed.js"
   },
   "repository": {

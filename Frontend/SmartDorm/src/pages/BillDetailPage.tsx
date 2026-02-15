@@ -15,7 +15,6 @@ import BillPayment from "../components/BillPayment";
 
 import { formatThai, formatThaiDate } from "../utils/billFormat";
 
-// THEME
 const SCB_PURPLE = "#4A0080";
 const BG_SOFT = "#F8F5FC";
 
@@ -56,7 +55,6 @@ export default function BillDetailPage() {
     );
   }
 
-  // ✅ คำนวณ
   const { vat, beforeVat, overdueDays, isOverdue } = useBillMath(bill);
   const exportPDF = useBillPDF();
 
@@ -84,7 +82,6 @@ export default function BillDetailPage() {
           className="mx-auto"
           style={{ background: BG_SOFT, borderRadius: 20, maxWidth: "1400px" }}
         >
-          {/* header */}
           <div className="d-flex justify-content-center align-items-center mb-3 gap-3">
             <button className="btn btn-secondary" onClick={() => navigate(-1)}>
               ← กลับ
@@ -101,12 +98,10 @@ export default function BillDetailPage() {
             </h3>
           </div>
 
-          {/* PDF area */}
           <div ref={pdfRef}>
             <div className="card shadow-sm border-0">
               <div className="card-body">
 
-                {/* Bill Info */}
                 <div className="text-center mb-2">
                   <h3 className="fw-bold mb-1">
                     {bill.billStatus === 0
@@ -118,7 +113,7 @@ export default function BillDetailPage() {
                 <div className="d-flex justify-content-between small mb-2">
                   <div>เลขที่เอกสาร: {bill.billId}</div>
                   <div>วันที่ออก : {formatThai(bill.createdAt)}</div>
-                  <div>พนักงาน : {bill.createdBy}</div>
+                  <div>พนักงาน : {bill.adminCreated?.name ?? "-"}</div>
                 </div>
 
                 <Divider />
@@ -147,7 +142,6 @@ export default function BillDetailPage() {
 
                 <Divider />
 
-                {/* TABLE */}
                 <BillTables
                   bill={bill}
                   beforeVat={beforeVat}
@@ -155,12 +149,12 @@ export default function BillDetailPage() {
                   thaiText=""
                 />
 
-                {/* PAYMENT */}
                 <BillPayment bill={bill} formatThai={formatThai} />
 
               </div>
             </div>
           </div>
+
         </div>
       </main>
     </div>

@@ -8,7 +8,7 @@ function buildFullName(t, n, s) {
   return `${t ?? ""}${n ?? ""} ${s ?? ""}`.trim();
 }
 
-// 📋 ดึงข้อมูลหอพัก (auto create MAIN ถ้ายังไม่มี)
+// 📋 ดึงข้อมูลหอพัก
 dormProfile.get("/", async (_req, res) => {
   try {
     const profile = await prisma.dormProfile.upsert({
@@ -21,6 +21,10 @@ dormProfile.get("/", async (_req, res) => {
         phone: "",
         email: "",
         taxId: "",
+        service: 50,
+        waterRate: 0,
+        electricRate: 0,
+        overdueFinePerDay: 0,
       },
     });
 
@@ -31,7 +35,7 @@ dormProfile.get("/", async (_req, res) => {
   }
 });
 
-// ✏️ อัปเดตข้อมูลหอพัก (safe upsert)
+// ✏️ อัปเดตข้อมูลหอพัก
 dormProfile.put(
   "/",
   authMiddleware,
@@ -49,6 +53,10 @@ dormProfile.put(
         receiverName,
         receiverSurname,
         signatureUrl,
+        service,
+        waterRate,
+        electricRate,
+        overdueFinePerDay,
       } = req.body;
 
       const data = {
@@ -57,7 +65,7 @@ dormProfile.put(
         phone,
         email,
         taxId,
-        taxType: Number(taxType),
+        taxType: Number(taxType) || 0,
 
         receiverTitle,
         receiverName,
@@ -69,6 +77,13 @@ dormProfile.put(
         ),
 
         signatureUrl,
+
+        service: Number(service) || 0,
+        waterRate: Number(waterRate) || 0,
+        electricRate: Number(electricRate) || 0,
+        overdueFinePerDay: Number(overdueFinePerDay) || 0,
+
+        updatedAt: new Date(), // 👈 ใส่ timestamp ตอน update
       };
 
       const updated = await prisma.dormProfile.upsert({

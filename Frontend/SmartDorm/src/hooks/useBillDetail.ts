@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { API_BASE } from "../config";
-import type { BillDetail } from "../types/BillDetail";
+import type { Bill } from "../types/All";
 
 export const useBillDetail = (billId?: string) => {
-  const [bill, setBill] = useState<BillDetail | null>(null);
+  const [bill, setBill] = useState<Bill | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

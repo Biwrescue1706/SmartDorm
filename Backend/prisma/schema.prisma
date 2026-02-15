@@ -17,7 +17,7 @@ model Admin {
   role     Int    @default(1) // 0 = แอดมิน , 1 = พนักงาน
 
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  updatedAt DateTime?
 
   roomsCreated Room[] @relation("RoomCreatedBy")
   roomsUpdated Room[] @relation("RoomUpdatedBy")
@@ -37,7 +37,7 @@ model Room {
   status Int @default(0) // 0 = ว่าง , 1 = ถูกจองแล้ว
 
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  updatedAt DateTime?
 
   createdBy String  @db.ObjectId
   updatedBy String? @db.ObjectId
@@ -57,7 +57,7 @@ model Customer {
   userName   String
 
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  updatedAt DateTime?
 
   bookings  Booking[]
   bills     Bill[]
@@ -91,7 +91,7 @@ model Booking {
   slipUrl String? // รูปสลิปการโอนเงิน
 
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  updatedAt DateTime?
 
   room     Room     @relation(fields: [roomId], references: [roomId])
   customer Customer @relation(fields: [customerId], references: [customerId])
@@ -122,7 +122,7 @@ model Checkout {
   checkoutAt     DateTime? //วันที่คืนจริง
 
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  updatedAt DateTime?
 
   booking  Booking  @relation(fields: [bookingId], references: [bookingId])
   room     Room     @relation(fields: [roomId], references: [roomId])
@@ -180,7 +180,7 @@ model Bill {
 
   createdAt DateTime @default(now())
   createdBy String   @db.ObjectId
-  updatedAt DateTime @updatedAt
+  updatedAt DateTime?
   updatedBy String?  @db.ObjectId
 
   room         Room?     @relation(fields: [roomId], references: [roomId])
@@ -206,7 +206,7 @@ model Payment {
   slipUrl String? // รูปสลิปการโอนเงิน
 
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  updatedAt DateTime?
 
   bill     Bill     @relation(fields: [billId], references: [billId])
   customer Customer @relation(fields: [customerId], references: [customerId])
@@ -236,5 +236,5 @@ model DormProfile {
   signatureUrl String? // ลิงก์รูปจาก Supabase
 
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  updatedAt DateTime?
 }

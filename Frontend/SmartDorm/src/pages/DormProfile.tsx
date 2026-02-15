@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
-import Nav from "../../components/nav";
-import { useAuth } from "../../hooks/useAuth";
+import Nav from "../components/nav";
+import { useAuth } from "../hooks/useAuth";
 import Swal from "sweetalert2";
-import { API_BASE } from "../../config";
-import { usePendingCheckouts } from "../../hooks/ManageRooms/usePendingCheckouts";
-import { usePendingBookings } from "../../hooks/ManageRooms/usePendingBookings";
+import { API_BASE } from "../config";
+import { usePendingCheckouts } from "../hooks/ManageRooms/usePendingCheckouts";
+import { usePendingBookings } from "../hooks/ManageRooms/usePendingBookings";
 
 export default function DormProfile() {
   const { handleLogout, role, adminName, adminUsername } = useAuth();

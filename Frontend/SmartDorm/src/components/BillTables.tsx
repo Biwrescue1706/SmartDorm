@@ -1,4 +1,3 @@
-import React from "react";
 
 export function InvoiceTable({ bill, beforeVat, vat, thaiText }: any) {
   return (

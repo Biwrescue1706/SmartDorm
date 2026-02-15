@@ -44,7 +44,7 @@ export default function DormProfile() {
   if (!form) return <div>Loading...</div>;
 
   return (
-    <div className="d-flex min-vh-100 mx-2 mt-0 mb-4">
+    <div className="d-flex min-vh-100 mx-2 mt-4 mb-4">
       <Nav
         onLogout={handleLogout}
         role={role}
@@ -56,7 +56,7 @@ export default function DormProfile() {
 
       <main className="flex-grow-1 px-3 py-4 mt-6 mt-lg-7">
         <div className="container-fluid d-flex justify-content-center">
-          <div className="card shadow w-100" style={{ maxWidth: 900 }}>
+          <div className="card shadow w-100" style={{ maxWidth: 1400 }}>
             <div className="card-body">
               <h4 className="fw-bold text-center mb-4">
                 🏢 ตั้งค่าหอพัก

@@ -1,7 +1,4 @@
-// ===========================
 // Core Entities
-// ===========================
-
 export interface Admin {
   adminId: string;
   username: string;
@@ -37,10 +34,7 @@ export interface Payment {
   paidAt: string;
 }
 
-// ===========================
 // Bill
-// ===========================
-
 export interface Bill {
   billId: string;
   billNumber: string;
@@ -87,10 +81,7 @@ export interface Bill {
   payment?: Payment | null;
 }
 
-// ===========================
 // Booking / Checkout
-// ===========================
-
 export interface Checkout {
   checkoutId: string;
   checkout: string;
@@ -134,10 +125,7 @@ export interface Booking {
   checkout?: Checkout | null;
 }
 
-// ===========================
 // Auth
-// ===========================
-
 export interface LoginCredentials {
   username: string;
   password: string;
@@ -164,10 +152,7 @@ export interface ForgotPasswordInput {
   newPassword: string;
 }
 
-// ===========================
 // Overview
-// ===========================
-
 export interface OverviewBill {
   billId: string;
   roomId: string;
@@ -190,4 +175,31 @@ export interface OverviewResponse {
   month: number;
   totalRooms: number;
   data: OverviewRoom[];
+}
+
+// Dorm Profile
+export interface DormProfile {
+  key: string;
+
+  dormName?: string;
+  address?: string;
+  phone?: string;
+  email?: string;
+  taxId?: string;
+  taxType?: number;
+
+  receiverTitle?: string;
+  receiverName?: string;
+  receiverSurname?: string;
+  receiverFullName?: string;
+
+  signatureUrl?: string | null;
+
+  service: number;
+  waterRate: number;
+  electricRate: number;
+  overdueFinePerDay: number;
+
+  createdAt?: string;
+  updatedAt?: string;
 }

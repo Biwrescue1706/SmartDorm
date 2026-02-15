@@ -48,16 +48,29 @@ admin.get("/:adminId", async (req, res) => {
   }
 });
 
-// ✏️ อัปเดตข้อมูลผู้ดูแลระบบ (เฉพาะ Super Admin)
 admin.put("/:adminId", authMiddleware, roleMiddleware(0), async (req, res) => {
   try {
     const { username, name, password, role } = req.body;
-    const updateData = {};
 
-    if (username) updateData.username = username.trim();
-    if (name) updateData.name = name.trim();
-    if (password) updateData.password = await bcrypt.hash(password, 10);
-    if (role !== undefined) updateData.role = Number(role);
+    const updateData = {
+      updatedAt: new Date(),
+    };
+
+    if (typeof username === "string" && username.trim())
+      updateData.username = username.trim();
+
+    if (typeof name === "string" && name.trim())
+      updateData.name = name.trim();
+
+    if (typeof password === "string" && password.trim())
+      updateData.password = await bcrypt.hash(password, 10);
+
+    if (role !== undefined && !isNaN(Number(role)))
+      updateData.role = Number(role);
+
+    if (Object.keys(updateData).length === 1) {
+      return res.status(400).json({ error: "ไม่มีข้อมูลให้อัปเดต" });
+    }
 
     const updated = await prisma.admin.update({
       where: { adminId: req.params.adminId },

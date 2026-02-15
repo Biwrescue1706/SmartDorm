@@ -322,6 +322,16 @@ export default function Nav({
           >
             👤 ข้อมูลลูกค้า
           </button>
+<button
+  className={`btn text-start ${
+    isActive("/dorm-profile")
+      ? "btn-warning text-dark fw-bold"
+      : "btn-warning"
+  }`}
+  onClick={() => navigate("/dorm-profile")}
+>
+  ⚙️ ตั้งค่าหอพัก
+</button>
         </div>
       </div>
 
@@ -496,6 +506,15 @@ export default function Nav({
               >
                 👤 ข้อมูลลูกค้า
               </button>
+<button
+  className="btn btn-warning text-start fw-bold "
+  onClick={() => {
+    navigate("/dorm-profile");
+    setMenuOpen(false);
+  }}
+>
+  ⚙️ ตั้งค่าหอพัก
+</button>
             </div>
           </div>
 

@@ -66,23 +66,32 @@ const getDueDateNextMonth5th = (month) => {
 
 const generateBillNumber = async (status) => {
   const prefix = status === 1 ? "RC" : "INV";
-  const year = new Date().getFullYear();
+  const now = new Date();
 
-  let billNumber;
-  let exists = true;
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
 
-  while (exists) {
-    const rand = Math.floor(100000 + Math.random() * 900000);
-    billNumber = `${prefix}${year}${rand}`;
+  const searchPrefix = `${prefix}${year}${month}`;
 
-    const dup = await prisma.bill.findFirst({
-      where: { billNumber },
-    });
+  const lastBill = await prisma.bill.findFirst({
+    where: {
+      billNumber: {
+        startsWith: searchPrefix,
+      },
+    },
+    orderBy: { billNumber: "desc" },
+  });
 
-    exists = !!dup;
+  let nextNumber = 1;
+
+  if (lastBill) {
+    const lastSeq = lastBill.billNumber.slice(-8);
+    nextNumber = Number(lastSeq) + 1;
   }
 
-  return billNumber;
+  const seq = String(nextNumber).padStart(8, "0");
+
+  return `${searchPrefix}${seq}`;
 };
 
 const formatThaiDate = (d) =>

@@ -20,6 +20,7 @@ import ResetPassword from "./pages/ForgotPassword/ResetPassword";
 import BookingHistory from "./pages/BookingHistory";
 import BillOverviewPage from "./pages/BillOverviewPage";
 import BillDetailPage from "./pages/BillDetailPage";
+import DormProfile from "./pages/DormProfile";
 
 function App() {
   return (
@@ -170,6 +171,15 @@ function App() {
           </ProtectedRoute>
         }
       />
+
+<Route
+  path="/dorm-profile"
+  element={
+    <ProtectedRoute>
+      <DormProfile />
+    </ProtectedRoute>
+  }
+/>
 
       {/*  ไม่เจอ route → ไปหน้า 404 */}
       <Route path="*" element={<NotFound />} />

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import Nav from "../components/nav";
+import Nav from "../components/Nav";
+import Swal from "sweetalert2";
 import { useAuth } from "../hooks/useAuth";
 import { API_BASE } from "../config";
 import { usePendingCheckouts } from "../hooks/ManageRooms/usePendingCheckouts";
@@ -13,7 +14,6 @@ export default function DormProfile() {
   const [form, setForm] = useState<any>(null);
   const [loading, setLoading] = useState(false);
 
-  // โหลดข้อมูล
   useEffect(() => {
     fetch(`${API_BASE}/dormProfile`, { credentials: "include" })
       .then((r) => r.json())
@@ -58,13 +58,11 @@ export default function DormProfile() {
         <div className="container-fluid d-flex justify-content-center">
           <div className="card shadow w-100" style={{ maxWidth: 900 }}>
             <div className="card-body">
-
               <h4 className="fw-bold text-center mb-4">
                 🏢 ตั้งค่าหอพัก
               </h4>
 
               <form onSubmit={submit}>
-
                 {Input("ชื่อหอพัก", form.dormName, v => update("dormName", v))}
                 {Input("ที่อยู่", form.address, v => update("address", v))}
                 {Input("โทรศัพท์", form.phone, v => update("phone", v))}
@@ -86,7 +84,6 @@ export default function DormProfile() {
                 >
                   💾 บันทึกข้อมูล
                 </button>
-
               </form>
             </div>
           </div>
@@ -96,7 +93,6 @@ export default function DormProfile() {
   );
 }
 
-// reusable input
 function Input(label: string, value: any, set: (v: any) => void) {
   return (
     <div className="mb-3">

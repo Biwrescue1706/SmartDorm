@@ -23,9 +23,17 @@ const supabase = createClient(
 export const deleteSlip = async (url) => {
   try {
     if (!url) return;
-    await deleteFromDriveByUrl(url);
+
+    const bucket = process.env.SUPABASE_BUCKET;
+
+    // เอา path หลัง bucket ออกมา
+    const path = url.split(`/${bucket}/`)[1];
+
+    if (!path) return;
+
+    await supabase.storage.from(bucket).remove([path]);
   } catch (err) {
-    console.warn("ลบสลิปไม่สำเร็จ", err);
+    console.warn("ลบสลิปไม่สำเร็จ:", err);
   }
 };
 
@@ -260,7 +268,8 @@ booking.post("/:bookingId/uploadSlip", upload.single("slip"), async (req, res) =
 
     await prisma.booking.update({
       where: { bookingId },
-      data: { slipUrl: pub.publicUrl },
+      data: { slipUrl: pub.publicUrl , updatedAt: new Date(),
+  },
     });
 
     res.json({ message: "อัปโหลดสลิปสำเร็จ", slipUrl: pub.publicUrl });
@@ -276,12 +285,15 @@ booking.put("/:bookingId/approve", async (req, res) => {
     const updated = await prisma.$transaction(async (tx) => {
       const b = await tx.booking.update({
         where: { bookingId: req.params.bookingId },
-        data: { approveStatus: 1, approvedAt: new Date() },
+        data: { approveStatus: 1, approvedAt: new Date() ,
+updatedAt: new Date()
+},
         include: { room: true, customer: true },
       });
       await tx.room.update({
         where: { roomId: b.roomId },
-        data: { status: 1 },
+        data: { status: 1,
+updatedAt: new Date() },
       });
       return b;
     });
@@ -319,12 +331,14 @@ booking.put("/:bookingId/reject", async (req, res) => {
     const updated = await prisma.$transaction(async (tx) => {
       const b = await tx.booking.update({
         where: { bookingId: req.params.bookingId },
-        data: { approveStatus: 2, checkinAt: new Date() },
+        data: { approveStatus: 2, checkinAt: new Date(),
+updatedAt: new Date() },
         include: { room: true, customer: true },
       });
       await tx.room.update({
         where: { roomId: b.roomId },
-        data: { status: 0 },
+        data: { status: 0 ,
+updatedAt: new Date() },
       });
       return b;
     });
@@ -360,7 +374,10 @@ booking.put("/:bookingId/checkin", async (req, res) => {
   try {
     const updated = await prisma.booking.update({
       where: { bookingId: req.params.bookingId },
-      data: { checkinStatus: 1, checkinAt: new Date() },
+      data: { checkinStatus: 1, 
+checkinAt: new Date(),
+updatedAt: new Date()
+ },
       include: { room: true, customer: true },
     });
 
@@ -426,6 +443,7 @@ booking.put("/:bookingId", async (req, res) => {
           // รีเซ็ตเช็คอินทุกครั้งที่เปลี่ยนสถานะ
           checkinStatus: 0,
           checkinAt: null,
+updatedAt: new Date(),
 
           checkin: checkin ? new Date(checkin) : data.checkin,
         },
@@ -436,7 +454,9 @@ booking.put("/:bookingId", async (req, res) => {
 
       await tx.room.update({
         where: { roomId: data.roomId },
-        data: { status: roomStatus },
+        data: { status: roomStatus ,
+updatedAt: new Date()
+},
       });
 
       return b;

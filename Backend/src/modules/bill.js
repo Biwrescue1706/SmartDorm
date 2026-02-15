@@ -148,15 +148,67 @@ const getBillStatusColour = (status) => {
 bill.get("/getall", async (_req, res) => {
   try {
     const bills = await prisma.bill.findMany({
-      include: {
-  room: true,
-  booking: true,
-  customer: true,
-  payment: true,
-  adminCreated: true,
-},
       orderBy: { createdAt: "desc" },
+      select: {
+        billId: true,
+        billNumber: true,
+        month: true,
+        fullName: true,
+        cphone: true,
+        total: true,
+        billStatus: true,
+        billDate: true,
+        paidAt: true,
+        dueDate: true,
+        slipUrl: true,
+        rent: true,
+        service: true,
+        wBefore: true,
+        wAfter: true,
+        wUnits: true,
+        waterCost: true,
+        eBefore: true,
+        eAfter: true,
+        eUnits: true,
+        electricCost: true,
+        fine: true,
+        overdueDays: true,
+        lastOverdueNotifyAt: true,
+
+        adminCreated: {
+          select: {
+            adminId: true,
+            name: true,
+          },
+        },
+
+        room: {
+          select: {
+            roomId: true,
+            number: true,
+            rent: true,
+            status: true,
+          },
+        },
+
+        booking: {
+          select: {
+            fullName: true,
+            cphone: true,
+            bookingDate: true,
+            checkin: true,
+            checkinAt: true,
+          },
+        },
+
+        customer: {
+          select: {
+            userName: true,
+          },
+        },
+      },
     });
+
     res.json(bills);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -168,15 +220,69 @@ bill.get("/:billId", async (req, res) => {
   try {
     const billData = await prisma.bill.findUnique({
       where: { billId: req.params.billId },
-      include: {
-  room: true,
-  booking: true,
-  customer: true,
-  payment: true,
-  adminCreated: true,
-},
+      select: {
+        billId: true,
+        billNumber: true,
+        month: true,
+        fullName: true,
+        cphone: true,
+        total: true,
+        billStatus: true,
+        billDate: true,
+        paidAt: true,
+        dueDate: true,
+        slipUrl: true,
+        rent: true,
+        service: true,
+        wBefore: true,
+        wAfter: true,
+        wUnits: true,
+        waterCost: true,
+        eBefore: true,
+        eAfter: true,
+        eUnits: true,
+        electricCost: true,
+        fine: true,
+        overdueDays: true,
+        lastOverdueNotifyAt: true,
+
+        adminCreated: {
+          select: {
+            adminId: true,
+            name: true,
+          },
+        },
+
+        room: {
+          select: {
+            roomId: true,
+            number: true,
+            rent: true,
+            status: true,
+          },
+        },
+
+        booking: {
+          select: {
+            fullName: true,
+            cphone: true,
+            bookingDate: true,
+            checkin: true,
+            checkinAt: true,
+          },
+        },
+
+        customer: {
+          select: {
+            userName: true,
+          },
+        },
+      },
     });
-    if (!billData) return res.status(404).json({ error: "ไม่พบบิลนี้" });
+
+    if (!billData)
+      return res.status(404).json({ error: "ไม่พบบิลนี้" });
+
     res.json(billData);
   } catch (err) {
     res.status(400).json({ error: err.message });

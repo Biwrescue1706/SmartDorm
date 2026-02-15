@@ -8,25 +8,18 @@ function buildFullName(t, n, s) {
   return `${t ?? ""}${n ?? ""} ${s ?? ""}`.trim();
 }
 
-// 📋 ดึงข้อมูลหอพัก
+// 📋 ดึงข้อมูลหอพัก (ต้องมี seed ก่อน)
 dormProfile.get("/", async (_req, res) => {
   try {
-    const profile = await prisma.dormProfile.upsert({
+    const profile = await prisma.dormProfile.findUnique({
       where: { key: "MAIN" },
-      update: {},
-      create: {
-        key: "MAIN",
-        dormName: "",
-        address: "",
-        phone: "",
-        email: "",
-        taxId: "",
-        service: 50,
-        waterRate: 0,
-        electricRate: 0,
-        overdueFinePerDay: 0,
-      },
     });
+
+    if (!profile) {
+      return res
+        .status(404)
+        .json({ error: "ยังไม่ได้ seed โปรไฟล์หอพัก" });
+    }
 
     res.json(profile);
   } catch (err) {
@@ -83,13 +76,12 @@ dormProfile.put(
         electricRate: Number(electricRate) || 0,
         overdueFinePerDay: Number(overdueFinePerDay) || 0,
 
-        updatedAt: new Date(), // 👈 ใส่ timestamp ตอน update
+        updatedAt: new Date(),
       };
 
-      const updated = await prisma.dormProfile.upsert({
+      const updated = await prisma.dormProfile.update({
         where: { key: "MAIN" },
-        update: data,
-        create: { key: "MAIN", ...data },
+        data,
       });
 
       res.json({ message: "อัปเดตข้อมูลหอพักสำเร็จ", updated });

@@ -1,4 +1,3 @@
-import React from "react";
 
 export default function BillPayment({ bill, formatThai }: any) {
   if (bill.billStatus !== 1 || !bill.paidAt) return null;

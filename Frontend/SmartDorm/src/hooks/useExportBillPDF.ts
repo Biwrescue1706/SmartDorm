@@ -1,5 +1,5 @@
 import html2pdf from "html2pdf.js";
-import { Bill } from "../types/All";
+import type { Bill } from "../types/All";
 
 export const useExportBillPDF = () => {
   return (bill: Bill, ref: React.RefObject<HTMLDivElement>) => {

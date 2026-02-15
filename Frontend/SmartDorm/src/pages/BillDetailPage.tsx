@@ -1,23 +1,21 @@
 import { useParams, useNavigate } from "react-router-dom";
+import { useRef } from "react";
+
 import Nav from "../components/Nav";
+import BillTables from "../components/BillTables";
+import BillPayment from "../components/BillPayment";
+
 import { useAuth } from "../hooks/useAuth";
 import { usePendingBookings } from "../hooks/ManageRooms/usePendingBookings";
 import { usePendingCheckouts } from "../hooks/ManageRooms/usePendingCheckouts";
 import { useBillDetail } from "../hooks/useBillDetail";
 import { useExportBillPDF } from "../hooks/useExportBillPDF";
 
-import BillTables from "../components/BillTables";
-import BillPayment from "../components/BillPayment";
-
 import {
   formatThai,
   formatThaiDate,
   numberToThaiBaht,
-  statusText,
-  statusColor
 } from "../utils/billUtils";
-
-import { useRef } from "react";
 
 // SCB THEME
 const SCB_PURPLE = "#4A0080";
@@ -54,10 +52,7 @@ export default function BillDetailPage() {
     return (
       <div className="text-center mt-5">
         <h5>ไม่พบข้อมูลบิล</h5>
-        <button
-          className="btn btn-secondary mt-3"
-          onClick={() => navigate(-1)}
-        >
+        <button className="btn btn-secondary mt-3" onClick={() => navigate(-1)}>
           กลับ
         </button>
       </div>
@@ -122,11 +117,13 @@ export default function BillDetailPage() {
                     width={40}
                     height={40}
                   />
+
                   <h3 className="fw-bold mb-1">
                     {bill.billStatus === 0
                       ? "ใบแจ้งหนี้ ( Invoice )"
                       : "ใบเสร็จรับเงิน ( Receipt )"}
                   </h3>
+
                   <div className="small text-secondary">
                     47/21 ม.1 ต.บ้านสวน อ.เมืองชลบุรี จ.ชลบุรี 20000
                   </div>
@@ -179,7 +176,7 @@ export default function BillDetailPage() {
                   thaiText={thaiText}
                 />
 
-                <BillPayment bill={bill} />
+                <BillPayment bill={bill} formatThai={formatThai} />
               </div>
             </div>
           </div>

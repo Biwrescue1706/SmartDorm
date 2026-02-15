@@ -4,15 +4,9 @@ import { authMiddleware, roleMiddleware } from "../middleware/authMiddleware.js"
 import { sendFlexMessage } from "../utils/lineFlex.js";
 import { processOverdueManual } from "../services/overdue.manual.js";
 import { BASE_URL } from "../utils/api.js";
+import { deleteSlip } from "../utils/deleteSlip.js"; // ✅ เพิ่มแค่นี้
 
 const bill = Router();
-
-/* billStatus
-0 = ยังไม่จ่าย
-1 = จ่ายแล้ว
-2 = รอตรวจสอบ
-3 = ปฏิเสธ
-*/
 
 // ================= Helpers =================
 
@@ -628,7 +622,7 @@ const electricCost = eUnits * electricRate;
   }
 );
 
-// ลบบิล + payment
+// ลบบิล + payment + ลบไฟล์สลิป
 bill.delete("/:billId", authMiddleware, roleMiddleware(0), async (req, res) => {
   try {
     const { billId } = req.params;
@@ -641,14 +635,21 @@ bill.delete("/:billId", authMiddleware, roleMiddleware(0), async (req, res) => {
     if (!billData) throw new Error("ไม่พบบิล");
 
     await prisma.$transaction(async (tx) => {
-      if (billData.slipUrl) await deleteSlip(billData.slipUrl);
+      // ✅ ลบไฟล์สลิปใน Supabase
+      if (billData.slipUrl) {
+        await deleteSlip(billData.slipUrl);
+      }
+
+      // ✅ ลบ payment
       if (billData.payment) {
         await tx.payment.deleteMany({ where: { billId } });
       }
+
+      // ✅ ลบบิล
       await tx.bill.delete({ where: { billId } });
     });
 
-    res.json({ message: "ลบบิลและ payment สำเร็จ" });
+    res.json({ message: "ลบบิล + payment + สลิป สำเร็จ" });
   } catch (err) {
     res.status(400).json({ error: err.message });
   }

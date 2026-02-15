@@ -56,7 +56,7 @@ async function seedDormProfile() {
       data: { key: "MAIN", ...defaultData },
     });
 
-    console.log("✅ สร้าง DormProfile แล้ว");
+    console.log("✅ สร้าง โปรไฟล์หอพัก แล้ว");
     return;
   }
 
@@ -74,15 +74,15 @@ async function seedDormProfile() {
       data: updateData,
     });
 
-    console.log("✅ เติมข้อมูล DormProfile ที่ขาด");
+    console.log("✅ เติมข้อมูล โปรไฟล์หอพัก ที่ขาด");
   } else {
-    console.log("⏭ DormProfile ครบแล้ว");
+    console.log("⏭ โปรไฟล์หอพัก ครบแล้ว");
   }
 }
 
 // ===== main =====
 async function main() {
-  console.log("🌱 Safe merge seeding...");
+  console.log("🌱 การผสานข้อมูลอย่างปลอดภัย...");
 
   await seedAdmin("BiwBoong", "นายภูวณัฐ พาหะละ", 0);
   await seedAdmin("Admin", "Admin", 0);

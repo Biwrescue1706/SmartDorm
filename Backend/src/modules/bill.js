@@ -148,7 +148,13 @@ const getBillStatusColour = (status) => {
 bill.get("/getall", async (_req, res) => {
   try {
     const bills = await prisma.bill.findMany({
-      include: { room: true, booking: true, customer: true, payment: true },
+      include: {
+  room: true,
+  booking: true,
+  customer: true,
+  payment: true,
+  adminCreated: true,
+},
       orderBy: { createdAt: "desc" },
     });
     res.json(bills);
@@ -162,7 +168,13 @@ bill.get("/:billId", async (req, res) => {
   try {
     const billData = await prisma.bill.findUnique({
       where: { billId: req.params.billId },
-      include: { room: true, booking: true, customer: true, payment: true },
+      include: {
+  room: true,
+  booking: true,
+  customer: true,
+  payment: true,
+  adminCreated: true,
+},
     });
     if (!billData) return res.status(404).json({ error: "ไม่พบบิลนี้" });
     res.json(billData);

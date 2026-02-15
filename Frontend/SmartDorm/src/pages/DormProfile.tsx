@@ -15,7 +15,7 @@ export default function DormProfile() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    fetch(`${API_BASE}/dormProfile`, { credentials: "include" })
+    fetch(`${API_BASE}/dorm-profile/`, { credentials: "include" })
       .then((r) => r.json())
       .then(setForm)
       .catch(() => Swal.fire("โหลดข้อมูลไม่สำเร็จ"));
@@ -28,7 +28,7 @@ export default function DormProfile() {
     e.preventDefault();
     setLoading(true);
 
-    const res = await fetch(`${API_BASE}/dormProfile`, {
+    const res = await fetch(`${API_BASE}/dorm-profile/`, {
       method: "PUT",
       credentials: "include",
       headers: { "Content-Type": "application/json" },

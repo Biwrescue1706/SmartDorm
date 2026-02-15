@@ -13,7 +13,9 @@ import {
   formatThai,
   formatThaiDate,
   numberToThaiBaht,
-} from "../utils/billFormat";
+  statusText,
+  statusColor
+} from "../utils/billUtils";
 
 import { useRef } from "react";
 

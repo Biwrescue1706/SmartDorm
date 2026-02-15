@@ -75,9 +75,9 @@ export default function AllBillsEditDialog({ bill, onSave, onClose }: Props) {
           maxHeight: "100vh",
         }}
       >
-        <div className="modal-content shadow-lg mx-3 rounded-3 border-0">
+        <div className="modal-content shadow-lg mx-1 rounded-3 border-0">
           <div
-            className="modal-header text-white"
+            className="modal-header text-white text-center"
             style={{
               background: "linear-gradient(135deg, #4facfe, #00f2fe)",
               borderTopLeftRadius: "1rem",
@@ -190,7 +190,7 @@ export default function AllBillsEditDialog({ bill, onSave, onClose }: Props) {
                   border: "none",
                 }}
               >
-                บันทึกการแก้ไข
+                บันทึก
               </button>
             </div>
           </form>

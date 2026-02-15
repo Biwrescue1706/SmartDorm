@@ -56,8 +56,10 @@ import paymentRouter from "./modules/payment.js";
 import qrRouter from "./modules/qr.js";
 import userRouter from "./modules/user.js";
 import overview from "./modules/overview.js";
+import dormProfileRoute from "./modules/dormProfile.js"
 
 app.use("/overview", overview);
+app.use("/dorm-profile", dormProfileRoute);
 app.use("/auth", authRouter);
 app.use("/admin", adminRouter);
 app.use("/room", roomRouter);

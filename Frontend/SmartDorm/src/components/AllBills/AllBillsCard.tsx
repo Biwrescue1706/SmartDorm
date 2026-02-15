@@ -39,21 +39,6 @@ export default function AllBillsCard({
   const hasSlip = bill.payment?.slipUrl || bill.slipUrl;
   const overdueDays = bill.overdueDays ?? 0;
   const navigate = useNavigate();
-  const getOverdueDays = (dueDate: string) => {
-    const today = new Date();
-    const due = new Date(dueDate);
-
-    // ตัดเวลาออก ให้เหลือแค่วัน ป้องกัน timezone เพี้ยน
-    today.setHours(0, 0, 0, 0);
-    due.setHours(0, 0, 0, 0);
-
-    const diff = today.getTime() - due.getTime();
-    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-
-    return days > 0 ? days : 0;
-  };
-
-  const overdueDayss = getOverdueDays(bill.dueDate);
 
   return (
     <div
@@ -175,7 +160,7 @@ export default function AllBillsCard({
             <div className="mb-2 mt-3">
               <div className="fw-bold h5 text-center text-black">เกินกำหนด</div>
               <div className="fw-bold h5 text-primary text-center">
-                {overdueDayss} วัน
+                {overdueDays} วัน
               </div>
             </div>
           )}

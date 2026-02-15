@@ -20,11 +20,11 @@ export default function BillManageDialog({
 
   return (
     <div
-      className="modal show d-block"
+      className="modal show d-block mx-2"
       style={{
         background: "#00000080", // โปร่งแสงกำลังดี
         position: "fixed",
-        top: 50,
+        top: 0,
         left: 0,
         width: "100vw",
         height: "100vh",
@@ -35,8 +35,8 @@ export default function BillManageDialog({
       <div
         className="modal-dialog modal-dialog-centered"
         style={{
-          maxWidth: "640px",
-          margin: "5px auto 0 auto", // ⭐ ชน navbar จะไม่ติดอีกแล้ว
+          maxWidth: "480px",
+          margin: "5px auto 5px auto", // ⭐ ชน navbar จะไม่ติดอีกแล้ว
         }}
       >
         <div className="modal-content rounded-4 shadow-lg border-0">

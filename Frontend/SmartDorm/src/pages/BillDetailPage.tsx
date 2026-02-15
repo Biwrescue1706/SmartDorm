@@ -212,8 +212,10 @@ export default function BillDetailPage() {
             <div className="card shadow-sm border-0">
               <div className="card-body">
                 <div className="text-center mb-2">
+                  <img src= "/assets/SmartDorm.webp" 
+                alt="slip" width={40} height={40}/>
                   <h3 className="fw-bold mb-1">
-                    {bill.billStatus === 0 ? "ใบแจ้งหนี้" : "ใบเสร็จรับเงิน"}
+                    {bill.billStatus === 0 ? "ใบแจ้งหนี้ ( Invoice )" : "ใบเสร็จรับเงิน ( Receipt )"}
                   </h3>
                   <div className="small text-secondary">
                     47/21 ม.1 ต.บ้านสวน อ.เมืองชลบุรี จ.ชลบุรี 20000
@@ -225,7 +227,8 @@ export default function BillDetailPage() {
 
                 <div className="d-flex justify-content-between small mb-2">
                   <div>เลขที่เอกสาร: {bill.billId}</div>
-                  <div>วันที่ออก: {formatThai(bill.createdAt)}</div>
+                  <div>วันที่ออก : {formatThai(bill.createdAt)}</div>
+                  <div>พนักงาน : {bill.createdBy}</div>
                 </div>
 
                 <Divider />
@@ -509,7 +512,14 @@ export default function BillDetailPage() {
                           <div className="row mt-4 text-center">
                             <div className="col">
                               <div className="fw-bold">ผู้รับ</div>
-                              <div>ภูวณัฐ พาหะละ</div>
+                              <div>
+                                <img
+                                  src="/assets/signature.webp"
+                                  alt=" ลายเซ็นต์ "
+                                  width={150}
+                                  height={75}
+                                />
+                              </div>
                               <div>( นายภูวณัฐ พาหะละ )</div>
                               <div className="text-muted">
                                 {bill.paidAt && formatThai(bill.paidAt)}
@@ -517,7 +527,24 @@ export default function BillDetailPage() {
                             </div>
                             <div className="col">
                               <div className="fw-bold">ผู้จ่าย</div>
-                              <div>{`${bill.cname ?? ""} ${bill.csurname ?? ""}`}</div>
+                              {bill.fullName === "นายภูวณัฐ พาหะละ" ? (
+                                <img
+                                  src="/assets/signature.webp"
+                                  alt="ลายเซ็นต์"
+                                  width={150}
+                                  height={75}
+                                />
+                              ) : (
+                                <>
+                                  <br />
+                                  <div>
+                                    {bill.cname || bill.csurname
+                                      ? `${bill.cname ?? ""} ${bill.csurname ?? ""}`
+                                      : "-"}
+                                  </div>
+                                  <br />
+                                </>
+                              )}
                               <div>({bill.fullName})</div>
                               <div className="text-muted">
                                 {bill.paidAt && formatThai(bill.paidAt)}

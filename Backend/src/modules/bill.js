@@ -33,10 +33,10 @@ const normalizeBillMonthTH = (inputDate) => {
 
   return new Date(
     Date.UTC(
-      d.getFullYear(),
-      d.getMonth(),
+      d.getUTCFullYear(),
+      d.getUTCMonth(),
       1,
-      BILL_START_HOUR_UTC, // 01:00Z
+      BILL_START_HOUR_UTC,
       0,
       0
     )
@@ -52,13 +52,33 @@ const getMonthRange = (month) => {
 const getDueDateNextMonth5th = (month) => {
   const d = new Date(month);
 
-  // 5 ของเดือนถัดไป เวลา 08:00 ไทย
   return new Date(Date.UTC(
     d.getUTCFullYear(),
     d.getUTCMonth(),
     5,
-    8, 0, 0
+    1, 0, 0 // 08:00 ไทย
   ));
+};
+
+const generateBillNumber = async (status) => {
+  const prefix = status === 1 ? "RC" : "INV";
+  const year = new Date().getFullYear();
+
+  let billNumber;
+  let exists = true;
+
+  while (exists) {
+    const rand = Math.floor(100000 + Math.random() * 900000);
+    billNumber = `${prefix}${year}${rand}`;
+
+    const dup = await prisma.bill.findFirst({
+      where: { billNumber },
+    });
+
+    exists = !!dup;
+  }
+
+  return billNumber;
 };
 
 const formatThaiDate = (d) =>
@@ -73,6 +93,7 @@ const formatThaiDate = (d) =>
 const formatThaiMonth = (d) =>
   d
     ? new Date(d).toLocaleDateString("th-TH", {
+      day: "numeric",
       month: "long",
       year: "numeric",
     })
@@ -150,13 +171,8 @@ bill.post(
       if (!month) throw new Error("กรุณาระบุเดือน");
 
       // ✅ FIX: normalize month → วันที่ 1 ของเดือนเสมอ
-      const input = new Date(month);
-      const billMonth = new Date(
-        input.getFullYear(),
-        input.getMonth(),
-        1,
-        7, 0, 0
-      );
+      const billNumber = await generateBillNumber(0);
+      const billMonth = normalizeBillMonthTH(month);
 
       // 🔒 กันออกบิลซ้ำ (เช็คตามเดือนที่ normalize แล้ว)
       const dup = await prisma.bill.findFirst({
@@ -211,6 +227,7 @@ bill.post(
 
       const billCreated = await prisma.bill.create({
         data: {
+          billNumber,
           roomId,
           bookingId: booking.bookingId,
           customerId: booking.customerId,
@@ -219,7 +236,7 @@ bill.post(
           csurname: booking.csurname,
           fullName: booking.fullName,
           cphone: booking.cphone,
-          month: billMonth, // ✅ FIX ตรงนี้
+          month: billMonth,
           dueDate: getDueDateNextMonth5th(billMonth),
           rent,
           service,
@@ -247,6 +264,8 @@ bill.post(
             billCreated.month
           )}`,
           [
+            { label: "รหัสบิล", value: billCreated.billId },
+            { label: "เลขที่บิล", value: billNumber },
             { label: "ห้อง", value: booking.room.number },
             { label: "ค่าเช่าห้อง", value: `${rent} บาท` },
             {
@@ -312,6 +331,8 @@ bill.put(
         include: { customer: true, room: true, payment: true },
       });
 
+      const newBillNumber = await generateBillNumber(1);
+
       if (!billData) throw new Error("ไม่พบบิล");
       if (billData.billStatus !== 2)
         throw new Error("บิลนี้ไม่ได้อยู่ในสถานะรอตรวจสอบ");
@@ -319,7 +340,11 @@ bill.put(
       const updated = await prisma.$transaction(async (tx) => {
         const b = await tx.bill.update({
           where: { billId },
-          data: { billStatus: 1, billDate: new Date() },
+          data: {
+            billStatus: 1,
+            billNumber: newBillNumber,
+            billDate: new Date()
+          },
         });
 
         if (billData.payment) {
@@ -340,6 +365,7 @@ bill.put(
           "🏫SmartDorm🎉 แจ้งผลการชำระเงิน",
           [
             { label: "รหัสบิล", value: updated.billId },
+            { label: "เลขที่บิล", value: updated.billNumber },
             { label: "ห้อง", value: billData.room?.number ?? "-" },
             { label: "เดือนที่ชำระ", value: formatThaiMonth(updated.month) },
             {
@@ -382,13 +408,19 @@ bill.put(
 
       const updated = await prisma.$transaction(async (tx) => {
         if (billData.slipUrl) await deleteSlip(billData.slipUrl);
-        if (billData.payment) {
-          await tx.payment.delete({ where: { billId } });
-        }
 
+        // ลบ payment อย่างเดียว
+        await tx.payment.deleteMany({
+          where: { billId },
+        });
+
+        // บิลยังอยู่ แต่เปลี่ยนสถานะ
         return tx.bill.update({
           where: { billId },
-          data: { billStatus: 3, billDate: new Date() },
+          data: {
+            billStatus: 3,
+            billDate: new Date(),
+          },
         });
       });
 
@@ -490,7 +522,7 @@ bill.put(
         if (today > newDue) {
           const diffDays = Math.floor(
             (today.getTime() - newDue.getTime()) /
-              (1000 * 60 * 60 * 24)
+            (1000 * 60 * 60 * 24)
           );
           newOverdueDays = diffDays;
           newFine = diffDays * OVERDUE_FINE_PER_DAY;
@@ -519,7 +551,7 @@ bill.put(
           eUnits,
           electricCost,
           total,
-          month: month ? new Date(month) : billData.month,
+          month: month ? normalizeBillMonthTH(month) : billData.month,
           dueDate: dueDate ? new Date(dueDate) : billData.dueDate,
           overdueDays: newOverdueDays,
           fine: newFine,

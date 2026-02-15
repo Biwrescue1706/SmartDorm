@@ -134,7 +134,9 @@ model Checkout {
 
 //=== Bill ===
 model Bill {
-  billId     String  @id @default(auto()) @map("_id") @db.ObjectId
+  billId     String @id @default(auto()) @map("_id") @db.ObjectId
+  billNumber String @unique //เลขที่บิล
+
   roomId     String? @db.ObjectId
   customerId String? @db.ObjectId
   bookingId  String? @db.ObjectId
@@ -208,4 +210,31 @@ model Payment {
 
   bill     Bill     @relation(fields: [billId], references: [billId])
   customer Customer @relation(fields: [customerId], references: [customerId])
+}
+
+model DormProfile {
+  dormId   String @id @default(auto()) @map("_id") @db.ObjectId
+  key      String @unique @default("MAIN") // ใช้เป็น system record เดียว
+  // ข้อมูลหอพัก
+  dormName String // ชื่อหอพัก
+  address  String // ที่อยู่หอพัก
+  phone    String // เบอร์โทร
+  email    String // อีเมล
+
+  // ภาษี
+  taxId   String // เลขประจำตัวผู้เสียภาษี
+  taxType Int    @default(0) // 0 = บุคคลธรรมดา , 1 = นิติบุคคล
+
+  // ผู้รับเงิน
+  receiverTitle   String? // คำนำหน้า
+  receiverName    String? // ชื่อ
+  receiverSurname String? // นามสกุล
+
+  receiverFullName String?
+
+  // ลายเซ็น
+  signatureUrl String? // ลิงก์รูปจาก Supabase
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

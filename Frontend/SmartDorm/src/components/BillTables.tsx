@@ -1,5 +1,13 @@
+import type { Bill } from "../types/All";
 
-export function InvoiceTable({ bill, beforeVat, vat, thaiText }: any) {
+interface Props {
+  bill: Bill;
+  beforeVat: number;
+  vat: number;
+  thaiText: string;
+}
+
+export function InvoiceTable({ bill, beforeVat, vat, thaiText }: Props) {
   return (
     <table className="table table-sm table-striped align-middle text-center">
       <thead className="table-dark">
@@ -71,7 +79,7 @@ export function InvoiceTable({ bill, beforeVat, vat, thaiText }: any) {
   );
 }
 
-export function ReceiptTable({ bill, beforeVat, vat, thaiText }: any) {
+export function ReceiptTable({ bill, beforeVat, vat, thaiText }: Props) {
   return (
     <table className="table table-sm table-striped align-middle text-center">
       <thead className="table-dark">
@@ -137,7 +145,7 @@ export function ReceiptTable({ bill, beforeVat, vat, thaiText }: any) {
   );
 }
 
-export function BillTables(props: any) {
+export default function BillTables(props: Props) {
   const { bill } = props;
 
   return bill.billStatus === 0 ? (

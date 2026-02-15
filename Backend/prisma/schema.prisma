@@ -232,6 +232,10 @@ model DormProfile {
 
   receiverFullName String?
 
+ service      Int   @default(50)
+  waterRate    Float @default(0)
+  electricRate Float @default(0)
+
   // ลายเซ็น
   signatureUrl String? // ลิงก์รูปจาก Supabase
 

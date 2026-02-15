@@ -1,6 +1,6 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useRef } from "react";
-
+import type { DormProfile } from "../types/All";
 import Nav from "../components/Nav";
 import BillTables from "../components/BillTables";
 import BillPayment from "../components/BillPayment";
@@ -37,6 +37,28 @@ export default function BillDetailPage() {
   const pendingCheckouts = usePendingCheckouts();
 
   const { bill, loading } = useBillDetail(billId);
+
+const [profile, setProfile] = useState<DormProfile>({
+  service: 0,
+  waterRate: 0,
+  electricRate: 0,
+  overdueFinePerDay: 0,
+});
+
+useEffect(() => {
+  fetch(`${API_BASE}/dorm-profile`)
+    .then(r => r.json())
+    .then(d =>
+      setProfile({
+        service: d.service ?? 0,
+        waterRate: d.waterRate ?? 0,
+        electricRate: d.electricRate ?? 0,
+        overdueFinePerDay: d.overdueFinePerDay ?? 0,
+      })
+    )
+    .catch(() => console.warn("โหลด dorm profile ไม่สำเร็จ"));
+}, []);
+
   const pdfRef = useRef<HTMLDivElement>(null);
   const exportPDF = useExportBillPDF();
 
@@ -130,8 +152,10 @@ export default function BillDetailPage() {
                 </div>
 
                 <div className="d-flex justify-content-between small mb-2">
-                  <div>เลขที่เอกสาร: {bill.billId}</div>
+                  <div>เลขที่เอกสาร: {bill.billNumber}</div>
                   <div>วันที่ออก : {formatThai(bill.createdAt)}</div>
+<div>พนักงาน : {bill.adminCreated) }</div>
+
                 </div>
 
                 <Divider />
@@ -170,12 +194,12 @@ export default function BillDetailPage() {
                 <Divider />
 
                 <BillTables
-                  bill={bill}
-                  vat={vat}
-                  beforeVat={beforeVat}
-                  thaiText={thaiText}
-                />
-
+  bill={bill}
+  dormProfile={profile}
+  vat={vat}
+  beforeVat={beforeVat}
+  thaiText={thaiText}
+/>
                 <BillPayment bill={bill} formatThai={formatThai} />
               </div>
             </div>

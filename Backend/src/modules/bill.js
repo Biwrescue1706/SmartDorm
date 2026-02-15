@@ -2,12 +2,6 @@ import { Router } from "express";
 import prisma from "../prisma.js";
 import { authMiddleware, roleMiddleware } from "../middleware/authMiddleware.js";
 import { sendFlexMessage } from "../utils/lineFlex.js";
-import {
-  WATER_PRICE,
-  ELECTRIC_PRICE,
-  OVERDUE_FINE_PER_DAY,
-  SERVICE_FEE,
-} from "../config/rate.js";
 import { processOverdueManual } from "../services/overdue.manual.js";
 import { BASE_URL } from "../utils/api.js";
 
@@ -41,6 +35,22 @@ const normalizeBillMonthTH = (inputDate) => {
       0
     )
   );
+};
+
+// ================= Dorm Profile Rates =================
+const getDormRates = async () => {
+  const profile = await prisma.dormProfile.findUnique({
+    where: { key: "MAIN" },
+  });
+
+  if (!profile) throw new Error("ยังไม่ได้ตั้งค่า DormProfile");
+
+  return {
+    service: profile.service ?? 0,
+    waterRate: profile.waterRate ?? 0,
+    electricRate: profile.electricRate ?? 0,
+    overdueFinePerDay: profile.overdueFinePerDay ?? 0,
+  };
 };
 
 const getMonthRange = (month) => {
@@ -168,6 +178,12 @@ bill.post(
     try {
       const { roomId } = req.params;
       const { month, wAfter, eAfter } = req.body;
+const {
+  service,
+  waterRate,
+  electricRate,
+  overdueFinePerDay
+} = await getDormRates();
       if (!month) throw new Error("กรุณาระบุเดือน");
 
       // ✅ FIX: normalize month → วันที่ 1 ของเดือนเสมอ
@@ -215,13 +231,12 @@ bill.post(
         throw new Error("ค่าไฟต้องมากกว่าหรือเท่าครั้งก่อน");
 
       const rent = booking.room.rent;
-      const service = SERVICE_FEE;
 
       const wUnits = wAfter - wBefore;
       const eUnits = eAfter - eBefore;
 
-      const waterCost = wUnits * WATER_PRICE;
-      const electricCost = eUnits * ELECTRIC_PRICE;
+      const waterCost = wUnits * waterRate;
+const electricCost = eUnits * electricRate;
 
       const total = rent + service + waterCost + electricCost;
 
@@ -473,6 +488,12 @@ bill.put(
         dueDate,
         billStatus,
       } = req.body;
+const { 
+overdueFinePerDay, 
+waterRate, 
+electricRate,
+service
+ } = await getDormRates();
 
       const billData = await prisma.bill.findUnique({
         where: { billId },
@@ -509,8 +530,8 @@ bill.put(
       const wUnits = newWAfter - newWBefore;
       const eUnits = newEAfter - newEBefore;
 
-      const waterCost = wUnits * WATER_PRICE;
-      const electricCost = eUnits * ELECTRIC_PRICE;
+      const waterCost = wUnits * waterRate;
+const electricCost = eUnits * electricRate;
 
       let newOverdueDays = billData.overdueDays ?? 0;
       let newFine = billData.fine ?? 0;
@@ -525,7 +546,7 @@ bill.put(
             (1000 * 60 * 60 * 24)
           );
           newOverdueDays = diffDays;
-          newFine = diffDays * OVERDUE_FINE_PER_DAY;
+          newFine = diffDays * overdueFinePerDay;
         } else {
           newOverdueDays = 0;
           newFine = 0;
@@ -534,7 +555,7 @@ bill.put(
 
       const total =
         billData.rent +
-        billData.service +
+        service +
         waterCost +
         electricCost +
         newFine;
@@ -549,6 +570,7 @@ bill.put(
           eBefore: newEBefore,
           eAfter: newEAfter,
           eUnits,
+          service,
           electricCost,
           total,
           month: month ? normalizeBillMonthTH(month) : billData.month,

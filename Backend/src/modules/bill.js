@@ -143,67 +143,20 @@ const getBillStatusColour = (status) => {
 };
 
 // ================= Routes =================
-
 // ดึงบิลทั้งหมด
 bill.get("/getall", async (_req, res) => {
   try {
     const bills = await prisma.bill.findMany({
       orderBy: { createdAt: "desc" },
-      select: {
-        billId: true,
-        billNumber: true,
-        month: true,
-        fullName: true,
-        cphone: true,
-        total: true,
-        billStatus: true,
-        billDate: true,
-        paidAt: true,
-        dueDate: true,
-        slipUrl: true,
-        rent: true,
-        service: true,
-        wBefore: true,
-        wAfter: true,
-        wUnits: true,
-        waterCost: true,
-        eBefore: true,
-        eAfter: true,
-        eUnits: true,
-        electricCost: true,
-        fine: true,
-        overdueDays: true,
-        lastOverdueNotifyAt: true,
-
+      include: {
+        room: true,
+        booking: true,
+        customer: true,
+        payment: true,
         adminCreated: {
           select: {
             adminId: true,
             name: true,
-          },
-        },
-
-        room: {
-          select: {
-            roomId: true,
-            number: true,
-            rent: true,
-            status: true,
-          },
-        },
-
-        booking: {
-          select: {
-            fullName: true,
-            cphone: true,
-            bookingDate: true,
-            checkin: true,
-            checkinAt: true,
-          },
-        },
-
-        customer: {
-          select: {
-            userName: true,
           },
         },
       },
@@ -220,61 +173,15 @@ bill.get("/:billId", async (req, res) => {
   try {
     const billData = await prisma.bill.findUnique({
       where: { billId: req.params.billId },
-      select: {
-        billId: true,
-        billNumber: true,
-        month: true,
-        fullName: true,
-        cphone: true,
-        total: true,
-        billStatus: true,
-        billDate: true,
-        paidAt: true,
-        dueDate: true,
-        slipUrl: true,
-        rent: true,
-        service: true,
-        wBefore: true,
-        wAfter: true,
-        wUnits: true,
-        waterCost: true,
-        eBefore: true,
-        eAfter: true,
-        eUnits: true,
-        electricCost: true,
-        fine: true,
-        overdueDays: true,
-        lastOverdueNotifyAt: true,
-
+      include: {
+        room: true,
+        booking: true,
+        customer: true,
+        payment: true,
         adminCreated: {
           select: {
             adminId: true,
             name: true,
-          },
-        },
-
-        room: {
-          select: {
-            roomId: true,
-            number: true,
-            rent: true,
-            status: true,
-          },
-        },
-
-        booking: {
-          select: {
-            fullName: true,
-            cphone: true,
-            bookingDate: true,
-            checkin: true,
-            checkinAt: true,
-          },
-        },
-
-        customer: {
-          select: {
-            userName: true,
           },
         },
       },
@@ -290,7 +197,6 @@ bill.get("/:billId", async (req, res) => {
 });
 
 // ================= CREATE FROM ROOM =================
-
 bill.post(
   "/createFromRoom/:roomId",
   authMiddleware,

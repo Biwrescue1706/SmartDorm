@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import Nav from "../../components/Nav";
+import Nav from "../../components/nav";
 import { useAuth } from "../../hooks/useAuth";
 import Swal from "sweetalert2";
 import { API_BASE } from "../../config";

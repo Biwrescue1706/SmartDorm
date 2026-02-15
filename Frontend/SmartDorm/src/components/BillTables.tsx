@@ -1,7 +1,8 @@
-import type { Bill } from "../types/All";
+import type { Bill, DormProfile } from "../types/All";
 
 interface Props {
   bill: Bill;
+  dormProfile: DormProfile;
   beforeVat: number;
   vat: number;
   thaiText: string;
@@ -13,9 +14,9 @@ export function InvoiceTable({ bill, beforeVat, vat, thaiText }: Props) {
       <thead className="table-dark">
         <tr>
           <th style={{ width: "35%" }}>รายการ</th>
-          <th style={{ width: "15%" }}>เลขหลัง</th>
-          <th style={{ width: "15%" }}>เลขก่อน</th>
-          <th style={{ width: "15%" }}>ใช้</th>
+          <th style={{ width: "15%" }}>เลขมิเตอร์หลัง</th>
+          <th style={{ width: "15%" }}>เลขมิเตอร์ก่อน</th>
+          <th style={{ width: "15%" }}>หน่วยที่ใช้</th>
           <th style={{ width: "20%" }}>เงิน</th>
         </tr>
       </thead>
@@ -79,13 +80,20 @@ export function InvoiceTable({ bill, beforeVat, vat, thaiText }: Props) {
   );
 }
 
-export function ReceiptTable({ bill, beforeVat, vat, thaiText }: Props) {
+export function ReceiptTable({
+  bill,
+  dormProfile,
+  beforeVat,
+  vat,
+  thaiText,
+}: Props) {
   return (
     <table className="table table-sm table-striped align-middle text-center">
       <thead className="table-dark">
         <tr>
           <th>รายการ</th>
           <th>จำนวน</th>
+          <th>หน่วยละ</th>
           <th>ราคา</th>
         </tr>
       </thead>
@@ -94,12 +102,14 @@ export function ReceiptTable({ bill, beforeVat, vat, thaiText }: Props) {
         <tr>
           <td>ค่าไฟ</td>
           <td>{bill.eUnits}</td>
+          <td>{dormProfile.electricRate}</td>
           <td>{bill.electricCost.toLocaleString()}</td>
         </tr>
 
         <tr>
           <td>ค่าน้ำ</td>
           <td>{bill.wUnits}</td>
+          <td>{dormProfile.waterRate}</td>
           <td>{bill.waterCost.toLocaleString()}</td>
         </tr>
 
@@ -107,11 +117,13 @@ export function ReceiptTable({ bill, beforeVat, vat, thaiText }: Props) {
           <td>ค่าเช่า</td>
           <td>1</td>
           <td>{bill.rent.toLocaleString()}</td>
+          <td>{bill.rent.toLocaleString()}</td>
         </tr>
 
         <tr>
           <td>ส่วนกลาง</td>
           <td>1</td>
+          <td>{bill.service.toLocaleString()}</td>
           <td>{bill.service.toLocaleString()}</td>
         </tr>
 
@@ -119,6 +131,7 @@ export function ReceiptTable({ bill, beforeVat, vat, thaiText }: Props) {
           <tr>
             <td>ค่าปรับ</td>
             <td>{bill.overdueDays}</td>
+            <td>{dormProfile.overdueFinePerDay}</td>
             <td>{(bill.fine ?? 0).toLocaleString()}</td>
           </tr>
         )}

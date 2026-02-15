@@ -436,7 +436,7 @@ bill.put(
         return tx.bill.update({
           where: { billId },
           data: {
-            billStatus: 3,
+            billStatus: 0,
             billDate: new Date(),
           },
         });

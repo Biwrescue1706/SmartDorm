@@ -1,5 +1,11 @@
+import type { Bill } from "../types/All";
+import { formatThai } from "../utils/billUtils";
 
-export default function BillPayment({ bill, formatThai }: any) {
+interface Props {
+  bill: Bill;
+}
+
+export default function BillPayment({ bill }: Props) {
   if (bill.billStatus !== 1 || !bill.paidAt) return null;
 
   return (

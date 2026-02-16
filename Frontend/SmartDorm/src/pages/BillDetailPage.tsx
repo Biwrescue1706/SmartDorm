@@ -39,7 +39,6 @@ export default function BillDetailPage() {
 
   const { bill, loading } = useBillDetail(billId);
 
-  // ✅ FIX: ใส่ key ให้ DormProfile
   const [profile, setProfile] = useState<DormProfile>({
     key: "MAIN",
     service: 0,
@@ -58,6 +57,11 @@ export default function BillDetailPage() {
           waterRate: d.waterRate ?? 0,
           electricRate: d.electricRate ?? 0,
           overdueFinePerDay: d.overdueFinePerDay ?? 0,
+          dormName: d.dormName,
+          address: d.address,
+          phone: d.phone,
+          email: d.email,
+          taxId: d.taxId,
         })
       )
       .catch(() => console.warn("โหลด dorm profile ไม่สำเร็จ"));
@@ -136,62 +140,52 @@ export default function BillDetailPage() {
           <div ref={pdfRef}>
             <div className="card shadow-sm border-0">
               <div className="card-body">
-                <div className="text-center mb-2">
-                  <img
-                    src="/assets/SmartDorm.webp"
-                    alt="logo"
-                    width={40}
-                    height={40}
-                  />
 
- <div className="row mb-2 align-items-start">
-  {/* LEFT */}
-  <div className="col-6 text-start small text-secondary">
-    <div className="d-flex align-items-center gap-2 mb-1">
-      <img
-        src="https://manage.smartdorm-biwboong.shop/assets/SmartDorm.webp"
-        alt="logo"
-        width={42}
-        height={42}
-      />
-      <div className="fw-semibold">{profile.dormName}</div>
-    </div>
+                {/* HEADER */}
+                <div className="row mb-2 align-items-start">
+                  <div className="col-6 text-start small text-secondary">
+                    <div className="d-flex align-items-center gap-2 mb-1">
+                      <img
+                        src="https://manage.smartdorm-biwboong.shop/assets/SmartDorm.webp"
+                        alt="logo"
+                        width={42}
+                        height={42}
+                      />
+                      <div className="fw-semibold">{profile.dormName}</div>
+                    </div>
 
-    <div>{profile.address}</div>
+                    <div>{profile.address}</div>
+                    <div>
+                      โทร : {profile.phone} | อีเมล : {profile.email}
+                    </div>
+                    <div>เลขประจำตัวเสียภาษี : {profile.taxId}</div>
+                  </div>
 
-    <div>
-      โทร : {profile.phone} | อีเมล : {profile.email}
-    </div>
+                  <div className="col-6 text-end">
+                    <h3 className="fw-bold mb-1">
+                      {bill.billStatus === 0
+                        ? "ใบแจ้งหนี้ ( Invoice )"
+                        : "ใบเสร็จรับเงิน ( Receipt )"}
+                    </h3>
 
-    <div>เลขประจำตัวเสียภาษี : {profile.taxId}</div>
-  </div>
-
-  {/* RIGHT */}
-  <div className="col-6 text-end">
-    <h3 className="fw-bold mb-1">
-      {bill.billStatus === 0
-        ? "ใบแจ้งหนี้ ( Invoice )"
-        : "ใบเสร็จรับเงิน ( Receipt )"}
-    </h3>
-
-    <div className="small">
-      <div>เดือน : {formatThaiDate(bill.month)}</div>
-      <div>เลขที่ : {bill.billNumber}</div>
-      <div>วันที่ : {formatThai(bill.createdAt)}</div>
-      <div>ห้อง : {bill.room?.number ?? "-"}</div>
-      <div>พนักงาน : {bill.adminCreated?.name ?? "-"}</div>
-    </div>
-  </div>
-</div>
+                    <div className="small">
+                      <div>เดือน : {formatThaiDate(bill.month)}</div>
+                      <div>เลขที่ : {bill.billNumber}</div>
+                      <div>วันที่ : {formatThai(bill.createdAt)}</div>
+                      <div>ห้อง : {bill.room?.number ?? "-"}</div>
+                      <div>พนักงาน : {bill.adminCreated?.name ?? "-"}</div>
+                    </div>
+                  </div>
+                </div>
 
                 <Divider />
 
                 <div className="row g-2 mb-3">
-                  <div className="col-md-4">
+                  <div className="col-md-6">
                     <b>ชื่อ - นามสกุล :</b> {bill.fullName || "-"}
                   </div>
 
-                  <div className="col-md-4">
+                  <div className="col-md-6">
                     <b>รอบบิล:</b> {formatThaiDate(bill.month)}
                   </div>
 
@@ -224,6 +218,7 @@ export default function BillDetailPage() {
                 />
 
                 <BillPayment bill={bill} formatThai={formatThai} />
+
               </div>
             </div>
           </div>

@@ -13,12 +13,12 @@ export function InvoiceTable({ bill, beforeVat, vat, thaiText }: Props) {
     <table className="table table-sm table-striped align-middle text-center">
       <thead className="table-dark">
         <tr>
-<th style={{ width: "5%" }}>อันดับ ( # )</th>
-          <th style={{ width: "25%" }}>รายการ ( Description )</th>
-          <th style={{ width: "10%" }}>เลขครั้งหลัง ( Last number )</th>
-          <th style={{ width: "10%" }}>เลขครั้งก่อน ( Previous number )</th>
-          <th style={{ width: "10%" }}>หน่วยที่ใช้ ( Units used )</th>
-          <th style={{ width: "25%" }}>ราคา ( price )</th>
+<th style={{ width: "5%" }}>#</th>
+          <th style={{ width: "25%" }}>รายการ</th>
+          <th style={{ width: "10%" }}>เลขครั้งหลัง</th>
+          <th style={{ width: "10%" }}>เลขครั้งก่อน</th>
+          <th style={{ width: "10%" }}>หน่วยที่ใช้</th>
+          <th style={{ width: "25%" }}>ราคา</th>
         </tr>
       </thead>
 
@@ -67,19 +67,19 @@ export function InvoiceTable({ bill, beforeVat, vat, thaiText }: Props) {
 
       <tfoot className="fw-semibold bg-light">
         <tr>
-          <td colSpan={4}>ก่อน VAT</td>
+          <td colSpan={5}>ก่อน VAT</td>
           <td>{beforeVat.toLocaleString()}</td>
         </tr>
         <tr>
-          <td colSpan={4}>VAT 7%</td>
+          <td colSpan={5}>VAT 7%</td>
           <td>{vat.toLocaleString()}</td>
         </tr>
         <tr className="table-success">
-          <td colSpan={4}>รวม</td>
+          <td colSpan={5}>รวม</td>
           <td>{bill.total.toLocaleString()}</td>
         </tr>
         <tr>
-          <td colSpan={5}>( {thaiText} )</td>
+          <td colSpan={6}>( {thaiText} )</td>
         </tr>
       </tfoot>
     </table>
@@ -97,11 +97,11 @@ export function ReceiptTable({
     <table className="table table-sm table-striped align-middle text-center">
       <thead className="table-dark">
         <tr>
-<th>อันดับ ( # )</th>
+<th>#</th>
           <th>รายการชำระเงิน</th>
-          <th>จำนวน ( Quantity )</th>
-          <th>หน่วยละ ( Price per unit )</th>
-          <th>ราคา ( Price ) </th>
+          <th>จำนวน</th>
+          <th>หน่วยละ</th>
+          <th>ราคา</th>
         </tr>
       </thead>
 

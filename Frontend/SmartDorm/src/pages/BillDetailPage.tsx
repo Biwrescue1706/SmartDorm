@@ -1,8 +1,8 @@
-
 import { useParams, useNavigate } from "react-router-dom";
 import { useRef, useState, useEffect } from "react";
 import { API_BASE } from "../config";
 import type { DormProfile } from "../types/All";
+
 import Nav from "../components/Nav";
 import BillTables from "../components/BillTables";
 import BillPayment from "../components/BillPayment";
@@ -19,7 +19,6 @@ import {
   numberToThaiBaht,
 } from "../utils/billUtils";
 
-// SCB THEME
 const SCB_PURPLE = "#4A0080";
 const BG_SOFT = "#F8F5FC";
 
@@ -40,26 +39,29 @@ export default function BillDetailPage() {
 
   const { bill, loading } = useBillDetail(billId);
 
-const [profile, setProfile] = useState<DormProfile>({
-  service: 0,
-  waterRate: 0,
-  electricRate: 0,
-  overdueFinePerDay: 0,
-});
+  // ✅ FIX: ใส่ key ให้ DormProfile
+  const [profile, setProfile] = useState<DormProfile>({
+    key: "MAIN",
+    service: 0,
+    waterRate: 0,
+    electricRate: 0,
+    overdueFinePerDay: 0,
+  });
 
-useEffect(() => {
-  fetch(`${API_BASE}/dorm-profile`)
-    .then(r => r.json())
-    .then(d =>
-      setProfile({
-        service: d.service ?? 0,
-        waterRate: d.waterRate ?? 0,
-        electricRate: d.electricRate ?? 0,
-        overdueFinePerDay: d.overdueFinePerDay ?? 0,
-      })
-    )
-    .catch(() => console.warn("โหลด dorm profile ไม่สำเร็จ"));
-}, []);
+  useEffect(() => {
+    fetch(`${API_BASE}/dorm-profile`)
+      .then((r) => r.json())
+      .then((d) =>
+        setProfile({
+          key: d.key ?? "MAIN",
+          service: d.service ?? 0,
+          waterRate: d.waterRate ?? 0,
+          electricRate: d.electricRate ?? 0,
+          overdueFinePerDay: d.overdueFinePerDay ?? 0,
+        })
+      )
+      .catch(() => console.warn("โหลด dorm profile ไม่สำเร็จ"));
+  }, []);
 
   const pdfRef = useRef<HTMLDivElement>(null);
   const exportPDF = useExportBillPDF();
@@ -156,8 +158,9 @@ useEffect(() => {
                 <div className="d-flex justify-content-between small mb-2">
                   <div>เลขที่เอกสาร: {bill.billNumber}</div>
                   <div>วันที่ออก : {formatThai(bill.createdAt)}</div>
-<div>พนักงาน : {bill.adminCreated?.name ?? "-"}</div>
-
+                  <div>
+                    พนักงาน : {bill.adminCreated?.name ?? "-"}
+                  </div>
                 </div>
 
                 <Divider />
@@ -196,12 +199,13 @@ useEffect(() => {
                 <Divider />
 
                 <BillTables
-  bill={bill}
-  dormProfile={profile}
-  vat={vat}
-  beforeVat={beforeVat}
-  thaiText={thaiText}
-/>
+                  bill={bill}
+                  dormProfile={profile}
+                  vat={vat}
+                  beforeVat={beforeVat}
+                  thaiText={thaiText}
+                />
+
                 <BillPayment bill={bill} formatThai={formatThai} />
               </div>
             </div>

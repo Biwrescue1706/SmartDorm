@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect , useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import Nav from "../components/Nav";
 import Swal from "sweetalert2";
 import { useAuth } from "../hooks/useAuth";
@@ -12,6 +12,8 @@ export default function DormProfile() {
   const pendingCheckouts = usePendingCheckouts();
 
   const [form, setForm] = useState<any>(null);
+  const [signaturePreview, setSignaturePreview] = useState<string | null>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -69,8 +71,105 @@ export default function DormProfile() {
                 {Input("อีเมล", form.email, v => update("email", v))}
                 {Input("เลขภาษี", form.taxId, v => update("taxId", v))}
 
-                <hr />
+                {/* ================= ลายเซ็น ================= */}
+                <div className="mb-4">
+                  <label className="fw-bold mb-2">รูปภาพลายเซ็น</label>
 
+                  <div
+                    onClick={() => fileRef.current?.click()}
+                    style={{
+                      border: "2px dashed #ccc",
+                      height: 160,
+                      borderRadius: 8,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      overflow: "hidden",
+                      background: "#fafafa",
+                      cursor: "pointer",
+                    }}
+                  >
+                    {signaturePreview || form.signatureUrl ? (
+                      <img
+                        src={signaturePreview || form.signatureUrl}
+                        alt="signature"
+                        style={{ maxHeight: "100%" }}
+                      />
+                    ) : (
+                      <span className="text-muted">คลิกเพื่อเลือกรูป</span>
+                    )}
+                  </div>
+
+                  <input
+                    ref={fileRef}
+                    type="file"
+                    accept="image/*"
+                    hidden
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+
+                      const url = URL.createObjectURL(file);
+                      setSignaturePreview(url);
+
+                      const reader = new FileReader();
+                      reader.onload = () =>
+                        update("signatureUrl", reader.result);
+                      reader.readAsDataURL(file);
+                    }}
+                  />
+                </div>
+
+                {/* ================= ชื่อผู้รับเงิน ================= */}
+                <hr />
+                <h6 className="fw-bold mt-3">ชื่อผู้รับเงิน</h6>
+
+                <div className="row g-2">
+                  <div className="col-md-3">
+                    <label className="form-label fw-semibold">
+                      คำนำหน้า
+                    </label>
+                    <select
+                      className="form-select border-warning border-2"
+                      value={form.receiverTitle ?? ""}
+                      onChange={(e) =>
+                        update("receiverTitle", e.target.value)
+                      }
+                    >
+                      <option value="">เลือก</option>
+                      <option value="นาย">นาย</option>
+                      <option value="นาง">นาง</option>
+                      <option value="น.ส.">นางสาว</option>
+                    </select>
+                  </div>
+
+                  <div className="col-md-4">
+                    <label className="form-label fw-semibold">ชื่อ</label>
+                    <input
+                      className="form-control border-warning border-2"
+                      value={form.receiverName ?? ""}
+                      onChange={(e) =>
+                        update("receiverName", e.target.value)
+                      }
+                    />
+                  </div>
+
+                  <div className="col-md-5">
+                    <label className="form-label fw-semibold">
+                      นามสกุล
+                    </label>
+                    <input
+                      className="form-control border-warning border-2"
+                      value={form.receiverSurname ?? ""}
+                      onChange={(e) =>
+                        update("receiverSurname", e.target.value)
+                      }
+                    />
+                  </div>
+                </div>
+
+                {/* ================= ค่าใช้จ่าย ================= */}
+                <hr />
                 <h6 className="fw-bold">💰 ค่าใช้จ่ายพื้นฐาน</h6>
 
                 {Input("ค่าส่วนกลาง", form.service, v => update("service", v))}

@@ -154,7 +154,7 @@ useEffect(() => {
                 <div className="d-flex justify-content-between small mb-2">
                   <div>เลขที่เอกสาร: {bill.billNumber}</div>
                   <div>วันที่ออก : {formatThai(bill.createdAt)}</div>
-<div>พนักงาน : {bill.adminCreated) }</div>
+<div>พนักงาน : {bill.adminCreated?.name ?? "-"}</div>
 
                 </div>
 

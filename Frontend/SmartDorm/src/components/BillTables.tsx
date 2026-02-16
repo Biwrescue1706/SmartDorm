@@ -13,12 +13,12 @@ export function InvoiceTable({ bill, beforeVat, vat, thaiText }: Props) {
     <table className="table table-sm table-striped align-middle text-center">
       <thead className="table-dark">
         <tr>
-<th style={{ width: "35%" }}>อันดับ ( # )</th>
-          <th style={{ width: "35%" }}>รายการ ( Description )</th>
-          <th style={{ width: "15%" }}>เลขครั้งหลัง ( Last number )</th>
-          <th style={{ width: "15%" }}>เลขครั้งก่อน ( Previous number )</th>
-          <th style={{ width: "15%" }}>หน่วยที่ใช้ ( Units used )</th>
-          <th style={{ width: "20%" }}>ราคา ( price )</th>
+<th style={{ width: "5%" }}>อันดับ ( # )</th>
+          <th style={{ width: "25%" }}>รายการ ( Description )</th>
+          <th style={{ width: "10%" }}>เลขครั้งหลัง ( Last number )</th>
+          <th style={{ width: "10%" }}>เลขครั้งก่อน ( Previous number )</th>
+          <th style={{ width: "10%" }}>หน่วยที่ใช้ ( Units used )</th>
+          <th style={{ width: "25%" }}>ราคา ( price )</th>
         </tr>
       </thead>
 

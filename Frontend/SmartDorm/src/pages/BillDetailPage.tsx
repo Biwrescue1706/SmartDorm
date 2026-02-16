@@ -144,24 +144,45 @@ export default function BillDetailPage() {
                     height={40}
                   />
 
-                  <h3 className="fw-bold mb-1">
-                    {bill.billStatus === 0
-                      ? "ใบแจ้งหนี้ ( Invoice )"
-                      : "ใบเสร็จรับเงิน ( Receipt )"}
-                  </h3>
+ <div className="row mb-2 align-items-start">
+  {/* LEFT */}
+  <div className="col-6 text-start small text-secondary">
+    <div className="d-flex align-items-center gap-2 mb-1">
+      <img
+        src="https://manage.smartdorm-biwboong.shop/assets/SmartDorm.webp"
+        alt="logo"
+        width={42}
+        height={42}
+      />
+      <div className="fw-semibold">{profile.dormName}</div>
+    </div>
 
-                  <div className="small text-secondary">
-                    47/21 ม.1 ต.บ้านสวน อ.เมืองชลบุรี จ.ชลบุรี 20000
-                  </div>
-                </div>
+    <div>{profile.address}</div>
 
-                <div className="d-flex justify-content-between small mb-2">
-                  <div>เลขที่เอกสาร: {bill.billNumber}</div>
-                  <div>วันที่ออก : {formatThai(bill.createdAt)}</div>
-                  <div>
-                    พนักงาน : {bill.adminCreated?.name ?? "-"}
-                  </div>
-                </div>
+    <div>
+      โทร : {profile.phone} | อีเมล : {profile.email}
+    </div>
+
+    <div>เลขประจำตัวเสียภาษี : {profile.taxId}</div>
+  </div>
+
+  {/* RIGHT */}
+  <div className="col-6 text-end">
+    <h3 className="fw-bold mb-1">
+      {bill.billStatus === 0
+        ? "ใบแจ้งหนี้ ( Invoice )"
+        : "ใบเสร็จรับเงิน ( Receipt )"}
+    </h3>
+
+    <div className="small">
+      <div>เดือน : {formatThaiDate(bill.month)}</div>
+      <div>เลขที่ : {bill.billNumber}</div>
+      <div>วันที่ : {formatThai(bill.createdAt)}</div>
+      <div>ห้อง : {bill.room?.number ?? "-"}</div>
+      <div>พนักงาน : {bill.adminCreated?.name ?? "-"}</div>
+    </div>
+  </div>
+</div>
 
                 <Divider />
 
@@ -172,10 +193,6 @@ export default function BillDetailPage() {
 
                   <div className="col-md-4">
                     <b>รอบบิล:</b> {formatThaiDate(bill.month)}
-                  </div>
-
-                  <div className="col-md-4">
-                    <b>ห้อง {bill.room?.number ?? "-"}</b>
                   </div>
 
                   {bill.billStatus === 0 && (

@@ -1,5 +1,7 @@
+
 import { useParams, useNavigate } from "react-router-dom";
-import { useRef } from "react";
+import { useRef, useState, useEffect } from "react";
+import { API_BASE } from "../config";
 import type { DormProfile } from "../types/All";
 import Nav from "../components/Nav";
 import BillTables from "../components/BillTables";

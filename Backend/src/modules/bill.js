@@ -474,6 +474,7 @@ bill.put(
           "🏫SmartDorm🎉 แจ้งผลการชำระเงิน",
           [
             { label: "รหัสบิล", value: updated.billId },
+{ label: "เลขที่บิล", value: updated.billNumber },
             { label: "ห้อง", value: billData.room?.number ?? "-" },
             { label: "เดือนที่ชำระ", value: formatThaiMonth(updated.month) },
             {
@@ -533,6 +534,17 @@ service
         throw new Error("ไม่สามารถแก้ไขบิลนี้ได้");
       }
 
+// 🔥 ถ้าเปลี่ยนสถานะเป็น 1 → ออกเลข RC ใหม่
+let newBillNumber = billData.billNumber;
+
+if (
+  typeof billStatus === "number" &&
+  billStatus === 1 &&
+  billData.billStatus !== 1
+) {
+  newBillNumber = await generateBillNumber(1);
+}
+
       // ✅ ใช้ค่าที่ส่งมา หรือ fallback ค่าเดิม
       const newWBefore =
         wBefore !== undefined ? Number(wBefore) : billData.wBefore;
@@ -590,6 +602,7 @@ const electricCost = eUnits * electricRate;
       const updated = await prisma.bill.update({
         where: { billId },
         data: {
+billNumber: newBillNumber,
           wBefore: newWBefore,
           wAfter: newWAfter,
           wUnits,
@@ -620,6 +633,7 @@ const electricCost = eUnits * electricRate;
           "🏫SmartDorm🎉 แก้ไขบิลค่าเช่าห้อง",
           [
             { label: "รหัสบิล", value: updated.billId },
+{ label: "เลขที่บิล", value: updated.billNumber },
             { label: "ห้อง", value: billData.room?.number ?? "-" },
             { label: "ประจำเดือน", value: formatThaiMonth(updated.month) },
             {

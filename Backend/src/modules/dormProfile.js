@@ -79,10 +79,14 @@ dormProfile.put(
         updatedAt: new Date(),
       };
 
-      const updated = await prisma.dormProfile.update({
-        where: { key: "MAIN" },
-        data,
-      });
+      const updated = await prisma.dormProfile.upsert({
+  where: { key: "MAIN" },
+  update: data,
+  create: {
+    key: "MAIN",
+    ...data,
+  },
+});
 
       res.json({ message: "อัปเดตข้อมูลหอพักสำเร็จ", updated });
     } catch (err) {

@@ -1,5 +1,5 @@
 // src/components/AllBills/AllBillsCard.tsx
-import type { Bill } from "../../types/Bill";
+import type { Bill } from "../../types/All";
 import { useNavigate } from "react-router-dom";
 
 interface Props {

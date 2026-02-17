@@ -70,23 +70,22 @@ export default function AllBillsEditDialog({ bill, onSave, onClose }: Props) {
   };
 
   // ✅ breakpoint system
-  let width = "90%";
-  let maxWidth = 480;
-  let radius: string | number = "1rem";
+  let width = "95%";
+let maxWidth = 520;
+let radius: string | number = "1rem";
 
-  if (screenWidth < 480) {
-    width = "80%";
-    maxWidth = 9999;
-    radius = 0;
-  } else if (screenWidth < 768) {
-    maxWidth = 520;
-  } else if (screenWidth < 1279) {
-    maxWidth = 600;
-  } else if (screenWidth < 1399) {
-    maxWidth = 720;
-  } else {
-    maxWidth = 820;
-  }
+if (screenWidth < 480) {
+  width = "92%";     // มือถือไม่เต็มจอ
+  maxWidth = 420;    // กำลังอ่านสบาย
+} else if (screenWidth < 768) {
+  maxWidth = 520;
+} else if (screenWidth < 1279) {
+  maxWidth = 600;
+} else if (screenWidth < 1399) {
+  maxWidth = 720;
+} else {
+  maxWidth = 820;
+}
 
   const dialogStyle: React.CSSProperties = {
     width,

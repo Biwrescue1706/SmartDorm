@@ -1,8 +1,8 @@
-import * as Dialog from "@radix-ui/react-dialog";
+// src/components/AllBills/BillManageDialog.tsx
 import type { Bill } from "../../types/All";
 
 interface Props {
-  bill: Bill;
+  bill: Bill | null;
   onApprove: (billId: string, room: string) => void;
   onReject: (billId: string, room: string) => void;
   onClose: () => void;
@@ -14,48 +14,128 @@ export default function BillManageDialog({
   onReject,
   onClose,
 }: Props) {
+  if (!bill) return null;
+
+  const slip = bill.payment?.slipUrl ?? bill.slipUrl;
   const roomNumber = bill.room?.number ?? "-";
 
   return (
-    <Dialog.Root open onOpenChange={onClose}>
-      <Dialog.Portal>
-        <Dialog.Overlay className="position-fixed top-0 start-0 w-100 h-100 bg-dark bg-opacity-50" />
-
-        <Dialog.Content
-          className="position-fixed start-50 top-50 translate-middle bg-white shadow-lg rounded-4 p-4"
-          style={{ width: "92%", maxWidth: "420px", zIndex: 11000 }}
-        >
-          <Dialog.Title className="fw-bold text-center mb-3">
-            จัดการบิลห้อง {roomNumber}
-          </Dialog.Title>
-
-          <p className="text-center text-muted mb-4">
-            เลือกการดำเนินการสำหรับบิลนี้
-          </p>
-
-          <div className="d-flex gap-3 justify-content-center">
+    <div
+      className="modal show d-block mx-2"
+      style={{
+        background: "#00000080",
+        position: "fixed",
+        top: 0,
+        left: 0,
+        width: "100vw",
+        height: "100vh",
+        zIndex: 1000,
+      }}
+    >
+      {/* DIALOG WRAPPER */}
+      <div
+        className="modal-dialog modal-dialog-centered"
+        style={{
+          maxWidth: "480px",
+          margin: "5px auto 5px auto",
+        }}
+      >
+        <div className="modal-content rounded-4 shadow-lg border-0">
+          {/* HEADER */}
+          <div
+            className="modal-header text-white"
+            style={{
+              background: "linear-gradient(135deg, #00a8ff, #0097e6)",
+              borderTopLeftRadius: "1rem",
+              borderTopRightRadius: "1rem",
+            }}
+          >
+            <h5 className="modal-title fw-bold">
+              จัดการบิลห้อง {roomNumber}
+            </h5>
             <button
-              className="btn btn-success fw-bold px-4"
+              className="btn-close btn-close-white"
+              onClick={onClose}
+            ></button>
+          </div>
+
+          {/* BODY */}
+          <div
+            className="modal-body text-center"
+            style={{
+              paddingBottom: "10px",
+              overflowY: "auto",
+              maxHeight: "65vh",
+            }}
+          >
+            <h6 className="fw-bold mb-3">สลิปการชำระเงิน</h6>
+
+            {slip ? (
+              <img
+                src={slip}
+                alt="slip"
+                style={{
+                  width: "360px",
+                  maxWidth: "70%",
+                  height: "180px",
+                  maxHeight: "65vh",
+                  objectFit: "contain",
+                  borderRadius: "14px",
+                  boxShadow: "0 0 10px rgba(0,0,0,0.2)",
+                  display: "block",
+                  margin: "0 auto",
+                }}
+              />
+            ) : (
+              <p className="text-danger mt-3">ไม่มีสลิปแนบมา</p>
+            )}
+
+            <h6 className="fw-bold mt-4">
+              ชื่อผู้ชำระ: {bill.customer?.userName ?? "-"}
+            </h6>
+
+            <h6 className="fw-bold mt-2">
+              วันที่ชำระ:{" "}
+              {new Date(bill.payment?.paidAt ?? "").toLocaleDateString(
+                "th-TH",
+                {
+                  day: "numeric",
+                  month: "long",
+                  year: "numeric",
+                }
+              )}
+            </h6>
+
+            <h6 className="fw-bold mt-4">
+              ยอดชำระ: {bill.total.toLocaleString()} บาท
+            </h6>
+          </div>
+
+          {/* FOOTER */}
+          <div className="modal-footer d-flex justify-content-between px-4 pb-3">
+            <button
+              className="btn btn-success fw-semibold px-4"
               onClick={() => onApprove(bill.billId, roomNumber)}
             >
-              ✔️ อนุมัติ
+              ✔️ ยืนยันการชำระ
             </button>
 
             <button
-              className="btn btn-danger fw-bold px-4"
+              className="btn btn-warning fw-semibold px-4"
               onClick={() => onReject(bill.billId, roomNumber)}
             >
               ❌ ปฏิเสธ
             </button>
-          </div>
 
-          <div className="text-center mt-4">
-            <button className="btn btn-secondary" onClick={onClose}>
+            <button
+              className="btn btn-secondary fw-semibold px-4"
+              onClick={onClose}
+            >
               ปิด
             </button>
           </div>
-        </Dialog.Content>
-      </Dialog.Portal>
-    </Dialog.Root>
+        </div>
+      </div>
+    </div>
   );
 }

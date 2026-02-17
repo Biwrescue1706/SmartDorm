@@ -1,5 +1,5 @@
 // src/components/AllBills/BillManageDialog.tsx
-import type { Bill } from "../../types/Bill";
+import type { Bill } from "../../types/All";
 
 interface Props {
   bill: Bill | null;

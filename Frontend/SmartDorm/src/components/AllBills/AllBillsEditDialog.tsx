@@ -119,36 +119,36 @@ export default function AllBillsEditDialog({ bill, onSave, onClose }: Props) {
           }}
         >
           <h5 className="fw-bold mb-0">
-            แก้ไขบิลห้อง {bill.room.number}
+            แก้ไขบิลห้อง {bill.room?.number ?? "-"}
           </h5>
         </div>
 
         <form onSubmit={submit} className="p-4">
-          <label className="fw-semibold mb-1">เดือนบิล</label>
+          <label className="fw-semibold mb-1">เดือนที่ออกบิล</label>
           <input type="date" className={inputClass}
             value={form.month}
             onChange={(e) => setForm({ ...form, month: e.target.value })}
           />
 
-          <label className="fw-semibold mt-3 mb-1">หน่วยน้ำก่อน</label>
+          <label className="fw-semibold mt-3 mb-1">เลขมิเตอร์น้ำเดือนก่อน</label>
           <input type="number" className={inputClass}
             value={form.wBefore}
             onChange={(e) => setForm({ ...form, wBefore: Number(e.target.value) })}
           />
 
-          <label className="fw-semibold mt-3 mb-1">หน่วยน้ำหลัง</label>
+          <label className="fw-semibold mt-3 mb-1">เลขมิเตอร์น้ำปัจจุบัน</label>
           <input type="number" className={inputClass}
             value={form.wAfter}
             onChange={(e) => setForm({ ...form, wAfter: Number(e.target.value) })}
           />
 
-          <label className="fw-semibold mt-3 mb-1">หน่วยไฟก่อน</label>
+          <label className="fw-semibold mt-3 mb-1">เลขมิเตอร์ไฟครั้งก่อน</label>
           <input type="number" className={inputClass}
             value={form.eBefore}
             onChange={(e) => setForm({ ...form, eBefore: Number(e.target.value) })}
           />
 
-          <label className="fw-semibold mt-3 mb-1">หน่วยไฟหลัง</label>
+          <label className="fw-semibold mt-3 mb-1">มิเตอร์ไฟฟ้าปัจจุบัน</label>
           <input type="number" className={inputClass}
             value={form.eAfter}
             onChange={(e) => setForm({ ...form, eAfter: Number(e.target.value) })}

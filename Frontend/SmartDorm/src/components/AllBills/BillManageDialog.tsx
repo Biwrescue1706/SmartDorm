@@ -50,7 +50,7 @@ export default function BillManageDialog({
             }}
           >
             <h5 className="modal-title fw-bold">
-              จัดการบิลห้อง {bill.room.number}
+              จัดการบิลห้อง             {bill.room?.number ?? "-"}
             </h5>
             <button
               className="btn-close btn-close-white"

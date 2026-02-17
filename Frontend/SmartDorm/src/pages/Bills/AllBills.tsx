@@ -10,7 +10,7 @@ import BillStatusCardFilter from "../../components/AllBills/BillStatusCardFilter
 import AllBillsEditDialog from "../../components/AllBills/AllBillsEditDialog";
 import BillManageDialog from "../../components/AllBills/BillManageDialog";
 import Swal from "sweetalert2";
-import type { Bill } from "../../types/Bill";
+import type { Bill } from "../../types/All";
 import { usePendingBookings } from "../../hooks/ManageRooms/usePendingBookings";
 import { usePendingCheckouts } from "../../hooks/ManageRooms/usePendingCheckouts";
 

@@ -5,9 +5,8 @@ import { createClient } from "@supabase/supabase-js";
 // 🔹 ใช้ env ของคุณ
 const supabase = createClient(
   process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
+  process.env.SUPABASE_KEY
 );
-
 /*
 URL ตัวอย่าง:
 https://xxx.supabase.co/storage/v1/object/public/uploads/Payment-slips/file.png

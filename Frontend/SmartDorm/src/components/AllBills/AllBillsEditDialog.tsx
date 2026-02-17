@@ -8,13 +8,14 @@ interface Props {
   onClose: () => void;
 }
 
-// ✅ ป้องกัน timezone เลื่อนวัน
 const toISO = (dateStr: string) => {
   const [y, m, d] = dateStr.split("-");
   return new Date(Date.UTC(+y, +m - 1, +d)).toISOString();
 };
 
 export default function AllBillsEditDialog({ bill, onSave, onClose }: Props) {
+  const [screenWidth, setScreenWidth] = useState(window.innerWidth);
+
   const [form, setForm] = useState({
     wBefore: 0,
     wAfter: 0,
@@ -25,7 +26,14 @@ export default function AllBillsEditDialog({ bill, onSave, onClose }: Props) {
     dueDate: "",
   });
 
-  // ✅ sync bill → form
+  // responsive resize
+  useEffect(() => {
+    const onResize = () => setScreenWidth(window.innerWidth);
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
+
+  // sync bill -> form
   useEffect(() => {
     if (!bill) return;
 
@@ -63,138 +71,136 @@ export default function AllBillsEditDialog({ bill, onSave, onClose }: Props) {
     onClose();
   };
 
+  const dialogStyle: React.CSSProperties = {
+    width: screenWidth < 600 ? "100%" : "95%",
+    maxWidth: screenWidth > 1400 ? 700 : 520,
+    maxHeight: "95vh",
+    overflowY: "auto",
+    borderRadius: screenWidth < 600 ? 0 : "1rem",
+  };
+
+  const inputClass = "form-control text-center rounded-3 shadow-sm py-2";
+
   return (
     <div
-      className="modal show d-block"
-      style={{ backgroundColor: "#00000080" }}
+      className="d-flex justify-content-center align-items-center"
+      style={{
+        position: "fixed",
+        inset: 0,
+        background: "rgba(0,0,0,0.45)",
+        backdropFilter: "blur(4px)",
+        zIndex: 9999,
+      }}
     >
-      <div
-        className="modal-body p-4 mt-5"
-        style={{
-          overflowY: "auto",
-          maxHeight: "100vh",
-        }}
-      >
-        <div className="modal-content shadow-lg mx-1 rounded-3 border-0">
-          <div
-            className="modal-header text-white text-center"
-            style={{
-              background: "linear-gradient(135deg, #4facfe, #00f2fe)",
-              borderTopLeftRadius: "1rem",
-              borderTopRightRadius: "1rem",
-            }}
-          >
-            <h5 className="modal-title fw-bold">
-              แก้ไขบิลห้อง {bill.room.number}
-            </h5>
-            <button
-              className="btn-close btn-close-white"
-              onClick={onClose}
-            ></button>
-          </div>
-
-          <form onSubmit={submit}>
-            <div className="modal-body p-4">
-              <label className="form-label fw-semibold">เดือนบิล</label>
-              <input
-                type="date"
-                className="form-control text-center"
-                value={form.month}
-                onChange={(e) => setForm({ ...form, month: e.target.value })}
-              />
-
-              <label className="form-label fw-semibold mt-2">
-                หน่วยน้ำก่อน
-              </label>
-              <input
-                type="number"
-                className="form-control text-center"
-                value={form.wBefore}
-                onChange={(e) =>
-                  setForm({ ...form, wBefore: Number(e.target.value) })
-                }
-              />
-
-              <label className="form-label fw-semibold mt-2">
-                หน่วยน้ำหลัง
-              </label>
-              <input
-                type="number"
-                className="form-control text-center"
-                value={form.wAfter}
-                onChange={(e) =>
-                  setForm({ ...form, wAfter: Number(e.target.value) })
-                }
-              />
-
-              <label className="form-label fw-semibold mt-3">หน่วยไฟก่อน</label>
-              <input
-                type="number"
-                className="form-control text-center"
-                value={form.eBefore}
-                onChange={(e) =>
-                  setForm({ ...form, eBefore: Number(e.target.value) })
-                }
-              />
-
-              <label className="form-label fw-semibold mt-2">หน่วยไฟหลัง</label>
-              <input
-                type="number"
-                className="form-control text-center"
-                value={form.eAfter}
-                onChange={(e) =>
-                  setForm({ ...form, eAfter: Number(e.target.value) })
-                }
-              />
-
-              <label className="form-label fw-semibold mt-2">วันครบกำหนด</label>
-              <input
-                type="date"
-                className="form-control text-center"
-                value={form.dueDate}
-                onChange={(e) => setForm({ ...form, dueDate: e.target.value })}
-              />
-
-              <label className="form-label fw-semibold mt-3">สถานะบิล</label>
-              <select
-                className="form-select text-center"
-                value={form.billStatus}
-                onChange={(e) =>
-                  setForm({ ...form, billStatus: Number(e.target.value) })
-                }
-              >
-                <option value={0}>ยังไม่ชำระ</option>
-                <option value={2}>รอตรวจสอบ</option>
-                <option value={1}>ชำระแล้ว</option>
-              </select>
-            </div>
-
-            <div className="modal-footer d-flex justify-content-between px-4 pb-3">
-              <button
-                type="button"
-                className="btn fw-semibold text-white px-4"
-                style={{
-                  background: "linear-gradient(135deg, #ff512f, #dd2476)",
-                  border: "none",
-                }}
-                onClick={onClose}
-              >
-                ยกเลิก
-              </button>
-
-              <button
-                type="submit"
-                className="btn fw-semibold text-white px-4"
-                style={{
-                  background: "linear-gradient(135deg, #11998e, #38ef7d)",
-                  border: "none",
-                }}
-              >
-                บันทึก
-              </button>
-            </div>
-          </form>
+      <div className="bg-white shadow-lg" style={dialogStyle}>
+        <div
+          className="text-white text-center py-3"
+          style={{
+            background: "linear-gradient(135deg,#4facfe,#00f2fe)",
+            borderTopLeftRadius: screenWidth < 600 ? 0 : "1rem",
+            borderTopRightRadius: screenWidth < 600 ? 0 : "1rem",
+          }}
+        >
+          <h5 className="fw-bold mb-0">
+            แก้ไขบิลห้อง {bill.room.number}
+          </h5>
         </div>
+
+        <form onSubmit={submit} className="p-4">
+          <label className="fw-semibold mb-1">เดือนบิล</label>
+          <input
+            type="date"
+            className={inputClass}
+            value={form.month}
+            onChange={(e) => setForm({ ...form, month: e.target.value })}
+          />
+
+          <label className="fw-semibold mt-3 mb-1">หน่วยน้ำก่อน</label>
+          <input
+            type="number"
+            className={inputClass}
+            value={form.wBefore}
+            onChange={(e) =>
+              setForm({ ...form, wBefore: Number(e.target.value) })
+            }
+          />
+
+          <label className="fw-semibold mt-3 mb-1">หน่วยน้ำหลัง</label>
+          <input
+            type="number"
+            className={inputClass}
+            value={form.wAfter}
+            onChange={(e) =>
+              setForm({ ...form, wAfter: Number(e.target.value) })
+            }
+          />
+
+          <label className="fw-semibold mt-3 mb-1">หน่วยไฟก่อน</label>
+          <input
+            type="number"
+            className={inputClass}
+            value={form.eBefore}
+            onChange={(e) =>
+              setForm({ ...form, eBefore: Number(e.target.value) })
+            }
+          />
+
+          <label className="fw-semibold mt-3 mb-1">หน่วยไฟหลัง</label>
+          <input
+            type="number"
+            className={inputClass}
+            value={form.eAfter}
+            onChange={(e) =>
+              setForm({ ...form, eAfter: Number(e.target.value) })
+            }
+          />
+
+          <label className="fw-semibold mt-3 mb-1">วันครบกำหนด</label>
+          <input
+            type="date"
+            className={inputClass}
+            value={form.dueDate}
+            onChange={(e) => setForm({ ...form, dueDate: e.target.value })}
+          />
+
+          <label className="fw-semibold mt-3 mb-1">สถานะบิล</label>
+          <select
+            className="form-select text-center rounded-3 shadow-sm py-2"
+            value={form.billStatus}
+            onChange={(e) =>
+              setForm({ ...form, billStatus: Number(e.target.value) })
+            }
+          >
+            <option value={0}>ยังไม่ชำระ</option>
+            <option value={2}>รอตรวจสอบ</option>
+            <option value={1}>ชำระแล้ว</option>
+          </select>
+
+          <div className="d-flex justify-content-between mt-4 gap-3">
+            <button
+              type="button"
+              className="btn text-white fw-semibold w-50 py-2 rounded-3"
+              style={{
+                background: "linear-gradient(135deg,#ff512f,#dd2476)",
+                border: "none",
+              }}
+              onClick={onClose}
+            >
+              ยกเลิก
+            </button>
+
+            <button
+              type="submit"
+              className="btn text-white fw-semibold w-50 py-2 rounded-3"
+              style={{
+                background: "linear-gradient(135deg,#11998e,#38ef7d)",
+                border: "none",
+              }}
+            >
+              บันทึก
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import Swal from "sweetalert2";
-import type { Bill } from "../../types/Bill";
+import type { Bill } from "../../types/All";
 
 interface Props {
   bill: Bill | null;
@@ -26,14 +26,12 @@ export default function AllBillsEditDialog({ bill, onSave, onClose }: Props) {
     dueDate: "",
   });
 
-  // responsive resize
   useEffect(() => {
     const onResize = () => setScreenWidth(window.innerWidth);
     window.addEventListener("resize", onResize);
     return () => window.removeEventListener("resize", onResize);
   }, []);
 
-  // sync bill -> form
   useEffect(() => {
     if (!bill) return;
 
@@ -71,12 +69,31 @@ export default function AllBillsEditDialog({ bill, onSave, onClose }: Props) {
     onClose();
   };
 
+  // ✅ breakpoint system
+  let width = "95%";
+  let maxWidth = 520;
+  let radius: string | number = "1rem";
+
+  if (screenWidth < 480) {
+    width = "100%";
+    maxWidth = 9999;
+    radius = 0;
+  } else if (screenWidth < 768) {
+    maxWidth = 520;
+  } else if (screenWidth < 1279) {
+    maxWidth = 600;
+  } else if (screenWidth < 1399) {
+    maxWidth = 720;
+  } else {
+    maxWidth = 820;
+  }
+
   const dialogStyle: React.CSSProperties = {
-    width: screenWidth < 600 ? "100%" : "95%",
-    maxWidth: screenWidth > 1400 ? 700 : 520,
+    width,
+    maxWidth,
     maxHeight: "95vh",
     overflowY: "auto",
-    borderRadius: screenWidth < 600 ? 0 : "1rem",
+    borderRadius: radius,
   };
 
   const inputClass = "form-control text-center rounded-3 shadow-sm py-2";
@@ -97,8 +114,8 @@ export default function AllBillsEditDialog({ bill, onSave, onClose }: Props) {
           className="text-white text-center py-3"
           style={{
             background: "linear-gradient(135deg,#4facfe,#00f2fe)",
-            borderTopLeftRadius: screenWidth < 600 ? 0 : "1rem",
-            borderTopRightRadius: screenWidth < 600 ? 0 : "1rem",
+            borderTopLeftRadius: radius,
+            borderTopRightRadius: radius,
           }}
         >
           <h5 className="fw-bold mb-0">
@@ -108,57 +125,37 @@ export default function AllBillsEditDialog({ bill, onSave, onClose }: Props) {
 
         <form onSubmit={submit} className="p-4">
           <label className="fw-semibold mb-1">เดือนบิล</label>
-          <input
-            type="date"
-            className={inputClass}
+          <input type="date" className={inputClass}
             value={form.month}
             onChange={(e) => setForm({ ...form, month: e.target.value })}
           />
 
           <label className="fw-semibold mt-3 mb-1">หน่วยน้ำก่อน</label>
-          <input
-            type="number"
-            className={inputClass}
+          <input type="number" className={inputClass}
             value={form.wBefore}
-            onChange={(e) =>
-              setForm({ ...form, wBefore: Number(e.target.value) })
-            }
+            onChange={(e) => setForm({ ...form, wBefore: Number(e.target.value) })}
           />
 
           <label className="fw-semibold mt-3 mb-1">หน่วยน้ำหลัง</label>
-          <input
-            type="number"
-            className={inputClass}
+          <input type="number" className={inputClass}
             value={form.wAfter}
-            onChange={(e) =>
-              setForm({ ...form, wAfter: Number(e.target.value) })
-            }
+            onChange={(e) => setForm({ ...form, wAfter: Number(e.target.value) })}
           />
 
           <label className="fw-semibold mt-3 mb-1">หน่วยไฟก่อน</label>
-          <input
-            type="number"
-            className={inputClass}
+          <input type="number" className={inputClass}
             value={form.eBefore}
-            onChange={(e) =>
-              setForm({ ...form, eBefore: Number(e.target.value) })
-            }
+            onChange={(e) => setForm({ ...form, eBefore: Number(e.target.value) })}
           />
 
           <label className="fw-semibold mt-3 mb-1">หน่วยไฟหลัง</label>
-          <input
-            type="number"
-            className={inputClass}
+          <input type="number" className={inputClass}
             value={form.eAfter}
-            onChange={(e) =>
-              setForm({ ...form, eAfter: Number(e.target.value) })
-            }
+            onChange={(e) => setForm({ ...form, eAfter: Number(e.target.value) })}
           />
 
           <label className="fw-semibold mt-3 mb-1">วันครบกำหนด</label>
-          <input
-            type="date"
-            className={inputClass}
+          <input type="date" className={inputClass}
             value={form.dueDate}
             onChange={(e) => setForm({ ...form, dueDate: e.target.value })}
           />
@@ -167,9 +164,7 @@ export default function AllBillsEditDialog({ bill, onSave, onClose }: Props) {
           <select
             className="form-select text-center rounded-3 shadow-sm py-2"
             value={form.billStatus}
-            onChange={(e) =>
-              setForm({ ...form, billStatus: Number(e.target.value) })
-            }
+            onChange={(e) => setForm({ ...form, billStatus: Number(e.target.value) })}
           >
             <option value={0}>ยังไม่ชำระ</option>
             <option value={2}>รอตรวจสอบ</option>
@@ -177,25 +172,17 @@ export default function AllBillsEditDialog({ bill, onSave, onClose }: Props) {
           </select>
 
           <div className="d-flex justify-content-between mt-4 gap-3">
-            <button
-              type="button"
+            <button type="button"
               className="btn text-white fw-semibold w-50 py-2 rounded-3"
-              style={{
-                background: "linear-gradient(135deg,#ff512f,#dd2476)",
-                border: "none",
-              }}
+              style={{ background: "linear-gradient(135deg,#ff512f,#dd2476)" }}
               onClick={onClose}
             >
               ยกเลิก
             </button>
 
-            <button
-              type="submit"
+            <button type="submit"
               className="btn text-white fw-semibold w-50 py-2 rounded-3"
-              style={{
-                background: "linear-gradient(135deg,#11998e,#38ef7d)",
-                border: "none",
-              }}
+              style={{ background: "linear-gradient(135deg,#11998e,#38ef7d)" }}
             >
               บันทึก
             </button>

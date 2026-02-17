@@ -432,7 +432,7 @@ bill.put(
   }
 );
 
-// ❌ ปฏิเสธสลิป
+// ❌ ปฏิเสธสลิป + ลบ Supabase
 bill.put(
   "/reject/:billId",
   authMiddleware,
@@ -449,18 +449,18 @@ bill.put(
       if (!billData) throw new Error("ไม่พบบิล");
 
       const updated = await prisma.$transaction(async (tx) => {
-        if (billData.slipUrl) await deleteSlip(billData.slipUrl);
+        if (billData.slipUrl) {
+          await deleteSlip(billData.slipUrl); // ✅ ลบไฟล์จริง
+        }
 
-        // ลบ payment อย่างเดียว
-        await tx.payment.deleteMany({
-          where: { billId },
-        });
+        await tx.payment.deleteMany({ where: { billId } });
 
-        // บิลยังอยู่ แต่เปลี่ยนสถานะ
         return tx.bill.update({
           where: { billId },
           data: {
             billStatus: 0,
+            slipUrl: null,
+            paidAt : null,
             billDate: new Date(),
           },
         });
@@ -682,15 +682,13 @@ bill.delete("/:billId", authMiddleware, roleMiddleware(0), async (req, res) => {
     if (!billData) throw new Error("ไม่พบบิล");
 
     await prisma.$transaction(async (tx) => {
-      // ✅ ลบไฟล์สลิปใน Supabase
+      // ✅ ลบไฟล์ใน Supabase
       if (billData.slipUrl) {
         await deleteSlip(billData.slipUrl);
       }
 
       // ✅ ลบ payment
-      if (billData.payment) {
-        await tx.payment.deleteMany({ where: { billId } });
-      }
+      await tx.payment.deleteMany({ where: { billId } });
 
       // ✅ ลบบิล
       await tx.bill.delete({ where: { billId } });

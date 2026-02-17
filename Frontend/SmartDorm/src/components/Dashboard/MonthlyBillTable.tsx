@@ -1,5 +1,5 @@
 // src/components/Dashboard/MonthlyBillTable.tsx
-import type { Bill } from "../../types/Bill";
+import type { Bill } from "../../types/All";
 
 export default function MonthlyBillTable({ bills, monthNamesTH }: any) {
   const acc: any = {};

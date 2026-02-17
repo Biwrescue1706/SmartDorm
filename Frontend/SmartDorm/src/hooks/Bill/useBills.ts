@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import Swal from "sweetalert2";
 import axios from "axios";
 import { API_BASE } from "../../config";
-import type { Bill } from "../../types/Bill";
+import type { Bill } from "../../types/All";
 import { toast } from "../../utils/toast";
 
 export function useBills() {

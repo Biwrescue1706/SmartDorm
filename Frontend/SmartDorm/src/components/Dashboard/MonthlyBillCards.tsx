@@ -1,5 +1,5 @@
 // src/components/Dashboard/MonthlyBillCards.tsx
-import type { Bill } from "../../types/Bill";
+import type { Bill } from "../../types/All";
 
 /*
 Responsive:

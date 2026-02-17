@@ -12,28 +12,34 @@ interface BillDialogProps {
   reloadExistingBills: () => void;
 }
 
+// ✅ default form
+const emptyForm = {
+  month: "",
+  wBefore: 0,
+  wAfter: 0,
+  eBefore: 0,
+  eAfter: 0,
+};
+
 export default function BillDialog({
   open,
   onClose,
   room,
   reloadExistingBills,
 }: BillDialogProps) {
-  // SCB Theme
   const SCB_PURPLE = "#4A0080";
   const SCB_GOLD = "#FFC800";
   const BG_SOFT = "#F8F5FC";
   const TEXT_DARK = "#2D1A47";
 
-  const [form, setForm] = useState({
-    month: "", // yyyy-mm-dd จาก input type="date"
-    wBefore: 0,
-    wAfter: 0,
-    eBefore: 0,
-    eAfter: 0,
-  });
-
+  const [form, setForm] = useState(emptyForm);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+
+  // ✅ reset form เมื่อ dialog ปิด
+  useEffect(() => {
+    if (!open) setForm(emptyForm);
+  }, [open]);
 
   // โหลดค่ามิเตอร์ครั้งก่อน
   useEffect(() => {
@@ -60,15 +66,12 @@ export default function BillDialog({
             eBefore: latest.eAfter ?? 0,
           }));
         }
-      } catch {
-        // เงียบไว้ ไม่ต้องเด้ง error
-      }
+      } catch {}
     };
 
     loadPrev();
   }, [room]);
 
-  // เปลี่ยนค่า input
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value, type } = e.target;
     setForm((prev) => ({
@@ -77,23 +80,17 @@ export default function BillDialog({
     }));
   };
 
-  // ปิด dialog + reset ค่า
+  // ✅ cancel = reset + close
   const handleClose = () => {
-    setForm((prev) => ({
-      ...prev,
-      month: "",
-      wAfter: 0,
-      eAfter: 0,
-    }));
+    setForm(emptyForm);
     onClose();
   };
 
-  // บันทึกบิล (สำคัญที่สุด)
   const handleSubmit = async () => {
     if (!room) return;
 
     if (!form.month) {
-      onClose(); // ❌ ปิดก่อน
+      handleClose();
       Swal.fire({
         title: "กรุณาเลือกเดือนก่อนออกบิล",
         icon: "error",
@@ -134,9 +131,8 @@ export default function BillDialog({
       if (!res.ok) throw new Error(data.error || "ไม่สามารถสร้างบิลได้");
 
       await reloadExistingBills();
-      onClose();
+      handleClose();
 
-      // ✅ สำเร็จ → แจ้งเตือน + redirect
       Swal.fire({
         title: "สร้างบิลสำเร็จแล้ว",
         icon: "success",
@@ -146,8 +142,7 @@ export default function BillDialog({
         navigate("/bill-overview");
       });
     } catch (err: any) {
-      onClose(); // ❌ ปิด dialog ก่อน
-
+      handleClose();
       Swal.fire({
         title: "เกิดข้อผิดพลาด",
         text: err.message,
@@ -161,12 +156,10 @@ export default function BillDialog({
   };
 
   return (
-    <Dialog.Root open={open} onOpenChange={onClose}>
+    <Dialog.Root open={open} onOpenChange={handleClose}>
       <Dialog.Portal>
-        {/* Overlay */}
         <Dialog.Overlay className="position-fixed top-0 start-0 w-100 h-100 bg-dark bg-opacity-50" />
 
-        {/* Dialog */}
         <Dialog.Content
           className="position-fixed start-50 top-50 translate-middle shadow-lg rounded-4"
           style={{
@@ -189,7 +182,6 @@ export default function BillDialog({
             ฟอร์มออกบิลห้องพัก
           </Dialog.Description>
 
-          {/* FORM */}
           <div className="p-4 text-black">
             <label className="fw-semibold">เดือนที่ออกบิล</label>
             <input
@@ -200,7 +192,7 @@ export default function BillDialog({
               onChange={handleChange}
             />
 
-            <label className="fw-semibold">มิเตอร์ปะปา (ครั้งก่อน)</label>
+            <label className="fw-semibold">มิเตอร์ปะปา ( ครั้งก่อน )</label>
             <input
               type="number"
               className="form-control shadow-sm mb-3"
@@ -208,7 +200,7 @@ export default function BillDialog({
               disabled
             />
 
-            <label className="fw-semibold">มิเตอร์ปะปา (ครั้งหลัง)</label>
+            <label className="fw-semibold">มิเตอร์ปะปา ( ปัจจุบัน )</label>
             <input
               id="wAfter"
               type="number"
@@ -217,7 +209,7 @@ export default function BillDialog({
               onChange={handleChange}
             />
 
-            <label className="fw-semibold">มิเตอร์ไฟฟ้า (ครั้งก่อน)</label>
+            <label className="fw-semibold">มิเตอร์ไฟฟ้า ( ครั้งก่อน )</label>
             <input
               type="number"
               className="form-control shadow-sm mb-3"
@@ -225,7 +217,7 @@ export default function BillDialog({
               disabled
             />
 
-            <label className="fw-semibold">มิเตอร์ไฟฟ้า (ครั้งหลัง)</label>
+            <label className="fw-semibold">มิเตอร์ไฟฟ้า ( ปัจจุบัน )</label>
             <input
               id="eAfter"
               type="number"
@@ -235,17 +227,14 @@ export default function BillDialog({
             />
           </div>
 
-          {/* Buttons */}
           <div className="d-flex justify-content-between border-top p-3">
-            <Dialog.Close asChild>
-              <button
-                className="btn fw-bold px-4 text-white"
-                onClick={handleClose}
-                style={{ background: SCB_PURPLE }}
-              >
-                ยกเลิก
-              </button>
-            </Dialog.Close>
+            <button
+              className="btn fw-bold px-4 text-white"
+              onClick={handleClose}
+              style={{ background: SCB_PURPLE }}
+            >
+              ยกเลิก
+            </button>
 
             <button
               className="btn fw-bold px-4"

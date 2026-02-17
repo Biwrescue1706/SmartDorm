@@ -70,12 +70,12 @@ export default function AllBillsEditDialog({ bill, onSave, onClose }: Props) {
   };
 
   // ✅ breakpoint system
-  let width = "95%";
-  let maxWidth = 520;
+  let width = "90%";
+  let maxWidth = 480;
   let radius: string | number = "1rem";
 
   if (screenWidth < 480) {
-    width = "100%";
+    width = "80%";
     maxWidth = 9999;
     radius = 0;
   } else if (screenWidth < 768) {
@@ -118,49 +118,49 @@ export default function AllBillsEditDialog({ bill, onSave, onClose }: Props) {
             borderTopRightRadius: radius,
           }}
         >
-          <h5 className="fw-bold mb-0">
+          <h5 className="fw-bold mb-0 text-center text-white">
             แก้ไขบิลห้อง {bill.room?.number ?? "-"}
           </h5>
         </div>
 
         <form onSubmit={submit} className="p-4">
-          <label className="fw-semibold mb-1">เดือนที่ออกบิล</label>
+          <label className="fw-semibold mb-1 text-center text-black " >เดือนที่ออกบิล</label>
           <input type="date" className={inputClass}
             value={form.month}
             onChange={(e) => setForm({ ...form, month: e.target.value })}
           />
 
-          <label className="fw-semibold mt-3 mb-1">เลขมิเตอร์น้ำเดือนก่อน</label>
+          <label className="fw-semibold mt-3 mb-1 text-center text-black">เลขมิเตอร์น้ำเดือนก่อน</label>
           <input type="number" className={inputClass}
             value={form.wBefore}
             onChange={(e) => setForm({ ...form, wBefore: Number(e.target.value) })}
           />
 
-          <label className="fw-semibold mt-3 mb-1">เลขมิเตอร์น้ำปัจจุบัน</label>
+          <label className="fw-semibold mt-3 mb-1 text-center text-black">เลขมิเตอร์น้ำปัจจุบัน</label>
           <input type="number" className={inputClass}
             value={form.wAfter}
             onChange={(e) => setForm({ ...form, wAfter: Number(e.target.value) })}
           />
 
-          <label className="fw-semibold mt-3 mb-1">เลขมิเตอร์ไฟครั้งก่อน</label>
+          <label className="fw-semibold mt-3 mb-1 text-center text-black">เลขมิเตอร์ไฟครั้งก่อน</label>
           <input type="number" className={inputClass}
             value={form.eBefore}
             onChange={(e) => setForm({ ...form, eBefore: Number(e.target.value) })}
           />
 
-          <label className="fw-semibold mt-3 mb-1">มิเตอร์ไฟฟ้าปัจจุบัน</label>
+          <label className="fw-semibold mt-3 mb-1 text-center text-black">มิเตอร์ไฟฟ้าปัจจุบัน</label>
           <input type="number" className={inputClass}
             value={form.eAfter}
             onChange={(e) => setForm({ ...form, eAfter: Number(e.target.value) })}
           />
 
-          <label className="fw-semibold mt-3 mb-1">วันครบกำหนด</label>
+          <label className="fw-semibold mt-3 mb-1 text-center text-black">วันครบกำหนด</label>
           <input type="date" className={inputClass}
             value={form.dueDate}
             onChange={(e) => setForm({ ...form, dueDate: e.target.value })}
           />
 
-          <label className="fw-semibold mt-3 mb-1">สถานะบิล</label>
+          <label className="fw-semibold mt-3 mb-1 text-center text-black">สถานะบิล</label>
           <select
             className="form-select text-center rounded-3 shadow-sm py-2"
             value={form.billStatus}

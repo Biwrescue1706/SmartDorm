@@ -69,33 +69,25 @@ export default function AllBillsEditDialog({ bill, onSave, onClose }: Props) {
     onClose();
   };
 
-  // ✅ breakpoint system
-  let width = "95%";
-let maxWidth = 520;
-let radius: string | number = "1rem";
+  // responsive width
+  let width = "94%";
+  let maxWidth = 520;
 
-if (screenWidth < 480) {
-  width = "92%";     // มือถือไม่เต็มจอ
-  maxWidth = 420;    // กำลังอ่านสบาย
-} else if (screenWidth < 768) {
-  maxWidth = 520;
-} else if (screenWidth < 1279) {
-  maxWidth = 600;
-} else if (screenWidth < 1399) {
-  maxWidth = 720;
-} else {
-  maxWidth = 820;
-}
+  if (screenWidth < 480) maxWidth = 420;
+  else if (screenWidth < 768) maxWidth = 520;
+  else if (screenWidth < 1200) maxWidth = 620;
+  else maxWidth = 760;
 
   const dialogStyle: React.CSSProperties = {
     width,
     maxWidth,
-    maxHeight: "95vh",
+    maxHeight: "92vh",
     overflowY: "auto",
-    borderRadius: radius,
+    borderRadius: "1.2rem",
   };
 
-  const inputClass = "form-control text-center rounded-3 shadow-sm py-2";
+  const inputClass = "form-control rounded-3 shadow-sm py-2 px-3";
+  const labelClass = "fw-semibold mb-1 text-black";
 
   return (
     <div
@@ -103,8 +95,10 @@ if (screenWidth < 480) {
       style={{
         position: "fixed",
         inset: 0,
+        padding:
+          "max(24px, env(safe-area-inset-top)) 12px max(24px, env(safe-area-inset-bottom))",
         background: "rgba(0,0,0,0.45)",
-        backdropFilter: "blur(4px)",
+        backdropFilter: "blur(5px)",
         zIndex: 9999,
       }}
     >
@@ -113,75 +107,120 @@ if (screenWidth < 480) {
           className="text-white text-center py-3"
           style={{
             background: "linear-gradient(135deg,#4facfe,#00f2fe)",
-            borderTopLeftRadius: radius,
-            borderTopRightRadius: radius,
+            borderTopLeftRadius: "1.2rem",
+            borderTopRightRadius: "1.2rem",
           }}
         >
-          <h5 className="fw-bold mb-0 text-center text-white">
+          <h5 className="fw-bold mb-0">
             แก้ไขบิลห้อง {bill.room?.number ?? "-"}
           </h5>
         </div>
 
         <form onSubmit={submit} className="p-4">
-          <label className="fw-semibold mb-1 text-center text-black " >เดือนที่ออกบิล</label>
-          <input type="date" className={inputClass}
-            value={form.month}
-            onChange={(e) => setForm({ ...form, month: e.target.value })}
-          />
 
-          <label className="fw-semibold mt-3 mb-1 text-center text-black">เลขมิเตอร์น้ำเดือนก่อน</label>
-          <input type="number" className={inputClass}
-            value={form.wBefore}
-            onChange={(e) => setForm({ ...form, wBefore: Number(e.target.value) })}
-          />
+          <div className="mb-3">
+            <label className={labelClass}>เดือนที่ออกบิล</label>
+            <input
+              type="date"
+              className={inputClass}
+              value={form.month}
+              onChange={(e) => setForm({ ...form, month: e.target.value })}
+            />
+          </div>
 
-          <label className="fw-semibold mt-3 mb-1 text-center text-black">เลขมิเตอร์น้ำปัจจุบัน</label>
-          <input type="number" className={inputClass}
-            value={form.wAfter}
-            onChange={(e) => setForm({ ...form, wAfter: Number(e.target.value) })}
-          />
+          <div className="mb-3">
+            <label className={labelClass}>เลขมิเตอร์น้ำเดือนก่อน</label>
+            <input
+              type="number"
+              className={inputClass}
+              value={form.wBefore}
+              onChange={(e) =>
+                setForm({ ...form, wBefore: Number(e.target.value) })
+              }
+            />
+          </div>
 
-          <label className="fw-semibold mt-3 mb-1 text-center text-black">เลขมิเตอร์ไฟครั้งก่อน</label>
-          <input type="number" className={inputClass}
-            value={form.eBefore}
-            onChange={(e) => setForm({ ...form, eBefore: Number(e.target.value) })}
-          />
+          <div className="mb-3">
+            <label className={labelClass}>เลขมิเตอร์น้ำปัจจุบัน</label>
+            <input
+              type="number"
+              className={inputClass}
+              value={form.wAfter}
+              onChange={(e) =>
+                setForm({ ...form, wAfter: Number(e.target.value) })
+              }
+            />
+          </div>
 
-          <label className="fw-semibold mt-3 mb-1 text-center text-black">มิเตอร์ไฟฟ้าปัจจุบัน</label>
-          <input type="number" className={inputClass}
-            value={form.eAfter}
-            onChange={(e) => setForm({ ...form, eAfter: Number(e.target.value) })}
-          />
+          <div className="mb-3">
+            <label className={labelClass}>เลขมิเตอร์ไฟครั้งก่อน</label>
+            <input
+              type="number"
+              className={inputClass}
+              value={form.eBefore}
+              onChange={(e) =>
+                setForm({ ...form, eBefore: Number(e.target.value) })
+              }
+            />
+          </div>
 
-          <label className="fw-semibold mt-3 mb-1 text-center text-black">วันครบกำหนด</label>
-          <input type="date" className={inputClass}
-            value={form.dueDate}
-            onChange={(e) => setForm({ ...form, dueDate: e.target.value })}
-          />
+          <div className="mb-3">
+            <label className={labelClass}>มิเตอร์ไฟฟ้าปัจจุบัน</label>
+            <input
+              type="number"
+              className={inputClass}
+              value={form.eAfter}
+              onChange={(e) =>
+                setForm({ ...form, eAfter: Number(e.target.value) })
+              }
+            />
+          </div>
 
-          <label className="fw-semibold mt-3 mb-1 text-center text-black">สถานะบิล</label>
-          <select
-            className="form-select text-center rounded-3 shadow-sm py-2"
-            value={form.billStatus}
-            onChange={(e) => setForm({ ...form, billStatus: Number(e.target.value) })}
-          >
-            <option value={0}>ยังไม่ชำระ</option>
-            <option value={2}>รอตรวจสอบ</option>
-            <option value={1}>ชำระแล้ว</option>
-          </select>
+          <div className="mb-3">
+            <label className={labelClass}>วันครบกำหนด</label>
+            <input
+              type="date"
+              className={inputClass}
+              value={form.dueDate}
+              onChange={(e) =>
+                setForm({ ...form, dueDate: e.target.value })
+              }
+            />
+          </div>
+
+          <div className="mb-3">
+            <label className={labelClass}>สถานะบิล</label>
+            <select
+              className="form-select rounded-3 shadow-sm py-2"
+              value={form.billStatus}
+              onChange={(e) =>
+                setForm({ ...form, billStatus: Number(e.target.value) })
+              }
+            >
+              <option value={0}>ยังไม่ชำระ</option>
+              <option value={2}>รอตรวจสอบ</option>
+              <option value={1}>ชำระแล้ว</option>
+            </select>
+          </div>
 
           <div className="d-flex justify-content-between mt-4 gap-3">
-            <button type="button"
+            <button
+              type="button"
               className="btn text-white fw-semibold w-50 py-2 rounded-3"
-              style={{ background: "linear-gradient(135deg,#ff512f,#dd2476)" }}
+              style={{
+                background: "linear-gradient(135deg,#ff512f,#dd2476)",
+              }}
               onClick={onClose}
             >
               ยกเลิก
             </button>
 
-            <button type="submit"
+            <button
+              type="submit"
               className="btn text-white fw-semibold w-50 py-2 rounded-3"
-              style={{ background: "linear-gradient(135deg,#11998e,#38ef7d)" }}
+              style={{
+                background: "linear-gradient(135deg,#11998e,#38ef7d)",
+              }}
             >
               บันทึก
             </button>

@@ -10,17 +10,16 @@ dotenv.config();
 const app = express();
 app.set("trust proxy", 1);
 
+// ================= CORS =================
 const allowedOrigins = [
   "http://localhost:5173",
   "http://localhost:5174",
   "http://localhost:5175",
-
   "https://manage.smartdorm-biwboong.shop",
   "https://bookingsroom.smartdorm-biwboong.shop",
   "https://details.smartdorm-biwboong.shop",
   "https://paymentbill.smartdorm-biwboong.shop",
   "https://returnroom.smartdorm-biwboong.shop",
-
   "https://hub.smartdorm-biwboong.shop",
 ];
 
@@ -28,12 +27,11 @@ const corsOptions = {
   origin: (origin, callback) => {
     if (!origin) return callback(null, true);
     const isAllowed = allowedOrigins.includes(origin);
-    isAllowed ? callback(null, true) : callback(new Error("CORS not allowed"));
+    isAllowed
+      ? callback(null, true)
+      : callback(new Error("CORS not allowed"));
   },
   credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
-  exposedHeaders: ["Set-Cookie"],
 };
 
 if (process.env.NODE_ENV !== "production") {
@@ -45,7 +43,7 @@ if (process.env.NODE_ENV !== "production") {
 app.use(express.json());
 app.use(cookieParser());
 
-// routes
+// ================= ROUTES =================
 import adminRouter from "./modules/admin.js";
 import authRouter from "./modules/auth.js";
 import billRouter from "./modules/bill.js";
@@ -56,7 +54,7 @@ import paymentRouter from "./modules/payment.js";
 import qrRouter from "./modules/qr.js";
 import userRouter from "./modules/user.js";
 import overview from "./modules/overview.js";
-import dormProfileRoute from "./modules/dormProfile.js"
+import dormProfileRoute from "./modules/dormProfile.js";
 
 app.use("/overview", overview);
 app.use("/dorm-profile", dormProfileRoute);
@@ -70,48 +68,62 @@ app.use("/payment", paymentRouter);
 app.use("/user", userRouter);
 app.use("/qr", qrRouter);
 
-app.get("/", (_req, res) => res.send("🚀 SmartDorm Backend กำลังทำงาน"));
+// ================= HEALTH =================
+app.get("/", (_req, res) =>
+  res.send("🚀 SmartDorm Backend กำลังทำงาน")
+);
+
 app.get("/health", (_req, res) => {
-  res.status(200).json({ status: "ok", uptime: process.uptime() });
+  res.json({
+    status: "ok",
+    serverTime: new Date().toString(),
+  });
 });
 
-app.use((err, _req, res, _next) => {
-  console.error(" Global Error:", err);
-  res.status(500).json({ error: err.message || "Server error" });
-});
-
+// ================= START =================
 const PORT = process.env.PORT || 3000;
 
 async function startServer() {
   try {
-    console.log("🟡 กำลังเริ่มการเชื่อมต่อ Prisma...");
+    console.log("🟡 Connecting Prisma...");
     await prisma.$connect();
-    console.log("✅ เชื่อมต่อกับ MongoDB ผ่าน Prisma สำเร็จ");
+    console.log("✅ Prisma connected");
 
+    console.log("🌏 Server Time:", new Date().toString());
+
+    // 🔥 เรียก cron
     scheduleOverdueAuto();
 
     app.listen(PORT, () => {
-
       const env = process.env.NODE_ENV || "development";
+
+      console.log("====================================");
 
       if (env === "production") {
         console.log("✅ โหมดการทำงาน : Production");
         console.log(`🚀 เซิร์ฟเวอร์กำลังทำงานอยู่ ${env}`);
-        console.log(`🚀 เซิร์ฟเวอร์กำลังทำงานอยู่ที่ https://hub.smartdorm-biwboong.shop`);
+        console.log(
+          "🚀 เซิร์ฟเวอร์กำลังทำงานอยู่ที่ https://hub.smartdorm-biwboong.shop"
+        );
       } else {
         console.log("✅ โหมดการทำงาน : Development");
         console.log(`🚀 เซิร์ฟเวอร์กำลังทำงานอยู่ ${env}`);
-        console.log(`🚀 เซิร์ฟเวอร์กำลังทำงานอยู่ที่พอร์ต http://localhost:${PORT}`);
+        console.log(
+          `🚀 เซิร์ฟเวอร์กำลังทำงานอยู่ที่พอร์ต http://localhost:${PORT}`
+        );
       }
+
+      console.log("====================================");
     });
   } catch (err) {
-    console.error("❌ เริ่มต้นล้มเหลว\n :", err);
+    console.error("❌ Failed to start server:", err);
     process.exit(1);
   }
 }
 
 startServer();
 
+// ================= SHUTDOWN =================
 process.on("SIGINT", async () => {
   await prisma.$disconnect();
   process.exit(0);

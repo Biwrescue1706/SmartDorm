@@ -230,19 +230,23 @@ const {
       });
       if (!booking) throw new Error("ไม่พบผู้เข้าพัก");
 
-      // 🔒 rule 25
-      const cutoff = new Date(
-        billMonth.getFullYear(),
-        billMonth.getMonth() - 1,
-        25,
-        23, 59, 59
-      );
+      // 🔒 rule 25 (ใช้วันที่เข้าพักจริง)
+const cutoff = new Date(
+  billMonth.getFullYear(),
+  billMonth.getMonth() - 1,
+  25,
+  23, 59, 59
+);
 
-      if (new Date(booking.checkin) > cutoff) {
-        throw new Error(
-          "ผู้เช่าเข้าพักหลังวันที่ 25 ของเดือนก่อน ไม่สามารถออกบิลรอบนี้ได้"
-        );
-      }
+if (!booking.checkinAt) {
+  throw new Error("ยังไม่ได้บันทึกวันเข้าพักจริง");
+}
+
+if (new Date(booking.checkinAt) > cutoff) {
+  throw new Error(
+    "ผู้เช่าเข้าพักหลังวันที่ 25 ของเดือนก่อน ไม่สามารถออกบิลรอบนี้ได้"
+  );
+}
 
       const prevBill = await prisma.bill.findFirst({
         where: { roomId, month: { lt: billMonth } },

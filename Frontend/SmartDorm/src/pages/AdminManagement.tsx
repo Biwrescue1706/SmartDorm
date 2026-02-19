@@ -127,7 +127,7 @@ export default function AdminManagement() {
       return Toast.fire({ icon: "warning", title: "รหัสผ่านต้อง 6 ตัวขึ้นไป" });
 
     try {
-      const res = await fetch(`${API_BASE}/auth/register`, {
+      const res = await fetch(`${API_BASE}/admin/create`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",

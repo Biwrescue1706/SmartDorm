@@ -9,74 +9,51 @@ function buildFullName(t, n, s) {
 
 // ===== Admin seed =====
 async function seedAdmin(username, name, role = 0) {
-  const exists = await prisma.admin.findUnique({ where: { username } });
+  const hashed = await bcrypt.hash("123456", 10);
 
-  if (!exists) {
-    const hashed = await bcrypt.hash("123456", 10);
+  await prisma.admin.upsert({
+    where: { username },
+    update: {},
+    create: {
+      username,
+      name,
+      password: hashed,
+      role,
+    },
+  });
 
-    await prisma.admin.create({
-      data: { username, name, password: hashed, role },
-    });
-
-    console.log(`✅ สร้าง Admin: ${username}`);
-  } else {
-    console.log(`⏭ Admin ${username} มีอยู่แล้ว`);
-  }
+  console.log(`✅ Admin ready: ${username}`);
 }
 
-// ===== DormProfile merge seed =====
+// ===== DormProfile seed =====
 async function seedDormProfile() {
   const receiverTitle = "นาย";
   const receiverName = "ภูวณัฐ";
   const receiverSurname = "พาหะละ";
 
-  const defaultData = {
-    dormName: "หอพักบิวเรสซิเดนซ์",
-    address: "47/21 ม.1 ต.บ้านสวน อ.เมืองชลบุรี จ.ชลบุรี 20000",
-    phone: "0611747731",
-    email: "bewrockgame1@gmail.com",
-    taxId: "1209000088280",
-    taxType: 0,
-    receiverTitle,
-    receiverName,
-    receiverSurname,
-    receiverFullName: buildFullName(
+  await prisma.dormProfile.upsert({
+    where: { key: "MAIN" },
+    update: {},
+    create: {
+      key: "MAIN",
+      dormName: "หอพักบิว",
+      address: "47/21 ม.1 ต.บ้านสวน อ.เมืองชลบุรี จ.ชลบุรี 20000",
+      phone: "0611747731",
+      email: "bewrockgame1@gmail.com",
+      taxId: "1209000088280",
+      taxType: 0,
       receiverTitle,
       receiverName,
-      receiverSurname
-    ),
-  };
-
-  const exists = await prisma.dormProfile.findUnique({
-    where: { key: "MAIN" },
+      receiverSurname,
+      receiverFullName: buildFullName(
+        receiverTitle,
+        receiverName,
+        receiverSurname
+      ),
+    },
   });
 
-  if (!exists) {
-    await prisma.dormProfile.create({
-      data: { key: "MAIN", ...defaultData },
-    });
-
-    console.log("✅ สร้างโปรไฟล์หอพักแล้ว");
-    return;
-  }
-
-  const updateData = {};
-  for (const key in defaultData) {
-    if (exists[key] === null || exists[key] === undefined) {
-      updateData[key] = defaultData[key];
-    }
-  }
-
-  if (Object.keys(updateData).length > 0) {
-    await prisma.dormProfile.update({
-      where: { key: "MAIN" },
-      data: updateData,
-    });
-
-    console.log("✅ เติมข้อมูลโปรไฟล์หอพักที่ขาด");
-  } else {
-    console.log("⏭ โปรไฟล์หอพักครบแล้ว");
-  }
+  console.log("✅ DormProfile ready");
 }
 
 // ===== Room seed =====
@@ -86,7 +63,7 @@ async function seedRooms() {
   });
 
   if (!admin) {
-    console.log("❌ ไม่พบ Admin BiwBoong");
+    console.log("❌ Admin BiwBoong not found");
     return;
   }
 
@@ -94,32 +71,28 @@ async function seedRooms() {
     for (let room = 1; room <= 4; room++) {
       const number = `${floor}0${room}`;
 
-      const exists = await prisma.room.findUnique({ where: { number } });
+      await prisma.room.upsert({
+        where: { number },
+        update: {},
+        create: {
+          number,
+          size: "3.5 x 5.5 ม.",
+          rent: 2500,
+          deposit: 2500,
+          bookingFee: 500,
+          status: 0,
+          createdBy: admin.adminId,
+        },
+      });
 
-      if (!exists) {
-        await prisma.room.create({
-          data: {
-            number,
-            size: "3.5 x 5.5 ม.",
-            rent: 2500,
-            deposit: 2500,
-            bookingFee: 500,
-            status: 0,
-            createdBy: admin.adminId,
-          },
-        });
-
-        console.log(`✅ สร้างห้อง ${number}`);
-      } else {
-        console.log(`⏭ ห้อง ${number} มีอยู่แล้ว`);
-      }
+      console.log(`✅ Room ready: ${number}`);
     }
   }
 }
 
 // ===== main =====
 async function main() {
-  console.log("🌱 Safe merge seeding...");
+  console.log("🌱 Seeding started...");
 
   await seedAdmin("BiwBoong", "นายภูวณัฐ พาหะละ", 0);
   await seedAdmin("Admin", "Admin", 0);
@@ -128,9 +101,14 @@ async function main() {
   await seedDormProfile();
   await seedRooms();
 
-  console.log("🎉 Seed เสร็จสมบูรณ์");
+  console.log("🎉 Seeding completed");
 }
 
 main()
-  .catch(console.error)
-  .finally(() => prisma.$disconnect());
+  .catch((e) => {
+    console.error(e);
+    process.exit(1);
+  })
+  .finally(async () => {
+    await prisma.$disconnect();
+  });

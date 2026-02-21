@@ -95,7 +95,26 @@ admin.put("/:adminId", authMiddleware, roleMiddleware(0), async (req, res) => {
 admin.delete("/:adminId", authMiddleware, roleMiddleware(0), async (req, res) => {
   try {
     const { adminId } = req.params;
+
+    // หาแอดมินคนแรกสุด
+    const firstAdmin = await prisma.admin.findFirst({
+      orderBy: { createdAt: "asc" },
+      select: { adminId: true },
+    });
+
+    if (!firstAdmin) {
+      return res.status(400).json({ error: "ไม่พบข้อมูลแอดมิน" });
+    }
+
+    // ถ้าเป็นแอดมินคนแรก ห้ามลบ
+    if (firstAdmin.adminId === adminId) {
+      return res.status(400).json({
+        error: "ไม่สามารถลบแอดมินคนแรกของระบบได้",
+      });
+    }
+
     await prisma.admin.delete({ where: { adminId } });
+
     res.json({ message: "ลบผู้ดูแลระบบสำเร็จ" });
   } catch (err) {
     console.error("❌ [deleteAdmin] Error:", err.message);

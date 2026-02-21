@@ -13,7 +13,7 @@
     "deploy": "prisma migrate deploy && prisma db seed",
     "deploys": "prisma generate && prisma migrate deploy && prisma db seed"
   },
-    "prisma": {
+  "prisma": {
     "seed": "node prisma/seed.js"
   },
   "repository": {

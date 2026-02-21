@@ -7,11 +7,11 @@
   "scripts": {
     "dev": "nodemon src/index.js",
     "start": "node src/index.js",
-    "prisma:generate": "prisma generate",
-    "prisma:migrate": "prisma migrate dev",
-    "prisma:deploy": "prisma migrate deploy",
-    "deploy": "prisma migrate deploy && prisma db seed",
-    "deploys": "prisma generate && prisma migrate deploy && prisma db seed"
+    "prisma:generate": "npx prisma generate",
+    "prisma:migrate": "npx prisma migrate dev",
+    "prisma:deploy": "npx prisma migrate deploy",
+    "prisma:push": "npx prisma db push",
+    "deploy": "npx prisma generate && npx prisma migrate deploy && npx prisma db seed"
   },
   "prisma": {
     "seed": "node prisma/seed.js"

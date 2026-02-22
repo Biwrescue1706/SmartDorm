@@ -1,124 +1,136 @@
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
 
-/* จำกัด connection สำหรับ Supabase pooler */
-const prisma = new PrismaClient({
-  datasources: {
-    db: {
-      url: process.env.DATABASE_URL,
-    },
-  },
-});
+const prisma = new PrismaClient();
 
 function buildFullName(t, n, s) {
   return `${t}${n} ${s}`.trim();
 }
 
-/* ================= ADMIN ================= */
+// ===== Admin seed =====
 async function seedAdmin(username, name, role = 0) {
-  const hashed = await bcrypt.hash("123456", 8);
+  const exists = await prisma.admin.findUnique({ where: { username } });
 
-  await prisma.admin.upsert({
-    where: { username },
-    update: {},
-    create: {
-      username,
-      name,
-      password: hashed,
-      role,
-    },
-  });
+  if (!exists) {
+    const hashed = await bcrypt.hash("123456", 10);
 
-  console.log(`✅ Admin ready: ${username}`);
+    await prisma.admin.create({
+      data: { username, name, password: hashed, role },
+    });
+
+    console.log(`✅ สร้าง Admin: ${username}`);
+  } else {
+    console.log(`⏭ Admin ${username} มีอยู่แล้ว`);
+  }
 }
 
-/* ================= DORM PROFILE ================= */
+// ===== DormProfile merge seed =====
 async function seedDormProfile() {
   const receiverTitle = "นาย";
   const receiverName = "ภูวณัฐ";
   const receiverSurname = "พาหะละ";
 
-  await prisma.dormProfile.upsert({
-    where: { key: "MAIN" },
-    update: {},
-    create: {
-      key: "MAIN",
-      dormName: "หอพักบิว",
-      address: "47/21 ม.1 ต.บ้านสวน อ.เมืองชลบุรี จ.ชลบุรี 20000",
-      phone: "0611747731",
-      email: "bewrockgame1@gmail.com",
-      taxId: "1209000088280",
-      taxType: 0,
+  const defaultData = {
+    dormName: "หอพักบิวเรสซิเดนซ์",
+    address: "47/21 ม.1 ต.บ้านสวน อ.เมืองชลบุรี จ.ชลบุรี 20000",
+    phone: "0611747731",
+    email: "bewrockgame1@gmail.com",
+    taxId: "1209000088280",
+    taxType: 0,
+    receiverTitle,
+    receiverName,
+    receiverSurname,
+    receiverFullName: buildFullName(
       receiverTitle,
       receiverName,
-      receiverSurname,
-      receiverFullName: buildFullName(
-        receiverTitle,
-        receiverName,
-        receiverSurname
-      ),
-    },
+      receiverSurname
+    ),
+  };
+
+  const exists = await prisma.dormProfile.findUnique({
+    where: { key: "MAIN" },
   });
 
-  console.log("✅ DormProfile ready");
-}
+  if (!exists) {
+    await prisma.dormProfile.create({
+      data: { key: "MAIN", ...defaultData },
+    });
 
-/* ================= ROOMS ================= */
-async function seedRooms() {
-  const admin = await prisma.admin.findUnique({
-    where: { username: "BiwBoong" },
-    select: { adminId: true },
-  });
+    console.log("✅ สร้างโปรไฟล์หอพักแล้ว");
+    return;
+  }
 
-  if (!admin) throw new Error("Admin BiwBoong not found");
-
-  const rooms = [];
-
-  for (let floor = 1; floor <= 11; floor++) {
-    for (let room = 1; room <= 4; room++) {
-      rooms.push({
-        number: `${floor}0${room}`,
-        size: "3.5 x 5.5 ม.",
-        rent: 2500,
-        deposit: 2500,
-        bookingFee: 500,
-        status: 0,
-        createdBy: admin.adminId,
-      });
+  const updateData = {};
+  for (const key in defaultData) {
+    if (exists[key] === null || exists[key] === undefined) {
+      updateData[key] = defaultData[key];
     }
   }
 
-  /* insert ทีเดียว ลด connection */
-  await prisma.room.createMany({
-    data: rooms,
-    skipDuplicates: true,
-  });
+  if (Object.keys(updateData).length > 0) {
+    await prisma.dormProfile.update({
+      where: { key: "MAIN" },
+      data: updateData,
+    });
 
-  console.log(`✅ Rooms ready: ${rooms.length}`);
+    console.log("✅ เติมข้อมูลโปรไฟล์หอพักที่ขาด");
+  } else {
+    console.log("⏭ โปรไฟล์หอพักครบแล้ว");
+  }
 }
 
-/* ================= MAIN ================= */
-async function main() {
-  console.log("🌱 Seeding started...");
-
-  await prisma.$transaction(async () => {
-    await seedAdmin("BiwBoong", "นายภูวณัฐ พาหะละ", 0);
-    await seedAdmin("Admin", "Admin", 0);
-    await seedAdmin("Biw", "Biw", 1);
-
-    await seedDormProfile();
+// ===== Room seed =====
+async function seedRooms() {
+  const admin = await prisma.admin.findUnique({
+    where: { username: "BiwBoong" },
   });
 
+  if (!admin) {
+    console.log("❌ ไม่พบ Admin BiwBoong");
+    return;
+  }
+
+  for (let floor = 1; floor <= 11; floor++) {
+    for (let room = 1; room <= 4; room++) {
+      const number = `${floor}0${room}`;
+
+      const exists = await prisma.room.findUnique({ where: { number } });
+
+      if (!exists) {
+        await prisma.room.create({
+          data: {
+            number,
+            size: "3.5 x 5.5 ม.",
+            rent: 2500,
+            deposit: 2500,
+            bookingFee: 500,
+            status: 0,
+            createdBy: admin.adminId,
+          },
+        });
+
+        console.log(`✅ สร้างห้อง ${number}`);
+      } else {
+        console.log(`⏭ ห้อง ${number} มีอยู่แล้ว`);
+      }
+    }
+  }
+}
+
+// ===== main =====
+async function main() {
+  console.log("🌱 Safe merge seeding...");
+
+  await seedAdmin("BiwBoong", "นายภูวณัฐ พาหะละ", 0);
+  await seedAdmin("Admin", "Admin", 0);
+  await seedAdmin("Biw", "Biw", 1);
+
+  await seedDormProfile();
   await seedRooms();
 
-  console.log("🎉 Seeding completed");
+  console.log("🎉 Seed เสร็จสมบูรณ์");
 }
 
 main()
-  .catch((e) => {
-    console.error("❌ Seed error:", e);
-    process.exit(1);
-  })
-  .finally(async () => {
-    await prisma.$disconnect();
-  });
+  .catch(console.error)
+  .finally(() => prisma.$disconnect());

@@ -94,23 +94,16 @@ async function startServer() {
     // 🔥 เรียก cron
     scheduleOverdueAuto();
 
-    app.listen(PORT, () => {
+    app.listen(PORT, "0.0.0.0", () => {
       const env = process.env.NODE_ENV || "development";
 
       console.log("====================================");
 
       if (env === "production") {
         console.log("✅ โหมดการทำงาน : Production");
-        console.log(`🚀 เซิร์ฟเวอร์กำลังทำงานอยู่ ${env}`);
-        console.log(
-          "🚀 เซิร์ฟเวอร์กำลังทำงานอยู่ที่ https://hub.smartdorm-biwboong.shop"
-        );
+        console.log(`🚀 Server running on port ${PORT}`);
       } else {
-        console.log("✅ โหมดการทำงาน : Development");
-        console.log(`🚀 เซิร์ฟเวอร์กำลังทำงานอยู่ ${env}`);
-        console.log(
-          `🚀 เซิร์ฟเวอร์กำลังทำงานอยู่ที่พอร์ต http://localhost:${PORT}`
-        );
+        console.log(`🚀 http://localhost:${PORT}`);
       }
 
       console.log("====================================");

@@ -5,10 +5,6 @@ import cookieParser from "cookie-parser";
 import prisma from "./prisma.js";
 import { scheduleOverdueAuto } from "./services/overdue.service.js";
 
-/*
- ✅ โหลด .env เฉพาะตอน local
- Render จะใช้ Environment Variable ของมันเอง
-*/
 if (process.env.NODE_ENV !== "production") {
   dotenv.config();
 }
@@ -29,22 +25,16 @@ const allowedOrigins = [
   "https://hub.smartdorm-biwboong.shop",
 ];
 
-const corsOptions = {
-  origin: (origin, callback) => {
-    if (!origin) return callback(null, true);
-    const isAllowed = allowedOrigins.includes(origin);
-    isAllowed
-      ? callback(null, true)
-      : callback(new Error("CORS not allowed"));
-  },
-  credentials: true,
-};
-
-if (process.env.NODE_ENV !== "production") {
-  app.use(cors({ origin: true, credentials: true }));
-} else {
-  app.use(cors(corsOptions));
-}
+app.use(
+  cors(
+    process.env.NODE_ENV !== "production"
+      ? { origin: true, credentials: true }
+      : {
+          origin: allowedOrigins,
+          credentials: true,
+        }
+  )
+);
 
 app.use(express.json());
 app.use(cookieParser());
@@ -79,38 +69,32 @@ app.get("/", (_req, res) =>
   res.send("🚀 SmartDorm Backend กำลังทำงาน")
 );
 
-app.get("/health", (_req, res) => {
-  res.json({
-    status: "ok",
-    serverTime: new Date().toString(),
-  });
-});
+app.get("/health", (_req, res) =>
+  res.json({ status: "ok" })
+);
 
-// ================= START =================
+// ================= START SERVER =================
 const PORT = process.env.PORT || 3000;
 
-async function startServer() {
+/*
+ ✅ เปิด PORT ก่อน
+*/
+app.listen(PORT, "0.0.0.0", async () => {
+  console.log(`🚀 Server running on port ${PORT}`);
+
+  /*
+   ✅ ต่อ DB ทีหลัง
+  */
   try {
     console.log("🟡 Connecting Prisma...");
     await prisma.$connect();
     console.log("✅ Prisma connected");
 
-    console.log("🌏 Server Time:", new Date().toString());
-
     scheduleOverdueAuto();
-
-    app.listen(PORT, "0.0.0.0", () => {
-      console.log("====================================");
-      console.log(`🚀 Server running on port ${PORT}`);
-      console.log("====================================");
-    });
   } catch (err) {
-    console.error("❌ Failed to start server:", err);
-    process.exit(1);
+    console.error("❌ Database connection failed:", err);
   }
-}
-
-startServer();
+});
 
 // ================= SHUTDOWN =================
 process.on("SIGINT", async () => {

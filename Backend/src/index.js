@@ -5,7 +5,13 @@ import cookieParser from "cookie-parser";
 import prisma from "./prisma.js";
 import { scheduleOverdueAuto } from "./services/overdue.service.js";
 
-dotenv.config();
+/*
+ ✅ โหลด .env เฉพาะตอน local
+ Render จะใช้ Environment Variable ของมันเอง
+*/
+if (process.env.NODE_ENV !== "production") {
+  dotenv.config();
+}
 
 const app = express();
 app.set("trust proxy", 1);
@@ -91,21 +97,11 @@ async function startServer() {
 
     console.log("🌏 Server Time:", new Date().toString());
 
-    // 🔥 เรียก cron
     scheduleOverdueAuto();
 
     app.listen(PORT, "0.0.0.0", () => {
-      const env = process.env.NODE_ENV || "development";
-
       console.log("====================================");
-
-      if (env === "production") {
-        console.log("✅ โหมดการทำงาน : Production");
-        console.log(`🚀 Server running on port ${PORT}`);
-      } else {
-        console.log(`🚀 http://localhost:${PORT}`);
-      }
-
+      console.log(`🚀 Server running on port ${PORT}`);
       console.log("====================================");
     });
   } catch (err) {

@@ -11,7 +11,7 @@
     "prisma:migrate": "npx prisma migrate dev",
     "prisma:deploy": "npx prisma migrate deploy",
     "prisma:push": "npx prisma db push",
-    "deploy": "npx prisma generate "
+    "deploy": "npx prisma generate && npx prisma db push && npx prisma db seed"
   },
   "prisma": {
     "seed": "node prisma/seed.js"
@@ -27,7 +27,7 @@
     "url": "https://github.com/Biwrescue1706/SmartDorm/issues"
   },
   "homepage": "https://github.com/Biwrescue1706/SmartDorm#readme",
-  "dependencies": {
+    "dependencies": {
     "@asteasolutions/zod-to-openapi": "^7.1.2",
     "@line/bot-sdk": "^10.2.0",
     "@prisma/client": "5.22.0",
@@ -44,6 +44,8 @@
     "helmet": "^8.1.0",
     "http-status-codes": "^2.3.0",
     "jsonwebtoken": "^9.0.2",
+    "mongodb": "^6.19.0",
+    "mongoose": "^8.18.1",
     "multer": "^2.0.2",
     "node-cron": "^4.2.1",
     "node-fetch": "^3.3.2",
@@ -65,6 +67,7 @@
     "@types/express": "^5.0.3",
     "@types/jest": "^29.5.13",
     "@types/jsonwebtoken": "^9.0.10",
+    "@types/mongoose": "^5.11.96",
     "@types/morgan": "^1.9.9",
     "@types/multer": "^2.0.0",
     "@types/node": "^20.11.30",

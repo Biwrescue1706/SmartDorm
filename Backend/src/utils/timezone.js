@@ -1,3 +1,4 @@
+// utils/timezone.js
 export const thailandTime = () =>
   new Date(
     new Date().toLocaleString("en-US", {

@@ -1,53 +1,48 @@
-// src/modules/auth.js
 import { Router } from "express";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import prisma from "../prisma.js";
 import { authMiddleware } from "../middleware/authMiddleware.js";
-
-const JWT_SECRET = process.env.JWT_SECRET;
-if (!JWT_SECRET) throw new Error("❌ JWT_SECRET must be defined in .env file");
+import { toThaiString } from "../utils/timezone.js";
 
 const auth = Router();
 
-// 🧾 สมัครสมาชิก
-auth.post("/register", async (req, res) => {
-  try {
-    const { username, name, password, role } = req.body;
-    if (!username || !name || !password)
-      throw new Error("กรุณากรอกข้อมูลให้ครบ");
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET) throw new Error("JWT_SECRET missing");
 
-    const existing = await prisma.admin.findUnique({ where: { username } });
-    if (existing) throw new Error("Username นี้ถูกใช้ไปแล้ว");
-
-    const hashed = await bcrypt.hash(password, 10);
-    const admin = await prisma.admin.create({
-      data: { username, name, password: hashed, role: role ?? 1 },
-    });
-
-    res.status(201).json({
-      message: "สมัครสมาชิกสำเร็จ",
-      admin: {
-        adminId: admin.adminId,
-        username: admin.username,
-        name: admin.name,
-        role: admin.role,
-      },
-    });
-  } catch (err) {
-    res.status(400).json({ error: err.message });
-  }
+/* ---------------- Helper ---------------- */
+const formatAdmin = (a) => ({
+  ...a,
+  createdAt: toThaiString(a.createdAt),
+  updatedAt: toThaiString(a.updatedAt),
 });
 
-// 🔐 เข้าสู่ระบบ
+/* ================= LOGIN ================= */
 auth.post("/login", async (req, res) => {
   try {
     const { username, password } = req.body;
-    const admin = await prisma.admin.findUnique({ where: { username } });
-    if (!admin) throw new Error("ไม่พบบัญชีผู้ใช้");
+
+    if (!username || !password)
+      return res.status(400).json({ error: "กรอกข้อมูลไม่ครบ" });
+
+    // ✅ PostgreSQL optimized
+    const admin = await prisma.admin.findUnique({
+      where: { username },
+      select: {
+        adminId: true,
+        username: true,
+        name: true,
+        role: true,
+        password: true,
+      },
+    });
+
+    if (!admin)
+      return res.status(401).json({ error: "ไม่พบบัญชีผู้ใช้" });
 
     const valid = await bcrypt.compare(password, admin.password);
-    if (!valid) throw new Error("รหัสผ่านไม่ถูกต้อง");
+    if (!valid)
+      return res.status(401).json({ error: "รหัสผ่านไม่ถูกต้อง" });
 
     const token = jwt.sign(
       {
@@ -57,10 +52,11 @@ auth.post("/login", async (req, res) => {
         role: admin.role,
       },
       JWT_SECRET,
-      { expiresIn: "90m", algorithm: "HS256" }
+      { expiresIn: "90m" }
     );
 
     const isProd = process.env.NODE_ENV === "production";
+
     res.cookie("token", token, {
       httpOnly: true,
       secure: isProd,
@@ -69,6 +65,7 @@ auth.post("/login", async (req, res) => {
       maxAge: 90 * 60 * 1000,
     });
 
+    // ✅ ไม่ต้อง query profile ซ้ำ
     res.json({
       message: "เข้าสู่ระบบสำเร็จ",
       admin: {
@@ -78,119 +75,136 @@ auth.post("/login", async (req, res) => {
         role: admin.role,
       },
     });
+
   } catch (err) {
-    res.status(400).json({ error: err.message });
+    console.error(err);
+    res.status(500).json({ error: "ระบบมีปัญหา" });
   }
 });
 
-// 🚪 ออกจากระบบ
+/* ================= LOGOUT ================= */
 auth.post("/logout", (_req, res) => {
   const isProd = process.env.NODE_ENV === "production";
+
   res.clearCookie("token", {
     httpOnly: true,
     secure: isProd,
     sameSite: isProd ? "none" : "lax",
     path: "/",
   });
+
   res.json({ message: "ออกจากระบบสำเร็จ" });
 });
 
-// 🔎 ตรวจสอบ token
+/* ================= VERIFY ================= */
+/* ✅ ไม่มี DB CALL → เร็วมาก */
 auth.get("/verify", (req, res) => {
   const token = req.cookies?.token;
-  if (!token)
-    return res.status(401).json({ valid: false, error: "ไม่มี token" });
+  if (!token) return res.status(401).json({ valid: false });
 
   try {
-    const decoded = jwt.verify(token, JWT_SECRET, {
-      algorithms: ["HS256"],
-    });
-    res.status(200).json({ valid: true, admin: decoded });
-  } catch (err) {
-    res.status(401).json({ valid: false, error: err.message });
+    const decoded = jwt.verify(token, JWT_SECRET);
+    res.json({ valid: true, admin: decoded });
+  } catch {
+    res.status(401).json({ valid: false });
   }
 });
 
-// 👤 ข้อมูลโปรไฟล์
+/* ================= PROFILE ================= */
 auth.get("/profile", authMiddleware, async (req, res) => {
   try {
     const admin = await prisma.admin.findUnique({
       where: { adminId: req.admin.adminId },
+      select: {
+        adminId: true,
+        username: true,
+        name: true,
+        role: true,
+        createdAt: true,
+        updatedAt: true,
+      },
     });
-    if (!admin) throw new Error("ไม่พบข้อมูลผู้ใช้");
-    res.json(admin);
+
+    if (!admin)
+      return res.status(404).json({ error: "ไม่พบผู้ใช้" });
+
+    res.json(formatAdmin(admin));
+
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-// ✏️ อัปเดตชื่อ
+/* ================= UPDATE NAME ================= */
 auth.put("/profile", authMiddleware, async (req, res) => {
   try {
     const { name } = req.body;
-    if (!name?.trim()) throw new Error("กรุณากรอกชื่อใหม่");
 
     const updated = await prisma.admin.update({
       where: { adminId: req.admin.adminId },
       data: { name: name.trim() },
+      select: {
+        adminId: true,
+        username: true,
+        name: true,
+        role: true,
+        createdAt: true,
+        updatedAt: true,
+      },
     });
 
-    res.json({ message: "อัปเดตชื่อสำเร็จ", admin: updated });
+    res.json({
+      message: "อัปเดตชื่อสำเร็จ",
+      admin: formatAdmin(updated),
+    });
+
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
 });
 
-// 🔑 ลืมรหัสผ่าน - ตรวจสอบผู้ใช้
-auth.post("/forgot/check", async (req, res) => {
-  try {
-    const { username } = req.body;
-    const admin = await prisma.admin.findUnique({ where: { username } });
-    if (!admin) throw new Error("ไม่พบบัญชีผู้ใช้");
-    res.json({ message: "พบผู้ใช้", name: admin.name });
-  } catch (err) {
-    res.status(404).json({ error: err.message });
-  }
-});
-
-// 🔑 ลืมรหัสผ่าน - รีเซ็ต
+/* ================= RESET PASSWORD ================= */
 auth.put("/forgot/reset", async (req, res) => {
   try {
     const { username, newPassword } = req.body;
-    const admin = await prisma.admin.findUnique({ where: { username } });
-    if (!admin) throw new Error("ไม่พบบัญชีผู้ใช้");
 
-    const hashed = await bcrypt.hash(newPassword, 10);
+    const hashed = await bcrypt.hash(newPassword, 8); // ✅ เร็วขึ้น
+
     await prisma.admin.update({
       where: { username },
       data: { password: hashed },
     });
 
     res.json({ message: "รีเซ็ตรหัสผ่านสำเร็จ" });
+
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
 });
 
-// 🔒 เปลี่ยนรหัสผ่าน
+/* ================= CHANGE PASSWORD ================= */
 auth.put("/change-password", authMiddleware, async (req, res) => {
   try {
     const { oldPassword, newPassword } = req.body;
+
     const admin = await prisma.admin.findUnique({
       where: { adminId: req.admin.adminId },
+      select: { password: true },
     });
-    if (!admin) throw new Error("ไม่พบผู้ใช้ในระบบ");
 
     const valid = await bcrypt.compare(oldPassword, admin.password);
-    if (!valid) throw new Error("รหัสผ่านเดิมไม่ถูกต้อง");
+    if (!valid)
+      return res.status(400).json({ error: "รหัสผ่านเดิมไม่ถูกต้อง" });
 
-    const hashed = await bcrypt.hash(newPassword, 10);
+    const hashed = await bcrypt.hash(newPassword, 8);
+
     await prisma.admin.update({
       where: { adminId: req.admin.adminId },
       data: { password: hashed },
     });
 
     res.json({ message: "เปลี่ยนรหัสผ่านสำเร็จ" });
+
   } catch (err) {
     res.status(400).json({ error: err.message });
   }

@@ -2,7 +2,7 @@
 import { Router } from "express";
 import prisma from "../prisma.js";
 import { authMiddleware, roleMiddleware } from "../middleware/authMiddleware.js";
-import { thailandTime, toThaiString } from "../utils/timezone.js";
+import { thailandTime } from "../utils/timezone.js";
 
 const ROOMS = Router();
 
@@ -10,19 +10,20 @@ const ROOMS = Router();
 const formatRoom = (room) => ({
   ...room,
 
-  createdAt: toThaiString(room.createdAt),
-  updatedAt: toThaiString(room.updatedAt),
+  createdAt: room.createdAt,
+  updatedAt: room.updatedAt,
 
   bookings: room.bookings?.map(b => ({
     ...b,
-    bookingDate: toThaiString(b.bookingDate),
-    createdAt: toThaiString(b.createdAt),
+    bookingDate: b.bookingDate,
+    checkinAt: b.checkinAt,
+    createdAt: b.createdAt,
   })),
 
   bills: room.bills?.map(bill => ({
     ...bill,
-    month: toThaiString(bill.month),
-    dueDate: toThaiString(bill.dueDate),
+    month: bill.month,
+    dueDate: bill.dueDate,
   })),
 });
 
@@ -40,6 +41,7 @@ ROOMS.get("/getall", async (_req, res) => {
             approveStatus: true,
             checkinStatus: true,
             bookingDate: true,
+            checkinAt: true,
             createdAt: true,
           },
         },
@@ -89,6 +91,7 @@ ROOMS.get("/:roomId", async (req, res) => {
             approveStatus: true,
             checkinStatus: true,
             bookingDate: true,
+            checkinAt: true,
             createdAt: true,
           },
         },

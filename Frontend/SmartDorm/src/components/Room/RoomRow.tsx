@@ -1,11 +1,13 @@
 import { useEffect } from "react";
 import { useRooms } from "../../hooks/ManageRooms/useRooms";
-import type { Room } from "../../types/Room";
+import type { Room, Booking } from "../../types/All";
 import EditRoomDialog from "./EditRoomDialog";
+
 import {
   formatThaiDate,
   formatThaiTime,
 } from "../../utils/thaiDate";
+
 
 interface Props {
   room: Room;

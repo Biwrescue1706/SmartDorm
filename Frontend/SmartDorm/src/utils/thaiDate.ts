@@ -1,3 +1,4 @@
+// src/utils/thaiDate.ts
 export const formatThaiDate = (date?: string | null) => {
   if (!date) return "-";
 
@@ -18,5 +19,5 @@ export const formatThaiTime = (date?: string | null) => {
     minute: "2-digit",
   });
 
-  return `${time.replace(":", ".")} น.`;
+  return `${time.replace(":", ":")} น.`;
 };

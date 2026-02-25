@@ -1,7 +1,7 @@
 // src/components/Room/RoomCard.tsx
 import EditRoomDialog from "./EditRoomDialog";
 import { useRooms } from "../../hooks/ManageRooms/useRooms";
-import type { Room } from "../../types/Room";
+import type { Room } from "../../types/All";
 
 interface Props {
   room: Room;

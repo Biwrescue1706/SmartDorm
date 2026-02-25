@@ -11,7 +11,8 @@
     "prisma:migrate": "npx prisma migrate dev",
     "prisma:deploy": "npx prisma migrate deploy",
     "prisma:push": "npx prisma db push",
-    "deploy": "npx prisma generate && npx prisma db push && npx prisma db seed"
+    "deploy": "npx prisma generate",
+    "deploys": "npx prisma generate && npx prisma db push && npx prisma db seed"
   },
   "prisma": {
     "seed": "node prisma/seed.js"

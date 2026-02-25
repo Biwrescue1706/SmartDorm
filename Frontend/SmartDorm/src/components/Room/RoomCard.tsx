@@ -43,11 +43,14 @@ export default function RoomCard({ room, role, onUpdated }: Props) {
 
         {/* ⭐ ข้อมูลใหญ่ขึ้น → fs-5 */}
         <p className="mb-1" style={{ fontSize: "15.5px", lineHeight: "1.5" }}>
-          <b>ขนาด ( กว้าง x ยาว) : </b> {room.size}
+          <b>ขนาด ( กว้าง x ยาว) : </b> {room.size ?? "-"}
         </p>
 
         <p className="mb-1" style={{ fontSize: "15.5px", lineHeight: "1.5" }}>
-          <b>ค่าเช่า :</b> {room.rent.toLocaleString("th-TH")}
+          <b>ค่าเช่า :</b>{" "}
+{room.rent
+  ? room.rent.toLocaleString("th-TH")
+  : "-"}
         </p>
 
         {room.status === 1 && (

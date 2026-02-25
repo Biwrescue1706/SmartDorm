@@ -73,8 +73,7 @@ export default function Users() {
   const [showDialog, setShowDialog] = useState(false);
 
   const [currentPage, setCurrentPage] = useState(1);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
-
+  const [rowsPerPage, setRowsPerPage] = useState(15);
   const startIndex = (currentPage - 1) * rowsPerPage;
 
   /* ---------------- Lock body scroll when dialog open ---------------- */
@@ -244,7 +243,12 @@ export default function Users() {
           <div className="mx-auto" style={{ maxWidth: "1400px" }}>
             <h2
               className="fw-bold text-center mt-3 mb-4"
-              style={{ color: "#46007A" }}
+              style={{
+                color: "#4A0080",
+                borderBottom: "3px solid #CE93D8",
+                width: "fit-content",
+                margin: "0 auto",
+              }}
             >
               รายชื่อลูกค้าทั้งหมด
             </h2>
@@ -334,18 +338,26 @@ export default function Users() {
               <div className="row g-3">
                 {paginated.map((card, idx) => (
                   <div
-                    className="col-12 col-md-6 col-lg-4"
                     key={`${card.customerId}-${card.fullName}`}
+                    className="col-6 col-lg-2"
                   >
-                    <div className="card shadow-sm border-0 h-100">
+                    <div
+                      className="card shadow-sm h-100"
+                      style={{
+                        border: "2px solid #000",
+                        borderRadius: "14px",
+                      }}
+                    >
                       <div className="card-body text-center">
                         <h5 className="fw-bold text-primary">
                           #{startIndex + idx + 1}
                         </h5>
                         <p className="text-muted small mb-1">LINE</p>
-                        <p className="fw-semibold">{card.userName}</p>
+                        <p className="fw-semibold text-black">
+                          {card.userName}
+                        </p>
                         <hr />
-                        <h6 className="fw-bold">ชื่อผู้จอง</h6>
+                        <h6 className="fw-bold text-black">ชื่อผู้จอง</h6>
                         <p>{card.fullName}</p>
                         <div className="d-flex justify-content-between gap-2 mt-2">
                           <button
@@ -421,7 +433,15 @@ export default function Users() {
                 zIndex: 1600,
               }}
             >
-              <Dialog.Title className="p-3 border-bottom fw-bold text-center">
+              <Dialog.Title
+                className="p-3 border-bottom fw-bold text-center text-black"
+                style={{
+                  color: "#000000",
+                  borderBottom: "3px solid #000000",
+                  width: "fit-content",
+                  margin: "0 auto",
+                }}
+              >
                 ประวัติของ <br />
                 {selectedUser?.bookings?.[0]?.fullName}
               </Dialog.Title>
@@ -444,7 +464,7 @@ export default function Users() {
                       รายการที่ {i + 1} • ห้อง {b.room?.number || "-"}
                     </div>
 
-                    <div className="p-3 bg-white">
+                    <div className="p-3 bg-white text-black">
                       <div className="d-flex justify-content-between mb-1">
                         <span className="fw-semibold">ชื่อผู้เช่า</span>
                         <span className="fw-semibold">{b.fullName || "-"}</span>

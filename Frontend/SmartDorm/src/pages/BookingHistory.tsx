@@ -9,14 +9,13 @@ import { usePendingBookings } from "../hooks/ManageRooms/usePendingBookings";
 
 //   SCB THEME
 const SCB_PURPLE = "#4A0080";
-const BG_SOFT = "#F8F5FC";
 
 //   Utils
 const formatThaiDate = (d?: string | null) => {
-  if (!d) return "- รอการเข้าพัก -";
+  if (!d) return "- ยังเช่าอยู่ -";
   const date = new Date(d);
   return isNaN(date.getTime())
-    ? "- รอการเข้าพัก -"
+    ? "- รออนุมัติ -"
     : date.toLocaleDateString("th-TH", {
         year: "numeric",
         month: "short",
@@ -54,6 +53,17 @@ const months = [
   { v: 12, label: "ธันวาคม" },
 ];
 
+const Divider = () => (
+  <hr
+    className="mt-3 mb-3 pt-0"
+    style={{
+      border: "none",
+      borderTop: "2px solid #000000",
+      opacity: 1,
+    }}
+  />
+);
+
 //   Page
 export default function BookingHistory() {
   const { handleLogout, role, adminName, adminUsername } = useAuth();
@@ -69,12 +79,10 @@ export default function BookingHistory() {
 
   /* ---------- pagination ---------- */
   const [currentPage, setCurrentPage] = useState(1);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
-
+  const [rowsPerPage, setRowsPerPage] = useState(15);
   /* ---------- responsive ---------- */
   const width = window.innerWidth;
   const isTable = width >= 1400;
-  const isMobile = width < 600;
 
   /* ---------- year list ---------- */
   const years = useMemo(() => {
@@ -137,7 +145,7 @@ export default function BookingHistory() {
 
   return (
     <div
-      className="d-flex min-vh-100 mx-2 mt-0 mb-4"
+      className="d-flex min-vh-100 mx-3 mt-3 mb-3"
       style={{ fontFamily: "Sarabun, sans-serif" }}
     >
       <Nav
@@ -155,7 +163,7 @@ export default function BookingHistory() {
       >
         <div
           className="mx-auto"
-          style={{ background: BG_SOFT, borderRadius: 20, maxWidth: "1400px" }}
+          style={{ borderRadius: 20, maxWidth: "1400px" }}
         >
           <h2
             className="fw-bold text-center mb-4"
@@ -341,73 +349,131 @@ export default function BookingHistory() {
             </div>
           ) : (
             /* CARD */
-            <div className="row g-3">
+
+            <div
+              className="d-grid my-2 mx-2 my-2 mb-2"
+              style={{
+                gridTemplateColumns: "repeat(auto-fill, minmax(130px, 1fr))",
+                gap: "12px",
+              }}
+            >
               {paged.map((b) => (
                 <div
                   key={b.bookingId}
-                  className={`col-12 ${isMobile ? "" : "col-md-4"}`}
+                  style={{
+                    border: "2px solid #000",
+                    borderRadius: "7px",
+                    background: "#fff",
+                  }}
                 >
-                  <div className="card h-100 shadow-sm border-0">
+                  <div className="card h-100 border-0 mx-1">
                     <div className="card-body">
-                      <h5
+                      <h4
                         className="fw-bold mb-2 text-center justify-content-center"
                         style={{ color: SCB_PURPLE }}
                       >
                         ห้อง {b.room?.number}
-                      </h5>
+                      </h4>
 
-                      <hr />
-                      <h5 className="fw-bold mb-2 text-center justify-content-center">
-                        รายละเอียดผู้เช่า
-                      </h5>
+                      <div className="mb-2 mt-2">
+                        <Divider />
 
-                      <div className="small">
-                        <b>ชื่อ :</b> {b.fullName}
-                      </div>
-                      <div className="small">
-                        <b>LINE :</b> {b.customer?.userName || "-"}
-                      </div>
-                      <div className="small">
-                        <b>เบอร์ :</b> {b.cphone || "-"}
-                      </div>
-                      <div className="small">
-                        <b>จอง :</b> {formatThaiDate(b.bookingDate)}
-                      </div>
-                      <div className="small">
-                        <b>แจ้งเข้าพัก :</b> {formatThaiDate(b.checkin)}
-                      </div>
-                      <div className="small">
-                        <b>เข้าพักจริง :</b> {formatThaiDate(b.checkinAt)}
-                      </div>
-                      <br />
-                      <hr />
-                      {b.checkout === null ? (
-                        <div className="text-primary fw-semibold mt-3 mb-3 text-center justify-content-center">
-                          กำลังเช่าอยู่
+                        <h6 className="fw-bold mb-2 text-center justify-content-center">
+                          รายละเอียดผู้เช่า
+                        </h6>
+
+                        <div className="mb-2 mt-3">
+                          <div className="fw-bold h6 ">ชื่อ :</div>
+                          <div className="fw-bold h6 text-primary text-center">
+                            {b.fullName}
+                          </div>
                         </div>
+
+                        <div className="mb-2 mt-1">
+                          <div className="fw-bold h6 ">LINE :</div>
+                          <div className="fw-bold h6 text-primary text-center">
+                            {b.customer?.userName || "-"}
+                          </div>
+                        </div>
+
+                        <div className="mb-2 mt-1">
+                          <div className="fw-bold h6">เบอร์ : </div>
+                          <div className="fw-bold h6 text-primary text-center">
+                            {b.cphone || "-"}
+                          </div>
+                        </div>
+
+                        <div className="mb-2 mt-1">
+                          <div className="fw-bold h6">จอง : </div>
+                          <div className="fw-bold h6 text-primary text-center">
+                            {formatThaiDate(b.bookingDate)}
+                          </div>
+                        </div>
+
+                        <div className="mb-2 mt-1">
+                          <div className="fw-bold h6"> แจ้งเข้าพัก :</div>
+                          <div className="fw-bold h6 text-primary text-center">
+                            {formatThaiDate(b.checkin)}
+                          </div>
+                        </div>
+
+                        <div className="mb-2 mt-1">
+                          <div className="fw-bold h6">เข้าพักจริง : </div>
+                          <div className="fw-bold h6 text-primary text-center">
+                            {formatThaiDate(b.checkinAt)}
+                          </div>
+                        </div>
+                      </div>
+
+                      {b.checkout === null ? (
+                        <>
+                          <Divider />
+                          <div className="text-primary fw-bold mt-3 mb-3 h5 text-center justify-content-center">
+                            กำลังเช่าอยู่
+                          </div>
+                        </>
                       ) : (
                         <>
-                          <h5 className="fw-bold mb-2 text-center justify-content-center">
+                          <Divider />
+                          <h6 className="text-black fw-bold mt-3 mb-3 text-center justify-content-center">
                             รายละเอียดการคืนห้อง
-                          </h5>
-                          <br />
-                          <div className="small">
-                            <b>ขอคืน :</b> {formatThaiDate(b.checkout)}
+                          </h6>
+
+                          <div className="mb-2 mt-1">
+                            <div className="fw-bold h6">ขอคืน : </div>
+                            <div className="fw-bold h6 text-primary text-center">
+                              {formatThaiDate(b.checkout)}
+                            </div>
                           </div>
-                          <div className="small">
-                            <b>สถานะการอนุมัติคืน :</b>{" "}
-                            {approvalText(b.ReturnApprovalStatus)}
+
+                          <div className="mb-2 mt-1">
+                            <div className="fw-bold h6">
+                              สถานะการอนุมัติคืน :
+                            </div>
+                            <div className="fw-bold h6 text-primary text-center">
+                              {approvalText(b.ReturnApprovalStatus)}
+                            </div>
                           </div>
-                          <div className="small">
-                            <b>วันอนุมัติการคืน :</b>{" "}
-                            {formatThaiDate(b.RefundApprovalDate)}
+
+                          <div className="mb-2 mt-1">
+                            <div className="fw-bold h6">วันอนุมัติการคืน :</div>
+                            <div className="fw-bold h6 text-primary text-center">
+                              {formatThaiDate(b.RefundApprovalDate)}
+                            </div>
                           </div>
-                          <div className="small">
-                            <b>สถานะคืนกุญแจ :</b>{" "}
-                            {checkoutText(b.checkoutStatus)}
+
+                          <div className="mb-2 mt-1">
+                            <div className="fw-bold h6">สถานะคืนกุญแจ : </div>
+                            <div className="fw-bold h6 text-primary text-center">
+                              {checkoutText(b.checkoutStatus)}
+                            </div>
                           </div>
-                          <div className="small">
-                            <b>วันคืนกุญแจ :</b> {formatThaiDate(b.checkoutAt)}
+
+                          <div className="mb-2 mt-1">
+                            <div className="fw-bold h6">วันคืนกุญแจ : </div>
+                            <div className="fw-bold h6 text-primary text-center">
+                              {formatThaiDate(b.checkoutAt)}
+                            </div>
                           </div>
                         </>
                       )}

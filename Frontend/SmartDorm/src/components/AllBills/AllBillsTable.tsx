@@ -1,5 +1,5 @@
 // src/components/AllBills/AllBillsTable.tsx
-import type { Bill } from "../../types/Bill";
+import type { Bill } from "../../types/All";
 import AllBillsRow from "./AllBillsRow";
 
 interface Props {

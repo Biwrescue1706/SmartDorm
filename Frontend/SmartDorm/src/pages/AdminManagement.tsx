@@ -14,13 +14,21 @@ import DesktopView from "../components/Admin/DesktopView";
 import { usePendingBookings } from "../hooks/ManageRooms/usePendingBookings";
 import { usePendingCheckouts } from "../hooks/ManageRooms/usePendingCheckouts";
 
+export const roleStyle = (role: number) => ({
+  border: "2px solid #000",
+  borderRadius: "12px",
+  background: role === 0 ? "#d6a658" : "#198754",
+  color: "#ffffff",
+  boxShadow: "0 2px 6px rgba(0,0,0,0.08)",
+});
+
 export default function AdminManagement() {
   const { admins, loading, fetchAdmins } = useAdmins();
   const { handleLogout, role, adminName, adminUsername } = useAuth();
 
   const [filterRole, setFilterRole] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [rowsPerPage, setRowsPerPage] = useState(15);
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
 
   const pendingBookings = usePendingBookings();
@@ -28,7 +36,7 @@ export default function AdminManagement() {
 
   const Toast = Swal.mixin({
     showConfirmButton: false,
-    timer: 2600,
+    timer: 2500,
     background: "#ffffff",
     color: THEME.purpleDark,
     iconColor: THEME.gold,
@@ -48,7 +56,7 @@ export default function AdminManagement() {
             new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
         )[0].adminId
       : null;
-
+  
   const filteredAdmins =
     filterRole === "admin"
       ? admins.filter((a) => a.role === 0)
@@ -119,7 +127,7 @@ export default function AdminManagement() {
       return Toast.fire({ icon: "warning", title: "รหัสผ่านต้อง 6 ตัวขึ้นไป" });
 
     try {
-      const res = await fetch(`${API_BASE}/auth/register`, {
+      const res = await fetch(`${API_BASE}/admin/create`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -288,7 +296,7 @@ export default function AdminManagement() {
           {/* FILTER */}
           {windowWidth < 1400 ? (
             <>
-              <h4 className="text-center fw-bold mb-2">สถานะแอดมิน</h4>
+              <h4 className="text-center fw-bold mb-2 text-black">สถานะแอดมิน</h4>
               {/* < 1400 = Dropdown */}
               <div className="d-flex justify-content-center mb-4">
                 {(() => {
@@ -301,7 +309,7 @@ export default function AdminManagement() {
                     {
                       key: "admin",
                       label: `แอดมิน (${admins.filter((a) => a.role === 0).length})`,
-                      color: "#0D6EFD",
+                      color: "#d6a658",
                     },
                     {
                       key: "staff",

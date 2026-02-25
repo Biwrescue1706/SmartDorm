@@ -14,7 +14,7 @@ export default function App() {
     <Routes>
       <Route path="/" element={<Home />} />
       <Route path="/booking" element={<BookingViewSearch />} />
-      <Route path="/return" element={<ReturnSearch />} />
+      <Route path="/checkout" element={<ReturnSearch />} />
       <Route path="/bill" element={<PaymentSearch />} />
       <Route path="/booking/:bookingId" element={<BookingDetail />} />
       <Route path="/checkout/:checkoutId" element={<CheckoutDetail />} />

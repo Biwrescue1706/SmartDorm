@@ -8,7 +8,14 @@
     "dev": "nodemon src/index.js",
     "start": "node src/index.js",
     "prisma:generate": "npx prisma generate",
-    "prisma:push": "npx prisma db push"
+    "prisma:migrate": "npx prisma migrate dev",
+    "prisma:deploy": "npx prisma migrate deploy",
+    "prisma:push": "npx prisma db push",
+    "deploy": "npx prisma generate",
+    "deploys": "npx prisma generate && npx prisma db push && npx prisma db seed"
+  },
+  "prisma": {
+    "seed": "node prisma/seed.js"
   },
   "repository": {
     "type": "git",
@@ -21,7 +28,7 @@
     "url": "https://github.com/Biwrescue1706/SmartDorm/issues"
   },
   "homepage": "https://github.com/Biwrescue1706/SmartDorm#readme",
-  "dependencies": {
+    "dependencies": {
     "@asteasolutions/zod-to-openapi": "^7.1.2",
     "@line/bot-sdk": "^10.2.0",
     "@prisma/client": "5.22.0",

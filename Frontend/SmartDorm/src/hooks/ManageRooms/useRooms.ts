@@ -8,7 +8,7 @@ import {
   CreateRoom,
   DeleteRoom,
 } from "../../apis/endpoint.api";
-import type { Room } from "../../types/Room";
+import type { Room } from "../../types/All";
 
 export function useRooms(roomId?: string) {
   const [room, setRoom] = useState<Room | null>(null);

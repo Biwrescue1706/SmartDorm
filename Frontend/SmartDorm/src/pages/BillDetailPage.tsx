@@ -1,99 +1,74 @@
-// src/pages/Bills/BillDetailPage.tsx
-import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { useRef, useState, useEffect } from "react";
+import { API_BASE } from "../config";
+import type { DormProfile } from "../types/All";
+
 import Nav from "../components/Nav";
+import BillTables from "../components/BillTables";
+import BillPayment from "../components/BillPayment";
+
 import { useAuth } from "../hooks/useAuth";
 import { usePendingBookings } from "../hooks/ManageRooms/usePendingBookings";
 import { usePendingCheckouts } from "../hooks/ManageRooms/usePendingCheckouts";
-import axios from "axios";
-import { API_BASE } from "../config";
+import { useBillDetail } from "../hooks/useBillDetail";
+import { useExportBillPDF } from "../hooks/useExportBillPDF";
 
-// SCB THEME
+import {
+  formatThai,
+  formatThaiDate,
+  numberToThaiBaht,
+} from "../utils/billUtils";
+
 const SCB_PURPLE = "#4A0080";
 const BG_SOFT = "#F8F5FC";
 
-interface BillDetail {
-  billId: string;
-  roomId: string;
-  month: string;
-  total: number;
-  dueDate: string;
-  billStatus: number;
-
-  rent: number;
-  service: number;
-  fine?: number;
-  overdueDays?: number;
-
-  wBefore: number;
-  wAfter: number;
-  wUnits: number;
-  waterCost: number;
-
-  eBefore: number;
-  eAfter: number;
-  eUnits: number;
-  electricCost: number;
-
-  paidAt?: string | null;
-  cname : string;
-  csurname : string;
-  fullName?: string;
-
-  room?: {
-    number: string;
-  };
-}
-
-const formatThaiDate = (d?: string | null) => {
-  if (!d) return "-";
-  const date = new Date(d);
-  return isNaN(date.getTime())
-    ? "-"
-    : date.toLocaleDateString("th-TH", {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-      });
-};
-
-const statusText = (s: number) => {
-  if (s === 0) return "ยังไม่ชำระ";
-  if (s === 1) return "ชำระแล้ว";
-  if (s === 2) return "กำลังตรวจสอบ";
-  return "-";
-};
+const Divider = () => (
+  <hr
+    className="mt-3 mb-3 pt-0"
+    style={{ border: "none", borderTop: "2px solid #000", opacity: 1 }}
+  />
+);
 
 export default function BillDetailPage() {
   const { billId } = useParams();
   const navigate = useNavigate();
+
   const { handleLogout, role, adminName, adminUsername } = useAuth();
   const pendingBookings = usePendingBookings();
   const pendingCheckouts = usePendingCheckouts();
 
-  const [bill, setBill] = useState<BillDetail | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { bill, loading } = useBillDetail(billId);
+
+  const [profile, setProfile] = useState<DormProfile>({
+    key: "MAIN",
+    service: 0,
+    waterRate: 0,
+    electricRate: 0,
+    overdueFinePerDay: 0,
+  });
 
   useEffect(() => {
-    let mounted = true;
+    fetch(`${API_BASE}/dorm-profile`)
+      .then((r) => r.json())
+      .then((d) =>
+        setProfile({
+          key: d.key ?? "MAIN",
+          service: d.service ?? 0,
+          waterRate: d.waterRate ?? 0,
+          electricRate: d.electricRate ?? 0,
+          overdueFinePerDay: d.overdueFinePerDay ?? 0,
+          dormName: d.dormName,
+          address: d.address,
+          phone: d.phone,
+          email: d.email,
+          taxId: d.taxId,
+        })
+      )
+      .catch(() => console.warn("โหลด dorm profile ไม่สำเร็จ"));
+  }, []);
 
-    const load = async () => {
-      try {
-        const res = await axios.get(`${API_BASE}/bill/${billId}`, {
-          withCredentials: true,
-        });
-        if (!mounted) return;
-        setBill(res.data);
-      } finally {
-        if (mounted) setLoading(false);
-      }
-    };
-
-    if (billId) load();
-    return () => {
-      mounted = false;
-    };
-  }, [billId]);
+  const pdfRef = useRef<HTMLDivElement>(null);
+  const exportPDF = useExportBillPDF();
 
   if (loading) {
     return (
@@ -114,8 +89,15 @@ export default function BillDetailPage() {
     );
   }
 
+  const vat = bill.total * 0.07;
+  const beforeVat = bill.total - vat;
+  const thaiText = numberToThaiBaht(bill.total);
+
+  const overdueDays = bill.overdueDays ?? 0;
+  const isOverdue = overdueDays > 0;
+
   return (
-<div
+    <div
       className="d-flex min-vh-100 mx-2 mt-0 mb-4"
       style={{ fontFamily: "Sarabun, sans-serif" }}
     >
@@ -132,168 +114,111 @@ export default function BillDetailPage() {
         className="main-content flex-grow-1 px-2 py-3 mt-6 mt-lg-7"
         style={{ paddingLeft: "20px", paddingRight: "20px" }}
       >
-        <div className="mx-auto" style={{ background: BG_SOFT, borderRadius: 20, maxWidth: "1400px" }}>
+        <div
+          className="mx-auto"
+          style={{ background: BG_SOFT, borderRadius: 20, maxWidth: "1400px" }}
+        >
           <div className="d-flex justify-content-center align-items-center mb-3 gap-3">
             <button className="btn btn-secondary" onClick={() => navigate(-1)}>
               ← กลับ
             </button>
 
+            <button
+              className="btn btn-primary"
+              onClick={() => exportPDF(bill, pdfRef)}
+            >
+              📄 ออก PDF
+            </button>
+          </div>
+
+          <div className="d-flex justify-content-center mb-3">
             <h3 className="fw-bold m-0" style={{ color: SCB_PURPLE }}>
               รายละเอียดบิล
             </h3>
           </div>
 
-          <div className="card shadow-sm border-0">
-            <div className="card-body">
-              {bill.billStatus === 1 ? (
-  <>
-    <h3 className="text-center fw-bold" style={{ color: SCB_PURPLE }}>
-      ใบเสร็จรับเงิน
-    </h3>
-    <h3 className="text-center fw-bold" style={{ color: SCB_PURPLE }}>
-      SmartDorm
-    </h3>
-  </>
-) : (
-  <>
-    <h3 className="fw-bold text-center" style={{ color: SCB_PURPLE }}>
-      ใบแจ้งหนี้
-    </h3>
-    <h3 className="text-center fw-bold" style={{ color: SCB_PURPLE }}>
-      SmartDorm
-    </h3>
-  </>
-)}
+          <div ref={pdfRef}>
+            <div className="card shadow-sm border-0">
+              <div className="card-body">
 
-              <div className="row g-2 mb-3">
-                <div className="col-md-4">
-                  <b>ชื่อ - นามสกุล :</b> {bill.fullName || "-"}
-                </div>
+                {/* HEADER */}
+                <div className="row mb-2 align-items-start">
+                  <div className="col-6 text-start small text-secondary">
+                    <div className="d-flex align-items-center gap-2 mb-1">
+                      <img
+                        src="https://manage.smartdorm-biwboong.shop/assets/SmartDorm.webp"
+                        alt="logo"
+                        width={42}
+                        height={42}
+                      />
+                      <div className="fw-semibold">{profile.dormName}</div>
+                    </div>
 
-                <div className="col-md-4">
-                  <b>รอบบิล:</b> {formatThaiDate(bill.month)}
-                </div>
-
-
-<div className="col-md-4">
-                  <b>ห้อง {bill.room?.number ?? "-"}</b> </div>
-
-
-                {bill.billStatus === 0 && (
-                  <div className="col-md-4">
-                    <b>ครบกำหนด:</b> {formatThaiDate(bill.dueDate)}
+                    <div>{profile.address}</div>
+                    <div>
+                      โทร : {profile.phone} | อีเมล : {profile.email}
+                    </div>
+                    <div>เลขประจำตัวเสียภาษี : {profile.taxId}</div>
                   </div>
-                )}
 
-                <div className="col-md-4">
-                  <b>สถานะ:</b> {statusText(bill.billStatus)}
+                  <div className="col-6 text-end">
+                    <h3 className="fw-bold mb-1">
+                      {bill.billStatus === 0
+                        ? "ใบแจ้งหนี้ ( Invoice )"
+                        : "ใบเสร็จรับเงิน ( Receipt )"}
+                    </h3>
+
+                    <div className="small">
+                      <div>เดือน : {formatThaiDate(bill.month)}</div>
+                      <div>เลขที่ : {bill.billNumber}</div>
+                      <div>วันที่ : {formatThai(bill.createdAt)}</div>
+                      <div>ห้อง : {bill.room?.number ?? "-"}</div>
+                      <div>พนักงาน : {bill.adminCreated?.name ?? "-"}</div>
+                    </div>
+                  </div>
                 </div>
 
+                <Divider />
 
-              </div>
+                <div className="row g-2 mb-3">
+                  <div className="col-md-6">
+                    <b>ชื่อ - นามสกุล :</b> {bill.fullName || "-"}
+                  </div>
 
-              <hr />
+                  <div className="col-md-6">
+                    <b>รอบบิล:</b> {formatThaiDate(bill.month)}
+                  </div>
 
-              <div className="table-responsive">
-                <table className="table table-sm table-bordered text-center align-middle">
-                  <thead className="table-light">
-                    <tr>
-                      <th>รายการ</th>
-<th>เลขมาตราครั้งหลัง</th>
-                      <th>เลขมาตราครั้งก่อน</th>
-                      <th>จำนวนที่ใช้</th>
-                      <th className="text-center">เป็นเงิน</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td>ค่าไฟฟ้า</td>
-<td>{bill.eAfter}</td>
-                      <td>{bill.eBefore}</td>
-<td>{bill.eUnits}</td>
-                      
-                      
-                      <td className="text-center">
-                        {bill.electricCost.toLocaleString()}
-                      </td>
-                    </tr>
-
-                    <tr>
-                      <td>ค่าน้ำประปา</td>
- <td>{bill.wAfter}</td>
-                      <td>{bill.wBefore}</td>
-                     
-                      <td>{bill.wUnits}</td>
-                      <td className="text-center">
-                        {bill.waterCost.toLocaleString()}
-                      </td>
-                    </tr>
-
-                    <tr>
-                      <td>ค่าส่วนกลาง</td>
-                      <td colSpan={3}>-</td>
-                      <td className="text-center">
-                        {bill.service.toLocaleString()}
-                      </td>
-                    </tr>
-
-                    <tr>
-                      <td>ค่าเช่าห้อง</td>
-                      <td colSpan={3}>-</td>
-                      <td className="text-center">
-                        {bill.rent.toLocaleString()}
-                      </td>
-                    </tr>
-
-                    <tr>
-                      <td>ค่าปรับ</td>
-                      {bill.overdueDays && bill.overdueDays !== 0 ? (
-                        <td colSpan={3}>ปรับ {bill.overdueDays} วัน</td>
+                  {bill.billStatus === 0 && (
+                    <div
+                      className={`col-12 fw-semibold ${
+                        isOverdue ? "text-danger" : ""
+                      }`}
+                    >
+                      {isOverdue ? (
+                        <>
+                          เกินกำหนด {overdueDays} วัน (ครบกำหนด{" "}
+                          {formatThai(bill.dueDate)})
+                        </>
                       ) : (
-                        <td colSpan={3}>-</td>
+                        <>ครบกำหนดชำระ : {formatThai(bill.dueDate)}</>
                       )}
-                      <td className="text-center">
-                        {(bill.fine ?? 0).toLocaleString()}
-                      </td>
-                    </tr>
+                    </div>
+                  )}
+                </div>
 
-                    <tr className="fw-bold table-secondary">
-                      <td colSpan={4} className="text-end">
-                        รวมทั้งหมด
-                      </td>
-                      <td className="text-center">
-                        {bill.total.toLocaleString()}
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-{bill.billStatus === 1 && bill.paidAt && (
-  <>
-    <hr />
+                <Divider />
 
-    <div className="row text-center mt-4">
-      <div className="col-md-6 mb-4">
-        <div className="fw-bold mb-2">ผู้รับเงิน</div>
-        <div>ภูวณัฐ พาหะละ</div>
-        <div className="mt-3">( นาย ภูวณัฐ พาหะละ )</div>
-        <div className="mt-2">
-          {formatThaiDate(bill.paidAt)}
-        </div>
-      </div>
+                <BillTables
+                  bill={bill}
+                  dormProfile={profile}
+                  vat={vat}
+                  beforeVat={beforeVat}
+                  thaiText={thaiText}
+                />
 
-      <div className="col-md-6 mb-4">
-        <div className="fw-bold mb-2">ผู้จ่ายเงิน</div>
-        <div>{bill.cname || "-"} {bill.csurname}</div>
-        <div className="mt-3">
-          ( {bill.fullName || "-"} )
-        </div>
-        <div className="mt-2">
-          {formatThaiDate(bill.paidAt)}
-        </div>
-      </div>
-    </div>
-  </>
-)}
+                <BillPayment bill={bill} formatThai={formatThai} />
+
               </div>
             </div>
           </div>

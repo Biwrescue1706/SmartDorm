@@ -1,5 +1,5 @@
 // src/components/AllBills/AllBillsRow.tsx
-import type { Bill } from "../../types/Bill";
+import type { Bill } from "../../types/All";
 
 interface Props {
   index: number;
@@ -39,6 +39,7 @@ export default function AllBillsRow({
 
       <td>
         {new Date(bill.month).toLocaleDateString("th-TH", {
+          day: "numeric",
           year: "numeric",
           month: "long",
         })}
@@ -82,22 +83,25 @@ export default function AllBillsRow({
               </button>
             )}
           </div>
+        ) : overdueDays > 0 ? (
+          <span>เกินกำหนด {overdueDays} วัน</span>
         ) : (
-          <span>ชำระแล้ว เกินกำหนด {overdueDays} วัน</span>
+          <span>ไม่เกินกำหนด</span>
         )}
       </td>
 
       {/* สลิป */}
-      {(status === 1 || status === 2)  && (bill.payment?.slipUrl || bill.slipUrl) && (
-        <td>
-          <button
-            className="btn btn-primary btn-sm"
-            onClick={() => onViewSlip(bill)}
-          >
-            ดูสลิป
-          </button>
-        </td>
-      )}
+      {(status === 1 || status === 2) &&
+        (bill.payment?.slipUrl || bill.slipUrl) && (
+          <td>
+            <button
+              className="btn btn-primary btn-sm"
+              onClick={() => onViewSlip(bill)}
+            >
+              ดูสลิป
+            </button>
+          </td>
+        )}
 
       {/* จัดการ / แก้ไข */}
       {status === 2 && role === 0 && (

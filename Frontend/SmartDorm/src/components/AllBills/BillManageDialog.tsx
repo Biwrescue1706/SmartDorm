@@ -1,5 +1,5 @@
 // src/components/AllBills/BillManageDialog.tsx
-import type { Bill } from "../../types/Bill";
+import type { Bill } from "../../types/All";
 
 interface Props {
   bill: Bill | null;
@@ -17,26 +17,27 @@ export default function BillManageDialog({
   if (!bill) return null;
 
   const slip = bill.payment?.slipUrl ?? bill.slipUrl;
+  const roomNumber = bill.room?.number ?? "-";
 
   return (
     <div
-      className="modal show d-block"
+      className="modal show d-block mx-2"
       style={{
-        background: "#00000080", // โปร่งแสงกำลังดี
+        background: "#00000080",
         position: "fixed",
-        top: 50,
+        top: 0,
         left: 0,
         width: "100vw",
         height: "100vh",
-        zIndex: 1000, // ⭐ สูงสุดในระบบ ลอยเหนือ nav + sidebar
+        zIndex: 1000,
       }}
     >
       {/* DIALOG WRAPPER */}
       <div
         className="modal-dialog modal-dialog-centered"
         style={{
-          maxWidth: "640px",
-          margin: "5px auto 0 auto", // ⭐ ชน navbar จะไม่ติดอีกแล้ว
+          maxWidth: "480px",
+          margin: "5px auto 5px auto",
         }}
       >
         <div className="modal-content rounded-4 shadow-lg border-0">
@@ -50,7 +51,7 @@ export default function BillManageDialog({
             }}
           >
             <h5 className="modal-title fw-bold">
-              จัดการบิลห้อง {bill.room.number}
+              จัดการบิลห้อง {roomNumber}
             </h5>
             <button
               className="btn-close btn-close-white"
@@ -64,7 +65,7 @@ export default function BillManageDialog({
             style={{
               paddingBottom: "10px",
               overflowY: "auto",
-              maxHeight: "65vh", // ⭐ scroll เฉพาะภาพ
+              maxHeight: "65vh",
             }}
           >
             <h6 className="fw-bold mb-3">สลิปการชำระเงิน</h6>
@@ -75,8 +76,8 @@ export default function BillManageDialog({
                 alt="slip"
                 style={{
                   width: "360px",
-                  maxWidth: "70%", 
-                  height: "180px", 
+                  maxWidth: "70%",
+                  height: "180px",
                   maxHeight: "65vh",
                   objectFit: "contain",
                   borderRadius: "14px",
@@ -88,27 +89,40 @@ export default function BillManageDialog({
             ) : (
               <p className="text-danger mt-3">ไม่มีสลิปแนบมา</p>
             )}
-            <h6 className="fw-bold mt-4">ชื่อผู้ชำระ: {bill.customer?.userName ?? "-"} </h6>
-            <h6 className="fw-bold mt-2">วันที่ชำระ: {new Date(bill.payment?.paidAt ?? "").toLocaleDateString("th-TH", {
-              day: "numeric",
-              month: "long",
-              year: "numeric",
-            })} </h6>
-            <h6 className="fw-bold mt-4">ยอดชำระ: {bill.total.toLocaleString()} บาท </h6>
+
+            <h6 className="fw-bold mt-4">
+              ชื่อผู้ชำระ: {bill.customer?.userName ?? "-"}
+            </h6>
+
+            <h6 className="fw-bold mt-2">
+              วันที่ชำระ:{" "}
+              {new Date(bill.payment?.paidAt ?? "").toLocaleDateString(
+                "th-TH",
+                {
+                  day: "numeric",
+                  month: "long",
+                  year: "numeric",
+                }
+              )}
+            </h6>
+
+            <h6 className="fw-bold mt-4">
+              ยอดชำระ: {bill.total.toLocaleString()} บาท
+            </h6>
           </div>
 
           {/* FOOTER */}
           <div className="modal-footer d-flex justify-content-between px-4 pb-3">
             <button
               className="btn btn-success fw-semibold px-4"
-              onClick={() => onApprove(bill.billId, bill.room.number)}
+              onClick={() => onApprove(bill.billId, roomNumber)}
             >
               ✔️ ยืนยันการชำระ
             </button>
 
             <button
               className="btn btn-warning fw-semibold px-4"
-              onClick={() => onReject(bill.billId, bill.room.number)}
+              onClick={() => onReject(bill.billId, roomNumber)}
             >
               ❌ ปฏิเสธ
             </button>

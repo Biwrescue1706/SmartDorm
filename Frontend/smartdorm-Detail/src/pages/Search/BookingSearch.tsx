@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
-import BookingNav from "../../components/BookingNav";
+import NavBar from "../../components/NavBar";
 
 export default function BookingSearch() {
   const [bookingId, setBookingId] = useState("");
@@ -31,33 +31,37 @@ export default function BookingSearch() {
 
   return (
     <>
-      <BookingNav />
+      <NavBar />
 
-      <div className="container text-center py-5 mt-5">
-        <h3 className="fw-bold mb-3">ค้นหาการจอง</h3>
-        <p className="text-muted mb-4">
-          กรอกรหัสการจองเพื่อดูรายละเอียด
-        </p>
+      {/* spacer กัน navbar ทับ */}
+      <div style={{ height: "70px" }} />
 
-        <form
-          onSubmit={submit}
-          className="mx-auto"
-          style={{ maxWidth: "380px" }}
-        >
-          <input
-            className="form-control form-control-lg text-center mb-3 rounded-4"
-            placeholder="เช่น BK240001"
-            value={bookingId}
-            onChange={(e) => setBookingId(e.target.value)}
-          />
+      <div
+        className="container-fluid d-flex justify-content-center align-items-center"
+        style={{ minHeight: "calc(100vh - 70px)" }}
+      >
 
-          <button
-            className="btn btn-primary w-100 rounded-4"
-            disabled={loading}
-          >
-            {loading ? "กำลังค้นหา..." : "ค้นหาการจอง"}
-          </button>
-        </form>
+        <div className="col-12 col-sm-8 col-md-5 col-lg-4 text-center">
+          <h3 className="fw-bold mb-3">ค้นหาการจอง</h3>
+
+          <p className="text-muted mb-4">กรอกรหัสการจองเพื่อดูรายละเอียด</p>
+
+          <form onSubmit={submit}>
+            <input
+              className="form-control form-control-lg text-center mb-3 rounded-4"
+              placeholder="เช่น BK240001"
+              value={bookingId}
+              onChange={(e) => setBookingId(e.target.value)}
+            />
+
+            <button
+              className="btn btn-primary w-100 rounded-4 fw-bold"
+              disabled={loading}
+            >
+              {loading ? "กำลังค้นหา..." : "ค้นหาการจอง"}
+            </button>
+          </form>
+        </div>
       </div>
     </>
   );

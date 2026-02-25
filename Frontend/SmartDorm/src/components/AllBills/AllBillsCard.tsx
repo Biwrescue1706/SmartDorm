@@ -1,5 +1,6 @@
 // src/components/AllBills/AllBillsCard.tsx
-import type { Bill } from "../../types/Bill";
+import type { Bill } from "../../types/All";
+import { useNavigate } from "react-router-dom";
 
 interface Props {
   bill: Bill;
@@ -10,6 +11,18 @@ interface Props {
   onManage: (bill: Bill) => void;
   onOverdue: (billId: string, room: string) => void;
 }
+
+const Divider = () => (
+  <hr
+    className=" my-3  mb-3 mt-3"
+    style={{
+      border: "none",
+      borderTop: "2px solid #000000",
+      opacity: 1,
+      margin: "10px 0",
+    }}
+  />
+);
 
 export default function AllBillsCard({
   bill,
@@ -25,11 +38,13 @@ export default function AllBillsCard({
   const isUnpaid = bill.billStatus === 0;
   const hasSlip = bill.payment?.slipUrl || bill.slipUrl;
   const overdueDays = bill.overdueDays ?? 0;
+  const navigate = useNavigate();
 
   return (
     <div
-      className="p-3 shadow-sm rounded-4 border bg-white"
+      className="p-3 shadow-sm rounded-4 bg-white"
       style={{
+        border: "2px solid #000", // 👈 กรอบดำ
         borderLeft: isPaid
           ? "6px solid #2ecc71"
           : isPending
@@ -37,127 +52,186 @@ export default function AllBillsCard({
             : "6px solid #e74c3c",
       }}
     >
-      <div>
-        <h5 className="fw-bold mb-2 text-center text-black justify-content-center">
-          {" "}
-          ห้อง {bill.room?.number}
-        </h5>
-        <h5 className="fw-bold mb-2 text-center text-black justify-content-center">
-          <b>เดือน : </b>{" "}
-          {new Date(bill.month).toLocaleDateString("th-TH", {
-            month: "long",
-            year: "numeric",
-          })}
-        </h5>
-      </div>
-      <hr />
-      <div>
-        <h5 className="fw-semibold text-black text-center">รายละเอียดผู้เช่า</h5>
-        <div className="mb-1 text-black h5">
-          <b>ผู้เช่า : </b> {bill.fullName || " "}
+      <div className="mb-2 mt-1 text-center text-black justify-content-center">
+        <div className="mb-2 mt-1">
+          <div className="text-primary h5">
+            <b>{bill.room?.number}</b>
+          </div>
         </div>
-        <div className="mb-1 text-black h5">
-          <b>LINE : </b> {bill.customer?.userName || " "}
-        </div>
-        <div className="mb-1 text-black h5">
-          <b>เบอร์ : </b> {bill.cphone || " "}
-        </div>
-      </div>
-      <hr />
-      <div>
-        <h5 className="fw-semibold text-black text-center">รายละเอียดบิล</h5>
-        <div className="mb-1 text-black h5">
-          <b>วันที่ออกบิล : </b>{" "}
-          {new Date(bill.createdAt).toLocaleDateString("th-TH", {
-            day: "numeric",
-            month: "long",
-            year: "numeric",
-          })}
-        </div>
-        {!isPaid && !isPending && (
-          <div className="mb-1 text-black h5">
-            <b>กำหนดชำระ : </b>{" "}
-            {new Date(bill.dueDate).toLocaleDateString("th-TH", {
+        <div className="mb-3 mt-1">
+          <div className="fw-bold text-black h6">รอบบิล</div>
+          <div className="fw-bold h6 text-primary">
+            {new Date(bill.month).toLocaleDateString("th-TH", {
               day: "numeric",
               month: "long",
               year: "numeric",
             })}
           </div>
-        )}
+        </div>
       </div>
 
-      <hr />
-      <div>
-
-        <div className="mb-2 text-black h5">
-          <b>ยอดรวม : </b> {bill.total.toLocaleString()} บาท
+      <div className="mb-2 mt-1 text-black">
+        <Divider />
+        <div className="mb-2 mt-3">
+          <div className="fw-bold h5 text-center"> รายละเอียดผู้เช่า</div>
         </div>
-        {isUnpaid && overdueDays > 0 && (
-          <div className="mb-2 text-black h5">
-            <b className="fw-semibold">เกินกำหนด : </b>
-            {`${overdueDays} วัน`}
+
+        <div className="mb-2 mt-3">
+          <div className="fw-bold h6 ">ผู้เช่า : </div>
+          <div className="fw-bold h6 text-primary text-center">
+            {bill.fullName || " "}
+          </div>
+        </div>
+
+        <div className="mb-2 mt-3">
+          <div className="fw-bold h6 ">LINE : </div>
+          <div className="fw-bold h6 text-primary text-center">
+            {bill.customer?.userName || " "}
+          </div>
+        </div>
+        <div className="mb-2 mt-3">
+          <div className="fw-bold h6 ">เบอร์ : </div>
+          <div className="fw-bold h6 text-primary text-center">
+            {bill.cphone || " "}
+          </div>
+        </div>
+      </div>
+
+      <div className="mb-2 mt-1 text-black">
+        <Divider />
+        <div className="mb-2 mt-3">
+          <div className="fw-bold h5 text-center"> รายละเอียดบิล</div>
+        </div>
+
+        <div className="mb-2 mt-3">
+          <div className="fw-bold h6 ">วันที่ออกบิล :</div>
+          <div className="fw-bold h6 text-primary text-center">
+            {new Date(bill.createdAt).toLocaleDateString("th-TH", {
+              day: "numeric",
+              month: "long",
+              year: "numeric",
+            })}
+          </div>
+        </div>
+
+        {!isPaid && !isPending && (
+          <div className="mb-2 mt-3">
+            <div className="fw-bold h6 ">กำหนดชำระ : </div>
+            <div className="fw-bold h6 text-primary text-center">
+              {new Date(bill.dueDate).toLocaleDateString("th-TH", {
+                day: "numeric",
+                month: "long",
+                year: "numeric",
+              })}
+            </div>
           </div>
         )}
-      </div>
 
-      <hr />
-      <div>
-        <h5 className="fw-semibold text-black text-center">สถานะการชำระเงิน</h5>
-        <div className="mb-2 text-black h5">
-          <b>สถานะ : </b>
-          {isPending && (
-            <span className="badge bg-warning text-dark p-2">รอตรวจสอบ</span>
-          )}
-          {isPaid && <span className="badge bg-success p-2">ชำระแล้ว</span>}
-          {isUnpaid && <span className="badge bg-danger p-2">ค้างชำระ</span>}
+        <div className="mb-2 mt-3">
+          <div className="fw-bold h5 text-center ">ยอดรวม : </div>
+          <div className="fw-bold h5 text-primary text-center">
+            {bill.total.toLocaleString()} บาท
+          </div>
         </div>
       </div>
 
+      <div className="mb-2 mt-1 text-black">
+        <Divider />
+        <div className="mb-2 mt-3">
+          <div className="fw-bold h5 text-center ">สถานะการชำระเงิน</div>
+          <div className="fw-bold h6 text-primary text-center"></div>
+        </div>
 
-      {hasSlip && (
-        <button
-          className="btn btn-primary btn-sm w-100 mt-2"
-          onClick={() => onViewSlip(bill)}
-        >
-          ดูสลิป
-        </button>
-      )}
+        <div className="mb-2 mt-3">
+          {/* <div className="fw-bold h6 ">สถานะ : </div> */}
+          <div className="fw-bold h6 text-primary text-center">
+            {isPending ? (
+              <span className="badge bg-warning text-dark p-2">รอตรวจสอบ</span>
+            ) : isPaid ? (
+              <span className="badge bg-success p-2">ชำระแล้ว</span>
+            ) : overdueDays > 0 ? (
+              <span className="badge bg-danger p-2">เกินกำหนด</span>
+            ) : (
+              isUnpaid && <span className="badge bg-danger p-2">ค้างชำระ</span>
+            )}
+          </div>
+
+          {overdueDays > 0 && (
+            <div className="mb-2 mt-3">
+              <div className="fw-bold h5 text-center text-black">เกินกำหนด</div>
+              <div className="fw-bold h5 text-primary text-center">
+                {overdueDays} วัน
+              </div>
+            </div>
+          )}
+        </div>
+        <Divider />
+      </div>
+
+      <div className="mb-2 mt-1">
+        {hasSlip && (
+          <>
+            <button
+              className="btn btn-primary btn-sm w-50 mt-2"
+              onClick={() => onViewSlip(bill)}
+            >
+              ดูสลิป
+            </button>
+            <Divider />
+          </>
+        )}
+      </div>
 
       <div className="mt-3 d-flex flex-column gap-2">
         {bill.billStatus === 2 && role === 0 && (
-          <button
-            className="btn btn-info btn-sm fw-semibold w-100 text-white"
-            onClick={() => onManage(bill)}
-          >
-            จัดการ
-          </button>
+          <>
+            <button
+              className="btn btn-info btn-sm fw-semibold w-50 text-white"
+              onClick={() => onManage(bill)}
+            >
+              จัดการ
+            </button>
+            <Divider />
+          </>
         )}
 
-        {isUnpaid && overdueDays > 0 && role === 0 && (
+        <div className="d-flex gap-2">
           <button
-            className="btn btn-info btn-sm fw-semibold w-100 text-white"
-            onClick={() => onOverdue(bill.billId, bill.room?.number ?? "-")}
+            className="btn btn-success btn-sm fw-semibold w-100 text-white"
+            onClick={() => navigate(`/bills/${bill.billId}`)}
           >
-            แจ้งเตือน
+            ดูรายละเอียดบิล
           </button>
-        )}
+          {isUnpaid && overdueDays > 0 && role === 0 && (
+            <>
+              {/* <Divider /> */}
+              <button
+                className="btn btn-info btn-sm fw-semibold w-50 text-white"
+                onClick={() => onOverdue(bill.billId, bill.room?.number ?? "-")}
+              >
+                แจ้งเตือน
+              </button>
+              <Divider />
+            </>
+          )}
+        </div>
 
         {role === 0 && (
           <div className="d-flex gap-2">
             {bill.billStatus !== 1 && (
               <button
-                className="btn btn-warning btn-sm w-100 fw-semibold"
+                className="btn btn-warning btn-sm w-50 fw-semibold"
                 onClick={() => onEdit(bill)}
               >
-                ✏️ แก้ไข
+                ✏️
               </button>
             )}
 
             <button
-              className="btn btn-danger btn-sm w-100 fw-semibold"
+              className="btn btn-danger btn-sm w-50 fw-semibold"
               onClick={() => onDelete(bill.billId, bill.room?.number ?? "-")}
             >
-              🗑️ ลบ
+              🗑️
             </button>
           </div>
         )}

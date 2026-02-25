@@ -20,7 +20,7 @@ import ResetPassword from "./pages/ForgotPassword/ResetPassword";
 import BookingHistory from "./pages/BookingHistory";
 import BillOverviewPage from "./pages/BillOverviewPage";
 import BillDetailPage from "./pages/BillDetailPage";
-import CreateBills from "./pages/Bills/CreateBills";
+import DormProfile from "./pages/DormProfile";
 
 function App() {
   return (
@@ -73,15 +73,6 @@ function App() {
         }
       />
 
-<Route
-  path="/create-bills"
-  element={
-    <ProtectedRoute>
-      <CreateBills />
-    </ProtectedRoute>
-  }
-/>
-
       <Route
         path="/bills"
         element={
@@ -91,7 +82,7 @@ function App() {
         }
       />
 
-     <Route
+      <Route
         path="/allbills"
         element={
           <ProtectedRoute>
@@ -100,23 +91,23 @@ function App() {
         }
       />
 
-<Route
-  path="/bill-overview"
-  element={
-    <ProtectedRoute>
-      <BillOverviewPage />
-    </ProtectedRoute>
-  }
-/>
+      <Route
+        path="/bill-overview"
+        element={
+          <ProtectedRoute>
+            <BillOverviewPage />
+          </ProtectedRoute>
+        }
+      />
 
-<Route
-  path="/bills/:billId"
-  element={
-    <ProtectedRoute>
-      <BillDetailPage />
-    </ProtectedRoute>
-  }
-/>
+      <Route
+        path="/bills/:billId"
+        element={
+          <ProtectedRoute>
+            <BillDetailPage />
+          </ProtectedRoute>
+        }
+      />
 
       <Route
         path="/bookings"
@@ -180,7 +171,15 @@ function App() {
           </ProtectedRoute>
         }
       />
-      
+
+<Route
+  path="/dorm-profile"
+  element={
+    <ProtectedRoute>
+      <DormProfile />
+    </ProtectedRoute>
+  }
+/>
 
       {/*  ไม่เจอ route → ไปหน้า 404 */}
       <Route path="*" element={<NotFound />} />

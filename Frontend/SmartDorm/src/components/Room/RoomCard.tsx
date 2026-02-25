@@ -1,7 +1,10 @@
-// src/components/Room/RoomCard.tsx
 import EditRoomDialog from "./EditRoomDialog";
 import { useRooms } from "../../hooks/ManageRooms/useRooms";
-import type { Room } from "../../types/Room";
+import type { Room } from "../../types/All";
+import {
+  formatThaiDate,
+  formatThaiTime,
+} from "../../utils/thaiDate";
 
 interface Props {
   room: Room;
@@ -23,78 +26,128 @@ export default function RoomCard({ room, role, onUpdated }: Props) {
 
   return (
     <div
-      className="card shadow-sm border-0 mb-3"
+      className="card shadow-sm"
       style={{
-        borderRadius: "15px",
-        minHeight: "260px",
-        backgroundColor: "#f1f3f5",
-        position: "relative",
-        paddingBottom: "70px",
-        textAlign: "center", // ⭐ จัดข้อความอยู่กลาง
+        borderRadius: 12,
+        border: "2px solid #000",
+        background:
+          room.status === 1 ? "#ffe5e5" : "#e6f7e6",
       }}
     >
-      <div className="card-body" style={{ padding: "20px" }}>
-        {/* 🏷️ ชื่อห้องใหญ่ขึ้น (fs-4) */}
-        <h4 className="fw-bold mb-3 fs-4">ห้อง {room.number}</h4>
+      <div className="card-body text-start">
 
-        {/* ⭐ ข้อมูลใหญ่ขึ้น → fs-5 */}
-        <p className="mt-2 mb-1 fs-5">
-          <b>ขนาด : </b> {room.size}
+        {/* ================= ข้อมูลห้อง ================= */}
+        <h5 className="fw-bold text-center mb-2">
+          🏠 ห้อง {room.number}
+        </h5>
+
+        <hr />
+
+        <p><b>ขนาด :</b> {room.size ?? "-"}</p>
+
+        <p>
+          <b>ค่าเช่า :</b>{" "}
+          {room.rent
+            ? room.rent.toLocaleString("th-TH")
+            : "-"}
         </p>
 
-        <p className="mt-2 mb-1 fs-5">
-          <b>ค่าเช่า :</b> {room.rent.toLocaleString("th-TH")}
+        <p>
+          <b>ผู้สร้าง :</b>{" "}
+          {room.adminCreated?.name ?? "-"}
         </p>
 
-        {room.status === 1 && (
-          <p className="mt-2 mb-1 fs-5">
-            <b>ผู้เช่า :</b>{" "}
-            {room.status === 1 ? room.booking?.fullName || " " : " "}
-          </p>
-        )}
-
-        <p className="mt-2 mb-1 fs-5">
-          <b>ผู้สร้าง :</b> {room.adminCreated?.name || " "}
+        <p>
+          <b>วันที่สร้าง :</b>{" "}
+          {formatThaiDate(room.createdAt)}
         </p>
 
-        {room.adminUpdated != null && (
-          <p className="mt-2 mb-1 fs-5">
-            <b>ผู้แก้ไข :</b> {room.adminUpdated?.name || " "}
-          </p>
-        )}
+        <p>
+          <b>เวลาที่สร้าง :</b>{" "}
+          {formatThaiTime(room.createdAt)}
+        </p>
 
-        <p className="mt-2 mb-1 fs-5">
+       {room.adminUpdated?.name && (
+  <p>
+    <b>ผู้แก้ไข :</b> {room.adminUpdated.name}
+  </p>
+)}
+
+        {room.updatedAt && (
+  <p>
+    <b>วันแก้ไข :</b>{" "}
+    {formatThaiDate(room.updatedAt)}
+  </p>
+)}
+
+       {room.updatedAt && (
+  <p>
+    <b>เวลาแก้ไข :</b>{" "}
+    {formatThaiTime(room.updatedAt)}
+  </p>
+)}
+
+        <p>
           <b>สถานะ :</b>{" "}
           <span
-            className={`badge px-3 py-1 ${
-              room.status === 0 ? "bg-success" : "bg-danger"
+            className={`badge ${
+              room.status === 0
+                ? "bg-success"
+                : "bg-danger"
             }`}
           >
             {room.status === 0 ? "ว่าง" : "เต็ม"}
           </span>
         </p>
+{room.booking && (
+  <>
+    <hr />
+    <h6 className="fw-bold">👤 ข้อมูลผู้เช่า</h6>
+
+    {room.booking.fullName && (
+      <p>
+        <b>ผู้เช่า :</b>
+        {" "}{room.booking.fullName}
+      </p>
+    )}
+
+    {room.booking.bookingDate && (
+      <p>
+        <b>วันที่จอง :</b>
+        {" "}
+        {formatThaiDate(
+          room.booking.bookingDate
+        )}
+      </p>
+    )}
+
+    {room.booking.checkinAt && (
+      <p>
+        <b>วันที่เข้าพัก :</b>
+        {" "}
+        {formatThaiDate(
+          room.booking.checkinAt
+        )}
+      </p>
+    )}
+  </>
+)}
       </div>
 
-      {/* ⭐ ปุ่มแก้ไข + ลบ */}
+      {/* ===== ปุ่ม ADMIN ===== */}
       {isSuperAdmin && (
-        <div
-          className="d-flex justify-content-center gap-4"
-          style={{
-            width: "100%",
-            position: "absolute",
-            bottom: "15px",
-            left: "50%",
-            transform: "translateX(-50%)",
-            padding: "0 20px",
-          }}
-        >
-          <EditRoomDialog roomId={room.roomId} onSuccess={onUpdated} />
+        <div className="text-center pb-3">
+          <EditRoomDialog
+            roomId={room.roomId}
+            onSuccess={onUpdated}
+          />
 
           {room.status === 0 && (
             <button
-              className="btn btn-sm fw-semibold text-white px-2 mx-2 my-2 py-1"
+              className="btn btn-sm text-white ms-2"
               style={{
-                background: "linear-gradient(135deg, #ff512f, #dd2476)",
+                background:
+                  "linear-gradient(135deg,#ff512f,#dd2476)",
                 border: "none",
               }}
               onClick={handleDelete}

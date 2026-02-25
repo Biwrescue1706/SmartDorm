@@ -1,6 +1,6 @@
 // src/components/Dashboard/DashboardRevenue.tsx
 import { useMemo, useState } from "react";
-import type { Bill } from "../../types/Bill";
+import type { Bill } from "../../types/All";
 import type { Booking } from "../../types/Booking";
 import DashboardRevenueChart from "./DashboardRevenueChart";
 import MonthlyBillCards from "./MonthlyBillCards";

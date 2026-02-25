@@ -10,7 +10,7 @@ import BillStatusCardFilter from "../../components/AllBills/BillStatusCardFilter
 import AllBillsEditDialog from "../../components/AllBills/AllBillsEditDialog";
 import BillManageDialog from "../../components/AllBills/BillManageDialog";
 import Swal from "sweetalert2";
-import type { Bill } from "../../types/Bill";
+import type { Bill } from "../../types/All";
 import { usePendingBookings } from "../../hooks/ManageRooms/usePendingBookings";
 import { usePendingCheckouts } from "../../hooks/ManageRooms/usePendingCheckouts";
 
@@ -40,7 +40,7 @@ export default function AllBills() {
   const pendingCount = bills.filter((b) => b.billStatus === 2).length;
 
   const [page, setPage] = useState(1);
-  const [rows, setRows] = useState(12);
+  const [rows, setRows] = useState(15);
 
   const [width, setWidth] = useState(window.innerWidth);
   useEffect(() => {
@@ -265,7 +265,8 @@ export default function AllBills() {
             <div
               className="d-grid"
               style={{
-                gridTemplateColumns: width < 600 ? "1fr" : "repeat(3, 1fr)",
+                gridTemplateColumns:
+                  width < 600 ? "repeat(2, 1fr)" : "repeat(6, 1fr)",
                 gap: "14px",
               }}
             >

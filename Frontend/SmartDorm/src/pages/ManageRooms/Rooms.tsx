@@ -80,8 +80,7 @@ export default function Rooms() {
 
   //     📄 Pagination
   const [currentPage, setCurrentPage] = useState(1);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
-
+  const [rowsPerPage, setRowsPerPage] = useState(15);
   const indexOfLast = currentPage * rowsPerPage;
   const indexOfFirst = indexOfLast - rowsPerPage;
   const currentRooms = filteredRooms.slice(indexOfFirst, indexOfLast);
@@ -167,7 +166,14 @@ export default function Rooms() {
         className="main-content flex-grow-1 px-2 py-3 mt-6 mt-lg-7"
         style={{ paddingLeft: "20px", paddingRight: "20px" }}
       >
-        <div className="mx-auto" style={{ maxWidth: "1400px" }}>
+        <div
+          className="mx-auto container-max"
+          style={{
+            borderRadius: 20,
+            maxWidth: "1400px",
+            padding: "20px",
+          }}
+        >
           {/* Header */}
           <PageHeader />
 
@@ -182,7 +188,7 @@ export default function Rooms() {
 
           {/* Filter Bar (มือถือ/แท็บเล็ต = แถวเดียว) */}
           <div className="d-flex d-xxl-none flex-column align-items-center mb-3">
-            <h5 className="text-center mb-2 w-100">กรองสถานะห้อง</h5>
+            <h5 className="text-center mb-2 w-100 text-black">กรองสถานะห้อง</h5>
 
             <div className="d-flex justify-content-center align-items-center gap-2 flex-wrap">
               <RoomFilter
@@ -255,6 +261,7 @@ export default function Rooms() {
                         startIndex={indexOfFirst}
                         onUpdated={handleRefresh}
                         role={role}
+                        filter={filter}
                       />
                     </div>
                   </div>
@@ -274,14 +281,10 @@ export default function Rooms() {
                 <>
                   {/* MOBILE / TABLET: CARD GRID */}
                   <div
-                    className="d-grid mb-3"
+                    className="d-grid mb-2"
                     style={{
                       gridTemplateColumns:
-                        windowWidth >= 992
-                          ? "1fr 1fr 1fr"
-                          : windowWidth >= 600
-                            ? "1fr 1fr"
-                            : "1fr",
+                        "repeat(auto-fill, minmax(130px, 1fr))",
                       gap: "18px",
                       paddingLeft: "4px",
                       paddingRight: "4px",

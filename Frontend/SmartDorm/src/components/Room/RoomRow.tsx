@@ -1,22 +1,32 @@
-// src/components/Room/RoomRow.tsx
 import { useEffect } from "react";
 import { useRooms } from "../../hooks/ManageRooms/useRooms";
-import type { Room , Booking } from "../../types/Room";
+import type { Room } from "../../types/All";
 import EditRoomDialog from "./EditRoomDialog";
+
+import {
+  formatThaiDate,
+  formatThaiTime,
+} from "../../utils/thaiDate";
 
 interface Props {
   room: Room;
-  booking?: Booking | null;
   index: number;
   onUpdated: () => void;
+  hideTenant?: boolean;
   role?: number | null;
 }
 
-export default function RoomRow({ room, index, onUpdated, role }: Props) {
+export default function RoomRow({
+  room,
+  index,
+  onUpdated,
+  role,
+  hideTenant,
+}: Props) {
   const { deleteRoom, fetchRooms } = useRooms();
-  const isSuperAdmin = role === 0; // ✅ ตรวจสิทธิ์
+  const isSuperAdmin = role === 0;
 
-  const getStatus = (status: number) => (
+  const getStatus = (status?: number) => (
     <span
       className={`badge px-3 py-1 fw-semibold ${
         status === 0
@@ -26,7 +36,7 @@ export default function RoomRow({ room, index, onUpdated, role }: Props) {
           : "bg-secondary"
       }`}
     >
-      {status === 0 ? "ว่าง" : status === 1 ? "เต็ม" : " "}
+      {status === 0 ? "ว่าง" : status === 1 ? "เต็ม" : "-"}
     </span>
   );
 
@@ -44,27 +54,65 @@ export default function RoomRow({ room, index, onUpdated, role }: Props) {
 
   return (
     <tr>
+      {/* ===== พื้นฐาน ===== */}
       <td>{index + 1}</td>
       <td>{room.number}</td>
-      <td>{room.size}</td>
-      <td>{room.rent.toLocaleString("th-TH")}</td>
-      <td>{room.status === 1 ? room.booking?.fullName || " " : " "}</td>
-      <td>{room.adminCreated?.name || " "}</td>
-      <td>{room.adminUpdated?.name || " "}</td>
+      <td>{room.size ?? "-"}</td>
+      <td>{room.rent?.toLocaleString("th-TH") ?? "-"}</td>
+
+      {/* ===== ข้อมูลห้อง ===== */}
+      <td>{room.adminCreated?.name ?? "-"}</td>
+
+      <td>{formatThaiDate(room.createdAt)}</td>
+      <td>{formatThaiTime(room.createdAt)}</td>
+
+      <td>{room.adminUpdated?.name ?? "-"}</td>
+
+      <td>{formatThaiDate(room.updatedAt)}</td>
+      <td>{formatThaiTime(room.updatedAt)}</td>
+
+      {/* ช่อง placeholder (ตรง header '-') */}
+      <td>-</td>
+
+      {/* ===== ข้อมูลผู้เช่า ===== */}
+      {!hideTenant && (
+        <>
+          <td>{room.booking?.fullName ?? "-"}</td>
+
+          <td>
+            {formatThaiDate(
+              room.booking?.bookingDate ?? null
+            )}
+          </td>
+
+          <td>
+            {formatThaiDate(
+              room.booking?.checkinAt ?? null
+            )}
+          </td>
+        </>
+      )}
+
+      {/* ===== สถานะ ===== */}
       <td>{getStatus(room.status)}</td>
 
-      {/* ✅ เฉพาะ SuperAdmin เท่านั้นที่เห็นปุ่มแก้ไข/ลบ */}
+      {/* ===== ADMIN ACTION ===== */}
       {isSuperAdmin ? (
         <>
           <td>
-            <EditRoomDialog roomId={room.roomId} onSuccess={onUpdated} />
+            <EditRoomDialog
+              roomId={room.roomId}
+              onSuccess={onUpdated}
+            />
           </td>
+
           <td>
-            {room.status === 0 && (
+            {room.status !== 1 && (
               <button
-                className="btn btn-sm text-white fw-semibold mx-2 my-2 mb-2"
+                className="btn btn-sm text-white fw-semibold"
                 style={{
-                  background: "linear-gradient(100deg, #ff0505ff, #f645c4ff)",
+                  background:
+                    "linear-gradient(100deg,#ff0505,#f645c4)",
                   border: "none",
                 }}
                 onClick={handleDelete}

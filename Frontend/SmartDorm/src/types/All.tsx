@@ -21,6 +21,7 @@ export interface Room {
 
   adminCreated?: Admin;
   adminUpdated?: Admin;
+  booking?: Booking | null;
 }
 
 export interface Customer {

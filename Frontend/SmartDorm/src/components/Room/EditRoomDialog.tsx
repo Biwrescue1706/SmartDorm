@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import Swal from "sweetalert2";
 import { useRooms } from "../../hooks/ManageRooms/useRooms";
-import type { Room } from "../../types/Room";
+import type { Room } from "../../types/All";
 import { createPortal } from "react-dom";
 
 interface Props {

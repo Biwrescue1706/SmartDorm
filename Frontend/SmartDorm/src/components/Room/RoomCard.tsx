@@ -67,20 +67,25 @@ export default function RoomCard({ room, role, onUpdated }: Props) {
           {formatThaiTime(room.createdAt)}
         </p>
 
-        <p>
-          <b>ผู้แก้ไข :</b>{" "}
-          {room.adminUpdated?.name ?? "-"}
-        </p>
+       {room.adminUpdated?.name && (
+  <p>
+    <b>ผู้แก้ไข :</b> {room.adminUpdated.name}
+  </p>
+)}
 
-        <p>
-          <b>วันแก้ไข :</b>{" "}
-          {formatThaiDate(room.updatedAt)}
-        </p>
+        {room.updatedAt && (
+  <p>
+    <b>วันแก้ไข :</b>{" "}
+    {formatThaiDate(room.updatedAt)}
+  </p>
+)}
 
-        <p>
-          <b>เวลาแก้ไข :</b>{" "}
-          {formatThaiTime(room.updatedAt)}
-        </p>
+       {room.updatedAt && (
+  <p>
+    <b>เวลาแก้ไข :</b>{" "}
+    {formatThaiTime(room.updatedAt)}
+  </p>
+)}
 
         <p>
           <b>สถานะ :</b>{" "}
@@ -94,30 +99,39 @@ export default function RoomCard({ room, role, onUpdated }: Props) {
             {room.status === 0 ? "ว่าง" : "เต็ม"}
           </span>
         </p>
+{room.booking && (
+  <>
+    <hr />
+    <h6 className="fw-bold">👤 ข้อมูลผู้เช่า</h6>
 
-        <hr />
+    {room.booking.fullName && (
+      <p>
+        <b>ผู้เช่า :</b>
+        {" "}{room.booking.fullName}
+      </p>
+    )}
 
-        {/* ================= ผู้เช่า ================= */}
-        <h6 className="fw-bold">👤 ข้อมูลผู้เช่า</h6>
+    {room.booking.bookingDate && (
+      <p>
+        <b>วันที่จอง :</b>
+        {" "}
+        {formatThaiDate(
+          room.booking.bookingDate
+        )}
+      </p>
+    )}
 
-        <p>
-          <b>ผู้เช่า :</b>{" "}
-          {room.booking?.fullName ?? "-"}
-        </p>
-
-        <p>
-          <b>วันที่จอง :</b>{" "}
-          {formatThaiDate(
-            room.booking?.bookingDate
-          )}
-        </p>
-
-        <p>
-          <b>วันที่เข้าพัก :</b>{" "}
-          {formatThaiDate(
-            room.booking?.checkinAt
-          )}
-        </p>
+    {room.booking.checkinAt && (
+      <p>
+        <b>วันที่เข้าพัก :</b>
+        {" "}
+        {formatThaiDate(
+          room.booking.checkinAt
+        )}
+      </p>
+    )}
+  </>
+)}
       </div>
 
       {/* ===== ปุ่ม ADMIN ===== */}

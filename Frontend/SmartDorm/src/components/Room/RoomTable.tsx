@@ -1,5 +1,5 @@
 import RoomRow from "./RoomRow";
-import type { Room } from "../../types/Room";
+import type { Room } from "../../types/All";
 
 interface Props {
   rooms: Room[];

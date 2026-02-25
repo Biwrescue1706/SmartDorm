@@ -1,13 +1,12 @@
 import { useEffect } from "react";
 import { useRooms } from "../../hooks/ManageRooms/useRooms";
-import type { Room, Booking } from "../../types/All";
+import type { Room } from "../../types/All";
 import EditRoomDialog from "./EditRoomDialog";
 
 import {
   formatThaiDate,
   formatThaiTime,
 } from "../../utils/thaiDate";
-
 
 interface Props {
   room: Room;
@@ -27,7 +26,7 @@ export default function RoomRow({
   const { deleteRoom, fetchRooms } = useRooms();
   const isSuperAdmin = role === 0;
 
-  const getStatus = (status: number) => (
+  const getStatus = (status?: number) => (
     <span
       className={`badge px-3 py-1 fw-semibold ${
         status === 0
@@ -59,7 +58,7 @@ export default function RoomRow({
       <td>{index + 1}</td>
       <td>{room.number}</td>
       <td>{room.size ?? "-"}</td>
-      <td>{room.rent?.toLocaleString("th-TH")}</td>
+      <td>{room.rent?.toLocaleString("th-TH") ?? "-"}</td>
 
       {/* ===== ข้อมูลห้อง ===== */}
       <td>{room.adminCreated?.name ?? "-"}</td>
@@ -72,18 +71,24 @@ export default function RoomRow({
       <td>{formatThaiDate(room.updatedAt)}</td>
       <td>{formatThaiTime(room.updatedAt)}</td>
 
-      {/* ช่อง placeholder (ตรงกับ header '-') */}
+      {/* ช่อง placeholder (ตรง header '-') */}
       <td>-</td>
 
       {/* ===== ข้อมูลผู้เช่า ===== */}
       {!hideTenant && (
         <>
           <td>{room.booking?.fullName ?? "-"}</td>
+
           <td>
-            {formatThaiDate(room.booking?.bookingDate)}
+            {formatThaiDate(
+              room.booking?.bookingDate ?? null
+            )}
           </td>
+
           <td>
-            {formatThaiDate(room.booking?.checkinAt)}
+            {formatThaiDate(
+              room.booking?.checkinAt ?? null
+            )}
           </td>
         </>
       )}

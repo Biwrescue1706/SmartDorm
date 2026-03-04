@@ -26,11 +26,22 @@ const allowedOrigins = [
 
 // cors config
 app.use(
-  cors(
-    process.env.NODE_ENV !== "production"
-      ? { origin: true, credentials: true }
-      : { origin: allowedOrigins, credentials: true }
-  )
+    cors({
+        origin: (origin, callback) => {
+
+            // allow no-origin (mobile / postman)
+            if (!origin) return callback(null, true);
+
+            if (allowedOrigins.includes(origin)) {
+                callback(null, true);
+            } else {
+                callback(new Error("Not allowed by CORS"));
+            }
+        },
+        credentials: true,
+        methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+        allowedHeaders: ["Content-Type", "Authorization"],
+    })
 );
 
 app.use(express.json());

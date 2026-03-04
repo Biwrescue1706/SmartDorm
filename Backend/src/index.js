@@ -9,7 +9,7 @@ import { scheduleOverdueAuto } from "./services/overdue.service.js"; // cron
 if (process.env.NODE_ENV !== "production") dotenv.config();
 
 const app = express();
-app.set("trust proxy", 1);
+app.set("trust proxy", true);
 
 // cors allow
 const allowedOrigins = [

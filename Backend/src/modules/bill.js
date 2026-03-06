@@ -16,7 +16,7 @@ const BILL_START_HOUR_UTC = 1;
 
 // normalize เดือนบิล → วันที่ 1 เวลา 08:00 (TH) = 01:00 UTC
 const normalizeBillMonthTH = (inputDate) => {
-  const d = thailandTime(inputDate);
+  const d = thailandTime(new Date(inputDate));
 
   return new Date(
     Date.UTC(
@@ -156,6 +156,8 @@ bill.post(
         electricRate,
       } = await getDormRates();
       if (!month) throw new Error("กรุณาระบุเดือน");
+      if (wAfter === undefined) throw new Error("กรุณาระบุเลขมิเตอร์น้ำ");
+      if (eAfter === undefined) throw new Error("กรุณาระบุเลขมิเตอร์ไฟ");
 
       // ✅ FIX: normalize month → วันที่ 1 ของเดือนเสมอ
       const billNumber = await generateBillNumber(0);
@@ -433,7 +435,7 @@ bill.put(
 
       if (dueDate) {
         const today = thailandTime();
-        const newDue = thailandTime(dueDate);
+        const newDue = thailandTime(new Date(dueDate));
 
         if (today > newDue) {
           const diffDays = Math.floor(

@@ -1,23 +1,22 @@
 import { Router } from "express";
 import prisma from "../prisma.js";
 import { authMiddleware, roleMiddleware } from "../middleware/authMiddleware.js";
-import { sendFlexMessage } from "../utils/lineFlex.js";
 import { processOverdueManual } from "../services/overdue.manual.js";
-import { BASE_URL } from "../utils/api.js";
 import { deleteSlip } from "../utils/deleteSlip.js"; // ✅ เพิ่มแค่นี้
+import { thailandTime } from "../utils/timezone.js";
+import {
+  notifyBillCreated,
+  notifyBillApproved,
+  notifyBillEdited
+} from "../services/billLineNotify.js";
 
 const bill = Router();
 
-// ================= Helpers =================
-
-// บิลใช้เวลาไทย (+7) → เก็บเป็น UTC
-const TH_UTC_OFFSET_HOUR = 7;
-const BILL_START_HOUR_TH = 8; // 08:00 ไทย
-const BILL_START_HOUR_UTC = BILL_START_HOUR_TH - TH_UTC_OFFSET_HOUR; // = 1
+const BILL_START_HOUR_UTC = 1;
 
 // normalize เดือนบิล → วันที่ 1 เวลา 08:00 (TH) = 01:00 UTC
 const normalizeBillMonthTH = (inputDate) => {
-  const d = new Date(inputDate);
+  const d = thailandTime(inputDate);
 
   return new Date(
     Date.UTC(
@@ -47,12 +46,6 @@ const getDormRates = async () => {
   };
 };
 
-const getMonthRange = (month) => {
-  const start = normalizeBillMonthTH(month);
-  const end = new Date(start.getFullYear(), start.getMonth() + 1, 1);
-  return { start, end };
-};
-
 const getDueDateNextMonth5th = (month) => {
   const d = new Date(month);
 
@@ -66,7 +59,7 @@ const getDueDateNextMonth5th = (month) => {
 
 const generateBillNumber = async (status) => {
   const prefix = status === 1 ? "RC" : "INV";
-  const now = new Date();
+  const now = thailandTime();
 
   const year = now.getFullYear();
   const month = String(now.getMonth() + 1).padStart(2, "0");
@@ -92,54 +85,6 @@ const generateBillNumber = async (status) => {
   const seq = String(nextNumber).padStart(8, "0");
 
   return `${searchPrefix}${seq}`;
-};
-
-const formatThaiDate = (d) =>
-  d
-    ? new Date(d).toLocaleDateString("th-TH", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    })
-    : "-";
-
-const formatThaiMonth = (d) =>
-  d
-    ? new Date(d).toLocaleDateString("th-TH", {
-      day: "numeric",
-      month: "long",
-      year: "numeric",
-    })
-    : "-";
-
-const getBillStatusText = (status) => {
-  switch (status) {
-    case 0:
-      return "รอการชำระเงิน";
-    case 1:
-      return "ชำระเงินแล้ว";
-    case 2:
-      return "รอตรวจสอบ";
-    case 3:
-      return "ปฏิเสธการชำระเงิน";
-    default:
-      return "ไม่ทราบสถานะ";
-  }
-};
-
-const getBillStatusColour = (status) => {
-  switch (status) {
-    case 0:
-      return "#9CA3AF";
-    case 1:
-      return "#16A34A";
-    case 2:
-      return "#FACC15";
-    case 3:
-      return "#DC2626";
-    default:
-      return "#6B7280";
-  }
 };
 
 // ================= Routes =================
@@ -205,12 +150,11 @@ bill.post(
     try {
       const { roomId } = req.params;
       const { month, wAfter, eAfter } = req.body;
-const {
-  service,
-  waterRate,
-  electricRate,
-  overdueFinePerDay
-} = await getDormRates();
+      const {
+        service,
+        waterRate,
+        electricRate,
+      } = await getDormRates();
       if (!month) throw new Error("กรุณาระบุเดือน");
 
       // ✅ FIX: normalize month → วันที่ 1 ของเดือนเสมอ
@@ -229,24 +173,6 @@ const {
         include: { customer: true, room: true },
       });
       if (!booking) throw new Error("ไม่พบผู้เข้าพัก");
-
-      // 🔒 rule 25 (ใช้วันที่เข้าพักจริง)
-const cutoff = new Date(
-  billMonth.getFullYear(),
-  billMonth.getMonth() - 1,
-  25,
-  23, 59, 59
-);
-
-if (!booking.checkinAt) {
-  throw new Error("ยังไม่ได้บันทึกวันเข้าพักจริง");
-}
-
-if (new Date(booking.checkinAt) > cutoff) {
-  throw new Error(
-    "ผู้เช่าเข้าพักหลังวันที่ 25 ของเดือนก่อน ไม่สามารถออกบิลรอบนี้ได้"
-  );
-}
 
       const prevBill = await prisma.bill.findFirst({
         where: { roomId, month: { lt: billMonth } },
@@ -267,7 +193,7 @@ if (new Date(booking.checkinAt) > cutoff) {
       const eUnits = eAfter - eBefore;
 
       const waterCost = wUnits * waterRate;
-const electricCost = eUnits * electricRate;
+      const electricCost = eUnits * electricRate;
 
       const total = rent + service + waterCost + electricCost;
 
@@ -296,49 +222,15 @@ const electricCost = eUnits * electricRate;
           electricCost,
           total,
           billStatus: 0,
-          billDate: new Date(),
+          billDate: thailandTime(),
           createdBy: req.admin.adminId,
         },
       });
 
-      const detailedBill = `${BASE_URL}/bill/${billCreated.billId}`;
-
-      if (booking.customer?.userId) {
-        await sendFlexMessage(
-          booking.customer.userId,
-          `📄 แจ้งบิลค่าเช่าห้อง ประจำเดือน ${formatThaiMonth(
-            billCreated.month
-          )}`,
-          [
-            { label: "รหัสบิล", value: billCreated.billId },
-            { label: "เลขที่บิล", value: billNumber },
-            { label: "ห้อง", value: booking.room.number },
-            { label: "ค่าเช่าห้อง", value: `${rent} บาท` },
-            {
-              label: "ค่าน้ำ",
-              value: `${billCreated.wUnits} หน่วย (${billCreated.waterCost} บาท)`,
-            },
-            {
-              label: "ค่าไฟ",
-              value: `${billCreated.eUnits} หน่วย (${billCreated.electricCost} บาท)`,
-            },
-            { label: "ค่าส่วนกลาง", value: `${service} บาท` },
-            {
-              label: "ยอดรวมทั้งหมด",
-              value: `${billCreated.total.toLocaleString()} บาท`,
-            },
-            {
-              label: "ครบกำหนดชำระ",
-              value: formatThaiDate(billCreated.dueDate),
-            },
-            {
-              label: "สถานะ",
-              value: getBillStatusText(billCreated.billStatus),
-              color: getBillStatusColour(billCreated.billStatus),
-            },
-          ],
-          [{ label: "ดูรายละเอียดและชำระเงิน", url: detailedBill }]
-        );
+      try {
+        await notifyBillCreated(booking, billCreated, billNumber, service);
+      } catch (e) {
+        console.error("แจ้งบิลใหม่ล้มเหลว:", e.message);
       }
 
       res.json({ message: "สร้างบิลจากห้องสำเร็จ", bill: billCreated });
@@ -389,44 +281,24 @@ bill.put(
           data: {
             billStatus: 1,
             billNumber: newBillNumber,
-            billDate: new Date()
+            billDate: thailandTime()
           },
         });
 
         if (billData.payment) {
           await tx.payment.update({
             where: { billId },
-            data: { updatedAt: new Date() },
+            data: { updatedAt: thailandTime() },
           });
         }
 
         return b;
       });
 
-      const detailedBill = `${BASE_URL}/bill/${updated.billId}`;
-
-      if (billData.customer?.userId) {
-        await sendFlexMessage(
-          billData.customer.userId,
-          "🏫SmartDorm🎉 แจ้งผลการชำระเงิน",
-          [
-            { label: "รหัสบิล", value: updated.billId },
-            { label: "เลขที่บิล", value: updated.billNumber },
-            { label: "ห้อง", value: billData.room?.number ?? "-" },
-            { label: "เดือนที่ชำระ", value: formatThaiMonth(updated.month) },
-            {
-              label: "ยอดชำระ",
-              value: `${updated.total.toLocaleString()} บาท`,
-            },
-            {
-              label: "สถานะ",
-              value: getBillStatusText(updated.billStatus),
-              color: getBillStatusColour(updated.billStatus),
-            },
-            { label: "วันที่ยืนยัน", value: formatThaiDate(updated.billDate) },
-          ],
-          [{ label: "ดูรายละเอียดและชำระเงิน", url: detailedBill }]
-        );
+      try {
+        await notifyBillApproved(billData, updated);
+      } catch (e) {
+        console.error("แจ้งอนุมัติบิลล้มเหลว:", e.message);
       }
 
       res.json({ message: "อนุมัติการชำระเงินสำเร็จ", bill: updated });
@@ -464,36 +336,16 @@ bill.put(
           data: {
             billStatus: 0,
             slipUrl: null,
-            paidAt : null,
-            billDate: new Date(),
+            paidAt: null,
+            billDate: thailandTime(),
           },
         });
       });
 
-      const detailedBill = `${BASE_URL}/bill/${updated.billId}`;
-
-      if (billData.customer?.userId) {
-        await sendFlexMessage(
-          billData.customer.userId,
-          "🏫SmartDorm🎉 แจ้งผลการชำระเงิน",
-          [
-            { label: "รหัสบิล", value: updated.billId },
-{ label: "เลขที่บิล", value: updated.billNumber },
-            { label: "ห้อง", value: billData.room?.number ?? "-" },
-            { label: "เดือนที่ชำระ", value: formatThaiMonth(updated.month) },
-            {
-              label: "ยอดชำระ",
-              value: `${updated.total.toLocaleString()} บาท`,
-            },
-            {
-              label: "สถานะ",
-              value: getBillStatusText(updated.billStatus),
-              color: getBillStatusColour(updated.billStatus),
-            },
-            { label: "วันที่ยืนยัน", value: formatThaiDate(updated.billDate) },
-          ],
-          [{ label: "ดูรายละเอียดและชำระเงิน", url: detailedBill }]
-        );
+      try {
+        await notifyBillEdited(billData, updated);
+      } catch (e) {
+        console.error("แจ้งปฏิเสธบิลล้มเหลว:", e.message);
       }
 
       res.json({ message: "ปฏิเสธการชำระเงินแล้ว", bill: updated });
@@ -520,12 +372,12 @@ bill.put(
         dueDate,
         billStatus,
       } = req.body;
-const { 
-overdueFinePerDay, 
-waterRate, 
-electricRate,
-service
- } = await getDormRates();
+      const {
+        overdueFinePerDay,
+        waterRate,
+        electricRate,
+        service
+      } = await getDormRates();
 
       const billData = await prisma.bill.findUnique({
         where: { billId },
@@ -538,16 +390,16 @@ service
         throw new Error("ไม่สามารถแก้ไขบิลนี้ได้");
       }
 
-// 🔥 ถ้าเปลี่ยนสถานะเป็น 1 → ออกเลข RC ใหม่
-let newBillNumber = billData.billNumber;
+      // 🔥 ถ้าเปลี่ยนสถานะเป็น 1 → ออกเลข RC ใหม่
+      let newBillNumber = billData.billNumber;
 
-if (
-  typeof billStatus === "number" &&
-  billStatus === 1 &&
-  billData.billStatus !== 1
-) {
-  newBillNumber = await generateBillNumber(1);
-}
+      if (
+        typeof billStatus === "number" &&
+        billStatus === 1 &&
+        billData.billStatus !== 1
+      ) {
+        newBillNumber = await generateBillNumber(1);
+      }
 
       // ✅ ใช้ค่าที่ส่งมา หรือ fallback ค่าเดิม
       const newWBefore =
@@ -574,14 +426,14 @@ if (
       const eUnits = newEAfter - newEBefore;
 
       const waterCost = wUnits * waterRate;
-const electricCost = eUnits * electricRate;
+      const electricCost = eUnits * electricRate;
 
       let newOverdueDays = billData.overdueDays ?? 0;
       let newFine = billData.fine ?? 0;
 
       if (dueDate) {
-        const today = new Date();
-        const newDue = new Date(dueDate);
+        const today = thailandTime();
+        const newDue = thailandTime(dueDate);
 
         if (today > newDue) {
           const diffDays = Math.floor(
@@ -606,7 +458,7 @@ const electricCost = eUnits * electricRate;
       const updated = await prisma.bill.update({
         where: { billId },
         data: {
-billNumber: newBillNumber,
+          billNumber: newBillNumber,
           wBefore: newWBefore,
           wAfter: newWAfter,
           wUnits,
@@ -618,52 +470,21 @@ billNumber: newBillNumber,
           electricCost,
           total,
           month: month ? normalizeBillMonthTH(month) : billData.month,
-          dueDate: dueDate ? new Date(dueDate) : billData.dueDate,
+          dueDate: dueDate ? thailandTime(dueDate) : billData.dueDate,
           overdueDays: newOverdueDays,
           fine: newFine,
           billStatus:
             typeof billStatus === "number"
               ? billStatus
               : billData.billStatus,
-          billDate: new Date(),
+          billDate: thailandTime(),
         },
       });
 
-      const detailedBill = `${BASE_URL}/bill/${updated.billId}`;
-
-      if (billData.customer?.userId) {
-        await sendFlexMessage(
-          billData.customer.userId,
-          "🏫SmartDorm🎉 แก้ไขบิลค่าเช่าห้อง",
-          [
-            { label: "รหัสบิล", value: updated.billId },
-{ label: "เลขที่บิล", value: updated.billNumber },
-            { label: "ห้อง", value: billData.room?.number ?? "-" },
-            { label: "ประจำเดือน", value: formatThaiMonth(updated.month) },
-            {
-              label: "ค่าน้ำ",
-              value: `${updated.wUnits} หน่วย (${updated.waterCost} บาท)`,
-            },
-            {
-              label: "ค่าไฟ",
-              value: `${updated.eUnits} หน่วย (${updated.electricCost} บาท)`,
-            },
-            {
-              label: "ยอดรวมใหม่",
-              value: `${updated.total.toLocaleString()} บาท`,
-            },
-            {
-              label: "ครบกำหนดชำระ",
-              value: formatThaiDate(updated.dueDate),
-            },
-            {
-              label: "สถานะ",
-              value: getBillStatusText(updated.billStatus),
-              color: getBillStatusColour(updated.billStatus),
-            },
-          ],
-          [{ label: "ดูรายละเอียดบิล", url: detailedBill }]
-        );
+      try {
+        await notifyBillEdited(billData, updated);
+      } catch (e) {
+        console.error("แจ้งแก้ไขบิลล้มเหลว:", e.message);
       }
 
       res.json({ message: "แก้ไขบิลสำเร็จ", bill: updated });
@@ -690,10 +511,8 @@ bill.delete("/:billId", authMiddleware, roleMiddleware(0), async (req, res) => {
       if (billData.slipUrl) {
         await deleteSlip(billData.slipUrl);
       }
-
       // ✅ ลบ payment
       await tx.payment.deleteMany({ where: { billId } });
-
       // ✅ ลบบิล
       await tx.bill.delete({ where: { billId } });
     });

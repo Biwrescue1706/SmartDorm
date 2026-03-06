@@ -1,16 +1,22 @@
-// ================= booking.js =================
+// src/modules/booking.js
 import { Router } from "express";
 import multer from "multer";
 import prisma from "../prisma.js";
 import { createClient } from "@supabase/supabase-js";
 import { verifyLineToken } from "../utils/verifyLineToken.js";
-import { sendFlexMessage } from "../utils/lineFlex.js";
 import { authMiddleware } from "../middleware/authMiddleware.js";
-
-import { BASE_URL , ADMIN_URL } from "../utils/api.js";
+import { thailandTime, toThaiString } from "../utils/timezone.js";
+import { BASE_URL, ADMIN_URL } from "../utils/api.js";
+import {
+  notifyBookingCreated,
+  notifyAdminBookingCreated,
+  notifyBookingApproved,
+  notifyBookingRejected,
+  notifyBookingCheckin,
+  notifyBookingUpdatedByAdmin,
+} from "../services/bookingLineNotify.js";
 
 const upload = multer({ storage: multer.memoryStorage() });
-
 const booking = Router();
 
 //Supabase
@@ -23,14 +29,9 @@ const supabase = createClient(
 export const deleteSlip = async (url) => {
   try {
     if (!url) return;
-
     const bucket = process.env.SUPABASE_BUCKET;
-
-    // เอา path หลัง bucket ออกมา
     const path = url.split(`/${bucket}/`)[1];
-
     if (!path) return;
-
     await supabase.storage.from(bucket).remove([path]);
   } catch (err) {
     console.warn("ลบสลิปไม่สำเร็จ:", err);
@@ -46,22 +47,29 @@ const formatThai = (d) =>
     })
     : "-";
 
-// ROUTES
+const formatBooking = (b) => ({
+  ...b,
+  bookingDate: toThaiString(b.bookingDate),
+  checkin: toThaiString(b.checkin),
+  checkinAt: toThaiString(b.checkinAt),
+  approvedAt: toThaiString(b.approvedAt),
+  updatedAt: toThaiString(b.updatedAt),
+});
 
-// 📋 GET ALL BOOKINGS
+// ================= GET ALL =================
 booking.get("/getall", async (_req, res) => {
   try {
     const bookings = await prisma.booking.findMany({
       orderBy: { bookingDate: "desc" },
       include: { room: true, customer: true },
     });
-    res.json(bookings);
+    res.json(bookings.map(formatBooking));
   } catch {
     res.status(500).json({ error: "ไม่สามารถดึงข้อมูลการจองได้" });
   }
 });
 
-// 🔍 SEARCH BOOKINGS
+// ================= SEARCH =================
 booking.get("/search", async (req, res) => {
   try {
     const keyword = req.query.keyword?.trim();
@@ -79,7 +87,7 @@ booking.get("/search", async (req, res) => {
       include: { room: true, customer: true },
       orderBy: { bookingDate: "desc" },
     });
-    res.json(results);
+    res.json(results.map(formatBooking));
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
@@ -115,17 +123,17 @@ booking.get("/history", authMiddleware, async (_req, res) => {
         bookingId: b.bookingId,
         fullName: b.fullName,
         cphone: b.cphone,
-        bookingDate: b.bookingDate,
-        checkin: b.checkin,
-        checkinAt: b.checkinAt,
+        bookingDate: toThaiString(b.bookingDate),
+        checkin: toThaiString(b.checkin),
+        checkinAt: toThaiString(b.checkinAt),
         room: b.room,
         customer: { userName: b.customer?.userName },
 
-        checkout: c?.checkout || null,
+        checkout: toThaiString(c?.checkout),
         ReturnApprovalStatus: c?.ReturnApprovalStatus ?? 0,
-        RefundApprovalDate: c?.RefundApprovalDate || null,
+        RefundApprovalDate: toThaiString(c?.RefundApprovalDate),
         checkoutStatus: c?.checkoutStatus ?? 0,
-        checkoutAt: c?.checkoutAt || null,
+        checkoutAt: toThaiString(c?.checkoutAt),
       };
     });
 
@@ -136,7 +144,7 @@ booking.get("/history", authMiddleware, async (_req, res) => {
   }
 });
 
-// 🔎 GET BOOKING BY ID
+// ================= GET BY ID =================
 booking.get("/:bookingId", async (req, res) => {
   try {
     const data = await prisma.booking.findUnique({
@@ -144,13 +152,13 @@ booking.get("/:bookingId", async (req, res) => {
       include: { room: true, customer: true },
     });
     if (!data) throw new Error("ไม่พบข้อมูลการจอง");
-    res.json(data);
+    res.json(formatBooking(data));
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
 });
 
-// ➕ CREATE BOOKING
+// ================= CREATE =================
 booking.post("/create", async (req, res) => {
   try {
     const {
@@ -185,60 +193,30 @@ booking.post("/create", async (req, res) => {
           cphone: cphone ?? "",
           cmumId: cmumId ?? "",
           slipUrl: null,
-          bookingDate: new Date(),
-          checkin: checkin ? new Date(checkin) : new Date(),
+          bookingDate: thailandTime(),
+          checkin: checkin ? new Date(checkin) : thailandTime(),
           approveStatus: 0,
           checkinStatus: 0,
         },
         include: { room: true, customer: true },
       });
 
-      await tx.room.update({ where: { roomId }, data: { status: 1 } });
+      await tx.room.update({
+        where: { roomId },
+        data: { status: 1, updatedAt: thailandTime() },
+      });
+
       return booking;
     });
 
     const detailUrl = `${BASE_URL}/booking/${created.bookingId}`;
 
     try {
-      await sendFlexMessage(
-        created.customer?.userId ?? "",
-        "🏫SmartDorm🎉 ยืนยันการจองห้อง",
-        [
-          { label: "รหัสการจอง", value: created.bookingId },
-          { label: "ชื่อ", value: created.fullName ?? "-" },
-          { label: "ห้อง", value: created.room.number },
-          { label: "วันจอง", value: formatThai(created.bookingDate) },
-          { label: "วันที่แจ้งเข้าพัก", value: formatThai(created.checkin) },
-          { label: "เบอร์โทร", value: created.cphone ?? "-" },
-          { label: "สถานะ", value: "รออนุมัติ", color: "#f39c12" },
-        ],
-        [{ label: "ดูรายละเอียด", url: detailUrl, style: "primary" }]
-      );
+      await notifyBookingCreated(created);
+      await notifyAdminBookingCreated(created);
     } catch (err) {
-      console.error("❌ LINE Error (customer):", err);
+      console.error("❌ LINE Notify Error (create):", err);
     }
-
-    const adminId = process.env.ADMIN_LINE_ID;
-    if (adminId) {
-      try {
-        await sendFlexMessage(
-          adminId,
-          "📢 มีการจองห้องใหม่เข้ามา",
-          [
-            { label: "รหัสการจอง", value: created.bookingId },
-            { label: "ชื่อผู้จอง", value: created.fullName ?? "-" },
-            { label: "ห้อง", value: created.room.number },
-            { label: "วันจอง", value: formatThai(created.bookingDate) },
-            { label: "วันที่แจ้งเข้าพัก", value: formatThai(created.checkin) },
-            { label: "เบอร์โทร", value: created.cphone ?? "-" },
-          ],
-          [{ label: "เปิดดูรายการ", url: ADMIN_URL, style: "primary" }]
-        );
-      } catch (err) {
-        console.error("❌ LINE Error (admin):", err);
-      }
-    }
-
     res.json({ message: "สร้างการจองสำเร็จ", booking: created });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -268,8 +246,10 @@ booking.post("/:bookingId/uploadSlip", upload.single("slip"), async (req, res) =
 
     await prisma.booking.update({
       where: { bookingId },
-      data: { slipUrl: pub.publicUrl , updatedAt: new Date(),
-  },
+      data: {
+        slipUrl: pub.publicUrl,
+        updatedAt: thailandTime(),
+      },
     });
 
     res.json({ message: "อัปโหลดสลิปสำเร็จ", slipUrl: pub.publicUrl });
@@ -285,40 +265,28 @@ booking.put("/:bookingId/approve", async (req, res) => {
     const updated = await prisma.$transaction(async (tx) => {
       const b = await tx.booking.update({
         where: { bookingId: req.params.bookingId },
-        data: { approveStatus: 1, approvedAt: new Date() ,
-updatedAt: new Date()
-},
+        data: {
+          approveStatus: 1,
+          approvedAt: thailandTime(),
+          updatedAt: thailandTime(),
+        },
         include: { room: true, customer: true },
       });
       await tx.room.update({
         where: { roomId: b.roomId },
-        data: { status: 1,
-updatedAt: new Date() },
+        data: {
+          status: 1,
+          updatedAt: thailandTime(),
+        },
       });
       return b;
     });
 
-    const detailUrl = `${BASE_URL}/booking/${updated.bookingId}`;
-
     try {
-      await sendFlexMessage(
-        updated.customer?.userId ?? "",
-        "🏫SmartDorm🎉 แจ้งผลคำขอการจองห้อง",
-        [
-          { label: "รหัส", value: updated.bookingId },
-          { label: "ชื่อ", value: updated.fullName ?? "-" },
-          { label: "ห้อง", value: updated.room.number },
-          { label: "วันจอง", value: formatThai(updated.bookingDate) },
-          { label: "วันที่แจ้งเข้าพัก", value: formatThai(updated.checkin) },
-          { label: "วันที่อนุมัติ", value: formatThai(updated.approvedAt) },
-          { label: "สถานะ", value: "อนุมัติแล้ว", color: "#27ae60" },
-        ],
-        [{ label: "รายละเอียด", url: detailUrl, style: "primary" }]
-      );
+      await notifyBookingApproved(updated);
     } catch (err) {
       console.error("❌ LINE Error (approve):", err);
     }
-
     res.json({ message: "อนุมัติสำเร็จ", booking: updated });
   } catch (err) {
     res.status(400).json({ error: err.message });
@@ -331,34 +299,25 @@ booking.put("/:bookingId/reject", async (req, res) => {
     const updated = await prisma.$transaction(async (tx) => {
       const b = await tx.booking.update({
         where: { bookingId: req.params.bookingId },
-        data: { approveStatus: 2, checkinAt: new Date(),
-updatedAt: new Date() },
+        data: {
+          approveStatus: 2,
+          approvedAt: thailandTime(),
+          updatedAt: thailandTime(),
+        },
         include: { room: true, customer: true },
       });
       await tx.room.update({
         where: { roomId: b.roomId },
-        data: { status: 0 ,
-updatedAt: new Date() },
+        data: {
+          status: 0,
+          updatedAt: thailandTime()
+        },
       });
       return b;
     });
 
-    const detailUrl = `${BASE_URL}/booking/${updated.bookingId}`;
-
     try {
-      await sendFlexMessage(
-        updated.customer?.userId ?? "",
-        "🏫SmartDorm🎉 แจ้งผลคำขอการจองห้อง",
-        [
-          { label: "รหัส", value: updated.bookingId },
-          { label: "ชื่อ", value: updated.fullName ?? "-" },
-          { label: "ห้อง", value: updated.room.number },
-          { label: "วันจอง", value: formatThai(updated.bookingDate) },
-          { label: "วันที่แจ้งเข้าพัก", value: formatThai(updated.checkin) },
-          { label: "สถานะ", value: "ปฏิเสธการจอง", color: "#e74c3c" },
-        ],
-        [{ label: "รายละเอียด", url: detailUrl, style: "primary" }]
-      );
+      await notifyBookingRejected(updated);
     } catch (err) {
       console.error("❌ LINE Error (reject):", err);
     }
@@ -374,27 +333,16 @@ booking.put("/:bookingId/checkin", async (req, res) => {
   try {
     const updated = await prisma.booking.update({
       where: { bookingId: req.params.bookingId },
-      data: { checkinStatus: 1, 
-checkinAt: new Date(),
-updatedAt: new Date()
- },
+      data: {
+        checkinStatus: 1,
+        checkinAt: thailandTime(),
+        updatedAt: thailandTime()
+      },
       include: { room: true, customer: true },
     });
 
-    const detailUrl = `${BASE_URL}/booking/${updated.bookingId}`;
-
     try {
-      await sendFlexMessage(
-        updated.customer?.userId ?? "",
-        "🏫SmartDorm🎉 เช็คอินสำเร็จ",
-        [
-          { label: "รหัส", value: updated.bookingId },
-          { label: "ชื่อ", value: updated.fullName ?? "-" },
-          { label: "ห้อง", value: updated.room.number },
-          { label: "เช็คอิน", value: formatThai(updated.checkinAt) },
-        ],
-        [{ label: "รายละเอียด", url: detailUrl, style: "primary" }]
-      );
+      await notifyBookingCheckin(updated);
     } catch (err) {
       console.error("❌ LINE Error (checkin):", err);
     }
@@ -440,12 +388,11 @@ booking.put("/:bookingId", async (req, res) => {
           cphone: cphone ?? data.cphone,
           cmumId: cmumId ?? data.cmumId,
           approveStatus: nextApproveStatus,
-          // รีเซ็ตเช็คอินทุกครั้งที่เปลี่ยนสถานะ
           checkinStatus: 0,
           checkinAt: null,
-updatedAt: new Date(),
+          updatedAt: thailandTime(),
 
-          checkin: checkin ? new Date(checkin) : data.checkin,
+          checkin: checkin ? thailandTime(checkin) : data.checkin,
         },
       });
 
@@ -454,9 +401,10 @@ updatedAt: new Date(),
 
       await tx.room.update({
         where: { roomId: data.roomId },
-        data: { status: roomStatus ,
-updatedAt: new Date()
-},
+        data: {
+          status: roomStatus,
+          updatedAt: thailandTime()
+        },
       });
 
       return b;

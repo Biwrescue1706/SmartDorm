@@ -172,14 +172,14 @@ function App() {
         }
       />
 
-<Route
-  path="/dorm-profile"
-  element={
-    <ProtectedRoute>
-      <DormProfile />
-    </ProtectedRoute>
-  }
-/>
+      <Route
+        path="/dorm-profile"
+        element={
+          <ProtectedRoute>
+            <DormProfile />
+          </ProtectedRoute>
+        }
+      />
 
       {/*  ไม่เจอ route → ไปหน้า 404 */}
       <Route path="*" element={<NotFound />} />

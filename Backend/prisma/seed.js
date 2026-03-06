@@ -38,6 +38,10 @@ async function seedDormProfile() {
     taxId: "1209000088280",
     taxType: 0,
     receiverTitle,
+    service: 100,
+    waterRate : 19  ,
+    electricityRate: 8,
+    overdueFinePerDay: 50,
     receiverName,
     receiverSurname,
     receiverFullName: buildFullName(

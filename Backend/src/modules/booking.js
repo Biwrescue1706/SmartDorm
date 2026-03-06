@@ -5,8 +5,7 @@ import prisma from "../prisma.js";
 import { createClient } from "@supabase/supabase-js";
 import { verifyLineToken } from "../utils/verifyLineToken.js";
 import { authMiddleware } from "../middleware/authMiddleware.js";
-import { thailandTime, toThaiString } from "../utils/timezone.js";
-import { BASE_URL, ADMIN_URL } from "../utils/api.js";
+import { thailandTime } from "../utils/timezone.js";
 import {
   notifyBookingCreated,
   notifyAdminBookingCreated,
@@ -47,15 +46,6 @@ const formatThai = (d) =>
     })
     : "-";
 
-const formatBooking = (b) => ({
-  ...b,
-  bookingDate: toThaiString(b.bookingDate),
-  checkin: toThaiString(b.checkin),
-  checkinAt: toThaiString(b.checkinAt),
-  approvedAt: toThaiString(b.approvedAt),
-  updatedAt: toThaiString(b.updatedAt),
-});
-
 // ================= GET ALL =================
 booking.get("/getall", async (_req, res) => {
   try {
@@ -63,7 +53,7 @@ booking.get("/getall", async (_req, res) => {
       orderBy: { bookingDate: "desc" },
       include: { room: true, customer: true },
     });
-    res.json(bookings.map(formatBooking));
+    res.json(bookings);
   } catch {
     res.status(500).json({ error: "ไม่สามารถดึงข้อมูลการจองได้" });
   }
@@ -87,7 +77,7 @@ booking.get("/search", async (req, res) => {
       include: { room: true, customer: true },
       orderBy: { bookingDate: "desc" },
     });
-    res.json(results.map(formatBooking));
+    res.json(results);
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
@@ -123,17 +113,17 @@ booking.get("/history", authMiddleware, async (_req, res) => {
         bookingId: b.bookingId,
         fullName: b.fullName,
         cphone: b.cphone,
-        bookingDate: toThaiString(b.bookingDate),
-        checkin: toThaiString(b.checkin),
-        checkinAt: toThaiString(b.checkinAt),
+        bookingDate: b.bookingDate,
+        checkin: b.checkin,
+        checkinAt: b.checkinAt,
         room: b.room,
         customer: { userName: b.customer?.userName },
 
-        checkout: toThaiString(c?.checkout),
+        checkout: c?.checkout,
         ReturnApprovalStatus: c?.ReturnApprovalStatus ?? 0,
-        RefundApprovalDate: toThaiString(c?.RefundApprovalDate),
+        RefundApprovalDate: c?.RefundApprovalDate,
         checkoutStatus: c?.checkoutStatus ?? 0,
-        checkoutAt: toThaiString(c?.checkoutAt),
+        checkoutAt: c?.checkoutAt,
       };
     });
 
@@ -152,7 +142,7 @@ booking.get("/:bookingId", async (req, res) => {
       include: { room: true, customer: true },
     });
     if (!data) throw new Error("ไม่พบข้อมูลการจอง");
-    res.json(formatBooking(data));
+    res.json(data);
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
@@ -208,8 +198,6 @@ booking.post("/create", async (req, res) => {
 
       return booking;
     });
-
-    const detailUrl = `${BASE_URL}/booking/${created.bookingId}`;
 
     try {
       await notifyBookingCreated(created);

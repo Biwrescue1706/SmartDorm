@@ -10,232 +10,232 @@ datasource db {
 
 // ADMIN
 model Admin {
-adminId  String @id @default(uuid())
-username String @unique
-name     String
-password String
-role     Int    @default(1)
+  adminId  String @id @default(uuid())
+  username String @unique
+  name     String
+  password String
+  role     Int    @default(1)
 
-createdAt DateTime @default(now())
-updatedAt DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime?
 
-roomsCreated Room[] @relation("RoomCreatedBy")
-roomsUpdated Room[] @relation("RoomUpdatedBy")
-billsCreated Bill[] @relation("BillCreatedBy")
-billsUpdated Bill[] @relation("BillUpdatedBy")
+  roomsCreated Room[] @relation("RoomCreatedBy")
+  roomsUpdated Room[] @relation("RoomUpdatedBy")
+  billsCreated Bill[] @relation("BillCreatedBy")
+  billsUpdated Bill[] @relation("BillUpdatedBy")
 }
 
 // ROOM
 model Room {
-roomId     String @id @default(uuid())
-number     String @unique
-size       String
-rent       Int
-deposit    Int
-bookingFee Int
+  roomId     String @id @default(uuid())
+  number     String @unique
+  size       String
+  rent       Int
+  deposit    Int
+  bookingFee Int
 
-status Int @default(0)
+  status Int @default(0)
 
-createdAt DateTime @default(now())
-updatedAt DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime?
 
-createdBy String
-updatedBy String?
+  createdBy String
+  updatedBy String?
 
-adminCreated Admin? @relation("RoomCreatedBy", fields: [createdBy], references: [adminId])
-adminUpdated Admin? @relation("RoomUpdatedBy", fields: [updatedBy], references: [adminId])
+  adminCreated Admin? @relation("RoomCreatedBy", fields: [createdBy], references: [adminId])
+  adminUpdated Admin? @relation("RoomUpdatedBy", fields: [updatedBy], references: [adminId])
 
-bookings  Booking[]
-bills     Bill[]
-checkouts Checkout[]
+  bookings  Booking[]
+  bills     Bill[]
+  checkouts Checkout[]
 }
 
 // CUSTOMER
 model Customer {
-customerId String @id @default(uuid())
+  customerId String @id @default(uuid())
 
-userId   String
-userName String
+  userId   String @unique
+  userName String
 
-createdAt DateTime @default(now())
-updatedAt DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime?
 
-bookings  Booking[]
-bills     Bill[]
-payments  Payment[]
-checkouts Checkout[]
+  bookings  Booking[]
+  bills     Bill[]
+  payments  Payment[]
+  checkouts Checkout[]
 }
 
 // BOOKING
 model Booking {
-bookingId String @id @default(uuid())
+  bookingId String @id @default(uuid())
 
-roomId     String
-customerId String
+  roomId     String
+  customerId String
 
-ctitle   String?
-cname    String?
-csurname String?
-fullName String?
-cphone   String?
-cmumId   String?
+  ctitle   String?
+  cname    String?
+  csurname String?
+  fullName String?
+  cphone   String?
+  cmumId   String?
 
-bookingDate DateTime @default(now())
+  bookingDate DateTime @default(now())
 
-checkin       DateTime
-checkinAt     DateTime?
-checkinStatus Int @default(0)
+  checkin       DateTime
+  checkinAt     DateTime?
+  checkinStatus Int       @default(0)
 
-approveStatus Int @default(0)
-approvedAt    DateTime?
+  approveStatus Int       @default(0)
+  approvedAt    DateTime?
 
-slipUrl String?
+  slipUrl String?
 
-createdAt DateTime @default(now())
-updatedAt DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime?
 
-room     Room     @relation(fields: [roomId], references: [roomId])
-customer Customer @relation(fields: [customerId], references: [customerId])
+  room     Room     @relation(fields: [roomId], references: [roomId])
+  customer Customer @relation(fields: [customerId], references: [customerId])
 
-checkout Checkout?
-bills    Bill[]
+  checkout Checkout?
+  bills    Bill[]
 
-@@index([roomId])
-@@index([customerId])
-@@index([approveStatus])
+  @@index([roomId])
+  @@index([customerId])
+  @@index([approveStatus])
 }
 
 // CHECKOUT
 model Checkout {
-checkoutId String @id @default(uuid())
+  checkoutId String @id @default(uuid())
 
-bookingId  String @unique
-roomId     String
-customerId String
+  bookingId  String @unique
+  roomId     String
+  customerId String
 
-checkout DateTime
+  checkout DateTime
 
-ReturnApprovalStatus Int @default(0)
-RefundApprovalDate   DateTime?
+  ReturnApprovalStatus Int       @default(0)
+  RefundApprovalDate   DateTime?
 
-checkoutStatus Int @default(0)
-checkoutAt     DateTime?
+  checkoutStatus Int       @default(0)
+  checkoutAt     DateTime?
 
-createdAt DateTime @default(now())
-updatedAt DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime?
 
-booking  Booking  @relation(fields: [bookingId], references: [bookingId])
-room     Room     @relation(fields: [roomId], references: [roomId])
-customer Customer @relation(fields: [customerId], references: [customerId])
+  booking  Booking  @relation(fields: [bookingId], references: [bookingId])
+  room     Room     @relation(fields: [roomId], references: [roomId])
+  customer Customer @relation(fields: [customerId], references: [customerId])
 
-@@index([checkoutStatus])
-@@index([ReturnApprovalStatus])
+  @@index([checkoutStatus])
+  @@index([ReturnApprovalStatus])
 }
 
 // BILL
 model Bill {
-billId     String @id @default(uuid())
-billNumber String @unique
+  billId     String @id @default(uuid())
+  billNumber String @unique
 
-roomId     String?
-customerId String?
-bookingId  String?
+  roomId     String?
+  customerId String?
+  bookingId  String?
 
-month DateTime
+  month DateTime
 
-ctitle   String?
-cname    String?
-csurname String?
-fullName String?
-cphone   String?
+  ctitle   String?
+  cname    String?
+  csurname String?
+  fullName String?
+  cphone   String?
 
-total Int @default(0)
+  total Int @default(0)
 
-billStatus Int @default(0)
-billDate   DateTime?
+  billStatus Int       @default(0)
+  billDate   DateTime?
 
-paidAt DateTime?
+  paidAt DateTime?
 
-dueDate DateTime
-slipUrl String?
+  dueDate DateTime
+  slipUrl String?
 
-rent    Int
-service Int @default(50)
+  rent    Int
+  service Int @default(50)
 
-wBefore   Int
-wAfter    Int
-wUnits    Int
-waterCost Int @default(0)
+  wBefore   Int
+  wAfter    Int
+  wUnits    Int
+  waterCost Int @default(0)
 
-eBefore      Int
-eAfter       Int
-eUnits       Int
-electricCost Int @default(0)
+  eBefore      Int
+  eAfter       Int
+  eUnits       Int
+  electricCost Int @default(0)
 
-fine        Int @default(0)
-overdueDays Int @default(0)
+  fine        Int @default(0)
+  overdueDays Int @default(0)
 
-lastOverdueNotifyAt DateTime?
+  lastOverdueNotifyAt DateTime?
 
-createdAt DateTime @default(now())
-createdBy String
-updatedAt DateTime?
-updatedBy String?
+  createdAt DateTime  @default(now())
+  createdBy String
+  updatedAt DateTime?
+  updatedBy String?
 
-room         Room?     @relation(fields: [roomId], references: [roomId])
-customer     Customer? @relation(fields: [customerId], references: [customerId])
-booking      Booking?  @relation(fields: [bookingId], references: [bookingId])
-adminCreated Admin?    @relation("BillCreatedBy", fields: [createdBy], references: [adminId])
-adminUpdated Admin?    @relation("BillUpdatedBy", fields: [updatedBy], references: [adminId])
+  room         Room?     @relation(fields: [roomId], references: [roomId])
+  customer     Customer? @relation(fields: [customerId], references: [customerId])
+  booking      Booking?  @relation(fields: [bookingId], references: [bookingId])
+  adminCreated Admin?    @relation("BillCreatedBy", fields: [createdBy], references: [adminId])
+  adminUpdated Admin?    @relation("BillUpdatedBy", fields: [updatedBy], references: [adminId])
 
-payment Payment?
+  payment Payment?
 
-@@index([billStatus])
+  @@index([billStatus])
 }
 
 // PAYMENT
 model Payment {
-paymentId  String @id @default(uuid())
+  paymentId String @id @default(uuid())
 
-billId     String @unique
-customerId String
+  billId     String @unique
+  customerId String
 
-paidAt  DateTime?
-slipUrl String?
+  paidAt  DateTime?
+  slipUrl String?
 
-createdAt DateTime @default(now())
-updatedAt DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime?
 
-bill     Bill     @relation(fields: [billId], references: [billId])
-customer Customer @relation(fields: [customerId], references: [customerId])
+  bill     Bill     @relation(fields: [billId], references: [billId])
+  customer Customer @relation(fields: [customerId], references: [customerId])
 }
 
 // DORM PROFILE
 model DormProfile {
-dormId String @id @default(uuid())
+  dormId String @id @default(uuid())
 
-key String @unique @default("MAIN")
+  key String @unique @default("MAIN")
 
-dormName String
-address  String
-phone    String
-email    String
+  dormName String
+  address  String
+  phone    String
+  email    String
 
-taxId   String
-taxType Int @default(0)
+  taxId   String
+  taxType Int    @default(0)
 
-receiverTitle   String?
-receiverName    String?
-receiverSurname String?
-receiverFullName String?
+  receiverTitle    String?
+  receiverName     String?
+  receiverSurname  String?
+  receiverFullName String?
 
-service           Int   @default(50)
-waterRate         Float @default(0)
-electricRate      Float @default(0)
-overdueFinePerDay Int   @default(0)
+  service           Int   @default(50)
+  waterRate         Float @default(0)
+  electricRate      Float @default(0)
+  overdueFinePerDay Int   @default(0)
 
-signatureUrl String?
+  signatureUrl String?
 
-createdAt DateTime @default(now())
-updatedAt DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime?
 }

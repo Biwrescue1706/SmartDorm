@@ -71,8 +71,6 @@ export default function RoomRow({
       <td>{formatThaiDate(room.updatedAt)}</td>
       <td>{formatThaiTime(room.updatedAt)}</td>
 
-      {/* ช่อง placeholder (ตรง header '-') */}
-      <td>-</td>
 
       {/* ===== ข้อมูลผู้เช่า ===== */}
       {!hideTenant && (

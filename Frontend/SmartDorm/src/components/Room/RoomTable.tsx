@@ -48,7 +48,7 @@ export default function RoomTable({
             <th rowSpan={2}>ค่าเช่า</th>
 
             {/* ข้อมูลห้อง */}
-            <th colSpan={7}>ข้อมูลห้อง</th>
+            <th colSpan={6}>ข้อมูลห้อง</th>
 
             {/* ข้อมูลผู้เช่า */}
             {!hideTenant && (
@@ -67,13 +67,11 @@ export default function RoomTable({
           <tr>
             <th>ผู้สร้าง</th>
             <th>วันที่สร้าง</th>
-            <th>เวลาที่สร้าง</th>
+            <th>เวลาสร้าง</th>
 
             <th>ผู้แก้ไข</th>
             <th>วันแก้ไข</th>
             <th>เวลาแก้ไข</th>
-
-            <th>-</th>
 
             {!hideTenant && (
               <>

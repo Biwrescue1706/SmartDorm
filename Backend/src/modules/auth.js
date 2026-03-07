@@ -3,29 +3,24 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import prisma from "../prisma.js";
 import { authMiddleware } from "../middleware/authMiddleware.js";
-import { toThaiString } from "../utils/timezone.js";
 
 const auth = Router();
 
 const JWT_SECRET = process.env.JWT_SECRET;
 if (!JWT_SECRET) throw new Error("JWT_SECRET missing");
 
-/* ---------------- Helper ---------------- */
-const formatAdmin = (a) => ({
-  ...a,
-  createdAt: toThaiString(a.createdAt),
-  updatedAt: toThaiString(a.updatedAt),
-});
-
 /* ================= LOGIN ================= */
+
 auth.post("/login", async (req, res) => {
   try {
-    const { username, password } = req.body;
+    const { username, password } = req.body || {};
 
-    if (!username || !password)
-      return res.status(400).json({ error: "กรอกข้อมูลไม่ครบ" });
+    if (!username || !password) {
+      return res.status(400).json({
+        error: "กรุณากรอก username และ password",
+      });
+    }
 
-    // ✅ PostgreSQL optimized
     const admin = await prisma.admin.findUnique({
       where: { username },
       select: {
@@ -37,12 +32,19 @@ auth.post("/login", async (req, res) => {
       },
     });
 
-    if (!admin)
+    if (!admin) {
       return res.status(401).json({ error: "ไม่พบบัญชีผู้ใช้" });
+    }
+
+    if (!admin.password) {
+      return res.status(500).json({ error: "บัญชีนี้ไม่มีรหัสผ่านในระบบ" });
+    }
 
     const valid = await bcrypt.compare(password, admin.password);
-    if (!valid)
+
+    if (!valid) {
       return res.status(401).json({ error: "รหัสผ่านไม่ถูกต้อง" });
+    }
 
     const token = jwt.sign(
       {
@@ -65,7 +67,6 @@ auth.post("/login", async (req, res) => {
       maxAge: 90 * 60 * 1000,
     });
 
-    // ✅ ไม่ต้อง query profile ซ้ำ
     res.json({
       message: "เข้าสู่ระบบสำเร็จ",
       admin: {
@@ -77,12 +78,16 @@ auth.post("/login", async (req, res) => {
     });
 
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "ระบบมีปัญหา" });
+    console.error("LOGIN ERROR:", err);
+
+    res.status(500).json({
+      error: err.message || "ระบบมีปัญหา",
+    });
   }
 });
 
 /* ================= LOGOUT ================= */
+
 auth.post("/logout", (_req, res) => {
   const isProd = process.env.NODE_ENV === "production";
 
@@ -97,20 +102,29 @@ auth.post("/logout", (_req, res) => {
 });
 
 /* ================= VERIFY ================= */
-/* ✅ ไม่มี DB CALL → เร็วมาก */
+
 auth.get("/verify", (req, res) => {
   const token = req.cookies?.token;
-  if (!token) return res.status(401).json({ valid: false });
+
+  if (!token) {
+    return res.status(401).json({ valid: false });
+  }
 
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
-    res.json({ valid: true, admin: decoded });
+
+    res.json({
+      valid: true,
+      admin: decoded,
+    });
+
   } catch {
     res.status(401).json({ valid: false });
   }
 });
 
 /* ================= PROFILE ================= */
+
 auth.get("/profile", authMiddleware, async (req, res) => {
   try {
     const admin = await prisma.admin.findUnique({
@@ -125,20 +139,32 @@ auth.get("/profile", authMiddleware, async (req, res) => {
       },
     });
 
-    if (!admin)
+    if (!admin) {
       return res.status(404).json({ error: "ไม่พบผู้ใช้" });
+    }
 
-    res.json(formatAdmin(admin));
+    res.json(admin);
 
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error("PROFILE ERROR:", err);
+
+    res.status(500).json({
+      error: err.message,
+    });
   }
 });
 
 /* ================= UPDATE NAME ================= */
+
 auth.put("/profile", authMiddleware, async (req, res) => {
   try {
-    const { name } = req.body;
+    const { name } = req.body || {};
+
+    if (!name || !name.trim()) {
+      return res.status(400).json({
+        error: "กรุณากรอกชื่อ",
+      });
+    }
 
     const updated = await prisma.admin.update({
       where: { adminId: req.admin.adminId },
@@ -155,20 +181,29 @@ auth.put("/profile", authMiddleware, async (req, res) => {
 
     res.json({
       message: "อัปเดตชื่อสำเร็จ",
-      admin: formatAdmin(updated),
+      admin: updated,
     });
 
   } catch (err) {
-    res.status(400).json({ error: err.message });
+    console.error("UPDATE NAME ERROR:", err);
+
+    res.status(400).json({
+      error: err.message,
+    });
   }
 });
 
 /* ================= RESET PASSWORD ================= */
+
 auth.put("/forgot/reset", async (req, res) => {
   try {
-    const { username, newPassword } = req.body;
+    const { username, newPassword } = req.body || {};
 
-    const hashed = await bcrypt.hash(newPassword, 8); // ✅ เร็วขึ้น
+    if (!username || !newPassword) {
+      return res.status(400).json({ error: "ข้อมูลไม่ครบ" });
+    }
+
+    const hashed = await bcrypt.hash(newPassword, 8);
 
     await prisma.admin.update({
       where: { username },
@@ -178,23 +213,38 @@ auth.put("/forgot/reset", async (req, res) => {
     res.json({ message: "รีเซ็ตรหัสผ่านสำเร็จ" });
 
   } catch (err) {
-    res.status(400).json({ error: err.message });
+    console.error("RESET PASSWORD ERROR:", err);
+
+    res.status(400).json({
+      error: err.message,
+    });
   }
 });
 
 /* ================= CHANGE PASSWORD ================= */
+
 auth.put("/change-password", authMiddleware, async (req, res) => {
   try {
-    const { oldPassword, newPassword } = req.body;
+    const { oldPassword, newPassword } = req.body || {};
+
+    if (!oldPassword || !newPassword) {
+      return res.status(400).json({ error: "ข้อมูลไม่ครบ" });
+    }
 
     const admin = await prisma.admin.findUnique({
       where: { adminId: req.admin.adminId },
       select: { password: true },
     });
 
+    if (!admin || !admin.password) {
+      return res.status(400).json({ error: "ไม่พบข้อมูลผู้ใช้" });
+    }
+
     const valid = await bcrypt.compare(oldPassword, admin.password);
-    if (!valid)
+
+    if (!valid) {
       return res.status(400).json({ error: "รหัสผ่านเดิมไม่ถูกต้อง" });
+    }
 
     const hashed = await bcrypt.hash(newPassword, 8);
 
@@ -206,7 +256,11 @@ auth.put("/change-password", authMiddleware, async (req, res) => {
     res.json({ message: "เปลี่ยนรหัสผ่านสำเร็จ" });
 
   } catch (err) {
-    res.status(400).json({ error: err.message });
+    console.error("CHANGE PASSWORD ERROR:", err);
+
+    res.status(400).json({
+      error: err.message,
+    });
   }
 });
 

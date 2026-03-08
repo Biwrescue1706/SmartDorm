@@ -37,6 +37,7 @@ export interface Payment {
 
 // Bill
 export interface Bill {
+  [x: string]: any;
   billId: string;
   billNumber: string;
   month: string;

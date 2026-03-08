@@ -69,7 +69,10 @@ export default function DormProfile() {
   if (!form) return <div>Loading...</div>;
 
   return (
-    <div className="d-flex min-vh-100 mx-1 mt-5 mb-4">
+    <div
+      className="d-flex min-vh-100 mx-2 mt-0 mb-4"
+      style={{ fontFamily: "Sarabun, sans-serif" }}
+    >
       <Nav
         onLogout={handleLogout}
         role={role}
@@ -79,18 +82,29 @@ export default function DormProfile() {
         pendingCheckouts={pendingCheckouts}
       />
 
-      <main className="flex-grow-1 px-2 py-4 mt-6 mt-lg-7">
-        <div className="container-fluid d-flex justify-content-center">
-          <div className="card shadow w-100" style={{ maxWidth: 1400 }}>
+      <main
+        className="main-content flex-grow-1 px-2 py-3 mt-6 mt-lg-7"
+        style={{
+          paddingLeft: "20px",
+          marginLeft: "190px",
+          paddingRight: "20px",
+        }}
+      >
+        <div className="container-fluid d-flex justify-content-center align-items-start text-dark">
+          <div className="mx-auto" style={{ maxWidth: "1400px" }}>
             <div className="card-body">
-              <h4 className="fw-bold text-center mb-4">🏢 ตั้งค่าหอพัก</h4>
+              <h4 className="fw-bold text-center text-dark mb-4">
+                🏢 ตั้งค่าหอพัก
+              </h4>
 
               <form onSubmit={submit}>
-                {Input("ชื่อหอพัก", form.dormName, v => update("dormName", v))}
-                {Input("ที่อยู่", form.address, v => update("address", v))}
-                {Input("โทรศัพท์", form.phone, v => update("phone", v))}
-                {Input("อีเมล", form.email, v => update("email", v))}
-                {Input("เลขภาษี", form.taxId, v => update("taxId", v))}
+                {Input("ชื่อหอพัก", form.dormName, (v) =>
+                  update("dormName", v),
+                )}
+                {Input("ที่อยู่", form.address, (v) => update("address", v))}
+                {Input("โทรศัพท์", form.phone, (v) => update("phone", v))}
+                {Input("อีเมล", form.email, (v) => update("email", v))}
+                {Input("เลขภาษี", form.taxId, (v) => update("taxId", v))}
 
                 {/* ลายเซ็น */}
                 <div className="mb-4">
@@ -170,7 +184,9 @@ export default function DormProfile() {
                     <input
                       className="form-control border-warning border-2"
                       value={form.receiverSurname ?? ""}
-                      onChange={(e) => update("receiverSurname", e.target.value)}
+                      onChange={(e) =>
+                        update("receiverSurname", e.target.value)
+                      }
                     />
                   </div>
                 </div>
@@ -179,12 +195,23 @@ export default function DormProfile() {
                 <hr />
                 <h6 className="fw-bold">💰 ค่าใช้จ่ายพื้นฐาน</h6>
 
-                {Input("ค่าส่วนกลาง", form.service, v => update("service", v))}
-                {Input("ค่าน้ำ/หน่วย", form.waterRate, v => update("waterRate", v))}
-                {Input("ค่าไฟ/หน่วย", form.electricRate, v => update("electricRate", v))}
-                {Input("ค่าปรับ/วัน", form.overdueFinePerDay, v => update("overdueFinePerDay", v))}
+                {Input("ค่าส่วนกลาง", form.service, (v) =>
+                  update("service", v),
+                )}
+                {Input("ค่าน้ำ/หน่วย", form.waterRate, (v) =>
+                  update("waterRate", v),
+                )}
+                {Input("ค่าไฟ/หน่วย", form.electricRate, (v) =>
+                  update("electricRate", v),
+                )}
+                {Input("ค่าปรับ/วัน", form.overdueFinePerDay, (v) =>
+                  update("overdueFinePerDay", v),
+                )}
 
-                <button className="btn btn-warning w-100 mt-3 fw-bold" disabled={loading}>
+                <button
+                  className="btn btn-warning w-100 mt-3 fw-bold"
+                  disabled={loading}
+                >
                   💾 บันทึกข้อมูล
                 </button>
               </form>

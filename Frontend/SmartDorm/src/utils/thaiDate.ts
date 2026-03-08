@@ -28,12 +28,11 @@ export const formatThaiDate = (date?: string | null) => {
 export const formatThaiTime = (date?: string | null) => {
   const d = normalizeDate(date);
   if (!d) return null;
-
-  const time = d.toLocaleTimeString("th-TH", {
+  return d.toLocaleTimeString("us-Us", {
     timeZone: "Asia/Bangkok",
     hour: "2-digit",
     minute: "2-digit",
   });
 
-  return `${time.replace(":", ".")} น.`;
+  
 };

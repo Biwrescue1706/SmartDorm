@@ -1,27 +1,46 @@
 // src/components/AllBills/AllBillsRow.tsx
+
+import { useNavigate } from "react-router-dom";
 import type { Bill } from "../../types/All";
 
 interface Props {
   index: number;
   bill: Bill;
   role?: number | null;
+
+  showOverdue: boolean;
+  showSlip: boolean;
+  showManage: boolean;
+  showEdit: boolean;
+  showDelete: boolean;
+
   onEdit: (bill: Bill) => void;
   onDelete: (billId: string, room: string) => void;
   onViewSlip: (bill: Bill) => void;
   onManage: (bill: Bill) => void;
-  onOverdue: (billId: string, room: string) => void; // ⭐
+  onOverdue: (billId: string, room: string) => void;
 }
 
 export default function AllBillsRow({
   index,
   bill,
   role,
+
+  showOverdue,
+  showSlip,
+  showManage,
+  showEdit,
+  showDelete,
+
   onEdit,
   onDelete,
   onViewSlip,
   onManage,
   onOverdue,
 }: Props) {
+
+  const navigate = useNavigate();
+
   const status = bill.billStatus;
   const overdueDays = bill.overdueDays ?? 0;
 
@@ -32,20 +51,21 @@ export default function AllBillsRow({
   return (
     <tr>
       <td>{index + 1}</td>
-      <td>{bill.room?.number}</td>
-      <td>{bill.customer?.userName}</td>
-      <td>{bill.fullName}</td>
-      <td>{bill.cphone}</td>
+      <td>{bill.room?.number ?? "-"}</td>
+      <td>{bill.customer?.userName ?? "-"}</td>
+      <td>{bill.fullName ?? "-"}</td>
+      <td>{bill.cphone ?? "-"}</td>
 
       <td>
         {new Date(bill.month).toLocaleDateString("th-TH", {
           day: "numeric",
-          year: "numeric",
           month: "long",
+          year: "numeric",
         })}
       </td>
 
-      <td>{bill.total.toLocaleString()}</td>
+      <td>{bill.total?.toLocaleString() ?? "0"}</td>
+
       <td>
         {new Date(bill.dueDate).toLocaleDateString("th-TH", {
           day: "numeric",
@@ -54,6 +74,18 @@ export default function AllBillsRow({
         })}
       </td>
 
+      {/* รายละเอียด */}
+      <td>
+        <button
+          type="button"
+          className="btn btn-success btn-sm text-white"
+          onClick={() => navigate(`/bills/${bill.billId}`)}
+        >
+          ดูรายละเอียด
+        </button>
+      </td>
+
+      {/* สถานะ */}
       <td>
         {status === 0 &&
           (isPastDue ? (
@@ -61,82 +93,110 @@ export default function AllBillsRow({
           ) : (
             <span className="badge bg-danger">ค้างชำระ</span>
           ))}
-        {status === 1 && <span className="badge bg-success">ชำระแล้ว</span>}
+
+        {status === 1 && (
+          <span className="badge bg-success">ชำระแล้ว</span>
+        )}
+
         {status === 2 && (
-          <span className="badge bg-warning text-dark">รอตรวจสอบ</span>
+          <span className="badge bg-warning text-dark">
+            รอตรวจสอบ
+          </span>
         )}
       </td>
 
-      {/* ⭐ เกินกำหนด */}
-      <td>
-        {status === 0 ? (
-          <div className="d-flex flex-column align-items-center gap-1">
-            <span className="fw-semibold">
-              {overdueDays > 0 ? `${overdueDays} วัน` : "ยังไม่เกินกำหนด"}
-            </span>
-            {role === 0 && isPastDue && (
-              <button
-                className="btn btn-warning btn-sm text-white"
-                onClick={() => onOverdue(bill.billId, bill.room?.number ?? "-")}
-              >
-                แจ้งเตือน
-              </button>
-            )}
-          </div>
-        ) : overdueDays > 0 ? (
-          <span>เกินกำหนด {overdueDays} วัน</span>
-        ) : (
-          <span>ไม่เกินกำหนด</span>
-        )}
-      </td>
+      {/* เกินกำหนด */}
+      {showOverdue && (
+        <td>
+          {status === 0 ? (
+            <div className="d-flex flex-column align-items-center gap-1">
+              <span className="fw-semibold">
+                {overdueDays > 0
+                  ? `${overdueDays} วัน`
+                  : "ยังไม่เกินกำหนด"}
+              </span>
+
+              {role === 0 && isPastDue && (
+                <button
+                  className="btn btn-warning btn-sm text-white"
+                  onClick={() =>
+                    onOverdue(
+                      bill.billId,
+                      bill.room?.number ?? "-"
+                    )
+                  }
+                >
+                  แจ้งเตือน
+                </button>
+              )}
+            </div>
+          ) : overdueDays > 0 ? (
+            <span> {overdueDays} วัน</span>
+          ) : (
+            "-"
+          )}
+        </td>
+      )}
 
       {/* สลิป */}
-      {(status === 1 || status === 2) &&
-        (bill.payment?.slipUrl || bill.slipUrl) && (
-          <td>
-            <button
-              className="btn btn-primary btn-sm"
-              onClick={() => onViewSlip(bill)}
-            >
-              ดูสลิป
-            </button>
-          </td>
-        )}
-
-      {/* จัดการ / แก้ไข */}
-      {status === 2 && role === 0 && (
+      {showSlip && (
         <td>
-          <button
-            className="btn btn-info btn-sm text-white"
-            onClick={() => onManage(bill)}
-          >
-            จัดการ
-          </button>
+          {(status === 1 || status === 2) &&
+            (bill.payment?.slipUrl || bill.slipUrl) && (
+              <button
+                className="btn btn-primary btn-sm"
+                onClick={() => onViewSlip(bill)}
+              >
+                ดูสลิป
+              </button>
+            )}
+        </td>
+      )}
+
+      {/* จัดการ */}
+      {showManage && (
+        <td>
+          {status === 2 && role === 0 && (
+            <button
+              className="btn btn-info btn-sm text-white"
+              onClick={() => onManage(bill)}
+            >
+              จัดการ
+            </button>
+          )}
         </td>
       )}
 
       {/* แก้ไข */}
-      {role === 0 && (status === 0 || status === 2) && (
+      {showEdit && (
         <td>
-          <button
-            className="btn btn-warning btn-sm"
-            onClick={() => onEdit(bill)}
-          >
-            {" "}
-            ✏️
-          </button>
+          {role === 0 && (status === 0 || status === 2) && (
+            <button
+              className="btn btn-warning btn-sm"
+              onClick={() => onEdit(bill)}
+            >
+              ✏️
+            </button>
+          )}
         </td>
       )}
 
       {/* ลบ */}
-      {role === 0 && (status === 0 || status === 1 || status === 2) && (
+      {showDelete && (
         <td>
-          <button
-            className="btn btn-danger btn-sm"
-            onClick={() => onDelete(bill.billId, bill.room?.number ?? "-")}
-          >
-            🗑️
-          </button>
+          {role === 0 && (
+            <button
+              className="btn btn-danger btn-sm"
+              onClick={() =>
+                onDelete(
+                  bill.billId,
+                  bill.room?.number ?? "-"
+                )
+              }
+            >
+              🗑️
+            </button>
+          )}
         </td>
       )}
     </tr>

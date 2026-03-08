@@ -56,7 +56,7 @@ export default function AdminManagement() {
             new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
         )[0].adminId
       : null;
-  
+
   const filteredAdmins =
     filterRole === "admin"
       ? admins.filter((a) => a.role === 0)
@@ -268,7 +268,11 @@ export default function AdminManagement() {
 
       <main
         className="main-content flex-grow-1 px-2 py-3 mt-6 mt-lg-7"
-        style={{ paddingLeft: "20px", paddingRight: "20px" }}
+        style={{
+          paddingLeft: "20px",
+          marginLeft: "190px",
+          paddingRight: "20px",
+        }}
       >
         <div className="mx-auto" style={{ maxWidth: "1400px" }}>
           <h2
@@ -296,7 +300,9 @@ export default function AdminManagement() {
           {/* FILTER */}
           {windowWidth < 1400 ? (
             <>
-              <h4 className="text-center fw-bold mb-2 text-black">สถานะแอดมิน</h4>
+              <h4 className="text-center fw-bold mb-2 text-black">
+                สถานะแอดมิน
+              </h4>
               {/* < 1400 = Dropdown */}
               <div className="d-flex justify-content-center mb-4">
                 {(() => {

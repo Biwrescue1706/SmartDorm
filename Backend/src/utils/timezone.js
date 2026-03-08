@@ -2,10 +2,7 @@
 
 // คืนค่า Date ตามเวลาไทย (UTC+7)
 export const thailandTime = (date = new Date()) => {
-  const d = new Date(date); // แปลงก่อนเสมอ
-
-  const utc = d.getTime() + d.getTimezoneOffset() * 60000;
-  return new Date(utc + 7 * 60 * 60000);
+  return new Date(date);
 };
 
 // แปลง Date เป็น string ภาษาไทย

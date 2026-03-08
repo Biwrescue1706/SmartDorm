@@ -29,17 +29,8 @@ export default function RoomTable({
 
   return (
     <div style={{ overflowX: "auto" }}>
-      <table
-        className="table table-sm table-striped align-middle text-center"
-        style={{
-          width: "100%",
-          backgroundColor: "#ffffff",
-          borderRadius: "10px",
-        }}
-      >
-        {/* ================= HEADER ================= */}
+      <table className="table table-sm table-striped align-middle text-center">
         <thead className="table-dark">
-
           {/* ===== แถวหัวข้อหลัก ===== */}
           <tr>
             <th rowSpan={2}>#</th>
@@ -51,16 +42,12 @@ export default function RoomTable({
             <th colSpan={6}>ข้อมูลห้อง</th>
 
             {/* ข้อมูลผู้เช่า */}
-            {!hideTenant && (
-              <th colSpan={3}>ข้อมูลผู้เช่า</th>
-            )}
+            {!hideTenant && <th colSpan={3}>ข้อมูลผู้เช่า</th>}
 
             <th rowSpan={2}>สถานะ</th>
 
             {isSuperAdmin && <th rowSpan={2}>แก้ไข</th>}
-            {isSuperAdmin && !hideDelete && (
-              <th rowSpan={2}>ลบ</th>
-            )}
+            {isSuperAdmin && !hideDelete && <th rowSpan={2}>ลบ</th>}
           </tr>
 
           {/* ===== แถวรายละเอียด ===== */}
@@ -81,7 +68,6 @@ export default function RoomTable({
               </>
             )}
           </tr>
-
         </thead>
 
         {/* ================= BODY ================= */}

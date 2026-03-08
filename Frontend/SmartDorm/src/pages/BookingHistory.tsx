@@ -145,7 +145,7 @@ export default function BookingHistory() {
 
   return (
     <div
-      className="d-flex min-vh-100 mx-3 mt-3 mb-3"
+      className="d-flex min-vh-100 mx-2 mt-3 mb-3"
       style={{ fontFamily: "Sarabun, sans-serif" }}
     >
       <Nav
@@ -159,7 +159,7 @@ export default function BookingHistory() {
 
       <main
         className="main-content flex-grow-1 px-2 py-3 mt-6 mt-lg-7"
-        style={{ paddingLeft: "20px", paddingRight: "20px" }}
+        style={{ paddingLeft: "20px" ,marginLeft: "190px", paddingRight: "20px" }}
       >
         <div
           className="mx-auto"

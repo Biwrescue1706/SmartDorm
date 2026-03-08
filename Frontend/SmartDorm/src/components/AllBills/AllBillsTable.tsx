@@ -9,7 +9,7 @@ interface Props {
   onDelete: (billId: string, room: string) => void;
   onViewSlip: (bill: Bill) => void;
   onManage: (bill: Bill) => void;
-  onOverdue: (billId: string, room: string) => void; // ⭐ เพิ่ม
+  onOverdue: (billId: string, room: string) => void;
 }
 
 export default function AllBillsTable({
@@ -21,7 +21,14 @@ export default function AllBillsTable({
   onManage,
   onOverdue,
 }: Props) {
-  const status = bills[0]?.billStatus;
+
+  // ตรวจว่ามีคอลัมน์ไหนต้องแสดงบ้าง
+  const showOverdue = bills.some(b => b.billStatus === 0 || b.overdueDays);
+  const showSlip = bills.some(b => b.payment?.slipUrl || b.slipUrl);
+  const showManage = bills.some(b => b.billStatus === 2);
+  const showEdit = bills.some(b => b.billStatus === 0 || b.billStatus === 2);
+  const showDelete = role === 0;
+
   return (
     <div className="responsive-table" style={{ overflowX: "auto" }}>
       <table
@@ -38,27 +45,21 @@ export default function AllBillsTable({
             <th>เดือน</th>
             <th>ยอดรวม</th>
             <th>วันครบกำหนด</th>
+            <th>รายละเอียด</th>
             <th>สถานะ</th>
-            {(status === 0 || status === 1 || status === 2) && (
-              <th>เกินกำหนด</th>
-            )}
 
-            {(status === 1 || status === 2) &&
-              (bills[0]?.payment?.slipUrl || bills[0]?.slipUrl) && (
-                <th>สลิป</th>
-              )}
-            {status === 2 && role === 0 && <th>จัดการ</th>}
-            {role === 0 && (status === 0 || status === 2) && <th>แก้ไข</th>}
-            {role === 0 && (status === 0 || status === 1 || status === 2) && (
-              <th>ลบ</th>
-            )}
+            {showOverdue && <th>เกินกำหนด</th>}
+            {showSlip && <th>สลิป</th>}
+            {showManage && role === 0 && <th>จัดการ</th>}
+            {showEdit && role === 0 && <th>แก้ไข</th>}
+            {showDelete && <th>ลบ</th>}
           </tr>
         </thead>
 
         <tbody>
           {bills.length === 0 ? (
             <tr>
-              <td colSpan={9} aria-colspan={3} className="text-muted py-4">
+              <td colSpan={12} className="text-muted py-4">
                 ไม่พบบิล
               </td>
             </tr>
@@ -69,11 +70,18 @@ export default function AllBillsTable({
                 index={i}
                 bill={bill}
                 role={role}
+
+                showOverdue={showOverdue}
+                showSlip={showSlip}
+                showManage={showManage}
+                showEdit={showEdit}
+                showDelete={showDelete}
+
                 onEdit={onEdit}
                 onDelete={onDelete}
                 onViewSlip={onViewSlip}
                 onManage={onManage}
-                onOverdue={onOverdue} // ⭐
+                onOverdue={onOverdue}
               />
             ))
           )}

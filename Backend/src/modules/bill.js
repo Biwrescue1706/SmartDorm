@@ -75,16 +75,28 @@ const generateBillNumber = async (status) => {
     orderBy: { billNumber: "desc" },
   });
 
-  let nextNumber = 1;
+  let book = 8050; // เล่มเริ่มต้น
+  let number = 1;  // เลขบิลในเล่ม
 
   if (lastBill) {
-    const lastSeq = lastBill.billNumber.slice(-8);
-    nextNumber = Number(lastSeq) + 1;
+    const last = lastBill.billNumber;
+
+    const lastBook = parseInt(last.slice(9, 14));
+    const lastNumber = parseInt(last.slice(14, 16));
+
+    if (lastNumber >= 50) {
+      book = lastBook + 1;
+      number = 1;
+    } else {
+      book = lastBook;
+      number = lastNumber + 1;
+    }
   }
 
-  const seq = String(nextNumber).padStart(8, "0");
+  const bookStr = String(book).padStart(5, "0");
+  const numberStr = String(number).padStart(2, "0");
 
-  return `${searchPrefix}${seq}`;
+  return `${searchPrefix}${bookStr}${numberStr}`;
 };
 
 // ================= Routes =================

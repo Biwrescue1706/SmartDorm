@@ -51,7 +51,7 @@ const getDueDateNextMonth5th = (month) => {
 
   return new Date(Date.UTC(
     d.getUTCFullYear(),
-    d.getUTCMonth(),
+    d.getUTCMonth()+1,
     5,
     1, 0, 0 // 08:00 ไทย
   ));

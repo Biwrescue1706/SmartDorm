@@ -57,33 +57,40 @@ const getDueDateNextMonth5th = (month) => {
   ));
 };
 
-const generateBillNumber = async (status, billMonth) => {
-  const prefix = status === 1 ? "RC" : "INV";
+const generateBillNumber = async (billMonth) => {
+
+  const prefix = "RNT";
 
   const d = new Date(billMonth);
 
   const year = d.getUTCFullYear();
   const month = String(d.getUTCMonth() + 1).padStart(2, "0");
+  const day = String(d.getUTCDate()).padStart(2, "0");
 
-  const searchPrefix = `${prefix}${year}${month}`;
+  const dateStr = `${year}${month}${day}`;
+
+  const searchPrefix = `${prefix}-${dateStr}-`;
 
   const lastBill = await prisma.bill.findFirst({
     where: {
       billNumber: {
-        startsWith: searchPrefix,
-      },
+        startsWith: searchPrefix
+      }
     },
-    orderBy: { billNumber: "desc" },
+    orderBy: {
+      billNumber: "desc"
+    }
   });
 
   let book = 8050;
   let number = 1;
 
   if (lastBill) {
-    const last = lastBill.billNumber;
 
-    const lastBook = parseInt(last.slice(9, 14));
-    const lastNumber = parseInt(last.slice(14, 16));
+    const parts = lastBill.billNumber.split("-");
+
+    const lastBook = parseInt(parts[2]);
+    const lastNumber = parseInt(parts[3]);
 
     if (lastNumber >= 50) {
       book = lastBook + 1;
@@ -92,12 +99,15 @@ const generateBillNumber = async (status, billMonth) => {
       book = lastBook;
       number = lastNumber + 1;
     }
+
   }
 
   const bookStr = String(book).padStart(5, "0");
-  const numberStr = String(number).padStart(2, "0");
 
-  return `${searchPrefix}${bookStr}${numberStr}`;
+  // 01-09 มี 0 ข้างหน้า
+  const numberStr = number < 10 ? `0${number}` : `${number}`;
+
+  return `${prefix}-${dateStr}-${bookStr}-${numberStr}`;
 };
 
 // ================= Routes =================
@@ -173,13 +183,22 @@ bill.post(
       if (eAfter === undefined) throw new Error("กรุณาระบุเลขมิเตอร์ไฟ");
 
       const billMonth = normalizeBillMonthTH(month);
-const billNumber = await generateBillNumber(0, billMonth);
+const billNumber = await generateBillNumber(billMonth);
 
-      const dup = await prisma.bill.findFirst({
-        where: { 
-roomId, 
-month: billMonth },
-      });
+      const start = billMonth;
+
+const end = new Date(billMonth);
+end.setUTCMonth(end.getUTCMonth() + 1);
+
+const dup = await prisma.bill.findFirst({
+  where: {
+    roomId,
+    month: {
+      gte: start,
+      lt: end
+    }
+  }
+});
 
       if (dup) throw new Error("มีบิลของเดือนนี้แล้ว");
 
@@ -285,9 +304,10 @@ bill.put(
         include: { customer: true, room: true, payment: true },
       });
 
-      const newBillNumber = await generateBillNumber(1, billData.month);
-
       if (!billData) throw new Error("ไม่พบบิล");
+
+const newBillNumber = await generateBillNumber(billData.month);
+
       if (billData.billStatus !== 2)
         throw new Error("บิลนี้ไม่ได้อยู่ในสถานะรอตรวจสอบ");
 
@@ -417,7 +437,7 @@ const newMonth = month
         billStatus === 1 &&
         billData.billStatus !== 1
       ) {
-        newBillNumber = await generateBillNumber(1, newMonth);
+        newBillNumber = await generateBillNumber(newMonth);
       }
 
       // ✅ ใช้ค่าที่ส่งมา หรือ fallback ค่าเดิม
@@ -488,7 +508,7 @@ const newMonth = month
           service,
           electricCost,
           total,
-          month: month ? normalizeBillMonthTH(month) : billData.month,
+          month: newMonth,
           dueDate: dueDate ? thailandTime(dueDate) : billData.dueDate,
           overdueDays: newOverdueDays,
           fine: newFine,

@@ -1,9 +1,9 @@
-import express from "express"; // express
-import dotenv from "dotenv"; // env
-import cors from "cors"; // cors
-import cookieParser from "cookie-parser"; // cookie
-import prisma from "./prisma.js"; // prisma
-import { scheduleOverdueAuto } from "./services/overdue.service.js"; // cron
+import express from "express";
+import dotenv from "dotenv";
+import cors from "cors";
+import cookieParser from "cookie-parser";
+import prisma from "./prisma.js";
+import { scheduleOverdueAuto } from "./services/overdue.service.js";
 
 // โหลด env ตอน local
 if (process.env.NODE_ENV !== "production") dotenv.config();
@@ -26,22 +26,20 @@ const allowedOrigins = [
 
 // cors config
 app.use(
-    cors({
-        origin: (origin, callback) => {
+  cors({
+    origin: (origin, callback) => {
+      if (!origin) return callback(null, true);
 
-            // allow no-origin (mobile / postman)
-            if (!origin) return callback(null, true);
-
-            if (allowedOrigins.includes(origin)) {
-                callback(null, true);
-            } else {
-                callback(new Error("Not allowed by CORS"));
-            }
-        },
-        credentials: true,
-        methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-        allowedHeaders: ["Content-Type", "Authorization"],
-    })
+      if (allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
 );
 
 app.use(express.json());
@@ -99,7 +97,7 @@ function thaiNow() {
 
 app.get("/", async (_req, res) => {
   const mode = process.env.NODE_ENV || "development";
-  const port = process.env.PORT || 3000;
+  const port = process.env.PORT || 10000;
   const { date, time } = thaiNow();
 
   let db = "ok";
@@ -144,11 +142,10 @@ app.get("/health", async (_req, res) => {
 
 /* ================= START SERVER ================= */
 
-const PORT = Number(process.env.PORT) || 3000;
+const PORT = process.env.PORT || 10000;
 const ENV = process.env.NODE_ENV || "development";
 
-// ⭐ Render ต้องเห็น listen ตรงนี้ทันที
-const server = app.listen(PORT, "0.0.0.0", () => {
+const server = app.listen(PORT, () => {
   console.log("====================================");
 
   if (ENV === "production") {

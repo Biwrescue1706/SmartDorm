@@ -21,7 +21,7 @@ const normalizeBillMonthTH = (inputDate) => {
   return new Date(
     Date.UTC(
       d.getUTCFullYear(),
-      d.getUTCMonth(),
+      d.getUTCMonth()+1,
       1,
       BILL_START_HOUR_UTC,
       0,

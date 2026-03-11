@@ -69,17 +69,10 @@ const generateBillNumber = async (billMonth) => {
 
   const dateStr = `${year}${month}${day}`;
 
-  const searchPrefix = `${prefix}-${dateStr}-`;
-
+  // ดึงบิลล่าสุด
   const lastBill = await prisma.bill.findFirst({
-    where: {
-      billNumber: {
-        startsWith: searchPrefix
-      }
-    },
-    orderBy: {
-      billNumber: "desc"
-    }
+    orderBy: { createdAt: "desc" },
+    select: { billNumber: true }
   });
 
   let book = 8050;
@@ -103,9 +96,7 @@ const generateBillNumber = async (billMonth) => {
   }
 
   const bookStr = String(book).padStart(5, "0");
-
-  // 01-09 มี 0 ข้างหน้า
-  const numberStr = number < 10 ? `0${number}` : `${number}`;
+  const numberStr = String(number).padStart(2, "0");
 
   return `${prefix}-${dateStr}-${bookStr}-${numberStr}`;
 };

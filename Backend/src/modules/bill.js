@@ -57,12 +57,13 @@ const getDueDateNextMonth5th = (month) => {
   ));
 };
 
-const generateBillNumber = async (status) => {
+const generateBillNumber = async (status, billMonth) => {
   const prefix = status === 1 ? "RC" : "INV";
-  const now = thailandTime();
 
-  const year = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const d = new Date(billMonth);
+
+  const year = d.getUTCFullYear();
+  const month = String(d.getUTCMonth() + 1).padStart(2, "0");
 
   const searchPrefix = `${prefix}${year}${month}`;
 
@@ -75,8 +76,8 @@ const generateBillNumber = async (status) => {
     orderBy: { billNumber: "desc" },
   });
 
-  let book = 8050; // เล่มเริ่มต้น
-  let number = 1;  // เลขบิลในเล่ม
+  let book = 8050;
+  let number = 1;
 
   if (lastBill) {
     const last = lastBill.billNumber;
@@ -171,14 +172,15 @@ bill.post(
       if (wAfter === undefined) throw new Error("กรุณาระบุเลขมิเตอร์น้ำ");
       if (eAfter === undefined) throw new Error("กรุณาระบุเลขมิเตอร์ไฟ");
 
-      // ✅ FIX: normalize month → วันที่ 1 ของเดือนเสมอ
-      const billNumber = await generateBillNumber(0);
       const billMonth = normalizeBillMonthTH(month);
+const billNumber = await generateBillNumber(0, billMonth);
 
-      // 🔒 กันออกบิลซ้ำ (เช็คตามเดือนที่ normalize แล้ว)
       const dup = await prisma.bill.findFirst({
-        where: { roomId, month: billMonth },
+        where: { 
+roomId, 
+month: billMonth },
       });
+
       if (dup) throw new Error("มีบิลของเดือนนี้แล้ว");
 
       const booking = await prisma.booking.findFirst({
@@ -283,7 +285,7 @@ bill.put(
         include: { customer: true, room: true, payment: true },
       });
 
-      const newBillNumber = await generateBillNumber(1);
+      const newBillNumber = await generateBillNumber(1, billData.month);
 
       if (!billData) throw new Error("ไม่พบบิล");
       if (billData.billStatus !== 2)
@@ -404,7 +406,10 @@ bill.put(
         throw new Error("ไม่สามารถแก้ไขบิลนี้ได้");
       }
 
-      // 🔥 ถ้าเปลี่ยนสถานะเป็น 1 → ออกเลข RC ใหม่
+const newMonth = month
+  ? normalizeBillMonthTH(month)
+  : billData.month;
+
       let newBillNumber = billData.billNumber;
 
       if (
@@ -412,7 +417,7 @@ bill.put(
         billStatus === 1 &&
         billData.billStatus !== 1
       ) {
-        newBillNumber = await generateBillNumber(1);
+        newBillNumber = await generateBillNumber(1, newMonth);
       }
 
       // ✅ ใช้ค่าที่ส่งมา หรือ fallback ค่าเดิม

@@ -89,7 +89,10 @@ admin.put(
 
       const updated = await prisma.admin.update({
         where: { adminId: req.params.adminId },
-        data,
+        data: {
+          ...data,
+          updatedAt: thailandTime(), // บันทึกเวลาแก้ไข
+        },
         select: {
           adminId: true,
           username: true,

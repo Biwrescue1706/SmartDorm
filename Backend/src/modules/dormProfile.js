@@ -1,4 +1,3 @@
-// src/modules/dormProfile.js
 import { Router } from "express";
 import multer from "multer";
 import prisma from "../prisma.js";
@@ -8,32 +7,26 @@ import { thailandTime, toThaiString } from "../utils/timezone.js";
 
 const dormProfile = Router();
 
-/* ใช้ multer รับไฟล์แบบ memory สำหรับ upload */
 const upload = multer({ storage: multer.memoryStorage() });
 
-/* สร้าง Supabase client สำหรับจัดการ storage */
 const supabase = createClient(
   process.env.SUPABASE_URL,
   process.env.SUPABASE_KEY
 );
 
-/* ชื่อ bucket สำหรับเก็บไฟล์ลายเซ็น */
 const BUCKET = process.env.SUPABASE_BUCKET;
 
 /* ---------------- Helpers ---------------- */
 
-/* รวมคำนำหน้า ชื่อ และนามสกุล */
 function buildFullName(t, n, s) {
-  return `${t ?? ""}${n ?? ""} ${s ?? ""}`.trim();
+  return `${t ?? ""} ${n ?? ""} ${s ?? ""}`.replace(/\s+/g, " ").trim();
 }
 
-/* แปลงค่าเป็นตัวเลข หากไม่ใช่ให้เป็น 0 */
 function toNum(v) {
   const n = Number(v);
   return isNaN(n) ? 0 : n;
 }
 
-/* แปลงเวลาโปรไฟล์เป็นเวลาไทยก่อนส่งกลับ */
 const formatProfile = (p) => ({
   ...p,
   createdAt: toThaiString(p.createdAt),
@@ -42,7 +35,6 @@ const formatProfile = (p) => ({
 
 /* ================= GET ================= */
 
-/* ดึงข้อมูลโปรไฟล์หอพักหลัก */
 dormProfile.get("/", async (_req, res) => {
   try {
     const profile = await prisma.dormProfile.findUnique({
@@ -55,14 +47,13 @@ dormProfile.get("/", async (_req, res) => {
     res.json(formatProfile(profile));
 
   } catch (err) {
-    console.error("❌ getDormProfile:", err);
+    console.error("getDormProfile:", err);
     res.status(500).json({ error: err.message });
   }
 });
 
 /* ================= PUT ================= */
 
-/* อัปเดตหรือสร้างโปรไฟล์หอพัก พร้อมอัปโหลดลายเซ็น */
 dormProfile.put(
   "/",
   authMiddleware,
@@ -73,8 +64,20 @@ dormProfile.put(
       const body = req.body;
       let signatureUrl = body.signatureUrl ?? null;
 
-      /* อัปโหลดลายเซ็นใหม่ไปยัง Supabase storage หากมีไฟล์ */
+      const oldProfile = await prisma.dormProfile.findUnique({
+        where: { key: "MAIN" },
+      });
+
+      /* ถ้ามีไฟล์ใหม่ → ลบไฟล์เก่า */
       if (req.file) {
+
+        if (oldProfile?.signatureUrl) {
+          const path = oldProfile.signatureUrl.split(`/${BUCKET}/`)[1];
+          if (path) {
+            await supabase.storage.from(BUCKET).remove([path]);
+          }
+        }
+
         const fileName = `Dorm-signature_${Date.now()}`;
 
         await supabase.storage
@@ -91,7 +94,6 @@ dormProfile.put(
         signatureUrl = data.publicUrl;
       }
 
-      /* เตรียมข้อมูลโปรไฟล์สำหรับบันทึก */
       const data = {
         dormName: body.dormName,
         address: body.address,
@@ -119,7 +121,6 @@ dormProfile.put(
         updatedAt: thailandTime(),
       };
 
-      /* อัปเดตหรือสร้างโปรไฟล์หลักของระบบ */
       const updated = await prisma.dormProfile.upsert({
         where: { key: "MAIN" },
         update: data,
@@ -136,7 +137,7 @@ dormProfile.put(
       });
 
     } catch (err) {
-      console.error("❌ updateDormProfile:", err);
+      console.error("updateDormProfile:", err);
       res.status(500).json({ error: err.message });
     }
   }

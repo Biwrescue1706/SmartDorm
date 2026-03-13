@@ -1,13 +1,44 @@
-// src/modules/user.js
 import { Router } from "express";
 import prisma from "../prisma.js";
 import { verifyLineToken } from "../utils/verifyLineToken.js";
-import { deleteSlip } from "./booking.js";
+import { deleteSlip } from "./ManageRooms/booking.js";
+import { authMiddleware, roleMiddleware } from "../middleware/authMiddleware.js";
+import { thailandTime } from "../utils/timezone.js";
 
 const user = Router();
 
-// 📋 ดึงลูกค้าทั้งหมด (Admin)
-user.get("/getall", async (_req, res) => {
+/* ---------- helpers ---------- */
+
+async function getOrCreateCustomer(userId, displayName) {
+  let customer = await prisma.customer.findFirst({
+    where: { userId },
+  });
+
+  if (customer) {
+    customer = await prisma.customer.update({
+      where: { customerId: customer.customerId },
+      data: {
+        userName: displayName,
+        updatedAt: thailandTime(),
+      },
+    });
+  } else {
+    customer = await prisma.customer.create({
+      data: {
+        userId,
+        userName: displayName,
+        createdAt: thailandTime(),
+      },
+    });
+  }
+
+  return customer;
+}
+
+/* ================= ADMIN ================= */
+
+// 📋 ดึงลูกค้าทั้งหมด
+user.get("/getall", authMiddleware, roleMiddleware(0), async (_req, res) => {
   try {
     const users = await prisma.customer.findMany({
       include: {
@@ -26,29 +57,59 @@ user.get("/getall", async (_req, res) => {
   }
 });
 
-// 🧍‍♂️ Register / Update (LINE Login)
+// 🔍 ค้นหาลูกค้า
+user.get("/search", authMiddleware, roleMiddleware(0), async (req, res) => {
+  try {
+    const keyword = req.query.keyword?.toString().trim();
+    if (!keyword) return res.json({ users: [] });
+
+    const users = await prisma.customer.findMany({
+      where: {
+        OR: [
+          { userName: { contains: keyword, mode: "insensitive" } },
+          { userId: { contains: keyword, mode: "insensitive" } },
+          {
+            bookings: {
+              some: {
+                OR: [
+                  { fullName: { contains: keyword, mode: "insensitive" } },
+                  { cphone: { contains: keyword, mode: "insensitive" } },
+                  {
+                    room: {
+                      number: { contains: keyword, mode: "insensitive" },
+                    },
+                  },
+                ],
+              },
+            },
+          },
+        ],
+      },
+      include: {
+        bookings: { include: { room: true } },
+      },
+      orderBy: { createdAt: "desc" },
+      take: 20,
+    });
+
+    res.json({
+      message: `ค้นหาสำเร็จ (${users.length})`,
+      users,
+    });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+/* ================= USER ================= */
+
+// 🧍‍♂️ Register / Update (LINE)
 user.post("/register", async (req, res) => {
   try {
     const { accessToken } = req.body;
     const { userId, displayName } = await verifyLineToken(accessToken);
 
-    let customer = await prisma.customer.findFirst({
-      where: { userId },
-    });
-
-    if (customer) {
-      customer = await prisma.customer.update({
-        where: { customerId: customer.customerId },
-        data: { userName: displayName },
-      });
-    } else {
-      customer = await prisma.customer.create({
-        data: {
-          userId,
-          userName: displayName,
-        },
-      });
-    }
+    const customer = await getOrCreateCustomer(userId, displayName);
 
     res.json({
       message: "สมัครหรืออัปเดตข้อมูลสำเร็จ",
@@ -59,24 +120,13 @@ user.post("/register", async (req, res) => {
   }
 });
 
-// 👤 /user/me (ตรวจ token)
+// 👤 ตรวจ token
 user.post("/me", async (req, res) => {
   try {
     const { accessToken } = req.body;
     const { userId, displayName } = await verifyLineToken(accessToken);
 
-    let customer = await prisma.customer.findFirst({
-      where: { userId },
-    });
-
-    if (!customer) {
-      customer = await prisma.customer.create({
-        data: {
-          userId,
-          userName: displayName,
-        },
-      });
-    }
+    const customer = await getOrCreateCustomer(userId, displayName);
 
     res.json({
       success: true,
@@ -96,12 +146,16 @@ user.post("/payments", async (req, res) => {
     const { accessToken } = req.body;
     const { userId } = await verifyLineToken(accessToken);
 
+    const customer = await prisma.customer.findFirst({
+      where: { userId },
+    });
+
+    if (!customer) return res.json({ bills: [] });
+
     const bills = await prisma.bill.findMany({
       where: {
         billStatus: 1,
-        customer: {
-          userId,
-        },
+        customerId: customer.customerId,
       },
       include: {
         room: true,
@@ -126,12 +180,16 @@ user.post("/bills/unpaid", async (req, res) => {
     const { accessToken } = req.body;
     const { userId } = await verifyLineToken(accessToken);
 
+    const customer = await prisma.customer.findFirst({
+      where: { userId },
+    });
+
+    if (!customer) return res.json({ bills: [] });
+
     const bills = await prisma.bill.findMany({
       where: {
         billStatus: 0,
-        customer: {
-          userId,
-        },
+        customerId: customer.customerId,
       },
       include: { room: true },
       orderBy: { createdAt: "desc" },
@@ -184,51 +242,9 @@ user.post("/bookings/returnable", async (req, res) => {
   }
 });
 
-// 🔍 ค้นหาลูกค้า (Admin)
-user.get("/search", async (req, res) => {
-  try {
-    const keyword = req.query.keyword?.toString().trim();
-    if (!keyword) return res.json({ users: [] });
+/* ================= DELETE ================= */
 
-    const users = await prisma.customer.findMany({
-      where: {
-        OR: [
-          { userName: { contains: keyword, mode: "insensitive" } },
-          { userId: { contains: keyword, mode: "insensitive" } },
-          {
-            bookings: {
-              some: {
-                OR: [
-                  { fullName: { contains: keyword, mode: "insensitive" } },
-                  { cphone: { contains: keyword, mode: "insensitive" } },
-                  {
-                    room: {
-                      number: { contains: keyword, mode: "insensitive" },
-                    },
-                  },
-                ],
-              },
-            },
-          },
-        ],
-      },
-      include: {
-        bookings: { include: { room: true } },
-      },
-      orderBy: { createdAt: "desc" },
-    });
-
-    res.json({
-      message: `ค้นหาสำเร็จ (${users.length})`,
-      users,
-    });
-  } catch (err) {
-    res.status(400).json({ error: err.message });
-  }
-});
-
-// ❌ ลบลูกค้า (Admin)
-user.delete("/:customerId", async (req, res) => {
+user.delete("/:customerId", authMiddleware, roleMiddleware(0), async (req, res) => {
   try {
     const { customerId } = req.params;
 
@@ -239,6 +255,7 @@ user.delete("/:customerId", async (req, res) => {
       });
 
       const roomIds = bookings.map((b) => b.roomId);
+
       if (roomIds.length) {
         await tx.room.updateMany({
           where: { roomId: { in: roomIds } },
@@ -250,7 +267,11 @@ user.delete("/:customerId", async (req, res) => {
         if (b.slipUrl) await deleteSlip(b.slipUrl);
       }
 
+      await tx.payment.deleteMany({ where: { customerId } });
+      await tx.bill.deleteMany({ where: { customerId } });
+      await tx.checkout.deleteMany({ where: { customerId } });
       await tx.booking.deleteMany({ where: { customerId } });
+
       await tx.customer.delete({ where: { customerId } });
     });
 

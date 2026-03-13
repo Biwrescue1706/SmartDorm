@@ -1,14 +1,14 @@
 import { Router } from "express";
-import prisma from "../prisma.js";
-import { authMiddleware, roleMiddleware } from "../middleware/authMiddleware.js";
-import { processOverdueManual } from "../services/overdue.manual.js";
-import { deleteSlip } from "../utils/deleteSlip.js"; // ✅ เพิ่มแค่นี้
-import { thailandTime } from "../utils/timezone.js";
+import prisma from "../../prisma.js";
+import { authMiddleware, roleMiddleware } from "../../middleware/authMiddleware.js";
+import { processOverdueManual } from "../../services/overdue.manual.js";
+import { deleteSlip } from "../../utils/deleteSlip.js"; // ✅ เพิ่มแค่นี้
+import { thailandTime } from "../../utils/timezone.js";
 import {
   notifyBillCreated,
   notifyBillApproved,
   notifyBillEdited
-} from "../services/billLineNotify.js";
+} from "../../services/billLineNotify.js";
 
 const bill = Router();
 
@@ -21,7 +21,7 @@ const normalizeBillMonthTH = (inputDate) => {
   return new Date(
     Date.UTC(
       d.getUTCFullYear(),
-      d.getUTCMonth()+1,
+      d.getUTCMonth() + 1,
       1,
       BILL_START_HOUR_UTC,
       0,
@@ -51,7 +51,7 @@ const getDueDateNextMonth5th = (month) => {
 
   return new Date(Date.UTC(
     d.getUTCFullYear(),
-    d.getUTCMonth()+1,
+    d.getUTCMonth() + 1,
     5,
     1, 0, 0 // 08:00 ไทย
   ));
@@ -127,11 +127,18 @@ bill.get("/getall", async (_req, res) => {
   }
 });
 
-// ดึงบิลตาม ID
-bill.get("/:billId", async (req, res) => {
+// ดึงบิลตาม billId หรือ billNumber
+bill.get("/:key", async (req, res) => {
   try {
+    const { key } = req.params;
+
+    // ถ้าเป็นเลขบิลจะขึ้นต้น RNT-
+    const where = key.startsWith("RNT-")
+      ? { billNumber: key }
+      : { billId: key };
+
     const billData = await prisma.bill.findUnique({
-      where: { billId: req.params.billId },
+      where,
       include: {
         room: true,
         booking: true,
@@ -146,8 +153,9 @@ bill.get("/:billId", async (req, res) => {
       },
     });
 
-    if (!billData)
+    if (!billData) {
       return res.status(404).json({ error: "ไม่พบบิลนี้" });
+    }
 
     res.json(billData);
   } catch (err) {
@@ -174,22 +182,22 @@ bill.post(
       if (eAfter === undefined) throw new Error("กรุณาระบุเลขมิเตอร์ไฟ");
 
       const billMonth = normalizeBillMonthTH(month);
-const billNumber = await generateBillNumber(billMonth);
+      const billNumber = await generateBillNumber(billMonth);
 
       const start = billMonth;
 
-const end = new Date(billMonth);
-end.setUTCMonth(end.getUTCMonth() + 1);
+      const end = new Date(billMonth);
+      end.setUTCMonth(end.getUTCMonth() + 1);
 
-const dup = await prisma.bill.findFirst({
-  where: {
-    roomId,
-    month: {
-      gte: start,
-      lt: end
-    }
-  }
-});
+      const dup = await prisma.bill.findFirst({
+        where: {
+          roomId,
+          month: {
+            gte: start,
+            lt: end
+          }
+        }
+      });
 
       if (dup) throw new Error("มีบิลของเดือนนี้แล้ว");
 
@@ -297,7 +305,7 @@ bill.put(
 
       if (!billData) throw new Error("ไม่พบบิล");
 
-const newBillNumber = await generateBillNumber(billData.month);
+      const newBillNumber = await generateBillNumber(billData.month);
 
       if (billData.billStatus !== 2)
         throw new Error("บิลนี้ไม่ได้อยู่ในสถานะรอตรวจสอบ");
@@ -308,7 +316,9 @@ const newBillNumber = await generateBillNumber(billData.month);
           data: {
             billStatus: 1,
             billNumber: newBillNumber,
-            billDate: thailandTime()
+            billDate: thailandTime(),
+            updatedAt: thailandTime(),
+            updatedBy: req.admin.adminId
           },
         });
 
@@ -365,6 +375,8 @@ bill.put(
             slipUrl: null,
             paidAt: null,
             billDate: thailandTime(),
+            updatedAt: thailandTime(),
+            updatedBy: req.admin.adminId
           },
         });
       });
@@ -417,9 +429,9 @@ bill.put(
         throw new Error("ไม่สามารถแก้ไขบิลนี้ได้");
       }
 
-const newMonth = month
-  ? normalizeBillMonthTH(month)
-  : billData.month;
+      const newMonth = month
+        ? normalizeBillMonthTH(month)
+        : billData.month;
 
       let newBillNumber = billData.billNumber;
 
@@ -508,6 +520,8 @@ const newMonth = month
               ? billStatus
               : billData.billStatus,
           billDate: thailandTime(),
+          updatedAt: thailandTime(),
+          updatedBy: req.admin.adminId
         },
       });
 

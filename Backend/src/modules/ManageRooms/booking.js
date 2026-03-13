@@ -1,11 +1,11 @@
 // src/modules/booking.js
 import { Router } from "express";
 import multer from "multer";
-import prisma from "../prisma.js";
+import prisma from "../../prisma.js";
 import { createClient } from "@supabase/supabase-js";
-import { verifyLineToken } from "../utils/verifyLineToken.js";
-import { authMiddleware } from "../middleware/authMiddleware.js";
-import { thailandTime } from "../utils/timezone.js";
+import { verifyLineToken } from "../../utils/verifyLineToken.js";
+import { authMiddleware } from "../../middleware/authMiddleware.js";
+import { thailandTime } from "../../utils/timezone.js";
 import {
   notifyBookingCreated,
   notifyAdminBookingCreated,
@@ -13,7 +13,7 @@ import {
   notifyBookingRejected,
   notifyBookingCheckin,
   notifyBookingUpdatedByAdmin,
-} from "../services/bookingLineNotify.js";
+} from "../../services/LineNotify/bookingLineNotify.js";
 
 const upload = multer({ storage: multer.memoryStorage() });
 const booking = Router();
@@ -193,7 +193,10 @@ booking.post("/create", async (req, res) => {
 
       await tx.room.update({
         where: { roomId },
-        data: { status: 1, updatedAt: thailandTime() },
+        data: {
+          status: 1,
+          updatedAt: thailandTime()
+        },
       });
 
       return booking;
@@ -237,7 +240,7 @@ booking.post("/:bookingId/uploadSlip", upload.single("slip"), async (req, res) =
       data: {
         slipUrl: pub.publicUrl,
         updatedAt: thailandTime(),
-      },
+      }
     });
 
     res.json({ message: "อัปโหลดสลิปสำเร็จ", slipUrl: pub.publicUrl });
@@ -417,7 +420,10 @@ booking.delete("/:bookingId", async (req, res) => {
       const deleted = await tx.booking.delete({ where: { bookingId } });
       await tx.room.update({
         where: { roomId: deleted.roomId },
-        data: { status: 0 },
+        data: {
+          status: 0,
+          updatedAt: thailandTime()
+        },
       });
     });
 

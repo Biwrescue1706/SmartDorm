@@ -1,11 +1,11 @@
 // src/modules/payment.js
 import { Router } from "express";
 import multer from "multer";
-import prisma from "../prisma.js";
+import prisma from "../../prisma.js";
 import { createClient } from "@supabase/supabase-js";
-import { verifyLineToken } from "../utils/verifyLineToken.js";
-import { sendFlexMessage } from "../utils/lineFlex.js";
-import { BASE_URL, ADMIN_URL } from "../utils/api.js";
+import { verifyLineToken } from "../../utils/verifyLineToken.js";
+import { sendFlexMessage } from "../../utils/lineFlex.js";
+import { BASE_URL, ADMIN_URL } from "../../utils/api.js";
 
 const payments = Router();
 const upload = multer({ storage: multer.memoryStorage() });

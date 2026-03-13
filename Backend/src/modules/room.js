@@ -1,4 +1,3 @@
-// src/modules/room.js
 import { Router } from "express";
 import prisma from "../prisma.js";
 import { authMiddleware, roleMiddleware } from "../middleware/authMiddleware.js";
@@ -6,28 +5,18 @@ import { thailandTime } from "../utils/timezone.js";
 
 const ROOMS = Router();
 
-/* แปลงข้อมูลห้องและความสัมพันธ์ทั้งหมดเป็นเวลาไทย */
+/* แปลงข้อมูลห้อง */
 const formatRoom = (room) => ({
   ...room,
-
-  createdAt: room.createdAt,
-  updatedAt: room.updatedAt,
-
-  bookings: room.bookings?.map(b => ({
+  bookings: room.bookings?.map((b) => ({
     ...b,
-    bookingDate: b.bookingDate,
-    checkinAt: b.checkinAt,
-    createdAt: b.createdAt,
   })),
-
-  bills: room.bills?.map(bill => ({
-    ...bill,
-    month: bill.month,
-    dueDate: bill.dueDate,
+  bills: room.bills?.map((b) => ({
+    ...b,
   })),
 });
 
-/* ดึงข้อมูลห้องทั้งหมดพร้อมการจองและบิล */
+/* ================= GET ALL ================= */
 ROOMS.get("/getall", async (_req, res) => {
   try {
     const rooms = await prisma.room.findMany({
@@ -70,46 +59,20 @@ ROOMS.get("/getall", async (_req, res) => {
     });
 
     res.json(rooms.map(formatRoom));
-
   } catch (err) {
-    console.error("❌ [room/getall]", err.message);
+    console.error("room/getall:", err);
     res.status(500).json({ error: "ไม่สามารถโหลดข้อมูลห้องได้" });
   }
 });
 
-/* ดึงข้อมูลห้องรายตัวตาม roomId */
+/* ================= GET BY ID ================= */
 ROOMS.get("/:roomId", async (req, res) => {
   try {
     const room = await prisma.room.findUnique({
       where: { roomId: req.params.roomId },
       include: {
-        bookings: {
-          select: {
-            bookingId: true,
-            fullName: true,
-            cphone: true,
-            approveStatus: true,
-            checkinStatus: true,
-            bookingDate: true,
-            checkinAt: true,
-            createdAt: true,
-          },
-        },
-        bills: {
-          select: {
-            billId: true,
-            month: true,
-            total: true,
-            billStatus: true,
-            dueDate: true,
-            booking: {
-              select: {
-                fullName: true,
-                cphone: true,
-              },
-            },
-          },
-        },
+        bookings: true,
+        bills: true,
         adminCreated: {
           select: { adminId: true, username: true, name: true },
         },
@@ -119,26 +82,32 @@ ROOMS.get("/:roomId", async (req, res) => {
       },
     });
 
-    if (!room) throw new Error("ไม่พบห้องนี้ในระบบ");
+    if (!room) {
+      return res.status(404).json({ error: "ไม่พบห้องนี้" });
+    }
 
     res.json(formatRoom(room));
-
   } catch (err) {
-    res.status(404).json({ error: err.message });
+    res.status(400).json({ error: err.message });
   }
 });
 
-/* สร้างห้องใหม่โดยผู้ดูแลระบบ */
+/* ================= CREATE ================= */
 ROOMS.post("/create", authMiddleware, roleMiddleware(0), async (req, res) => {
   try {
     const { number, size, rent, deposit, bookingFee } = req.body;
 
     if (!number || !size || rent == null || deposit == null || bookingFee == null) {
-      throw new Error("กรุณากรอกข้อมูลให้ครบทุกช่อง");
+      throw new Error("กรุณากรอกข้อมูลให้ครบ");
     }
 
-    const exists = await prisma.room.findUnique({ where: { number } });
-    if (exists) throw new Error(`มีห้องหมายเลข ${number} อยู่แล้ว`);
+    const exists = await prisma.room.findUnique({
+      where: { number },
+    });
+
+    if (exists) {
+      throw new Error(`มีห้องหมายเลข ${number} อยู่แล้ว`);
+    }
 
     const room = await prisma.room.create({
       data: {
@@ -160,18 +129,34 @@ ROOMS.post("/create", authMiddleware, roleMiddleware(0), async (req, res) => {
       },
     });
 
-    res.json({ message: "เพิ่มห้องสำเร็จ", room: formatRoom(room) });
+    res.json({
+      message: "เพิ่มห้องสำเร็จ",
+      room: formatRoom(room),
+    });
 
   } catch (err) {
-    console.error("❌ [room/create]", err.message);
+    console.error("room/create:", err);
     res.status(400).json({ error: err.message });
   }
 });
 
-/* อัปเดตข้อมูลห้องโดยผู้ดูแลระบบ */
+/* ================= UPDATE ================= */
 ROOMS.put("/:roomId", authMiddleware, roleMiddleware(0), async (req, res) => {
   try {
     const { number, size, rent, deposit, bookingFee, status } = req.body;
+
+    if (number) {
+      const exists = await prisma.room.findFirst({
+        where: {
+          number,
+          NOT: { roomId: req.params.roomId },
+        },
+      });
+
+      if (exists) {
+        throw new Error(`มีห้องหมายเลข ${number} อยู่แล้ว`);
+      }
+    }
 
     const room = await prisma.room.update({
       where: { roomId: req.params.roomId },
@@ -197,25 +182,46 @@ ROOMS.put("/:roomId", authMiddleware, roleMiddleware(0), async (req, res) => {
       },
     });
 
-    res.json({ message: "อัปเดตข้อมูลห้องสำเร็จ", room: formatRoom(room) });
+    res.json({
+      message: "อัปเดตข้อมูลห้องสำเร็จ",
+      room: formatRoom(room),
+    });
 
   } catch (err) {
-    console.error("❌ [room/update]", err.message);
+    console.error("room/update:", err);
     res.status(400).json({ error: err.message });
   }
 });
 
-/* ลบห้องออกจากระบบ */
+/* ================= DELETE ================= */
 ROOMS.delete("/:roomId", authMiddleware, roleMiddleware(0), async (req, res) => {
   try {
+    const roomId = req.params.roomId;
+
+    const hasBooking = await prisma.booking.findFirst({
+      where: { roomId },
+    });
+
+    if (hasBooking) {
+      throw new Error("ไม่สามารถลบห้องที่มีประวัติการจองได้");
+    }
+
+    const hasBill = await prisma.bill.findFirst({
+      where: { roomId },
+    });
+
+    if (hasBill) {
+      throw new Error("ไม่สามารถลบห้องที่มีประวัติบิลได้");
+    }
+
     await prisma.room.delete({
-      where: { roomId: req.params.roomId },
+      where: { roomId },
     });
 
     res.json({ message: "ลบห้องสำเร็จ" });
 
   } catch (err) {
-    console.error("❌ [room/delete]", err.message);
+    console.error("room/delete:", err);
     res.status(400).json({ error: err.message });
   }
 });

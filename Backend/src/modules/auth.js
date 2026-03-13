@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import prisma from "../prisma.js";
 import { authMiddleware } from "../middleware/authMiddleware.js";
+import { thailandTime } from "../utils/timezone.js";
 
 const auth = Router();
 
@@ -168,7 +169,10 @@ auth.put("/profile", authMiddleware, async (req, res) => {
 
     const updated = await prisma.admin.update({
       where: { adminId: req.admin.adminId },
-      data: { name: name.trim() },
+      data: {
+        name: name.trim(),
+        updatedAt: thailandTime(),
+      },
       select: {
         adminId: true,
         username: true,
@@ -207,7 +211,10 @@ auth.put("/forgot/reset", async (req, res) => {
 
     await prisma.admin.update({
       where: { username },
-      data: { password: hashed },
+      data: {
+        password: hashed,
+        updatedAt: thailandTime(),
+      },
     });
 
     res.json({ message: "รีเซ็ตรหัสผ่านสำเร็จ" });
@@ -250,7 +257,10 @@ auth.put("/change-password", authMiddleware, async (req, res) => {
 
     await prisma.admin.update({
       where: { adminId: req.admin.adminId },
-      data: { password: hashed },
+      data: {
+        password: hashed,
+        updatedAt: thailandTime(),
+      },
     });
 
     res.json({ message: "เปลี่ยนรหัสผ่านสำเร็จ" });

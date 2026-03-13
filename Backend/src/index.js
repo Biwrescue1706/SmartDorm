@@ -49,14 +49,14 @@ app.use(cookieParser());
 
 import adminRouter from "./modules/admin.js";
 import authRouter from "./modules/auth.js";
-import billRouter from "./modules/bill.js";
+import billRouter from "./modules/Bill/bill.js";
 import roomRouter from "./modules/room.js";
-import bookingRouter from "./modules/booking.js";
-import checkoutRouter from "./modules/checkout.js";
-import paymentRouter from "./modules/payment.js";
+import bookingRouter from "./modules/ManageBooking/booking.js";
+import checkoutRouter from "./modules/ManageBooking/checkout.js";
+import paymentRouter from "./modules/Bill/payment.js";
 import qrRouter from "./modules/qr.js";
 import userRouter from "./modules/user.js";
-import overview from "./modules/overview.js";
+import overview from "./modules/Bill/overview.js";
 import dormProfileRoute from "./modules/dormProfile.js";
 
 app.use("/overview", overview);

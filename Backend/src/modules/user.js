@@ -1,7 +1,7 @@
 import { Router } from "express";
 import prisma from "../prisma.js";
 import { verifyLineToken } from "../utils/verifyLineToken.js";
-import { deleteSlip } from "./ManageRooms/booking.js";
+import { deleteSlip } from "./ManageBooking/booking.js";
 import { authMiddleware, roleMiddleware } from "../middleware/authMiddleware.js";
 import { thailandTime } from "../utils/timezone.js";
 

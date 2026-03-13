@@ -4,7 +4,6 @@ import prisma from "../../prisma.js";
 import { authMiddleware } from "../../middleware/authMiddleware.js";
 import { verifyLineToken } from "../../utils/verifyLineToken.js";
 import { thailandTime } from "../../utils/timezone.js";
-import { BASE_URL } from "../../utils/api.js";
 
 import {
   notifyCheckoutRequestAdmin,

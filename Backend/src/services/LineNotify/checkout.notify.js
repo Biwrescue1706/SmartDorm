@@ -1,6 +1,6 @@
 //src/services/checkout.notify.js
 
-import { sendFlexMessage } from "../utils/lineFlex.js";
+import { sendFlexMessage } from "../../utils/lineFlex.js";
 import { BASE_URL, ADMIN_URL } from "../utils/api.js";
 
 const adminId = process.env.ADMIN_LINE_ID;

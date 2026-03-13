@@ -1,24 +1,27 @@
 import { Routes, Route } from "react-router-dom";
-import BookingDetail from "./pages/Detail/BookingDetail";
-import CheckoutDetail from "./pages/Detail/CheckoutDetail";
-import BillDetail from "./pages/Detail/BillDetail";
+import { lazy, Suspense } from "react";
 
-import Home from "./pages/Home";
-import BookingViewSearch from "./pages/Search/BookingSearch";
-import ReturnSearch from "./pages/Search/ReturnSearch";
-import PaymentSearch  from "./pages/Search/PaymentSearch";
+const Home = lazy(() => import("./pages/Home"));
+const BookingViewSearch = lazy(() => import("./pages/Search/BookingSearch"));
+const ReturnSearch = lazy(() => import("./pages/Search/ReturnSearch"));
+const PaymentSearch = lazy(() => import("./pages/Search/PaymentSearch"));
 
+const BookingDetail = lazy(() => import("./pages/Detail/BookingDetail"));
+const CheckoutDetail = lazy(() => import("./pages/Detail/CheckoutDetail"));
+const BillDetail = lazy(() => import("./pages/Detail/BillDetail"));
 
 export default function App() {
   return (
-    <Routes>
-      <Route path="/" element={<Home />} />
-      <Route path="/booking" element={<BookingViewSearch />} />
-      <Route path="/checkout" element={<ReturnSearch />} />
-      <Route path="/bill" element={<PaymentSearch />} />
-      <Route path="/booking/:bookingId" element={<BookingDetail />} />
-      <Route path="/checkout/:checkoutId" element={<CheckoutDetail />} />
-      <Route path="/bill/:billId" element={<BillDetail />} />
-    </Routes>
+    <Suspense fallback={<div>Loading...</div>}>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/booking" element={<BookingViewSearch />} />
+        <Route path="/checkout" element={<ReturnSearch />} />
+        <Route path="/bill" element={<PaymentSearch />} />
+        <Route path="/booking/:bookingId" element={<BookingDetail />} />
+        <Route path="/checkout/:checkoutId" element={<CheckoutDetail />} />
+        <Route path="/bill/:billId" element={<BillDetail />} />
+      </Routes>
+    </Suspense>
   );
 }

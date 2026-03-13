@@ -6,6 +6,7 @@ import type { DormProfile } from "../types/All";
 import Nav from "../components/Nav";
 import BillTables from "../components/BillTables";
 import BillPayment from "../components/BillPayment";
+import logo from "../assets/SmartDorm.webp";
 
 import { useAuth } from "../hooks/useAuth";
 import { usePendingBookings } from "../hooks/ManageRooms/usePendingBookings";
@@ -53,16 +54,22 @@ export default function BillDetailPage() {
       .then((d) =>
         setProfile({
           key: d.key ?? "MAIN",
+
+          dormName: d.dormName ?? "",
+          address: d.address ?? "",
+          phone: d.phone ?? "",
+          email: d.email ?? "",
+          taxId: d.taxId ?? "",
+
+          signatureUrl: d.signatureUrl ?? null,
+
+          receiverFullName: d.receiverFullName ?? "",
+
           service: d.service ?? 0,
           waterRate: d.waterRate ?? 0,
           electricRate: d.electricRate ?? 0,
           overdueFinePerDay: d.overdueFinePerDay ?? 0,
-          dormName: d.dormName,
-          address: d.address,
-          phone: d.phone,
-          email: d.email,
-          taxId: d.taxId,
-        })
+        }),
       )
       .catch(() => console.warn("โหลด dorm profile ไม่สำเร็จ"));
   }, []);
@@ -112,10 +119,10 @@ export default function BillDetailPage() {
 
       <main
         className="main-content flex-grow-1 px-2 py-3 mt-6 mt-lg-7"
-        style={{ 
-paddingLeft: "20px", 
-paddingRight: "20px" 
-}}
+        style={{
+          paddingLeft: "20px",
+          paddingRight: "20px",
+        }}
       >
         <div
           className="mx-auto"
@@ -143,17 +150,16 @@ paddingRight: "20px"
           <div ref={pdfRef}>
             <div className="card shadow-sm border-0">
               <div className="card-body">
-
                 {/* HEADER */}
                 <div className="row mb-2 align-items-start">
+                  <h3 className="fw-bold mb-1 text-center">
+                    {bill.billStatus === 0
+                      ? "ใบแจ้งหนี้ ( Invoice )"
+                      : "ใบเสร็จรับเงิน ( Receipt )"}
+                  </h3>
                   <div className="col-6 text-start small text-secondary">
                     <div className="d-flex align-items-center gap-2 mb-1">
-                      <img
-                        src="https://manage.smartdorm-biwboong.shop/assets/SmartDorm.webp"
-                        alt="logo"
-                        width={42}
-                        height={42}
-                      />
+                      <img src={logo} alt="logo" width={42} height={42} />
                       <div className="fw-semibold">{profile.dormName}</div>
                     </div>
 
@@ -165,17 +171,14 @@ paddingRight: "20px"
                   </div>
 
                   <div className="col-6 text-end">
-                    <h3 className="fw-bold mb-1">
-                      {bill.billStatus === 0
-                        ? "ใบแจ้งหนี้ ( Invoice )"
-                        : "ใบเสร็จรับเงิน ( Receipt )"}
-                    </h3>
-
                     <div className="small">
-                      <div>เดือน : {formatThaiDate(bill.month)}</div>
-                      <div>เลขที่ : {bill.billNumber}</div>
-                      <div>วันที่ : {formatThai(bill.createdAt)}</div>
+                      <br />
+                      <div>เลขที่บิล : {bill.billNumber}</div>
+                      <div>บิลของเดือน : {formatThaiDate(bill.month)}</div>
                       <div>ห้อง : {bill.room?.number ?? "-"}</div>
+                      <div>
+                        วันที่ออกบิล : {formatThai(bill.billDate ?? "")}
+                      </div>
                       <div>พนักงาน : {bill.adminCreated?.name ?? "-"}</div>
                     </div>
                   </div>
@@ -184,29 +187,30 @@ paddingRight: "20px"
                 <Divider />
 
                 <div className="row g-2 mb-3">
-                  <div className="col-md-6">
-                    <b>ชื่อ - นามสกุล :</b> {bill.fullName || "-"}
+                  <div className="col-md-6 text-center">
+                    <b>ชื่อ - นามสกุล ผู้เช่า :</b> {bill.fullName || "-"}
                   </div>
-
-                  <div className="col-md-6">
-                    <b>รอบบิล:</b> {formatThaiDate(bill.month)}
-                  </div>
-
                   {bill.billStatus === 0 && (
-                    <div
-                      className={`col-12 fw-semibold ${
-                        isOverdue ? "text-danger" : ""
-                      }`}
-                    >
-                      {isOverdue ? (
-                        <>
-                          เกินกำหนด {overdueDays} วัน (ครบกำหนด{" "}
-                          {formatThai(bill.dueDate)})
-                        </>
-                      ) : (
-                        <>ครบกำหนดชำระ : {formatThai(bill.dueDate)}</>
-                      )}
-                    </div>
+                    <>
+                      <div className="col-md-6">
+                        <b>รอบบิล:</b> {formatThaiDate(bill.month)}
+                      </div>
+
+                      <div
+                        className={`col-12 fw-semibold ${
+                          isOverdue ? "text-danger" : ""
+                        }`}
+                      >
+                        {isOverdue ? (
+                          <>
+                            เกินกำหนด {overdueDays} วัน (ครบกำหนด{" "}
+                            {formatThai(bill.dueDate)})
+                          </>
+                        ) : (
+                          <>ครบกำหนดชำระ : {formatThai(bill.dueDate)}</>
+                        )}
+                      </div>
+                    </>
                   )}
                 </div>
 
@@ -221,7 +225,6 @@ paddingRight: "20px"
                 />
 
                 <BillPayment bill={bill} formatThai={formatThai} />
-
               </div>
             </div>
           </div>

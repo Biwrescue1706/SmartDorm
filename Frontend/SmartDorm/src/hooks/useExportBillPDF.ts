@@ -6,8 +6,7 @@ export const useExportBillPDF = () => {
   return (bill: Bill, ref: RefObject<HTMLDivElement | null>) => {
     if (!ref.current) return;
 
-    const docName =
-      bill.billStatus === 0 ? "ใบแจ้งหนี้" : "ใบเสร็จรับเงิน";
+    const docName = bill.billStatus === 0 ? "ใบแจ้งหนี้" : "ใบเสร็จรับเงิน";
 
     const d = new Date(bill.month);
 
@@ -24,7 +23,12 @@ export const useExportBillPDF = () => {
       margin: 5,
       filename,
       image: { type: "jpeg" as const, quality: 0.98 },
-      html2canvas: { scale: 2 },
+      html2canvas: {
+        scale: 3,
+        useCORS: true,
+        allowTaint: false,
+        backgroundColor: "#ffffff",
+      },
       jsPDF: {
         unit: "mm" as const,
         format: "a4" as const,

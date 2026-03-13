@@ -63,7 +63,7 @@ export interface Bill {
   dueDate: string;
 
   paidAt?: string | null;
-  billDate?: string | null;
+  billDate?: string;
 
   ctitle?: string | null;
   cname?: string | null;

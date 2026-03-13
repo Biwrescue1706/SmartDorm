@@ -10,9 +10,19 @@ export interface Customer {
   userName: string;
 }
 
+export interface Admin {
+  name: string;
+}
+
 export interface Bill {
   billId: string;
+  billNumber: string;
+
   month: string;
+  billDate: string;
+  createdAt: string;
+  dueDate: string;
+
   rent: number;
   service: number;
   fine: number;
@@ -28,18 +38,46 @@ export interface Bill {
   electricCost: number;
 
   total: number;
-  dueDate: string;
   billStatus: number;
 
-  // เพิ่มให้ตรงกับที่ใช้ในหน้าแสดงผล
-  overdueDays: number;        // จำนวนวันที่ค้างชำระ
-  paidAt?: string;            // วันที่ชำระ (อาจยังไม่มี)
-  cname?: string;             // ชื่อผู้จ่าย
-  csurname?: string;          // นามสกุลผู้จ่าย
-  fullName?: string;          // ชื่อเต็มผู้จ่าย (ถ้ามีจาก backend)
+  overdueDays: number;
 
-createdAt : string;
+  paidAt?: string;
+
+  cname?: string;
+  csurname?: string;
+  fullName?: string;
+
   room: Room;
   booking?: Booking;
   customer?: Customer;
+
+  adminCreated?: Admin;
+}
+
+export interface DormProfile {
+  dormId?: string;
+  key: string;
+
+  dormName?: string;
+  address?: string;
+  phone?: string;
+  email?: string;
+  taxId?: string;
+  taxType?: number;
+
+  receiverTitle?: string;
+  receiverName?: string;
+  receiverSurname?: string;
+  receiverFullName?: string;
+
+  signatureUrl?: string | null;
+
+  service: number;
+  waterRate: number;
+  electricRate: number;
+  overdueFinePerDay: number;
+
+  createdAt?: string;
+  updatedAt?: string;
 }

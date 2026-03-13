@@ -1,3 +1,4 @@
+// src/components/BillPayment.tsx
 import { useEffect, useState } from "react";
 import type { Bill, DormProfile } from "../types/All";
 
@@ -12,9 +13,26 @@ export default function BillPayment({ bill, formatThai }: Props) {
   useEffect(() => {
     fetch("https://hub.smartdorm-biwboong.shop/dorm-profile/")
       .then((res) => res.json())
-      .then((data) => {
-        setDormProfile(data);
-      })
+      .then((d) =>
+        setDormProfile({
+          key: d.key ?? "MAIN",
+
+          dormName: d.dormName ?? "",
+          address: d.address ?? "",
+          phone: d.phone ?? "",
+          email: d.email ?? "",
+          taxId: d.taxId ?? "",
+
+          signatureUrl: d.signatureUrl ?? null,
+
+          receiverFullName: d.receiverFullName ?? "",
+
+          service: d.service ?? 0,
+          waterRate: d.waterRate ?? 0,
+          electricRate: d.electricRate ?? 0,
+          overdueFinePerDay: d.overdueFinePerDay ?? 0,
+        }),
+      )
       .catch((err) => console.error("โหลด dorm profile ไม่ได้", err));
   }, []);
 
@@ -50,15 +68,19 @@ export default function BillPayment({ bill, formatThai }: Props) {
       </div>
 
       <div className="row mt-4 text-center">
+        {/* ผู้รับ */}
         <div className="col">
           <div className="fw-bold">ผู้รับ</div>
 
           {dormProfile?.signatureUrl && (
-            <img
-              src={dormProfile.signatureUrl}
-              alt="Signature"
-              style={{ maxHeight: 100 }}
-            />
+<img
+  src={dormProfile.signatureUrl}
+  alt="Signature"
+  crossOrigin="anonymous"
+  referrerPolicy="no-referrer"
+  loading="eager"
+  style={{ maxHeight: 100 }}
+/>
           )}
 
           <div>( {dormProfile?.receiverFullName} )</div>
@@ -68,6 +90,7 @@ export default function BillPayment({ bill, formatThai }: Props) {
           </div>
         </div>
 
+        {/* ผู้จ่าย */}
         <div className="col">
           <div className="fw-bold">ผู้จ่าย</div>
 
@@ -76,6 +99,9 @@ export default function BillPayment({ bill, formatThai }: Props) {
               <img
                 src={dormProfile.signatureUrl}
                 alt="Signature"
+                crossOrigin="anonymous"
+                referrerPolicy="no-referrer"
+                loading="eager"
                 style={{ maxHeight: 100 }}
               />
             )
@@ -87,6 +113,7 @@ export default function BillPayment({ bill, formatThai }: Props) {
               <br />
             </>
           )}
+
           <div>( {bill.fullName} )</div>
 
           <div className="text-muted">

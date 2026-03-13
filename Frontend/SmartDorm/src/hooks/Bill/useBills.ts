@@ -82,7 +82,7 @@ export function useBills() {
       });
 
       if (!res.ok) throw new Error();
-
+      Swal.close();
       toast("success", "ลบบิลสำเร็จ", `บิลห้อง ${roomNumber} ถูกลบแล้ว`);
       await fetchBills();
     } catch {
@@ -108,9 +108,12 @@ export function useBills() {
         {},
         { withCredentials: true },
       );
+      Swal.close();
+
       toast("success", "อนุมัติการชำระแล้ว", `บิลห้อง ${room} ถูกอนุมัติ`);
       await fetchBills();
     } catch {
+      Swal.close();
       toast("error", "อนุมัติไม่สำเร็จ", "ไม่สามารถอัปเดตสถานะได้");
     }
   };
@@ -133,9 +136,11 @@ export function useBills() {
         {},
         { withCredentials: true },
       );
+      Swal.close();
       toast("info", "ปฏิเสธสำเร็จ", "สถานะกลับเป็นยังไม่ชำระ");
       await fetchBills();
     } catch {
+      Swal.close();
       toast("error", "ปฏิเสธไม่สำเร็จ", "ระบบไม่สามารถเปลี่ยนสถานะได้");
     }
   };
@@ -159,7 +164,7 @@ export function useBills() {
         {},
         { withCredentials: true },
       );
-
+      Swal.close();
       toast(
         "success",
         "แจ้งเตือนแล้ว",
@@ -167,6 +172,7 @@ export function useBills() {
       );
       await fetchBills();
     } catch (err: any) {
+      Swal.close();
       toast(
         "error",
         "แจ้งเตือนไม่สำเร็จ",

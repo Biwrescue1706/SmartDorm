@@ -67,11 +67,11 @@ export function InvoiceTable({ bill, beforeVat, vat, thaiText }: Props) {
 
       <tfoot className="fw-semibold bg-light">
         <tr>
-          <td colSpan={5}>ก่อน VAT</td>
+          <td colSpan={5}>ราคาก่อนรวมภาษี VAT 7%</td>
           <td>{beforeVat.toLocaleString()}</td>
         </tr>
         <tr>
-          <td colSpan={5}>VAT 7%</td>
+          <td colSpan={5}>ภาษี VAT 7%</td>
           <td>{vat.toLocaleString()}</td>
         </tr>
         <tr className="table-success">
@@ -151,11 +151,11 @@ export function ReceiptTable({
 
       <tfoot className="fw-semibold bg-light">
         <tr>
-          <td colSpan={4}>ก่อน VAT</td>
+          <td colSpan={4}>ราคาก่อนรวมภาษี VAT 7%</td>
           <td>{beforeVat.toLocaleString()}</td>
         </tr>
         <tr>
-          <td colSpan={4}>VAT</td>
+          <td colSpan={4}>ภาษี VAT 7%</td>
           <td>{vat.toLocaleString()}</td>
         </tr>
         <tr className="table-success">

@@ -1,5 +1,3 @@
-// src/components/AllBills/AllBillsRow.tsx
-
 import { useNavigate } from "react-router-dom";
 import type { Bill } from "../../types/All";
 
@@ -21,6 +19,13 @@ interface Props {
   onOverdue: (billId: string, room: string) => void;
 }
 
+/* ---------------- THAI TIME ---------------- */
+const thaiNow = () => {
+  const now = new Date();
+  const utc = now.getTime() + now.getTimezoneOffset() * 60000;
+  return new Date(utc + 7 * 60 * 60 * 1000);
+};
+
 export default function AllBillsRow({
   index,
   bill,
@@ -38,22 +43,28 @@ export default function AllBillsRow({
   onManage,
   onOverdue,
 }: Props) {
-
   const navigate = useNavigate();
 
   const status = bill.billStatus;
   const overdueDays = bill.overdueDays ?? 0;
 
-  const today = new Date();
+  /* ---------- เช็คเกินกำหนด ---------- */
+
+  const today = thaiNow();
   const dueDate = new Date(bill.dueDate);
+
   const isPastDue = today > dueDate;
 
   return (
     <tr>
       <td>{index + 1}</td>
+
       <td>{bill.room?.number ?? "-"}</td>
+
       <td>{bill.customer?.userName ?? "-"}</td>
+
       <td>{bill.fullName ?? "-"}</td>
+
       <td>{bill.cphone ?? "-"}</td>
 
       <td>
@@ -94,14 +105,10 @@ export default function AllBillsRow({
             <span className="badge bg-danger">ค้างชำระ</span>
           ))}
 
-        {status === 1 && (
-          <span className="badge bg-success">ชำระแล้ว</span>
-        )}
+        {status === 1 && <span className="badge bg-success">ชำระแล้ว</span>}
 
         {status === 2 && (
-          <span className="badge bg-warning text-dark">
-            รอตรวจสอบ
-          </span>
+          <span className="badge bg-warning text-dark">รอตรวจสอบ</span>
         )}
       </td>
 
@@ -111,19 +118,14 @@ export default function AllBillsRow({
           {status === 0 ? (
             <div className="d-flex flex-column align-items-center gap-1">
               <span className="fw-semibold">
-                {overdueDays > 0
-                  ? `${overdueDays} วัน`
-                  : "ยังไม่เกินกำหนด"}
+                {overdueDays > 0 ? `${overdueDays} วัน` : "ยังไม่เกินกำหนด"}
               </span>
 
               {role === 0 && isPastDue && (
                 <button
                   className="btn btn-warning btn-sm text-white"
                   onClick={() =>
-                    onOverdue(
-                      bill.billId,
-                      bill.room?.number ?? "-"
-                    )
+                    onOverdue(bill.billId, bill.room?.number ?? "-")
                   }
                 >
                   แจ้งเตือน
@@ -131,7 +133,7 @@ export default function AllBillsRow({
               )}
             </div>
           ) : overdueDays > 0 ? (
-            <span> {overdueDays} วัน</span>
+            <span>{overdueDays} วัน</span>
           ) : (
             "-"
           )}
@@ -187,12 +189,7 @@ export default function AllBillsRow({
           {role === 0 && (
             <button
               className="btn btn-danger btn-sm"
-              onClick={() =>
-                onDelete(
-                  bill.billId,
-                  bill.room?.number ?? "-"
-                )
-              }
+              onClick={() => onDelete(bill.billId, bill.room?.number ?? "-")}
             >
               🗑️
             </button>

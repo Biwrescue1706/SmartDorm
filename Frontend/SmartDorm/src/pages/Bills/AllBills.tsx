@@ -14,8 +14,17 @@ import type { Bill } from "../../types/All";
 import { usePendingBookings } from "../../hooks/ManageRooms/usePendingBookings";
 import { usePendingCheckouts } from "../../hooks/ManageRooms/usePendingCheckouts";
 
+/* ---------------- THAI TIME ---------------- */
+
+const thaiNow = () => {
+  const now = new Date();
+  const utc = now.getTime() + now.getTimezoneOffset() * 60000;
+  return new Date(utc + 7 * 60 * 60 * 1000);
+};
+
 export default function AllBills() {
   const { handleLogout, role, adminName, adminUsername } = useAuth();
+
   const {
     bills,
     loading,
@@ -24,7 +33,7 @@ export default function AllBills() {
     deleteBill,
     approveBill,
     rejectBill,
-    overdueBill, // ⭐ เพิ่ม
+    overdueBill,
   } = useBills();
 
   const [filterStatus, setFilterStatus] = useState("0");
@@ -43,13 +52,27 @@ export default function AllBills() {
   const [rows, setRows] = useState(15);
 
   const [width, setWidth] = useState(window.innerWidth);
+
+  const [thaiTime, setThaiTime] = useState(thaiNow());
+
   useEffect(() => {
     const resize = () => setWidth(window.innerWidth);
     window.addEventListener("resize", resize);
     return () => window.removeEventListener("resize", resize);
   }, []);
 
+  /* ----------- REALTIME THAI CLOCK ----------- */
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setThaiTime(thaiNow());
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, []);
+
   /* ---------------- FILTER ---------------- */
+
   useEffect(() => {
     let result = bills;
 
@@ -74,21 +97,23 @@ export default function AllBills() {
   const currentBills = filtered.slice(start, start + rows);
 
   /* ---------------- SLIP VIEW ---------------- */
+
   const handleViewSlip = (bill: Bill) => {
     const url = bill.payment?.slipUrl || bill.slipUrl;
+
     if (!url) return Swal.fire("ไม่มีสลิป", "ยังไม่มีหลักฐานการชำระ", "info");
 
     Swal.fire({
       title: `สลิปห้อง ${bill.room?.number ?? "-"}`,
       html: `
         <img src="${url}" style="
-          width: 100%;
-          max-width: 350px;
-          max-height: 70vh;
-          object-fit: contain;
-          border-radius: 12px;
-          display: block;
-          margin: 0 auto;
+          width:100%;
+          max-width:350px;
+          max-height:70vh;
+          object-fit:contain;
+          border-radius:12px;
+          display:block;
+          margin:0 auto;
         "/>
       `,
       showConfirmButton: false,
@@ -101,11 +126,13 @@ export default function AllBills() {
   };
 
   /* ---------------- RESET ---------------- */
+
   const handleRefresh = async () => {
     setFilterStatus("0");
     setFilterMonth("");
     setFilterRoom("");
     setPage(1);
+
     await fetchBills();
   };
 
@@ -128,17 +155,17 @@ export default function AllBills() {
 
       <main
         className="main-content flex-grow-1 px-2 py-3 mt-6 mt-lg-7"
-        style={{ 
-paddingLeft: "20px" ,
-paddingRight: "20px" 
-}}
+        style={{
+          paddingLeft: "20px",
+          paddingRight: "20px",
+        }}
       >
         <div
           className="mx-auto"
           style={{ borderRadius: 20, maxWidth: "1400px" }}
         >
           <h2
-            className="fw-bold text-center py-2 mb-3"
+            className="fw-bold text-center py-2 mb-2"
             style={{
               color: "#4A0080",
               borderBottom: "3px solid #CE93D8",
@@ -149,12 +176,31 @@ paddingRight: "20px"
             รายการบิลทั้งหมด
           </h2>
 
+          {/* ----------- CURRENT DATE TIME ----------- */}
+
+          <div className="text-center mb-3">
+            <div className="fw-bold text-dark h3">วันที่ปัจจุบัน</div>
+
+            <div className="text-primary fw-semibold h4">
+              {thaiTime.toLocaleDateString("th-TH", {
+                day: "numeric",
+                month: "long",
+                year: "numeric",
+              })}{" เวลา "} 
+               {thaiTime.toLocaleTimeString("th-TH")} น.
+            </div>
+
+            <div className="text-black h5">
+              
+            </div>
+          </div>
+
           {/* FILTER + SEARCH */}
+
           <div
             className="mb-3 p-3 rounded-3 shadow-sm"
             style={{ background: "#fff" }}
           >
-            {/* < 1400px = เรียงบรรทัดเดียว */}
             <div className="d-block d-xxl-none">
               <h2
                 className="fw-bold text-center py-2 mb-3"
@@ -201,53 +247,13 @@ paddingRight: "20px"
                     height: 38,
                     borderRadius: 10,
                     background:
-                      "linear-gradient(135deg, #4A148C, #7B1FA2, #CE93D8)",
+                      "linear-gradient(135deg,#4A148C,#7B1FA2,#CE93D8)",
                     color: "#fff",
                     border: "none",
                   }}
                 >
                   {loading ? "⏳ กำลังโหลด..." : "🔄 รีเซ็ตข้อมูล"}
                 </button>
-              </div>
-            </div>
-
-            {/* >= 1400px = แยกเหมือนเดิม */}
-            <div className="d-none d-xxl-block">
-              <h2
-                className="fw-bold text-center py-2 mb-3"
-                style={{
-                  color: "#000000",
-                  width: "fit-content",
-                  margin: "0 auto",
-                }}
-              >
-                สถานะบิล
-              </h2>
-              <BillStatusCardFilter
-                filterStatus={filterStatus}
-                setFilterStatus={setFilterStatus}
-                unpaidCount={unpaidCount}
-                paidCount={paidCount}
-                pendingCount={pendingCount}
-              />
-
-              <div className="d-flex gap-2 text-nowrap justify-content-center flex-wrap mb-2">
-                <input
-                  type="month"
-                  className="form-control shadow-sm"
-                  style={{ width: 200, borderRadius: 9, height: 45 }}
-                  value={filterMonth}
-                  onChange={(e) => setFilterMonth(e.target.value)}
-                />
-
-                <input
-                  type="text"
-                  className="form-control shadow-sm"
-                  style={{ width: 200, borderRadius: 9, height: 45 }}
-                  placeholder="ค้นหาห้อง..."
-                  value={filterRoom}
-                  onChange={(e) => setFilterRoom(e.target.value)}
-                />
               </div>
             </div>
           </div>
@@ -269,7 +275,7 @@ paddingRight: "20px"
               className="d-grid"
               style={{
                 gridTemplateColumns:
-                  width < 600 ? "repeat(2, 1fr)" : "repeat(6, 1fr)",
+                  width < 600 ? "repeat(2,1fr)" : "repeat(6,1fr)",
                 gap: "14px",
               }}
             >

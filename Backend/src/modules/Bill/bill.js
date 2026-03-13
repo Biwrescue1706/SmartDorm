@@ -8,7 +8,7 @@ import {
   notifyBillCreated,
   notifyBillApproved,
   notifyBillEdited
-} from "../../services/billLineNotify.js";
+} from "../../services/LineNotify/billLineNotify.js";
 
 const bill = Router();
 

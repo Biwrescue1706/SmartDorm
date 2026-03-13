@@ -12,7 +12,7 @@ import {
   notifyCheckoutApproved,
   notifyCheckoutRejected,
   notifyCheckoutSuccess
-} from "../services/checkout.notify.js";
+} from "../../services/LineNotify/checkout.notify.js";
 
 const checkouts = Router();
 

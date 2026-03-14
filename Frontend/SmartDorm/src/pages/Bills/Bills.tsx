@@ -8,21 +8,7 @@ import BillCard from "../../components/Bills/BillCard";
 import BillDialog from "../../components/Bills/BillDialog";
 import Pagination from "../../components/Pagination";
 import "bootstrap/dist/css/bootstrap.min.css";
-
-const canBillThisCycle = (booking: any, billMonth: Date) => {
-  if (!booking?.checkinAt) return false;
-
-  const cutoff = new Date(
-    billMonth.getFullYear(),
-    billMonth.getMonth() - 1,
-    25,
-    23,
-    59,
-    59,
-  );
-
-  return new Date(booking.checkinAt) <= cutoff;
-};
+import type { Booking } from "../../types/All";
 
 export default function Bills() {
   const { handleLogout, role, adminName, adminUsername } = useAuth();
@@ -75,24 +61,34 @@ export default function Bills() {
 
   const currentBillMonth = useMemo(() => {
     const now = new Date();
-    return new Date(now.getFullYear(), now.getMonth() + 1, 1);
+    return new Date(now.getFullYear(), now.getMonth(), 1);
   }, []);
 
   // rule 25 ต่อ booking
-  const canCreateBillForBooking = (booking: any) => {
+  const canCreateBillForBooking = (booking: Booking) => {
     if (!booking?.checkinAt) return false;
-    if (!currentBillMonth) return false;
 
-    const cutoff = new Date(
+    const cutoffStart = new Date(
       currentBillMonth.getFullYear(),
       currentBillMonth.getMonth() - 1,
+      25,
+      0,
+      0,
+      0,
+    );
+
+    const cutoffEnd = new Date(
+      currentBillMonth.getFullYear(),
+      currentBillMonth.getMonth(),
       25,
       23,
       59,
       59,
     );
 
-    return new Date(booking.checkinAt) <= cutoff;
+    const checkin = new Date(booking.checkinAt);
+
+    return checkin >= cutoffStart && checkin <= cutoffEnd;
   };
 
   // bills ของรอบปัจจุบัน (object เต็ม)
@@ -116,9 +112,7 @@ export default function Bills() {
   // ห้องที่มี booking และผ่าน rule รอบบิล
   const allBookedRooms = rooms.filter((room) => {
     const booking = bookings.find((b) => b.roomId === room.roomId);
-    if (!booking || booking.approveStatus !== 1) return false;
-    if (!currentBillMonth) return false;
-    return canBillThisCycle(booking, currentBillMonth);
+    return booking?.approveStatus === 1 && booking?.checkinAt;
   });
 
   // count
@@ -257,7 +251,7 @@ export default function Bills() {
                 <BillTable
                   rooms={paginatedRooms}
                   bookings={bookings}
-                  existingBills={billsOfCurrentCycle}
+                  existingBills={existingBills}
                   canCreateBill={!!currentBillMonth}
                   showBillDateColumn={statusFilter === "billed"}
                   showActionColumn={statusFilter === "notBilled"}

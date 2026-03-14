@@ -1,12 +1,11 @@
 // src/components/Bills/BillTable.tsx
-import type { Room } from "../../types/Room";
-import type { Booking } from "../../types/Booking";
+import type { Room, Booking, Bill } from "../../types/All";
 import BillRow from "./BillRows";
 
 interface BillTableProps {
   rooms: Room[];
   bookings: Booking[];
-  existingBills: any[];
+  existingBills: Bill[];
   canCreateBill: boolean;
   canCreateBillForBooking: (booking: Booking) => boolean;
 
@@ -76,13 +75,12 @@ export default function BillTable({
 
             // ✅ หา "บิลล่าสุด" ของห้องนี้
             const bill = existingBills
-              .filter((b: any) => b.roomId === room.roomId)
+              .filter((b) => b.room?.roomId === room.roomId)
               .sort(
-                (a: any, b: any) =>
+                (a, b) =>
                   new Date(b.createdAt).getTime() -
                   new Date(a.createdAt).getTime(),
               )[0];
-            ;
 
             const hasBill = !!bill;
 

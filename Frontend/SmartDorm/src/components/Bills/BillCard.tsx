@@ -1,24 +1,13 @@
 // src/components/Bills/BillCard.tsx
-import type { Room } from "../../types/Room";
-import type { Booking } from "../../types/Booking";
-
-interface Bill {
-  month: string;
-  createdAt: string;
-}
+import type { Room, Booking, Bill } from "../../types/All";
 
 interface Props {
   room: Room;
   booking?: Booking;
-
-  // บิลของห้องนี้
   bill?: Bill;
   hasBill: boolean;
 
-  // วันนี้ >= 25
   canCreateBill: boolean;
-
-  // rule 25 ต่อ booking
   canCreateBillForBooking: (booking: Booking) => boolean;
 
   formatThaiDate: (date: string) => string;
@@ -69,43 +58,52 @@ export default function BillCard({
         boxShadow: "2px 4px 8px rgb(0, 0, 0)",
       }}
     >
-      <h5 className="fw-bold text-center mb-2" style={{ color: SCB_PURPLE }}>
+      <h4 className="fw-bold text-center mb-2" style={{ color: SCB_PURPLE }}>
         ห้อง {room.number}
-      </h5>
+      </h4>
 
       <Divider />
 
-      <p className="mb-1 text-black text-center fw-bold">รายละเอียดผู้เช่า</p>
+      <h4 className="mb-1 text-black text-center fw-bold">รายละเอียดผู้เช่า</h4>
 
-      <p className="mb-1 text-black">
-        <b>LINE :</b> {booking?.customer?.userName || "-"}
-      </p>
+      <br />
 
-      <p className="mb-1 text-black">
-        <b>ชื่อ :</b> {booking?.fullName || "-"}
-      </p>
-
-      <p className="mb-2 text-black">
-        <b>เข้าพักจริง :</b>{" "}
-        {booking?.checkinAt ? formatThaiDate(booking.checkinAt) : "-"}
-      </p>
-
+      <div className="text-center">
+        {" "}
+        <p className="text-black">
+          <b>LINE :</b>
+          <p>{booking?.customer?.userName || "-"}</p>
+        </p>
+        <p className="mb-1 text-black">
+          <b>ชื่อ :</b>
+          <p>{booking?.fullName || "-"}</p>
+        </p>
+        <p className="mb-3 text-black">
+          <b>เข้าพักจริง :</b>{" "}
+          <p>{booking?.checkinAt ? formatThaiDate(booking.checkinAt) : "-"}</p>
+        </p>
+      </div>
       {/* แสดงข้อมูลบิล */}
       {hasBill && bill && (
         <>
           <Divider />
 
-          <p className="mb-1 text-black text-center fw-bold">รายละเอียดบิล</p>
-
-          <p className="mb-1 text-black">
-            <b>เดือนที่ออกบิล :</b>{" "}
-            {bill.month ? formatThaiDate(bill.month) : "-"}
-          </p>
-
-          <p className="mb-3 text-black">
-            <b>วันที่ออกบิล :</b>{" "}
-            {bill.createdAt ? formatThaiDate(bill.createdAt) : "-"}
-          </p>
+          <h5 className="mb-1 text-black text-center fw-bold">รายละเอียดบิล</h5>
+          <br />
+          <div className="text-center">
+            <p className="mb-1 text-black">
+              <b>เดือนที่ออกบิล :</b>{" "}
+            </p>
+            <p className="mb-1 text-black text-center">
+              {bill.month ? formatThaiDate(bill.month) : "-"}
+            </p>
+            <p className="mb-1 text-black">
+              <b>วันที่ออกบิล :</b>{" "}
+            </p>
+            <p className="mb-1 text-black text-center">
+              {bill.createdAt ? formatThaiDate(bill.createdAt) : "-"}
+            </p>
+          </div>
         </>
       )}
 

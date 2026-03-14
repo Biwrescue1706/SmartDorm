@@ -1,12 +1,11 @@
 import { useState, useEffect } from "react";
 import { API_BASE } from "../../config";
-import type { Room } from "../../types/Room";
-import type { Booking } from "../../types/Booking";
+import type { Room, Booking, Bill } from "../../types/All";
 
 export function useCreateBill() {
   const [rooms, setRooms] = useState<Room[]>([]);
   const [bookings, setBookings] = useState<Booking[]>([]);
-  const [existingBills, setExistingBills] = useState<any[]>([]);
+  const [existingBills, setExistingBills] = useState<Bill[]>([]);
   const [loading, setLoading] = useState(true);
   const [pendingBookings, setPendingBookings] = useState(0);
 

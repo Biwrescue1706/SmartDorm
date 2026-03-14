@@ -1,3 +1,4 @@
+// src/components/Bills/BillDialog.tsx
 import * as Dialog from "@radix-ui/react-dialog";
 import { useState, useEffect } from "react";
 import type { Room } from "../../types/Room";
@@ -155,6 +156,15 @@ export default function BillDialog({
     }
   };
 
+  const formatThaiDate = (date: string) => {
+    if (!date) return "";
+    return new Date(date).toLocaleDateString("th-TH", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    });
+  };
+
   return (
     <Dialog.Root open={open} onOpenChange={handleClose}>
       <Dialog.Portal>
@@ -187,44 +197,61 @@ export default function BillDialog({
             <input
               id="month"
               type="date"
-              className="form-control shadow-sm mb-3"
+              className="form-control shadow-sm"
               value={form.month}
               onChange={handleChange}
             />
+            {form.month && (
+              <div className="text-muted mt-1">
+                {formatThaiDate(form.month)}
+              </div>
+            )}
+            <div className="row mb-3">
+              <div className="col">
+                <label className="fw-semibold">มิเตอร์ปะปา ( ครั้งก่อน )</label>
+                <input
+                  type="number"
+                  className="form-control shadow-sm"
+                  value={form.wBefore}
+                  disabled
+                />
+              </div>
 
-            <label className="fw-semibold">มิเตอร์ปะปา ( ครั้งก่อน )</label>
-            <input
-              type="number"
-              className="form-control shadow-sm mb-3"
-              value={form.wBefore}
-              disabled
-            />
+              <div className="col">
+                <label className="fw-semibold">มิเตอร์ปะปา ( ปัจจุบัน )</label>
+                <input
+                  id="wAfter"
+                  type="number"
+                  className="form-control shadow-sm"
+                  value={form.wAfter}
+                  onChange={handleChange}
+                />
+              </div>
+            </div>
+            <div className="row mb-3">
+              <div className="col">
+                <label className="fw-semibold">
+                  มิเตอร์ไฟฟ้า ( ครั้งก่อน )
+                </label>
+                <input
+                  type="number"
+                  className="form-control shadow-sm"
+                  value={form.eBefore}
+                  disabled
+                />
+              </div>
 
-            <label className="fw-semibold">มิเตอร์ปะปา ( ปัจจุบัน )</label>
-            <input
-              id="wAfter"
-              type="number"
-              className="form-control shadow-sm mb-3"
-              value={form.wAfter}
-              onChange={handleChange}
-            />
-
-            <label className="fw-semibold">มิเตอร์ไฟฟ้า ( ครั้งก่อน )</label>
-            <input
-              type="number"
-              className="form-control shadow-sm mb-3"
-              value={form.eBefore}
-              disabled
-            />
-
-            <label className="fw-semibold">มิเตอร์ไฟฟ้า ( ปัจจุบัน )</label>
-            <input
-              id="eAfter"
-              type="number"
-              className="form-control shadow-sm"
-              value={form.eAfter}
-              onChange={handleChange}
-            />
+              <div className="col">
+                <label className="fw-semibold">มิเตอร์ไฟฟ้า ( ปัจจุบัน )</label>
+                <input
+                  id="eAfter"
+                  type="number"
+                  className="form-control shadow-sm"
+                  value={form.eAfter}
+                  onChange={handleChange}
+                />
+              </div>
+            </div>
           </div>
 
           <div className="d-flex justify-content-between border-top p-3">

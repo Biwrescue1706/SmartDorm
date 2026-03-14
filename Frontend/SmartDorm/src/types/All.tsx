@@ -1,4 +1,4 @@
-// Core Entities
+// src/types/All.tsx
 export interface Admin {
   adminId: string;
   username: string;

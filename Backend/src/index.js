@@ -113,8 +113,8 @@ app.get("/", async (_req, res) => {
     ✅ Mode: ${mode} <br/>
     🌐 Port: ${port} <br/>
     🗄 Database: ${db} <br/>
+    📅 วัน${date} <br/>
     🕒 เวลา: ${time} <br/>
-    📅 วัน${date}
   `);
 });
 

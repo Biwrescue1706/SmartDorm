@@ -1,12 +1,11 @@
 // src/components/Bills/BillRows.tsx
-import type { Room } from "../../types/Room";
-import type { Booking } from "../../types/Booking";
+import type { Room, Booking, Bill } from "../../types/All";
 
 interface BillRowProps {
   index: number;
   room: Room;
   booking?: Booking;
-  bill?: any;
+  bill?: Bill;
   hasBill: boolean;
 
   showBillDateColumn: boolean;
@@ -40,13 +39,6 @@ export default function BillRow({
     ? formatThaiDate(booking.checkinAt)
     : "-";
 
-  /**
-   * เงื่อนไขแสดงปุ่มออกบิล
-   * 1. วันนี้ต้อง >= 25
-   * 2. ยังไม่มีบิลรอบนี้
-   * 3. ต้อง checkin แล้ว
-   * 4. ต้องผ่าน rule 25–31 ของ booking
-   */
   const canShowButton =
     !!booking &&
     canCreateBill &&

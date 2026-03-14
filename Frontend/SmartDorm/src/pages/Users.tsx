@@ -1,14 +1,13 @@
 // src/pages/Users.tsx
 import { useEffect, useMemo, useState } from "react";
-import axios from "axios";
 import Swal from "sweetalert2";
-import { API_BASE } from "../config";
 import Nav from "../components/Nav";
 import { useAuth } from "../hooks/useAuth";
 import Pagination from "../components/Pagination";
 import * as Dialog from "@radix-ui/react-dialog";
 import { usePendingBookings } from "../hooks/ManageRooms/usePendingBookings";
 import { usePendingCheckouts } from "../hooks/ManageRooms/usePendingCheckouts";
+import { api } from "../utils/api";
 
 /* ---------------------- Types ---------------------- */
 interface BookingDetail {
@@ -95,13 +94,15 @@ export default function Users() {
   const fetchUsers = async () => {
     try {
       setLoading(true);
-      const res = await axios.get(`${API_BASE}/user/getall`);
+
+      const res = await api.get("/user/getall");
 
       const merged: Record<string, Customer & { bookings: BookingDetail[] }> =
         {};
 
       (res.data.users || []).forEach((u: Customer) => {
         const key = u.customerId;
+
         if (!merged[key]) {
           merged[key] = { ...u, bookings: [...(u.bookings || [])] };
         } else {
@@ -122,11 +123,14 @@ export default function Users() {
   /* ---------------- Search ---------------- */
   const handleSearch = async () => {
     if (!search.trim()) return;
+
     setLoading(true);
+
     try {
-      const res = await axios.get(`${API_BASE}/user/search`, {
+      const res = await api.get("/user/search", {
         params: { keyword: search },
       });
+
       setUsers(res.data.users || []);
       setCurrentPage(1);
     } finally {
@@ -147,7 +151,7 @@ export default function Users() {
     if (!ok.isConfirmed) return;
 
     try {
-      await axios.delete(`${API_BASE}/booking/${b.bookingId}`);
+      await api.delete(`/booking/${b.bookingId}`);
       Swal.fire("สำเร็จ", "ลบรายการจองแล้ว", "success");
       fetchUsers();
       setShowDialog(false);
@@ -173,7 +177,7 @@ export default function Users() {
     if (!ok.isConfirmed) return;
 
     try {
-      await axios.delete(`${API_BASE}/user/${selectedUser.customerId}`);
+      await api.delete(`/user/${selectedUser.customerId}`);
       setUsers((prev) =>
         prev.filter((x) => x.customerId !== selectedUser.customerId),
       );

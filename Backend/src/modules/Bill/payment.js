@@ -78,24 +78,29 @@ payments.post("/create", upload.single("slip"), async (req, res) => {
 
     // สร้าง Payment + อัปเดต Bill
     const [payment, updatedBill] = await prisma.$transaction([
-      prisma.payment.create({
-        data: {
-          billId,
-          customerId: customer.customerId,
-          slipUrl,
-          paidAt: new Date(),
-        },
-      }),
-      prisma.bill.update({
-        where: { billId },
-        data: {
-          billStatus: 2, // รอตรวจสอบ
-          slipUrl,
-          billDate: new Date(),
-          paidAt: new Date(),
-        },
-      }),
-    ]);
+  prisma.payment.upsert({
+    where: { billId },
+    update: {
+      slipUrl,
+      paidAt: new Date(),
+    },
+    create: {
+      billId,
+      customerId: customer.customerId,
+      slipUrl,
+      paidAt: new Date(),
+    },
+  }),
+  prisma.bill.update({
+    where: { billId },
+    data: {
+      billStatus: 2,
+      slipUrl,
+      billDate: new Date(),
+      paidAt: new Date(),
+    },
+  }),
+]);
 
     const customerUrl = `${BASE_URL}/bill/${bill.billId}`;
 

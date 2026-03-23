@@ -19,6 +19,22 @@ export default function BillManageDialog({
   const slip = bill.payment?.slipUrl ?? bill.slipUrl;
   const roomNumber = bill.room?.number ?? "-";
 
+  const handleApprove = () => {
+    onClose(); // 🔥 ปิดก่อน
+
+    setTimeout(() => {
+      onApprove(bill.billId, roomNumber);
+    }, 150);
+  };
+
+  const handleReject = () => {
+    onClose(); // 🔥 ปิดก่อน
+
+    setTimeout(() => {
+      onReject(bill.billId, roomNumber);
+    }, 150);
+  };
+
   return (
     <div
       className="modal show d-block mx-2"
@@ -37,7 +53,7 @@ export default function BillManageDialog({
         className="modal-dialog modal-dialog-centered"
         style={{
           maxWidth: "480px",
-          margin: "5px auto 5px auto",
+          margin: "5px auto",
         }}
       >
         <div className="modal-content rounded-4 shadow-lg border-0">
@@ -115,14 +131,14 @@ export default function BillManageDialog({
           <div className="modal-footer d-flex justify-content-between px-4 pb-3">
             <button
               className="btn btn-success fw-semibold px-4"
-              onClick={() => onApprove(bill.billId, roomNumber)}
+              onClick={handleApprove}
             >
               ✔️ ยืนยันการชำระ
             </button>
 
             <button
               className="btn btn-warning fw-semibold px-4"
-              onClick={() => onReject(bill.billId, roomNumber)}
+              onClick={handleReject}
             >
               ❌ ปฏิเสธ
             </button>

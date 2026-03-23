@@ -154,12 +154,14 @@ export default function AllBills() {
       />
 
       <main
-        className="main-content flex-grow-1 px-2 py-3 mt-6 mt-lg-7"
-        style={{
-          paddingLeft: "20px",
-          paddingRight: "20px",
-        }}
-      >
+  className="main-content flex-grow-1 px-2 py-3"
+  style={{
+    marginTop: "60px",
+    marginLeft: width >= 1400 ? "180px" : "0", // 🔥 กัน sidebar
+    paddingLeft: "20px",
+    paddingRight: "20px",
+  }}
+>
         <div
           className="mx-auto"
           style={{ borderRadius: 20, maxWidth: "1400px" }}

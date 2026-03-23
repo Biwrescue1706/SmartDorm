@@ -56,17 +56,27 @@ export default function AllBillsEditDialog({ bill, onSave, onClose }: Props) {
       return;
     }
 
-    await onSave(bill.billId, {
-      wBefore: Number(form.wBefore),
-      wAfter: Number(form.wAfter),
-      eBefore: Number(form.eBefore),
-      eAfter: Number(form.eAfter),
-      billStatus: Number(form.billStatus),
-      month: form.month ? toISO(form.month) : undefined,
-      dueDate: form.dueDate ? toISO(form.dueDate) : undefined,
-    });
-
+    // 🔥 ปิด dialog ก่อน
     onClose();
+
+    // 🔥 รอให้ dialog หายก่อน แล้วค่อย save + swal
+    setTimeout(async () => {
+      try {
+        await onSave(bill.billId, {
+          wBefore: Number(form.wBefore),
+          wAfter: Number(form.wAfter),
+          eBefore: Number(form.eBefore),
+          eAfter: Number(form.eAfter),
+          billStatus: Number(form.billStatus),
+          month: form.month ? toISO(form.month) : undefined,
+          dueDate: form.dueDate ? toISO(form.dueDate) : undefined,
+        });
+
+        Swal.fire("สำเร็จ", "บันทึกข้อมูลเรียบร้อย", "success");
+      } catch (err) {
+        Swal.fire("ผิดพลาด", "ไม่สามารถบันทึกข้อมูลได้", "error");
+      }
+    }, 150);
   };
 
   // responsive width
@@ -117,7 +127,6 @@ export default function AllBillsEditDialog({ bill, onSave, onClose }: Props) {
         </div>
 
         <form onSubmit={submit} className="p-4">
-
           <div className="mb-3">
             <label className={labelClass}>เดือนที่ออกบิล</label>
             <input

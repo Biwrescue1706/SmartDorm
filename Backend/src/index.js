@@ -5,13 +5,23 @@ import cookieParser from "cookie-parser";
 import prisma from "./prisma.js";
 import { scheduleOverdueAuto } from "./services/overdue.service.js";
 
-// โหลด env ตอน local
 if (process.env.NODE_ENV !== "production") dotenv.config();
 
 const app = express();
 app.set("trust proxy", true);
 
-// cors allow
+/* ================= GLOBAL ERROR กันพัง ================= */
+
+process.on("uncaughtException", (err) => {
+  console.error("💥 UNCAUGHT EXCEPTION:", err);
+});
+
+process.on("unhandledRejection", (err) => {
+  console.error("💥 UNHANDLED REJECTION:", err);
+});
+
+/* ================= CORS ================= */
+
 const allowedOrigins = [
   "http://localhost:5173",
   "http://localhost:5174",
@@ -24,21 +34,15 @@ const allowedOrigins = [
   "https://hub.smartdorm-biwboong.shop",
 ];
 
-// cors config
 app.use(
   cors({
     origin: (origin, callback) => {
-      if (!origin) return callback(null, true);
-
-      if (allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error("Not allowed by CORS"));
+      if (!origin || allowedOrigins.includes(origin)) {
+        return callback(null, true);
       }
+      callback(new Error("Not allowed by CORS"));
     },
     credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
 
@@ -71,107 +75,53 @@ app.use("/payment", paymentRouter);
 app.use("/user", userRouter);
 app.use("/qr", qrRouter);
 
-/* ================= THAI TIME ================= */
-
-function thaiNow() {
-  const now = new Date();
-
-  return {
-    date: now.toLocaleDateString("th-TH", {
-      timeZone: "Asia/Bangkok",
-      weekday: "long",
-      day: "numeric",
-      month: "long",
-      year: "numeric",
-    }),
-    time:
-      now.toLocaleTimeString("th-TH", {
-        timeZone: "Asia/Bangkok",
-        hour: "2-digit",
-        minute: "2-digit",
-      }) + " น.",
-  };
-}
-
 /* ================= ROOT ================= */
 
-app.get("/", async (_req, res) => {
-  const mode = process.env.NODE_ENV || "development";
-  const port = process.env.PORT || 10000;
-  const { date, time } = thaiNow();
-
-  let db = "ok";
-
-  try {
-    await prisma.$queryRaw`SELECT 1`;
-  } catch {
-    db = "error";
-  }
-
-  res.send(`
-    🚀 SmartDorm Backend Running <br/>
-    ✅ Mode: ${mode} <br/>
-    🌐 Port: ${port} <br/>
-    🗄 Database: ${db} <br/>
-    📅 วัน${date} <br/>
-    🕒 เวลา: ${time} <br/>
-  `);
+app.get("/", (_req, res) => {
+  res.send("🚀 SmartDorm Backend Running");
 });
 
 /* ================= HEALTH ================= */
 
-app.get("/health", async (_req, res) => {
-  const { date, time } = thaiNow();
-
-  let db = "ok";
-
-  try {
-    await prisma.$queryRaw`SELECT 1`;
-  } catch {
-    db = "error";
-  }
-
+app.get("/health", (_req, res) => {
   res.json({
     status: "ok",
     mode: process.env.NODE_ENV || "development",
-    database: db,
-    time,
-    date,
   });
 });
 
 /* ================= START SERVER ================= */
 
 const PORT = process.env.PORT || 10000;
-const ENV = process.env.NODE_ENV || "development";
 
 const server = app.listen(PORT, () => {
   console.log("====================================");
-
-  if (ENV === "production") {
-    console.log("✅ Mode: Production");
-    console.log(`🚀 Server running on port ${PORT}`);
-  } else {
-    console.log("✅ Mode: Development");
-    console.log(`🚀 Server running on http://localhost:${PORT}`);
-  }
-
+  console.log(`🚀 Server running on port ${PORT}`);
   console.log("====================================");
 });
 
-/* ================= DB INIT ================= */
+/* ================= DB CONNECT + RETRY ================= */
 
-(async () => {
-  try {
-    console.log("🟡 Connecting Prisma...");
-    await prisma.$connect();
-    console.log("✅ Prisma connected");
+async function connectDB(retries = 5) {
+  while (retries) {
+    try {
+      console.log("🟡 Connecting Prisma...");
+      await prisma.$connect();
+      console.log("✅ Prisma connected");
 
-    scheduleOverdueAuto();
-  } catch (err) {
-    console.error("❌ Database connection failed:", err);
+      scheduleOverdueAuto();
+      return;
+    } catch (err) {
+      console.error("❌ DB connect fail, retrying...", retries);
+      retries--;
+      await new Promise((res) => setTimeout(res, 5000));
+    }
   }
-})();
+
+  console.error("💥 DB connect failed completely");
+}
+
+connectDB();
 
 /* ================= SHUTDOWN ================= */
 

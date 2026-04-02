@@ -10,7 +10,7 @@ if (process.env.NODE_ENV !== "production") dotenv.config();
 const app = express();
 app.set("trust proxy", true);
 
-/* ================= GLOBAL ERROR กันพัง ================= */
+/* ================= GLOBAL ERROR ================= */
 
 process.on("uncaughtException", (err) => {
   console.error("💥 UNCAUGHT EXCEPTION:", err);
@@ -18,6 +18,7 @@ process.on("uncaughtException", (err) => {
 
 process.on("unhandledRejection", (err) => {
   console.error("💥 UNHANDLED REJECTION:", err);
+  process.exit(1);
 });
 
 /* ================= CORS ================= */
@@ -40,7 +41,9 @@ app.use(
       if (!origin || allowedOrigins.includes(origin)) {
         return callback(null, true);
       }
-      callback(new Error("Not allowed by CORS"));
+
+      console.warn("⚠️ Blocked CORS:", origin);
+      return callback(null, false);
     },
     credentials: true,
   })
@@ -90,6 +93,23 @@ app.get("/health", (_req, res) => {
   });
 });
 
+app.get("/health/db", async (_req, res) => {
+  const timeout = new Promise((_, reject) =>
+    setTimeout(() => reject(new Error("timeout")), 3000)
+  );
+
+  try {
+    await Promise.race([
+      prisma.$queryRaw`SELECT 1`,
+      timeout
+    ]);
+
+    res.json({ db: "ok" });
+  } catch (err) {
+    res.status(500).json({ db: "fail", error: err.message });
+  }
+});
+
 /* ================= START SERVER ================= */
 
 const PORT = process.env.PORT || 10000;
@@ -98,30 +118,10 @@ const server = app.listen(PORT, () => {
   console.log("====================================");
   console.log(`🚀 Server running on port ${PORT}`);
   console.log("====================================");
+
+  console.log("✅ Prisma ready (lazy connect)");
+  scheduleOverdueAuto();
 });
-
-/* ================= DB CONNECT + RETRY ================= */
-
-async function connectDB(retries = 5) {
-  while (retries) {
-    try {
-      console.log("🟡 Connecting Prisma...");
-      await prisma.$connect();
-      console.log("✅ Prisma connected");
-
-      scheduleOverdueAuto();
-      return;
-    } catch (err) {
-      console.error("❌ DB connect fail, retrying...", retries);
-      retries--;
-      await new Promise((res) => setTimeout(res, 5000));
-    }
-  }
-
-  console.error("💥 DB connect failed completely");
-}
-
-connectDB();
 
 /* ================= SHUTDOWN ================= */
 
@@ -133,3 +133,7 @@ async function shutdown() {
 
 process.on("SIGINT", shutdown);
 process.on("SIGTERM", shutdown);
+
+process.on("beforeExit", async () => {
+  await prisma.$disconnect();
+});

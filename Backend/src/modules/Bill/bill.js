@@ -117,7 +117,7 @@ bill.get("/getall", async (_req, res) => {
         month: true,
         dueDate: true,
         createdAt: true,
-        room: { select: { roomNumber: true } },
+        room: { select: { number: true } },
         customer: { select: { fullName: true, cphone: true } },
         payment: { select: { amount: true, status: true } },
         adminCreated: { select: { name: true } },

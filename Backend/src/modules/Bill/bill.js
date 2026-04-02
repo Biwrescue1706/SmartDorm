@@ -108,21 +108,15 @@ bill.get("/getall", async (_req, res) => {
     }
 
     const bills = await prisma.bill.findMany({
-      orderBy: { createdAt: "desc" },
-      select: {
-        billId: true,
-        billNumber: true,
-        total: true,
-        billStatus: true,
-        month: true,
-        dueDate: true,
-        createdAt: true,
-        room: { select: { number: true } },
-        customer: { select: { fullName: true, cphone: true } },
-        payment: { select: { amount: true, status: true } },
-        adminCreated: { select: { name: true } },
-      },
-    });
+  orderBy: { createdAt: "desc" },
+  include: {
+    room: true,
+    booking: true,
+    customer: true,
+    payment: true,
+    adminCreated: true,
+  },
+});
 
     billCache = bills;
     billCacheTime = Date.now();

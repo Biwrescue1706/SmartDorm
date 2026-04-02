@@ -66,30 +66,24 @@ export default function Bills() {
 
   // rule 25 ต่อ booking
   const canCreateBillForBooking = (booking: Booking) => {
-    if (!booking?.checkinAt) return false;
+  if (!booking?.checkinAt) return false;
 
-    const cutoffStart = new Date(
-      currentBillMonth.getFullYear(),
-      currentBillMonth.getMonth() - 1,
-      25,
-      0,
-      0,
-      0,
+  const now = new Date();
+  const currentMonth = now.getMonth();
+  const currentYear = now.getFullYear();
+
+  const alreadyHasBill = existingBills.some((bill: any) => {
+    const billMonth = new Date(bill.month);
+
+    return (
+      bill.roomId === booking.roomId &&
+      billMonth.getMonth() === currentMonth &&
+      billMonth.getFullYear() === currentYear
     );
+  });
 
-    const cutoffEnd = new Date(
-      currentBillMonth.getFullYear(),
-      currentBillMonth.getMonth(),
-      25,
-      23,
-      59,
-      59,
-    );
-
-    const checkin = new Date(booking.checkinAt);
-
-    return checkin >= cutoffStart && checkin <= cutoffEnd;
-  };
+  return !alreadyHasBill;
+};
 
   // bills ของรอบปัจจุบัน (object เต็ม)
   const billsOfCurrentCycle = useMemo(() => {

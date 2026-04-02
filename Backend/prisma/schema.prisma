@@ -16,6 +16,9 @@ model Admin {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+createdBills Bill[] @relation("AdminCreated")
+  updatedBills Bill[] @relation("AdminUpdated")
 }
 
 model Customer {
@@ -107,12 +110,18 @@ model Bill {
   overdueDays Int?
   fine        Float?
 
+createdBy   String?   // 👈 เพิ่ม
+  updatedBy   String?   // 👈 เพิ่ม
+
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
   room        Room     @relation(fields: [roomId], references: [roomId])
   booking     Booking  @relation(fields: [bookingId], references: [bookingId])
   customer    Customer @relation(fields: [customerId], references: [customerId])
+
+adminCreated Admin? @relation("AdminCreated", fields: [createdBy], references: [adminId])
+  adminUpdated Admin? @relation("AdminUpdated", fields: [updatedBy], references: [adminId])
 
   payment     Payment?
 

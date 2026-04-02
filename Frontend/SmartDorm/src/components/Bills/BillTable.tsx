@@ -73,16 +73,29 @@ export default function BillTable({
           {rooms.map((room, index) => {
             const booking = bookings.find((b) => b.roomId === room.roomId);
 
-            // ✅ หา "บิลล่าสุด" ของห้องนี้
-            const bill = existingBills
-              .filter((b) => b.room?.roomId === room.roomId)
-              .sort(
-                (a, b) =>
-                  new Date(b.createdAt).getTime() -
-                  new Date(a.createdAt).getTime(),
-              )[0];
+           const now = new Date();
+const currentMonth = now.getMonth();
+const currentYear = now.getFullYear();
 
-            const hasBill = !!bill;
+// ✅ หาเฉพาะ "บิลเดือนปัจจุบัน"
+const bill = existingBills
+  .filter((b) => {
+    const billMonth = new Date(b.month);
+
+    return (
+      b.room?.roomId === room.roomId &&
+      billMonth.getMonth() === currentMonth &&
+      billMonth.getFullYear() === currentYear
+    );
+  })
+  .sort(
+    (a, b) =>
+      new Date(b.createdAt).getTime() -
+      new Date(a.createdAt).getTime(),
+  )[0];
+
+// ✅ มีบิล = มีเฉพาะเดือนนี้เท่านั้น
+const hasBill = !!bill;
 
             return (
               <BillRow

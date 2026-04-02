@@ -67,7 +67,10 @@ model Booking {
   room           Room     @relation(fields: [roomId], references: [roomId])
   customer       Customer @relation(fields: [customerId], references: [customerId])
 
-  @@index([roomId, checkinStatus, createdAt]) // 🔥 ตัวเดียวพอ
+  bills          Bill[]
+  checkouts      Checkout[]
+
+  @@index([roomId, checkinStatus, createdAt]) 
 }
 
 model Bill {

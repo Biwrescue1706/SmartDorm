@@ -8,7 +8,7 @@ import { usePendingCheckouts } from "../hooks/ManageRooms/usePendingCheckouts";
 import { useOverview } from "../hooks/useOverview";
 import type { OverviewRoom } from "../types/Overview";
 
-// SCB THEME
+// THEME
 const SCB_PURPLE = "#4A0080";
 const BG_SOFT = "#ffffff";
 
@@ -43,6 +43,7 @@ const months = [
 export default function BillOverviewPage() {
   const { handleLogout, role, adminName, adminUsername } = useAuth();
   const now = new Date();
+
   const [year, setYear] = useState<number>(now.getFullYear());
   const [month, setMonth] = useState<number>(now.getMonth() + 1);
   const { rooms, totalRooms, loading, error } = useOverview(year, month);
@@ -63,7 +64,6 @@ export default function BillOverviewPage() {
       map.get(floor)!.push(r);
     });
 
-    // เรียงชั้น 1 → 2 → 3 → ...
     return Array.from(map.entries()).sort((a, b) => a[0] - b[0]);
   }, [rooms]);
 
@@ -93,16 +93,14 @@ export default function BillOverviewPage() {
         pendingCheckouts={pendingCheckouts}
       />
 
-      <main
-        className="main-content flex-grow-1 px-2 py-3 mt-6 mt-lg-7"
-        style={{
-          paddingLeft: "20px",
-          paddingRight: "20px",
-        }}
-      >
+      <main className="main-content flex-grow-1 px-2 py-3 mt-6 mt-lg-7">
         <div
-          className="mx-auto"
-          style={{ background: BG_SOFT, borderRadius: 20, maxWidth: "1400px" }}
+          className="mx-auto p-3"
+          style={{
+            background: BG_SOFT,
+            borderRadius: 20,
+            maxWidth: "1400px",
+          }}
         >
           <h2
             className="fw-bold text-center mb-2"
@@ -117,30 +115,69 @@ export default function BillOverviewPage() {
 
           {/* Legend */}
           <div className="d-flex flex-wrap justify-content-center gap-3 mb-3 small">
-            <div className="d-flex align-items-center text-dark gap-1">
-              <span className="badge bg-secondary"> </span>
-              <span>ห้องว่าง</span>
+            <div className="d-flex align-items-center gap-1">
+              <span
+                style={{
+                  width: 14,
+                  height: 14,
+                  background: "#f1f3f5",
+                  border: "1px solid #ced4da",
+                  borderRadius: 4,
+                }}
+              />
+              ห้องว่าง
             </div>
 
-            {/* ✅ เพิ่มอันนี้ */}
-            <div className="d-flex align-items-center text-dark gap-1">
-              <span className="badge bg-primary"> </span>
-              <span>มีการจอง / ยังไม่ออกบิล</span>
+            <div className="d-flex align-items-center gap-1">
+              <span
+                style={{
+                  width: 14,
+                  height: 14,
+                  border: "2px solid #0d6efd",
+                  background: "#f4f8ff",
+                  borderRadius: 4,
+                }}
+              />
+              มีการจอง / ยังไม่ออกบิล
             </div>
 
-            <div className="d-flex align-items-center text-dark gap-1">
-              <span className="badge bg-warning"> </span>
-              <span>มีบิล / ยังไม่ชำระ</span>
+            <div className="d-flex align-items-center gap-1">
+              <span
+                style={{
+                  width: 14,
+                  height: 14,
+                  border: "2px solid #fd7e14",
+                  background: "#fff4e6",
+                  borderRadius: 4,
+                }}
+              />
+              ยังไม่ชำระ
             </div>
 
-            <div className="d-flex align-items-center text-dark gap-1">
-              <span className="badge bg-info"> </span>
-              <span>กำลังตรวจสอบ</span>
+            <div className="d-flex align-items-center gap-1">
+              <span
+                style={{
+                  width: 14,
+                  height: 14,
+                  border: "2px solid #0dcaf0",
+                  background: "#e7f9ff",
+                  borderRadius: 4,
+                }}
+              />
+              กำลังตรวจสอบ
             </div>
 
-            <div className="d-flex align-items-center text-dark gap-1">
-              <span className="badge bg-success"> </span>
-              <span>ชำระแล้ว</span>
+            <div className="d-flex align-items-center gap-1">
+              <span
+                style={{
+                  width: 14,
+                  height: 14,
+                  border: "2px solid #198754",
+                  background: "#eafaf1",
+                  borderRadius: 4,
+                }}
+              />
+              ชำระแล้ว
             </div>
           </div>
 
@@ -197,7 +234,6 @@ export default function BillOverviewPage() {
                 const n = new Date();
                 setYear(n.getFullYear());
                 setMonth(n.getMonth() + 1);
-                // รีเฟรชทั้งหน้า
                 window.location.reload();
               }}
             >
@@ -214,29 +250,28 @@ export default function BillOverviewPage() {
             .filter(([f]) => selectedFloor === "all" || f === selectedFloor)
             .map(([floor, floorRooms]) => (
               <div key={floor} className="mb-4">
-                <h3
-                  className="fw-bold mb-2 text-center"
-                  style={{ color: "#000000" }}
-                >
-                  ชั้น {floor}
-                </h3>
+                <h3 className="fw-bold mb-2 text-center">ชั้น {floor}</h3>
 
                 <div className="row g-3">
                   {floorRooms.map((r: OverviewRoom) => {
                     const bill = r.bill;
                     const hasBooking = r.hasBooking;
-                    let bg = "bg-secondary";
-                    let text = "text-black";
 
-                    // ✅ มี booking แต่ยังไม่มีบิล
+                    let border = "1px solid #e0e0e0";
+                    let bgColor = "#fafafa";
+                    let textColor = "#6c757d";
+
                     if (hasBooking && !bill) {
-                      bg = "bg-primary";
-                      text = "text-white";
+                      border = "1px solid #0d6efd";
+                      bgColor = "#f4f8ff";
+                      textColor = "#0d3b66";
                     } else if (bill) {
-                      if (bill.billStatus === 1) bg = "bg-success";
-                      else if (bill.billStatus === 2) bg = "bg-info";
-                      else bg = "bg-warning";
-                      text = "text-white";
+                      bgColor = "#ffffff";
+                      textColor = "#000";
+
+                      if (bill.billStatus === 1) border = "1px solid #198754";
+                      else if (bill.billStatus === 2) border = "1px solid #0dcaf0";
+                      else border = "1px solid #fd7e14";
                     }
 
                     return (
@@ -244,34 +279,58 @@ export default function BillOverviewPage() {
                         key={r.roomId}
                         className="col-6 col-md-4 col-lg-2"
                         onClick={() => {
-                          if (!hasBooking) return; // ✅ ใช้ hasBooking จาก backend
-                          if (!bill) {
-                            navigate("/bills");
-                          } else if ([0, 1, 2].includes(bill.billStatus)) {
-                            navigate(`/bills/${bill.billId}`);
-                          }
+                          if (!hasBooking) return;
+                          if (!bill) navigate("/bills");
+                          else navigate(`/bills/${bill.billId}`);
                         }}
                         style={{
                           cursor: hasBooking ? "pointer" : "not-allowed",
                         }}
                       >
                         <div
-                          className={`card h-100 text-center ${bg} ${text}`}
-                          style={{ minHeight: 120 }}
+                          className="card h-100 text-center position-relative"
+                          style={{
+                            minHeight: 120,
+                            border,
+                            borderRadius: 12,
+                            backgroundColor: bgColor,
+                            color: textColor,
+                            boxShadow: "0 2px 6px rgba(0,0,0,0.05)",
+                            transition: "0.2s",
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.transform = "scale(1.03)";
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.transform = "scale(1)";
+                          }}
                         >
-                          <div className="card-body d-flex flex-column justify-content-between  p-2">
+                          <div className="position-absolute top-0 end-0 m-1">
+                            <span className="badge bg-light text-dark small">
+                              {!hasBooking
+                                ? "ว่าง"
+                                : !bill
+                                ? "รอออกบิล"
+                                : bill.billStatus === 1
+                                ? "จ่ายแล้ว"
+                                : bill.billStatus === 2
+                                ? "ตรวจสอบ"
+                                : "ค้างชำระ"}
+                            </span>
+                          </div>
+
+                          <div className="card-body d-flex flex-column justify-content-between p-2">
                             <div className="fw-bold">ห้อง {r.number}</div>
 
-                            {/* ✅ ห้องว่าง */}
                             {!hasBooking && (
-                              <div className="small text-black mt-2">
-                                ห้องว่าง
-                              </div>
+                              <div className="small mt-2">ห้องว่าง</div>
                             )}
 
                             {bill && (
                               <div className="small">
-                                <div>รวม {bill.total.toLocaleString()} บาท</div>
+                                <div>
+                                  รวม {bill.total.toLocaleString()} บาท
+                                </div>
                                 <div>
                                   ครบกำหนด {formatThaiDate(bill.dueDate)}
                                 </div>

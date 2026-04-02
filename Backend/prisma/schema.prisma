@@ -17,7 +17,7 @@ model Admin {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-createdBills Bill[] @relation("AdminCreated")
+  createdBills Bill[] @relation("AdminCreated")
   updatedBills Bill[] @relation("AdminUpdated")
 }
 
@@ -73,7 +73,7 @@ model Booking {
   bills          Bill[]
   checkouts      Checkout[]
 
-  @@index([roomId, checkinStatus, createdAt]) 
+  @@index([roomId, checkinStatus, createdAt])
 }
 
 model Bill {
@@ -110,8 +110,8 @@ model Bill {
   overdueDays Int?
   fine        Float?
 
-createdBy   String?   // 👈 เพิ่ม
-  updatedBy   String?   // 👈 เพิ่ม
+  createdBy   String?
+  updatedBy   String?
 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -120,13 +120,13 @@ createdBy   String?   // 👈 เพิ่ม
   booking     Booking  @relation(fields: [bookingId], references: [bookingId])
   customer    Customer @relation(fields: [customerId], references: [customerId])
 
-adminCreated Admin? @relation("AdminCreated", fields: [createdBy], references: [adminId])
+  adminCreated Admin? @relation("AdminCreated", fields: [createdBy], references: [adminId])
   adminUpdated Admin? @relation("AdminUpdated", fields: [updatedBy], references: [adminId])
 
   payment     Payment?
 
-  @@index([createdAt])        // 🔥 list
-  @@index([roomId, month])    // 🔥 สำคัญสุด
+  @@index([createdAt])
+  @@index([roomId, month])
 }
 
 model Payment {

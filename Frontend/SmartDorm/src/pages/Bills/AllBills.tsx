@@ -52,7 +52,6 @@ export default function AllBills() {
   const [rows, setRows] = useState(15);
 
   const [width, setWidth] = useState(window.innerWidth);
-
   const [thaiTime, setThaiTime] = useState(thaiNow());
 
   useEffect(() => {
@@ -61,13 +60,10 @@ export default function AllBills() {
     return () => window.removeEventListener("resize", resize);
   }, []);
 
-  /* ----------- REALTIME THAI CLOCK ----------- */
-
   useEffect(() => {
     const timer = setInterval(() => {
       setThaiTime(thaiNow());
     }, 1000);
-
     return () => clearInterval(timer);
   }, []);
 
@@ -119,9 +115,6 @@ export default function AllBills() {
       showConfirmButton: false,
       showCloseButton: true,
       background: "#fff",
-      customClass: {
-        popup: "swal-slip-popup",
-      },
     });
   };
 
@@ -154,14 +147,14 @@ export default function AllBills() {
       />
 
       <main
-  className="main-content flex-grow-1 px-2 py-3"
-  style={{
-    marginTop: "60px",
-    marginLeft: width >= 1400 ? "180px" : "0", // 🔥 กัน sidebar
-    paddingLeft: "20px",
-    paddingRight: "20px",
-  }}
->
+        className="main-content flex-grow-1 px-2 py-3"
+        style={{
+          marginTop: "60px",
+          marginLeft: width >= 1400 ? "180px" : "0",
+          paddingLeft: "20px",
+          paddingRight: "20px",
+        }}
+      >
         <div
           className="mx-auto"
           style={{ borderRadius: 20, maxWidth: "1400px" }}
@@ -178,42 +171,27 @@ export default function AllBills() {
             รายการบิลทั้งหมด
           </h2>
 
-          {/* ----------- CURRENT DATE TIME ----------- */}
-
+          {/* DATE TIME */}
           <div className="text-center mb-3">
             <div className="fw-bold text-dark h3">วันที่ปัจจุบัน</div>
-
             <div className="text-primary fw-semibold h4">
               {thaiTime.toLocaleDateString("th-TH", {
                 day: "numeric",
                 month: "long",
                 year: "numeric",
-              })}{" เวลา "} 
-               {thaiTime.toLocaleTimeString("th-TH")} น.
-            </div>
-
-            <div className="text-black h5">
-              
+              })}{" "}
+              เวลา {thaiTime.toLocaleTimeString("th-TH")} น.
             </div>
           </div>
 
-          {/* FILTER + SEARCH */}
-
+          {/* FILTER */}
           <div
             className="mb-3 p-3 rounded-3 shadow-sm"
             style={{ background: "#fff" }}
           >
-            <div className="d-block d-xxl-none">
-              <h2
-                className="fw-bold text-center py-2 mb-3"
-                style={{
-                  color: "#000000",
-                  width: "fit-content",
-                  margin: "0 auto",
-                }}
-              >
-                สถานะบิล
-              </h2>
+            {/* 🔥 แก้ตรงนี้: เอา d-xxl-none ออก */}
+            <div>
+              <h2 className="fw-bold text-center mb-3">สถานะบิล</h2>
 
               <div className="d-flex flex-wrap justify-content-center align-items-end gap-2">
                 <BillStatusCardFilter
@@ -260,6 +238,7 @@ export default function AllBills() {
             </div>
           </div>
 
+          {/* CONTENT */}
           {loading ? (
             <p className="text-center text-muted">⏳ กำลังโหลดข้อมูล...</p>
           ) : width >= 1400 ? (

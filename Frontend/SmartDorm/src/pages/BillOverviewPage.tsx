@@ -102,26 +102,26 @@ export default function BillOverviewPage() {
             maxWidth: "1400px",
           }}
         >
-          <h2
+          <h1
             className="fw-bold text-center mb-2"
             style={{ color: SCB_PURPLE }}
           >
             🧾 ภาพรวมบิลรายเดือน
-          </h2>
+          </h1>
 
-          <div className="text-center small mb-3 text-muted">
+          <div className="text-center h2 mb-3 text-muted">
             ห้องทั้งหมด {totalRooms} ห้อง
           </div>
 
           {/* Legend */}
-          <div className="d-flex flex-wrap justify-content-center gap-3 mb-3 small">
+          <div className="d-flex flex-wrap justify-content-center gap-3 mb-3 small text-dark">
             <div className="d-flex align-items-center gap-1">
               <span
                 style={{
                   width: 14,
                   height: 14,
-                  background: "#f1f3f5",
-                  border: "1px solid #ced4da",
+                  background: "#ffffff",
+                  border: "1px solid #000000",
                   borderRadius: 4,
                 }}
               />
@@ -134,7 +134,7 @@ export default function BillOverviewPage() {
                   width: 14,
                   height: 14,
                   border: "2px solid #0d6efd",
-                  background: "#f4f8ff",
+                  background: "#ffffff",
                   borderRadius: 4,
                 }}
               />
@@ -172,8 +172,8 @@ export default function BillOverviewPage() {
                 style={{
                   width: 14,
                   height: 14,
-                  border: "2px solid #198754",
-                  background: "#eafaf1",
+                  border: "2px solid #0dff8e",
+                  background: "#ffffff",
                   borderRadius: 4,
                 }}
               />
@@ -250,28 +250,32 @@ export default function BillOverviewPage() {
             .filter(([f]) => selectedFloor === "all" || f === selectedFloor)
             .map(([floor, floorRooms]) => (
               <div key={floor} className="mb-4">
-                <h3 className="fw-bold mb-2 text-center">ชั้น {floor}</h3>
+                <h3 className="fw-bold mb-2 text-dark text-center">
+                  ชั้น {floor}
+                </h3>
 
                 <div className="row g-3">
                   {floorRooms.map((r: OverviewRoom) => {
                     const bill = r.bill;
                     const hasBooking = r.hasBooking;
 
-                    let border = "1px solid #e0e0e0";
-                    let bgColor = "#fafafa";
-                    let textColor = "#6c757d";
+                    let border = "1px solid #000000";
+                    let bgColor = "#ffffff";
+                    let textColor = "#000000";
 
                     if (hasBooking && !bill) {
                       border = "1px solid #0d6efd";
-                      bgColor = "#f4f8ff";
-                      textColor = "#0d3b66";
+                      bgColor = "#ffffff";
+                      textColor = "#000000";
+                      
                     } else if (bill) {
                       bgColor = "#ffffff";
                       textColor = "#000";
 
-                      if (bill.billStatus === 1) border = "1px solid #198754";
-                      else if (bill.billStatus === 2) border = "1px solid #0dcaf0";
-                      else border = "1px solid #fd7e14";
+                      if (bill.billStatus === 1) border = "1px solid #0dff8e";
+                      else if (bill.billStatus === 2)
+                        border = "1px solid #0dcaf0";
+                      else border = "1px solid #ff7300";
                     }
 
                     return (
@@ -305,32 +309,16 @@ export default function BillOverviewPage() {
                             e.currentTarget.style.transform = "scale(1)";
                           }}
                         >
-                          <div className="position-absolute top-0 end-0 m-1">
-                            <span className="badge bg-light text-dark small">
-                              {!hasBooking
-                                ? "ว่าง"
-                                : !bill
-                                ? "รอออกบิล"
-                                : bill.billStatus === 1
-                                ? "จ่ายแล้ว"
-                                : bill.billStatus === 2
-                                ? "ตรวจสอบ"
-                                : "ค้างชำระ"}
-                            </span>
-                          </div>
-
                           <div className="card-body d-flex flex-column justify-content-between p-2">
-                            <div className="fw-bold">ห้อง {r.number}</div>
+                            <div className="fw-bold h5">ห้อง {r.number}</div>
 
                             {!hasBooking && (
-                              <div className="small mt-2">ห้องว่าง</div>
+                              <div className="mt-2 fw-bold h5 ">ห้องว่าง</div>
                             )}
 
                             {bill && (
-                              <div className="small">
-                                <div>
-                                  รวม {bill.total.toLocaleString()} บาท
-                                </div>
+                              <div className="h5 ">
+                                <div>รวม {bill.total.toLocaleString()} บาท</div>
                                 <div>
                                   ครบกำหนด {formatThaiDate(bill.dueDate)}
                                 </div>

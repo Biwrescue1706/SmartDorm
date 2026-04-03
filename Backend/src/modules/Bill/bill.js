@@ -108,15 +108,15 @@ bill.get("/getall", async (_req, res) => {
     }
 
     const bills = await prisma.bill.findMany({
-  orderBy: { createdAt: "desc" },
-  include: {
-    room: true,
-    booking: true,
-    customer: true,
-    payment: true,
-    adminCreated: true,
-  },
-});
+      orderBy: { createdAt: "desc" },
+      include: {
+        room: true,
+        booking: true,
+        customer: true,
+        payment: true,
+        adminCreated: true,
+      },
+    });
 
     billCache = bills;
     billCacheTime = Date.now();
@@ -242,7 +242,7 @@ bill.post(
 
       try {
         await notifyBillCreated(booking, billCreated);
-      } catch {}
+      } catch { }
 
       res.json({ message: "สร้างบิลสำเร็จ", bill: billCreated });
 
@@ -278,7 +278,7 @@ bill.put("/approve/:billId", authMiddleware, roleMiddleware(0), async (req, res)
 
     try {
       await notifyBillApproved(billData, updated);
-    } catch {}
+    } catch { }
 
     res.json({ message: "อนุมัติสำเร็จ", bill: updated });
 

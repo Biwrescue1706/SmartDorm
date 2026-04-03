@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
-import Swal from "sweetalert2";
 import { useRooms } from "../../hooks/ManageRooms/useRooms";
 import type { Room } from "../../types/All";
 import { createPortal } from "react-dom";
+import { toast } from "../../utils/toast";
 
 interface Props {
   roomId: string;
@@ -29,11 +29,7 @@ export default function EditRoomDialog({ roomId, onSuccess }: Props) {
     if (!form) return;
 
     try {
-      Swal.fire({
-        title: "กำลังบันทึก...",
-        allowOutsideClick: false,
-        didOpen: () => Swal.showLoading(),
-      });
+      toast("info", "กำลังบันทึก...", "กรุณารอสักครู่");
 
       const updated = await updateRoom({
         number: form.number,
@@ -44,23 +40,12 @@ export default function EditRoomDialog({ roomId, onSuccess }: Props) {
         status: form.status,
       });
 
-      Swal.fire({
-        icon: "success",
-        title: "แก้ไขห้องเรียบร้อยแล้ว",
-        timer: 1500,
-        showConfirmButton: false,
-      });
+      toast("success", "แก้ไขห้องเรียบร้อยแล้ว");
 
       onSuccess(updated as Room);
       setShow(false);
     } catch (err: any) {
-      Swal.fire({
-        icon: "error",
-        title: "ล้มเหลว",
-        text: err.message || "ไม่สามารถแก้ไขห้องได้",
-        timer: 1500,
-        showConfirmButton: false,
-      });
+      toast("error", "ล้มเหลว", err.message || "ไม่สามารถแก้ไขห้องได้");
     }
   };
 

@@ -99,27 +99,27 @@ async function seedRooms() {
       let deposit = 0;
 
       if (room <= 4) {
-        size = "3.5 x 5.5 ม.";
+        size = "19.25 ตร.ม. ( 3.5 x 5.5 ม. )";
         rent = 2500;
         deposit = 2500;
       }
       else if (room <= 8) {
-        size = "4.5 x 5.5 ม.";
+        size = "24.75 ตร.ม. ( 4.5 x 5.5 ม. )";
         rent = 3200;
         deposit = 3200;
       }
       else if (room <= 12) {
-        size = "5.5 x 5.5 ม.";
+        size = "35.75 ตร.ม. ( 5.5 x 6.5 ม. )";
         rent = 4000;
         deposit = 4000;
       }
       else if (room <= 16) {
-        size = "6.5 x 5.5 ม.";
+        size = "48.75 ตร.ม. ( 6.5 x 7.5 ม. )";
         rent = 4500;
         deposit = 4500;
       }
       else {
-        size = "7.5 x 5.5 ม.";
+        size = "63.75 ตร.ม. ( 7.5 x 8.5 ม. )";
         rent = 5000;
         deposit = 5000;
       }

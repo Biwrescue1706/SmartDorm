@@ -89,8 +89,6 @@ export default function Rooms() {
     await fetchRooms();
   };
 
-  //     🧩 Helper UI Components (ในไฟล์เดียว)
-
   const FloorSelector = () => (
     <div className="text-center mb-4">
       <label

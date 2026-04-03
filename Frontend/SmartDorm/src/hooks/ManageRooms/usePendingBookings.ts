@@ -4,7 +4,7 @@ import { API_BASE } from "../../config";
 import { GetAllBooking } from "../../apis/endpoint.api";
 import { toast } from "../../utils/toast";
 
-export function usePendingBookings(intervalMs = 30000) {
+export function usePendingBookings(intervalMs = 90000) {
   const [pendingBookings, setPendingBookings] = useState(0);  
   useEffect(() => {
     const loadPending = async () => {

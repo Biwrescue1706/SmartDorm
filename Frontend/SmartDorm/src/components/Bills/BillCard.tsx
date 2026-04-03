@@ -68,20 +68,21 @@ export default function BillCard({
 
       <br />
 
-      <div className="text-center">
-        {" "}
-        <p className="text-black">
-          <b>LINE :</b>
+      <div className="text-center text-black">
+        <>
+          <p className="text-black">
+            <b>LINE :</b>
+          </p>
           <p>{booking?.customer?.userName || "-"}</p>
-        </p>
-        <p className="mb-1 text-black">
-          <b>ชื่อ :</b>
+          <p className="mb-1 text-black">
+            <b>ชื่อ :</b>
+          </p>
           <p>{booking?.fullName || "-"}</p>
-        </p>
-        <p className="mb-3 text-black">
-          <b>เข้าพักจริง :</b>{" "}
+          <p className="mb-3 text-black">
+            <b>เข้าพักจริง :</b>{" "}
+          </p>
           <p>{booking?.checkinAt ? formatThaiDate(booking.checkinAt) : "-"}</p>
-        </p>
+        </>{" "}
       </div>
       {/* แสดงข้อมูลบิล */}
       {hasBill && bill && (

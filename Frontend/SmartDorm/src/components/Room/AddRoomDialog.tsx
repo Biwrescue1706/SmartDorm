@@ -1,8 +1,10 @@
 // src/components/Room/AddRoomDialog.tsx
 import { useState, useEffect } from "react";
-import Swal from "sweetalert2";
 import { useRooms } from "../../hooks/ManageRooms/useRooms";
 import type { Room } from "../../types/All";
+import { toast } from "../../utils/toast";
+import Swal from "sweetalert2";
+
 
 interface AddRoomDialogProps {
   onSuccess: (room?: Room) => void;
@@ -51,27 +53,27 @@ export default function AddRoomDialog({ onSuccess }: AddRoomDialogProps) {
   // 🧩 ตั้งราคาตามขนาด
   const setPriceBySize = (size: string) => {
     switch (size) {
-      case "3.5 × 5.5 ม.":
+      case "19.25 ตร.ม. (3.5 × 5.5 ม.)":
         setRent(2500);
         setDeposit(2500);
         setBookingFee(500);
         break;
-      case "4.5 × 5.5 ม.":
+      case "24.75 ตร.ม. (4.5 × 5.5 ม.)":
         setRent(3200);
         setDeposit(3200);
         setBookingFee(500);
         break;
-      case "5.5 × 6.5 ม.":
+      case "36.75 ตร.ม. (5.5 × 6.5 ม.)":
         setRent(4000);
         setDeposit(4000);
         setBookingFee(500);
         break;
-      case "6.5 × 7.5 ม.":
+      case "48.75 ตร.ม. (6.5 × 7.5 ม.)":
         setRent(4500);
         setDeposit(4500);
         setBookingFee(500);
         break;
-      case "7.5 × 8.5 ม.":
+      case "63.75 ตร.ม. (7.5 × 8.5 ม.)":
         setRent(5000);
         setDeposit(5000);
         setBookingFee(500);
@@ -89,27 +91,27 @@ export default function AddRoomDialog({ onSuccess }: AddRoomDialogProps) {
     const num = parseInt(roomNum.slice(-2));
 
     if (num >= 1 && num <= 4) {
-      setSize("3.5 × 5.5 ม.");
+      setSize("19.25 ตร.ม. ( 3.5 × 5.5 ม. )");
       setRent(2500);
       setDeposit(2500);
       setBookingFee(500);
     } else if (num >= 5 && num <= 8) {
-      setSize("4.5 × 5.5 ม.");
+      setSize("24.75 ตร.ม. ( 4.5 × 5.5 ม.)");
       setRent(3200);
       setDeposit(3200);
       setBookingFee(500);
     } else if (num >= 9 && num <= 12) {
-      setSize("5.5 × 6.5 ม.");
+      setSize("36.75 ตร.ม. ( 5.5 × 6.5 ม. )");
       setRent(4000);
       setDeposit(4000);
       setBookingFee(500);
     } else if (num >= 13 && num <= 16) {
-      setSize("6.5 × 7.5 ม.");
+      setSize("48.75 ตร.ม. ( 6.5 × 7.5 ม. )");
       setRent(4500);
       setDeposit(4500);
       setBookingFee(500);
     } else if (num >= 17 && num <= 20) {
-      setSize("7.5 × 8.5 ม.");
+      setSize("63.75 ตร.ม. ( 7.5 × 8.5 ม. )");
       setRent(5000);
       setDeposit(5000);
       setBookingFee(500);
@@ -141,13 +143,7 @@ export default function AddRoomDialog({ onSuccess }: AddRoomDialogProps) {
 
       const newRoom = await createRoom(payload);
 
-      Swal.fire({
-        icon: "success",
-        title: "บันทึกสำเร็จ",
-        text: `เพิ่มห้อง ${number} เรียบร้อยแล้ว`,
-        timer: 1800,
-        showConfirmButton: false,
-      });
+      toast("success", "บันทึกสำเร็จ", `เพิ่มห้อง ${number} เรียบร้อยแล้ว`);
 
       onSuccess(newRoom);
       setShow(false);
@@ -159,13 +155,7 @@ export default function AddRoomDialog({ onSuccess }: AddRoomDialogProps) {
       setDeposit("");
       setBookingFee(500);
     } catch (err: any) {
-      Swal.fire({
-        icon: "error",
-        title: "บันทึกไม่สำเร็จ",
-        text: err?.message || "ไม่สามารถเพิ่มห้องได้",
-        timer: 2000,
-        showConfirmButton: false,
-      });
+      toast("error", "บันทึกไม่สำเร็จ", err?.message || "ไม่สามารถเพิ่มห้องได้");
     } finally {
       Swal.hideLoading();
     }
@@ -258,11 +248,11 @@ export default function AddRoomDialog({ onSuccess }: AddRoomDialogProps) {
                       required
                     />
                     <datalist id="room-sizes">
-                      <option value="3.5 × 5.5 ม." />
-                      <option value="4.5 × 5.5 ม." />
-                      <option value="5.5 × 6.5 ม." />
-                      <option value="6.5 × 7.5 ม." />
-                      <option value="7.5 × 8.5 ม." />
+                      <option value="19.25 ตร.ม. ( 3.5 × 5.5 ม. )" />
+                      <option value="24.75 ตร.ม. ( 4.5 × 5.5 ม. )" />
+                      <option value="36.75 ตร.ม. ( 5.5 × 6.5 ม. )" />
+                      <option value="48.75 ตร.ม. ( 6.5 × 7.5 ม. )" />
+                      <option value="63.75 ตร.ม. ( 7.5 × 8.5 ม. )" />
                     </datalist>
                   </div>
 

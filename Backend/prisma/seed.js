@@ -89,8 +89,8 @@ async function seedRooms() {
 
   const rooms = [];
 
-  for (let floor = 1; floor <= 11; floor++) {
-    for (let room = 1; room <= 20; room++) {
+  for (let floor = 1; floor <= 5; floor++) {
+    for (let room = 1; room <= 16; room++) {
 
       const number = `${floor}${room.toString().padStart(2, "0")}`;
 

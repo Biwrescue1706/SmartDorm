@@ -173,17 +173,13 @@ model Bill {
   updatedAt DateTime?
   updatedBy String?
 
-  room     Room?     @relation(fields: [roomRoomId], references: [roomId])
-  booking  Booking?  @relation(fields: [bookingBookingId], references: [bookingId])
-  customer Customer? @relation(fields: [customerCustomerId], references: [customerId])
+  room     Room?     @relation(fields: [roomId], references: [roomId])
+  booking  Booking?  @relation(fields: [bookingId], references: [bookingId])
+  customer Customer? @relation(fields: [customerId], references: [customerId])
 
-  adminCreated Admin? @relation("AdminCreated", fields: [createdBy], references: [adminId])
-  adminUpdated Admin? @relation("AdminUpdated", fields: [updatedBy], references: [adminId])
-
-  payment            Payment?
-  roomRoomId         String?
-  bookingBookingId   String?
-  customerCustomerId String?
+  adminCreated Admin?   @relation("AdminCreated", fields: [createdBy], references: [adminId])
+  adminUpdated Admin?   @relation("AdminUpdated", fields: [updatedBy], references: [adminId])
+  payment      Payment?
 
   @@index([createdAt])
   @@index([billStatus])
@@ -210,7 +206,7 @@ model Payment {
 model DormProfile {
   dormId String @id @default(uuid())
 
-  key String  @unique @default("MAIN")
+  key String @unique @default("MAIN")
 
   dormName String
   address  String

@@ -217,6 +217,7 @@ bill.post(
           roomId,
           bookingId: booking.bookingId,
           customerId: booking.customerId,
+          roomId: booking.roomId,
           fullName: booking.fullName,
           cphone: booking.cphone,
           month: billMonth,

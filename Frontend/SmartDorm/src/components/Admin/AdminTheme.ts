@@ -1,10 +1,12 @@
 //
 export const THEME = {
   purple: "#4A0080",
-  purpleLight: "#6A11CB",
-  purpleDark: "#2E0055",
-  gold: "#D4AF37",
+  purpleLight: "#8009ff",
+  purpleDark: "#8800ff",
+  gold: "#e6ddc1",
   bg: "#f5f3fa",
-  text: "#333",
+  text: "#000000",
   cardBg: "#ffffff",
 };
+
+

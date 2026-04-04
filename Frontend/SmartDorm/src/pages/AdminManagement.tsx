@@ -17,8 +17,8 @@ import { usePendingCheckouts } from "../hooks/ManageRooms/usePendingCheckouts";
 export const roleStyle = (role: number) => ({
   border: "2px solid #000",
   borderRadius: "12px",
-  background: role === 0 ? "#d6a658" : "#198754",
-  color: "#ffffff",
+  background: role === 0 ? "#ffd3e29c" : "#a7b98e",
+  color: "#000000",
   boxShadow: "0 2px 6px rgba(0,0,0,0.08)",
 });
 
@@ -29,6 +29,13 @@ export default function AdminManagement() {
   const [filterRole, setFilterRole] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(15);
+
+  const getFilterColor = (key: string) => {
+    if (key === "admin") return "#ff0559"; // แอดมิน (ทอง)
+    if (key === "staff") return "#ff0000"; // พนักงาน (เขียว)
+    return THEME.purple; // ทั้งหมด (ม่วง)
+  };
+
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
 
   const pendingBookings = usePendingBookings();
@@ -298,73 +305,7 @@ export default function AdminManagement() {
 
           {/* FILTER */}
           {windowWidth < 1400 ? (
-            <>
-              <h4 className="text-center fw-bold mb-2 text-black">
-                สถานะแอดมิน
-              </h4>
-              {/* < 1400 = Dropdown */}
-              <div className="d-flex justify-content-center mb-4">
-                {(() => {
-                  const items = [
-                    {
-                      key: "all",
-                      label: `ทั้งหมด (${admins.length})`,
-                      color: THEME.purple,
-                    },
-                    {
-                      key: "admin",
-                      label: `แอดมิน (${admins.filter((a) => a.role === 0).length})`,
-                      color: "#d6a658",
-                    },
-                    {
-                      key: "staff",
-                      label: `พนักงาน (${admins.filter((a) => a.role === 1).length})`,
-                      color: "#198754",
-                    },
-                  ];
-
-                  const activeItem =
-                    items.find((i) => i.key === filterRole) ?? items[0];
-
-                  return (
-                    <div className="dropdown">
-                      <button
-                        className="btn dropdown-toggle fw-bold px-4"
-                        data-bs-toggle="dropdown"
-                        style={{
-                          background: activeItem.color,
-                          color: "#fff",
-                          borderColor: activeItem.color,
-                          height: 38,
-                        }}
-                      >
-                        {activeItem.label}
-                      </button>
-
-                      <div className="dropdown-menu">
-                        {items.map((i) => (
-                          <button
-                            key={i.key}
-                            className="dropdown-item fw-bold"
-                            style={{
-                              background:
-                                filterRole === i.key ? i.color : "transparent",
-                              color: filterRole === i.key ? "#fff" : i.color,
-                            }}
-                            onClick={() => setFilterRole(i.key)}
-                          >
-                            {i.label}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  );
-                })()}
-              </div>
-            </>
-          ) : (
-            // ≥ 1400 = Cards (ของเดิม)
-            <div className="d-flex justify-content-center gap-3 flex-wrap mb-4">
+            <div className="d-flex justify-content-center gap-2 flex-wrap mb-4">
               {[
                 { key: "all", label: `ทั้งหมด (${admins.length})` },
                 {
@@ -378,18 +319,58 @@ export default function AdminManagement() {
               ].map((f) => (
                 <div
                   key={f.key}
-                  className="px-4 py-2 fw-bold shadow-sm"
+                  className="px-3 py-2 fw-bold"
                   style={{
                     cursor: "pointer",
-                    borderRadius: "10px",
+                    borderRadius: "8px",
+                    fontSize: 14,
                     background:
-                      filterRole === f.key ? THEME.purple : THEME.cardBg,
+                      filterRole === f.key
+                        ? getFilterColor(f.key)
+                        : THEME.cardBg,
+
                     color: filterRole === f.key ? "#fff" : THEME.text,
                     border:
                       filterRole === f.key
                         ? "2px solid #fff"
                         : "1px solid #ddd",
-                    transition: ".3s",
+                  }}
+                  onClick={() => setFilterRole(f.key)}
+                >
+                  {f.label}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="d-flex justify-content-center gap-3 mb-4">
+              {[
+                { key: "all", label: `ทั้งหมด (${admins.length})` },
+                {
+                  key: "admin",
+                  label: `แอดมิน (${admins.filter((a) => a.role === 0).length})`,
+                },
+                {
+                  key: "staff",
+                  label: `พนักงาน (${admins.filter((a) => a.role === 1).length})`,
+                },
+              ].map((f) => (
+                <div
+                  key={f.key}
+                  className="px-4 py-2 fw-bold"
+                  style={{
+                    cursor: "pointer",
+                    borderRadius: "8px",
+                    fontSize: 16,
+                    background:
+                      filterRole === f.key
+                        ? getFilterColor(f.key)
+                        : THEME.cardBg,
+
+                    color: filterRole === f.key ? "#ff0000" : THEME.text,
+                    border:
+                      filterRole === f.key
+                        ? "2px solid #fff"
+                        : "1px solid #ddd",
                   }}
                   onClick={() => setFilterRole(f.key)}
                 >

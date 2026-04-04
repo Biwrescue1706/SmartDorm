@@ -201,7 +201,7 @@ export default function AllBillsCard({
         )}
 
         <button
-          className="btn btn-success btn-sm text-black"
+          className="btn btn-success btn-sm text-white"
           onClick={() => navigate(`/bills/${bill.billId}`)}
         >
           ดูรายละเอียดบิล

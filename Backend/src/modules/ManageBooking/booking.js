@@ -25,15 +25,35 @@ const supabase = createClient(
 );
 
 // ---------------- Utils ----------------
-export const deleteSlip = async (url) => {
+export const deleteSlipFromUrl = async (url) => {
   try {
     if (!url) return;
+
     const bucket = process.env.SUPABASE_BUCKET;
-    const path = url.split(`/${bucket}/`)[1];
-    if (!path) return;
-    await supabase.storage.from(bucket).remove([path]);
+
+    // ดึง path หลัง /object/public/{bucket}/
+    const match = url.match(`/object/public/${bucket}/(.+)`);
+    if (!match) {
+      console.log("❌ parse path ไม่ได้:", url);
+      return;
+    }
+
+    const path = match[1]; // ✅ จะได้ .jpeg มาด้วย
+
+    console.log("🧾 ลบไฟล์:", path);
+
+    const { data, error } = await supabase.storage
+      .from(bucket)
+      .remove([path]);
+
+    if (error) {
+      console.warn("❌ ลบไม่สำเร็จ:", error.message);
+    } else {
+      console.log("✅ ลบสำเร็จ:", data);
+    }
+
   } catch (err) {
-    console.warn("ลบสลิปไม่สำเร็จ:", err);
+    console.warn("❌ error:", err);
   }
 };
 
@@ -219,10 +239,16 @@ booking.post("/:bookingId/uploadSlip", upload.single("slip"), async (req, res) =
   try {
     const { bookingId } = req.params;
     const data = await prisma.booking.findUnique({ where: { bookingId } });
+
     if (!data || !req.file) throw new Error("ข้อมูลไม่ครบ");
 
     const created = data.bookingDate.toISOString().replace(/[:.]/g, "-");
-    const fileName = `Booking-slips/Booking-slip_${bookingId}_${created}`;
+
+    // 🔥 ดึงนามสกุลไฟล์
+    const ext = req.file.originalname.split(".").pop();
+
+    // 🔥 ใส่นามสกุลเข้าไป
+    const fileName = `Booking-slips/Booking-slip_${bookingId}_${created}.${ext}`;
 
     await supabase.storage
       .from(process.env.SUPABASE_BUCKET)
@@ -238,12 +264,16 @@ booking.post("/:bookingId/uploadSlip", upload.single("slip"), async (req, res) =
     await prisma.booking.update({
       where: { bookingId },
       data: {
-        slipUrl: pub.publicUrl,
+        slipUrl: pub.publicUrl, // ✔ ตอนนี้จะมี .jpeg แล้ว
         updatedAt: thailandTime(),
       }
     });
 
-    res.json({ message: "อัปโหลดสลิปสำเร็จ", slipUrl: pub.publicUrl });
+    res.json({
+      message: "อัปโหลดสลิปสำเร็จ",
+      slipUrl: pub.publicUrl
+    });
+
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
@@ -348,53 +378,67 @@ booking.put("/:bookingId/checkin", async (req, res) => {
 booking.put("/:bookingId", async (req, res) => {
   try {
     const { bookingId } = req.params;
-    const { ctitle, cname, csurname, cphone, cmumId, approveStatus, checkin } =
-      req.body;
+    const {
+      ctitle,
+      cname,
+      csurname,
+      cphone,
+      cmumId,
+      approveStatus,
+      checkin,
+    } = req.body;
 
     const data = await prisma.booking.findUnique({
       where: { bookingId },
       include: { room: true },
     });
+
     if (!data) throw new Error("ไม่พบข้อมูลการจอง");
 
-    let fullName = data.fullName;
-    if (ctitle || cname || csurname) {
-      fullName = `${ctitle ?? data.ctitle ?? ""}${cname ?? data.cname ?? ""} ${csurname ?? data.csurname ?? ""
-        }`.trim();
-    }
+    // 🔥 helper กัน undefined / null / ""
+    const pick = (val, old) =>
+      val !== undefined && val !== null && val !== "" ? val : old;
 
-    const nextApproveStatus =
-      approveStatus !== undefined
-        ? Number(approveStatus)
-        : data.approveStatus;
+    const newCtitle = pick(ctitle, data.ctitle);
+    const newCname = pick(cname, data.cname);
+    const newCsurname = pick(csurname, data.csurname);
+
+    const fullName = `${newCtitle ?? ""}${newCname ?? ""} ${newCsurname ?? ""}`.trim();
+
+    const isApproveChanged = approveStatus !== undefined;
+
+    const nextApproveStatus = isApproveChanged
+      ? Number(approveStatus)
+      : data.approveStatus;
 
     const updated = await prisma.$transaction(async (tx) => {
       const b = await tx.booking.update({
         where: { bookingId },
         data: {
-          ctitle: ctitle ?? data.ctitle,
-          cname: cname ?? data.cname,
-          csurname: csurname ?? data.csurname,
+          ctitle: newCtitle,
+          cname: newCname,
+          csurname: newCsurname,
           fullName,
-          cphone: cphone ?? data.cphone,
-          cmumId: cmumId ?? data.cmumId,
+          cphone: pick(cphone, data.cphone),
+          cmumId: pick(cmumId, data.cmumId),
           approveStatus: nextApproveStatus,
-          checkinStatus: 0,
-          checkinAt: null,
-          updatedAt: thailandTime(),
 
+          // ⭐ reset เฉพาะตอนมีการแก้ approveStatus
+          checkinStatus: isApproveChanged ? 0 : data.checkinStatus,
+          checkinAt: isApproveChanged ? null : data.checkinAt,
+
+          updatedAt: thailandTime(),
           checkin: checkin ? thailandTime(checkin) : data.checkin,
         },
       });
 
-      // คุมสถานะห้องจากค่าปลายทาง
       const roomStatus = nextApproveStatus === 2 ? 0 : 1;
 
       await tx.room.update({
         where: { roomId: data.roomId },
         data: {
           status: roomStatus,
-          updatedAt: thailandTime()
+          updatedAt: thailandTime(),
         },
       });
 
@@ -411,21 +455,38 @@ booking.put("/:bookingId", async (req, res) => {
 booking.delete("/:bookingId", async (req, res) => {
   try {
     const { bookingId } = req.params;
-    const existing = await prisma.booking.findUnique({ where: { bookingId } });
+
+    const existing = await prisma.booking.findUnique({
+      where: { bookingId },
+    });
+
     if (!existing) throw new Error("ไม่พบข้อมูลการจอง");
 
-    await prisma.$transaction(async (tx) => {
+    // 🔥 ลบข้อมูลใน DB ก่อน (transaction)
+    const deleted = await prisma.$transaction(async (tx) => {
       await tx.checkout.deleteMany({ where: { bookingId } });
-      if (existing.slipUrl) await deleteSlip(existing.slipUrl);
-      const deleted = await tx.booking.delete({ where: { bookingId } });
+
+      const deletedBooking = await tx.booking.delete({
+        where: { bookingId },
+      });
+
       await tx.room.update({
-        where: { roomId: deleted.roomId },
+        where: { roomId: deletedBooking.roomId },
         data: {
           status: 0,
-          updatedAt: thailandTime()
+          updatedAt: thailandTime(),
         },
       });
+
+      return deletedBooking;
     });
+
+    // 🔥 ค่อยลบไฟล์ (นอก transaction)
+    if (existing.slipUrl) {
+      deleteSlipFromUrl(existing.slipUrl).catch((err) => {
+        console.warn("ลบสลิปไม่สำเร็จ:", err);
+      });
+    }
 
     res.json({ message: "ลบการจองและข้อมูล checkout สำเร็จ" });
   } catch (err) {

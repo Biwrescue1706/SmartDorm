@@ -31,8 +31,8 @@ export default function AdminManagement() {
   const [rowsPerPage, setRowsPerPage] = useState(15);
 
   const getFilterColor = (key: string) => {
-    if (key === "admin") return "#ff0559"; // แอดมิน (ทอง)
-    if (key === "staff") return "#ff0000"; // พนักงาน (เขียว)
+    if (key === "admin") return "#463c1d"; // แอดมิน (ทอง)
+    if (key === "staff") return "#3f3636"; // พนักงาน (เขียว)
     return THEME.purple; // ทั้งหมด (ม่วง)
   };
 
@@ -366,7 +366,7 @@ export default function AdminManagement() {
                         ? getFilterColor(f.key)
                         : THEME.cardBg,
 
-                    color: filterRole === f.key ? "#ff0000" : THEME.text,
+                    color: filterRole === f.key ? "#ffffff" : THEME.text,
                     border:
                       filterRole === f.key
                         ? "2px solid #fff"

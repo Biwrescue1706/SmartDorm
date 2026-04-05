@@ -83,7 +83,6 @@ model Booking {
   approvedAt    DateTime?
 
   slipUrl  String?
-  slipPath String?
 
   createdAt DateTime  @default(now())
   updatedAt DateTime?

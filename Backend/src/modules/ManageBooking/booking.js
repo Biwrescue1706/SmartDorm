@@ -31,29 +31,25 @@ export const deleteSlipFromUrl = async (url) => {
 
     const bucket = process.env.SUPABASE_BUCKET;
 
-    // ดึง path หลัง /object/public/{bucket}/
-    const match = url.match(`/object/public/${bucket}/(.+)`);
-    if (!match) {
-      console.log("❌ parse path ไม่ได้:", url);
+    // 🔥 ตัดตรง ๆ ไม่ใช้ regex
+    const prefix = `/object/public/${bucket}/`;
+    const path = url.split(prefix)[1];
+
+    if (!path) {
+      console.log("❌ path ไม่ถูก:", url);
       return;
     }
 
-    const path = match[1]; // ✅ จะได้ .jpeg มาด้วย
-
-    console.log("🧾 ลบไฟล์:", path);
+    console.log("🧾 ลบ:", path);
 
     const { data, error } = await supabase.storage
       .from(bucket)
       .remove([path]);
 
-    if (error) {
-      console.warn("❌ ลบไม่สำเร็จ:", error.message);
-    } else {
-      console.log("✅ ลบสำเร็จ:", data);
-    }
+    console.log("RESULT:", data, error);
 
   } catch (err) {
-    console.warn("❌ error:", err);
+    console.warn(err);
   }
 };
 
@@ -242,7 +238,7 @@ booking.post("/:bookingId/uploadSlip", upload.single("slip"), async (req, res) =
 
     if (!data || !req.file) throw new Error("ข้อมูลไม่ครบ");
 
-    const created = data.bookingDate.toISOString().replace(/[:.]/g, "-");
+    const created = new Date().toISOString().replace(/[:.]/g, "-");
 
     // 🔥 ดึงนามสกุลไฟล์
     const ext = req.file.originalname.split(".").pop();

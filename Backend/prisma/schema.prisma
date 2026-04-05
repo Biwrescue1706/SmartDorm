@@ -82,7 +82,8 @@ model Booking {
   approveStatus Int       @default(0)
   approvedAt    DateTime?
 
-  slipUrl String?
+  slipUrl  String?
+  slipPath String?
 
   createdAt DateTime  @default(now())
   updatedAt DateTime?

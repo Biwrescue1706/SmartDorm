@@ -5,13 +5,13 @@ import cookieParser from "cookie-parser";
 import prisma from "./prisma.js";
 import { scheduleOverdueAuto } from "./services/overdue.service.js";
 
-// ✅ โหลด .env ตลอด (กันพัง)
-dotenv.config();
+if (process.env.NODE_ENV !== "production") dotenv.config();
 
 const app = express();
 app.set("trust proxy", true);
 
 /* ================= GLOBAL ERROR ================= */
+
 process.on("uncaughtException", (err) => {
   console.error("💥 UNCAUGHT EXCEPTION:", err);
 });
@@ -22,6 +22,7 @@ process.on("unhandledRejection", (err) => {
 });
 
 /* ================= CORS ================= */
+
 const allowedOrigins = [
   "http://localhost:5173",
   "http://localhost:5174",
@@ -45,8 +46,6 @@ app.use(
       return callback(null, false);
     },
     credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
-    allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
 
@@ -54,6 +53,7 @@ app.use(express.json());
 app.use(cookieParser());
 
 /* ================= ROUTES ================= */
+
 import adminRouter from "./modules/admin.js";
 import authRouter from "./modules/auth.js";
 import billRouter from "./modules/Bill/bill.js";
@@ -79,11 +79,13 @@ app.use("/user", userRouter);
 app.use("/qr", qrRouter);
 
 /* ================= ROOT ================= */
+
 app.get("/", (_req, res) => {
-  res.send(`🚀 SmartDorm Backend Running`);
+  res.send("🚀 SmartDorm Backend Running");
 });
 
 /* ================= HEALTH ================= */
+
 app.get("/health", (_req, res) => {
   res.json({
     status: "ok",
@@ -109,31 +111,20 @@ app.get("/health/db", async (_req, res) => {
 });
 
 /* ================= START SERVER ================= */
+
 const PORT = process.env.PORT || 10000;
-const ENV = process.env.NODE_ENV || "development";
 
 const server = app.listen(PORT, () => {
   console.log("====================================");
-
-  console.log(`✅ Mode: ${ENV}`);
-
-  if (ENV === "production") {
-    console.log(`🚀 Server running on port ${PORT}`);
-  } else {
-    console.log(`🚀 Server running on http://localhost:${PORT}`);
-  }
+  console.log(`🚀 Server running on port ${PORT}`);
+  console.log("====================================");
 
   console.log("✅ Prisma ready (lazy connect)");
-
-  // ✅ รัน cron เฉพาะ production
-  if (ENV === "production") {
-    scheduleOverdueAuto();
-  }
-
-  console.log("====================================");
+  scheduleOverdueAuto();
 });
 
 /* ================= SHUTDOWN ================= */
+
 async function shutdown() {
   console.log("🛑 Shutting down...");
   await prisma.$disconnect();

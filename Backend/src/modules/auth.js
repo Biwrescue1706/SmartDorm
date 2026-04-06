@@ -64,6 +64,7 @@ auth.post("/login", async (req, res) => {
       httpOnly: true,
       secure: isProd,
       sameSite: isProd ? "none" : "lax",
+domain: ".smartdorm-biwboong.shop",
       path: "/",
       maxAge: 90 * 60 * 1000,
     });
@@ -96,6 +97,7 @@ auth.post("/logout", (_req, res) => {
     httpOnly: true,
     secure: isProd,
     sameSite: isProd ? "none" : "lax",
+domain: ".smartdorm-biwboong.shop",
     path: "/",
   });
 

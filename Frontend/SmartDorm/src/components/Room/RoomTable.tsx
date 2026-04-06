@@ -1,3 +1,4 @@
+//src/components/Room/RoomTable.tsx
 import RoomRow from "./RoomRow";
 import type { Room } from "../../types/All";
 
@@ -21,44 +22,40 @@ export default function RoomTable({
   const hideTenant = filter === "available";
   const hideDelete = filter === "booked";
 
+  // ✅ คำนวณใหม่ให้ตรงจริง
   const columnCount =
     4 + // # ห้อง ขนาด ค่าเช่า
-    7 + // ข้อมูลห้อง
-    (!hideTenant ? 3 : 0) +
-    (isSuperAdmin ? (hideDelete ? 1 : 2) : 0);
+    4 + // ข้อมูลห้อง
+    1 + // สถานะ
+    (isSuperAdmin ? 1 : 0) + // แก้ไข
+    (isSuperAdmin && !hideDelete ? 1 : 0) + // ลบ
+    (!hideTenant ? 3 : 0); // ผู้เช่า
 
   return (
     <div style={{ overflowX: "auto" }}>
       <table className="table table-sm table-striped align-middle text-center">
         <thead className="table-dark">
-          {/* ===== แถวหัวข้อหลัก ===== */}
           <tr>
             <th rowSpan={2}>#</th>
             <th rowSpan={2}>ห้อง</th>
             <th rowSpan={2}>ขนาด (กว้าง x ยาว)</th>
             <th rowSpan={2}>ค่าเช่า</th>
 
-            {/* ข้อมูลห้อง */}
-            <th colSpan={6}>ข้อมูลห้อง</th>
-
-            {/* ข้อมูลผู้เช่า */}
-            {!hideTenant && <th colSpan={3}>ข้อมูลผู้เช่า</th>}
-
+            <th colSpan={4}>ข้อมูลห้อง</th>
             <th rowSpan={2}>สถานะ</th>
 
             {isSuperAdmin && <th rowSpan={2}>แก้ไข</th>}
             {isSuperAdmin && !hideDelete && <th rowSpan={2}>ลบ</th>}
+
+            {/* ✅ แก้จาก 4 → 3 */}
+            {!hideTenant && <th colSpan={3}>ข้อมูลผู้เช่า</th>}
           </tr>
 
-          {/* ===== แถวรายละเอียด ===== */}
           <tr>
             <th>ผู้สร้าง</th>
             <th>วันที่สร้าง</th>
-            <th>เวลาสร้าง</th>
-
             <th>ผู้แก้ไข</th>
             <th>วันแก้ไข</th>
-            <th>เวลาแก้ไข</th>
 
             {!hideTenant && (
               <>
@@ -70,7 +67,6 @@ export default function RoomTable({
           </tr>
         </thead>
 
-        {/* ================= BODY ================= */}
         <tbody>
           {rooms.length === 0 ? (
             <tr>
@@ -87,6 +83,7 @@ export default function RoomTable({
                 onUpdated={onUpdated}
                 role={role}
                 hideTenant={hideTenant}
+                hideDelete={hideDelete} // ✅ เพิ่มบรรทัดนี้
               />
             ))
           )}

@@ -177,56 +177,45 @@ export default function BookingHistory() {
 
           <div className="d-flex flex-wrap justify-content-center align-items-center gap-2 mb-3">
             {/* Status (dropdown เมื่อ < 1400) */}
-            {!isTable
-              ? (() => {
-                  const items = [
-                    { key: "all", label: "ทั้งหมด", color: "#f1c40f" },
-                    { key: "booked", label: "เช่าอยู่", color: "#0d6efd" },
-                    { key: "returned", label: "คืนแล้ว", color: "#198754" },
-                  ];
 
-                  const activeItem =
-                    items.find((i) => i.key === status) ?? items[0];
+            {/* 🔥 STATUS BUTTONS */}
+            <div className="d-flex gap-2 flex-wrap">
+              <button
+                className={`btn fw-bold ${
+                  status === "all" ? "btn-warning" : "btn-outline-warning"
+                }`}
+                onClick={() => {
+                  setStatus("all");
+                  setCurrentPage(1);
+                }}
+              >
+                ทั้งหมด
+              </button>
 
-                  return (
-                    <div className="dropdown">
-                      <button
-                        className="btn dropdown-toggle fw-bold px-3"
-                        data-bs-toggle="dropdown"
-                        style={{
-                          background: activeItem.color,
-                          color: "#fff",
-                          borderColor: activeItem.color,
-                          height: 38,
-                        }}
-                      >
-                        {activeItem.label}
-                      </button>
+              <button
+                className={`btn fw-bold ${
+                  status === "booked" ? "btn-primary" : "btn-outline-primary"
+                }`}
+                onClick={() => {
+                  setStatus("booked");
+                  setCurrentPage(1);
+                }}
+              >
+                เช่าอยู่
+              </button>
 
-                      <div className="dropdown-menu">
-                        {items.map((i) => (
-                          <button
-                            key={i.key}
-                            className="dropdown-item fw-bold"
-                            style={{
-                              background:
-                                status === i.key ? i.color : "transparent",
-                              color: status === i.key ? "#fff" : i.color,
-                            }}
-                            onClick={() => {
-                              setStatus(i.key as any);
-                              setCurrentPage(1);
-                            }}
-                          >
-                            {i.label}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  );
-                })()
-              : null}
-
+              <button
+                className={`btn fw-bold ${
+                  status === "returned" ? "btn-success" : "btn-outline-success"
+                }`}
+                onClick={() => {
+                  setStatus("returned");
+                  setCurrentPage(1);
+                }}
+              >
+                คืนแล้ว
+              </button>
+            </div>
             {/* Search */}
             <input
               className="form-control shadow-sm"

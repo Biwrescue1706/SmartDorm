@@ -1,12 +1,9 @@
-import { useEffect } from "react";
+//src/components/Room/RoomRow.tsx
 import { useRooms } from "../../hooks/ManageRooms/useRooms";
 import type { Room } from "../../types/All";
 import EditRoomDialog from "./EditRoomDialog";
 
-import {
-  formatThaiDate,
-  formatThaiTime,
-} from "../../utils/thaiDate";
+import { formatThaiDate, formatThaiTime } from "../../utils/thaiDate";
 
 interface Props {
   room: Room;
@@ -14,6 +11,7 @@ interface Props {
   onUpdated: () => void;
   hideTenant?: boolean;
   role?: number | null;
+  hideDelete?: boolean;
 }
 
 export default function RoomRow({
@@ -22,8 +20,9 @@ export default function RoomRow({
   onUpdated,
   role,
   hideTenant,
+  hideDelete,
 }: Props) {
-  const { deleteRoom, fetchRooms } = useRooms();
+  const { deleteRoom } = useRooms(); // ✅ เอา fetchRooms ออก
   const isSuperAdmin = role === 0;
 
   const getStatus = (status?: number) => (
@@ -32,8 +31,8 @@ export default function RoomRow({
         status === 0
           ? "bg-success"
           : status === 1
-          ? "bg-danger"
-          : "bg-secondary"
+            ? "bg-danger"
+            : "bg-secondary"
       }`}
     >
       {status === 0 ? "ว่าง" : status === 1 ? "เต็ม" : "-"}
@@ -43,87 +42,59 @@ export default function RoomRow({
   const handleDelete = async () => {
     const success = await deleteRoom(room.roomId);
     if (success) {
-      onUpdated();
-      fetchRooms();
+      onUpdated(); // ✅ รีเฟรชจาก parent พอ
     }
   };
 
-  useEffect(() => {
-    fetchRooms();
-  }, []);
-
   return (
     <tr>
-      {/* ===== พื้นฐาน ===== */}
       <td>{index + 1}</td>
       <td>{room.number}</td>
       <td>{room.size ?? "-"}</td>
       <td>{room.rent?.toLocaleString("th-TH") ?? "-"}</td>
 
-      {/* ===== ข้อมูลห้อง ===== */}
       <td>{room.adminCreated?.name ?? "-"}</td>
-
-      <td>{formatThaiDate(room.createdAt)}</td>
-      <td>{formatThaiTime(room.createdAt)}</td>
+      <td>
+        {formatThaiDate(room.createdAt)} {formatThaiTime(room.createdAt)} น.
+      </td>
 
       <td>{room.adminUpdated?.name ?? "-"}</td>
+      <td>
+        {formatThaiDate(room.updatedAt)} {formatThaiTime(room.updatedAt)} น.
+      </td>
 
-      <td>{formatThaiDate(room.updatedAt)}</td>
-      <td>{formatThaiTime(room.updatedAt)}</td>
+      <td>{getStatus(room.status)}</td>
 
-
-      {/* ===== ข้อมูลผู้เช่า ===== */}
-      {!hideTenant && (
+      {isSuperAdmin && (
         <>
-          <td>{room.booking?.fullName ?? "-"}</td>
-
           <td>
-            {formatThaiDate(
-              room.booking?.bookingDate ?? null
-            )}
+            <EditRoomDialog roomId={room.roomId} onSuccess={onUpdated} />
           </td>
 
-          <td>
-            {formatThaiDate(
-              room.booking?.checkinAt ?? null
-            )}
-          </td>
+          {!hideDelete && (
+            <td>
+              {room.status !== 1 && (
+                <button
+                  className="btn btn-sm text-white fw-semibold"
+                  style={{
+                    background: "linear-gradient(100deg,#ff0505,#f645c4)",
+                    border: "none",
+                  }}
+                  onClick={handleDelete}
+                >
+                  🗑️
+                </button>
+              )}
+            </td>
+          )}
         </>
       )}
 
-      {/* ===== สถานะ ===== */}
-      <td>{getStatus(room.status)}</td>
-
-      {/* ===== ADMIN ACTION ===== */}
-      {isSuperAdmin ? (
+      {!hideTenant && (
         <>
-          <td>
-            <EditRoomDialog
-              roomId={room.roomId}
-              onSuccess={onUpdated}
-            />
-          </td>
-
-          <td>
-            {room.status !== 1 && (
-              <button
-                className="btn btn-sm text-white fw-semibold"
-                style={{
-                  background:
-                    "linear-gradient(100deg,#ff0505,#f645c4)",
-                  border: "none",
-                }}
-                onClick={handleDelete}
-              >
-                🗑️
-              </button>
-            )}
-          </td>
-        </>
-      ) : (
-        <>
-          <td>-</td>
-          <td>-</td>
+          <td>{room.booking?.fullName ?? "-"}</td>
+          <td>{formatThaiDate(room.booking?.bookingDate ?? null)}</td>
+          <td>{formatThaiDate(room.booking?.checkinAt ?? null)}</td>
         </>
       )}
     </tr>

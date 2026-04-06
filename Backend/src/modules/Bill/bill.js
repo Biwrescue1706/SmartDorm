@@ -510,8 +510,6 @@ bill.put(
   }
 );
 
-
-// ================= DELETE =================
 // ลบบิล + payment + ลบไฟล์สลิป
 bill.delete("/:billId", authMiddleware, roleMiddleware(0), async (req, res) => {
   try {

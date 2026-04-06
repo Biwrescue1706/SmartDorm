@@ -6,6 +6,7 @@ import { createClient } from "@supabase/supabase-js";
 import { verifyLineToken } from "../../utils/verifyLineToken.js";
 import { authMiddleware } from "../../middleware/authMiddleware.js";
 import { thailandTime } from "../../utils/timezone.js";
+import { deleteSlip } from "../../utils/deleteSlip.js";
 import {
   notifyBookingCreated,
   notifyAdminBookingCreated,
@@ -23,26 +24,6 @@ const supabase = createClient(
   process.env.SUPABASE_URL,
   process.env.SUPABASE_KEY
 );
-
-// ---------------- Utils ----------------
-export const deleteSlipByPath = async (path) => {
-  try {
-    if (!path) return;
-
-    const bucket = process.env.SUPABASE_BUCKET;
-
-    console.log("🧾 ลบ:", path);
-
-    const { data, error } = await supabase.storage
-      .from(bucket)
-      .remove([path]);
-
-    console.log("RESULT:", data, error);
-
-  } catch (err) {
-    console.warn("❌ error:", err);
-  }
-};
 
 const formatThai = (d) =>
   d
@@ -231,9 +212,9 @@ booking.post("/:bookingId/uploadSlip", upload.single("slip"), async (req, res) =
 
     if (!data || !req.file) throw new Error("ข้อมูลไม่ครบ");
 
-    // 🔥 ลบไฟล์เก่าด้วย slipPath
-    if (data.slipPath) {
-      await deleteSlipByPath(data.slipPath);
+    // 🔥 ลบไฟล์เก่าด้วย URL (ตัวจริง)
+    if (data.slipUrl) {
+      await deleteSlip(data.slipUrl);
     }
 
     const created = new Date().toISOString().replace(/[:.]/g, "-");
@@ -502,9 +483,9 @@ booking.delete("/:bookingId", async (req, res) => {
       return deletedBooking;
     });
 
-    // 🔥 ลบไฟล์ด้วย slipPath
-    if (existing.slipPath) {
-      await deleteSlipByPath(existing.slipPath);
+    // 🔥 ลบไฟล์ด้วย slipUrl
+    if (existing.slipUrl) {
+      await deleteSlip(existing.slipUrl);
     }
 
     res.json({ message: "ลบการจองสำเร็จ" });

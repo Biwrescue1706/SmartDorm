@@ -1,3 +1,4 @@
+// src/components/Room/EditRoomDialog.tsx
 import { useState, useEffect } from "react";
 import { useRooms } from "../../hooks/ManageRooms/useRooms";
 import type { Room } from "../../types/All";
@@ -20,8 +21,11 @@ export default function EditRoomDialog({ roomId, onSuccess }: Props) {
     if (show) loadRoom();
   }, [show]);
 
+  // 🔥 reset ค่าเวลาเปิด (ให้เลือกใหม่)
   useEffect(() => {
-    if (room) setForm(room);
+    if (room) {
+      setForm(room); // 👈 ใช้ของเดิมเลย
+    }
   }, [room]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -59,9 +63,8 @@ export default function EditRoomDialog({ roomId, onSuccess }: Props) {
 
   return (
     <>
-      {/* ปุ่มเปิด modal */}
       <button
-        className="btn btn-sm  text-white px-2 mx-2 my-2 py-1"
+        className="btn btn-sm text-white px-2 mx-2 my-2 py-1"
         style={{
           background: "linear-gradient(100deg, #26ff05ff, #f9d849ff)",
           border: "none",
@@ -71,7 +74,6 @@ export default function EditRoomDialog({ roomId, onSuccess }: Props) {
         ✏️
       </button>
 
-      {/* Modal แก้ไข แล้วลอยออกจากการ์ดด้วย createPortal */}
       {show &&
         form &&
         createPortal(
@@ -104,43 +106,80 @@ export default function EditRoomDialog({ roomId, onSuccess }: Props) {
 
                   {/* Body */}
                   <div className="modal-body p-4 text-center fw-bold h6">
-                    {/* หมายเลขห้อง */}
-                    <div className="mb-3 ">
-                      <label className="form-label  h6">
-                        หมายเลขห้อง
-                      </label>
+                    {/* ห้อง */}
+                    <div className="mb-3">
+                      <label className="form-label">ห้อง</label>
                       <input
                         className="form-control text-center"
                         value={form.number}
                         onChange={(e) =>
                           setForm((prev) =>
-                            prev ? { ...prev, number: e.target.value } : prev
+                            prev ? { ...prev, number: e.target.value } : prev,
                           )
                         }
                         required
                       />
                     </div>
 
-                    {/* ขนาด */}
+                    {/* 🔥 ขนาด (เลือกเอง) */}
                     <div className="mb-3">
                       <label className="form-label">ขนาด</label>
                       <input
+                        list="room-sizes"
                         className="form-control text-center"
-                        value={form.size}
-                        onChange={(e) =>
+                        placeholder="เลือกหรือพิมพ์ขนาด"
+                        value={form.size || ""}
+                        onChange={(e) => {
+                          const value = e.target.value;
+
+                          let data = {
+                            size: value,
+                            rent: form.rent,
+                            deposit: form.deposit,
+                            bookingFee: form.bookingFee,
+                          };
+
+                          if (value.includes("19.25")) {
+                            data = {
+                              size: "19.25 ตร.ม. (3.5 × 5.5 ม.)",
+                              rent: 2500,
+                              deposit: 2500,
+                              bookingFee: 500,
+                            };
+                          } else if (value.includes("24.75")) {
+                            data = {
+                              size: "24.75 ตร.ม. (4.5 × 5.5 ม.)",
+                              rent: 3200,
+                              deposit: 3200,
+                              bookingFee: 500,
+                            };
+                          } else if (value.includes("36.75")) {
+                            data = {
+                              size: "36.75 ตร.ม. (5.5 × 6.5 ม.)",
+                              rent: 4000,
+                              deposit: 4000,
+                              bookingFee: 500,
+                            };
+                          }
+
                           setForm((prev) =>
-                            prev ? { ...prev, size: e.target.value } : prev
-                          )
-                        }
-                        required
+                            prev ? { ...prev, ...data } : prev,
+                          );
+                        }}
                       />
+
+                      <datalist id="room-sizes">
+                        <option value="19.25 ตร.ม. (3.5 × 5.5 ม.)" />
+                        <option value="24.75 ตร.ม. (4.5 × 5.5 ม.)" />
+                        <option value="36.75 ตร.ม. (5.5 × 6.5 ม.)" />
+                        <option value="48.75 ตร.ม. (6.5 × 7.5 ม.)" />
+                        <option value="63.75 ตร.ม. (7.5 × 8.5 ม.)" />
+                      </datalist>
                     </div>
 
                     {/* ค่าเช่า */}
                     <div className="mb-3">
-                      <label className="form-label ">
-                        ค่าเช่า (บาท)
-                      </label>
+                      <label className="form-label">ค่าเช่า (บาท)</label>
                       <input
                         type="number"
                         className="form-control text-center"
@@ -149,18 +188,15 @@ export default function EditRoomDialog({ roomId, onSuccess }: Props) {
                           setForm((prev) =>
                             prev
                               ? { ...prev, rent: Number(e.target.value) }
-                              : prev
+                              : prev,
                           )
                         }
-                        required
                       />
                     </div>
 
                     {/* เงินมัดจำ */}
                     <div className="mb-3">
-                      <label className="form-label ">
-                        เงินมัดจำ
-                      </label>
+                      <label className="form-label">เงินมัดจำ</label>
                       <input
                         type="number"
                         className="form-control text-center"
@@ -169,16 +205,15 @@ export default function EditRoomDialog({ roomId, onSuccess }: Props) {
                           setForm((prev) =>
                             prev
                               ? { ...prev, deposit: Number(e.target.value) }
-                              : prev
+                              : prev,
                           )
                         }
-                        required
                       />
                     </div>
 
                     {/* ค่าจอง */}
                     <div className="mb-3">
-                      <label className="form-label ">ค่าจอง</label>
+                      <label className="form-label">ค่าจอง</label>
                       <input
                         type="number"
                         className="form-control text-center"
@@ -187,16 +222,15 @@ export default function EditRoomDialog({ roomId, onSuccess }: Props) {
                           setForm((prev) =>
                             prev
                               ? { ...prev, bookingFee: Number(e.target.value) }
-                              : prev
+                              : prev,
                           )
                         }
-                        required
                       />
                     </div>
 
                     {/* สถานะ */}
                     <div className="mb-3">
-                      <label className="form-label ">สถานะ</label>
+                      <label className="form-label">สถานะ</label>
                       <select
                         className="form-select text-center"
                         value={form.status}
@@ -204,7 +238,7 @@ export default function EditRoomDialog({ roomId, onSuccess }: Props) {
                           setForm((prev) =>
                             prev
                               ? { ...prev, status: Number(e.target.value) }
-                              : prev
+                              : prev,
                           )
                         }
                       >
@@ -218,7 +252,7 @@ export default function EditRoomDialog({ roomId, onSuccess }: Props) {
                   <div className="modal-footer d-flex justify-content-between px-4 pb-3">
                     <button
                       type="button"
-                      className="btn  text-white px-4"
+                      className="btn text-white px-4"
                       style={{
                         background: "linear-gradient(135deg, #ff512f, #dd2476)",
                       }}
@@ -229,7 +263,7 @@ export default function EditRoomDialog({ roomId, onSuccess }: Props) {
 
                     <button
                       type="submit"
-                      className="btn  text-white px-4"
+                      className="btn text-white px-4"
                       style={{
                         background: "linear-gradient(135deg, #11998e, #38ef7d)",
                       }}
@@ -241,7 +275,7 @@ export default function EditRoomDialog({ roomId, onSuccess }: Props) {
               </div>
             </div>
           </div>,
-          document.body
+          document.body,
         )}
     </>
   );

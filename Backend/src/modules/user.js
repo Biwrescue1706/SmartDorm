@@ -3,7 +3,7 @@ import prisma from "../prisma.js";
 import { verifyLineToken } from "../utils/verifyLineToken.js";
 import { authMiddleware, roleMiddleware } from "../middleware/authMiddleware.js";
 import { thailandTime } from "../utils/timezone.js";
-import { deleteSlipFromUrl } from "./ManageBooking/booking.js";
+import { deleteSlipByPath } from "./ManageBooking/booking.js";
 
 const user = Router();
 
@@ -264,7 +264,7 @@ user.delete("/:customerId", authMiddleware, roleMiddleware(0), async (req, res) 
       }
 
       for (const b of bookings) {
-        if (b.slipUrl) await deleteSlipFromUrl(b.slipUrl);
+        if (b.slipUrl) await deleteSlipByPath(b.slipPath);
       }
 
       await tx.payment.deleteMany({ where: { customerId } });

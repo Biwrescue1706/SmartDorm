@@ -25,20 +25,11 @@ const supabase = createClient(
 );
 
 // ---------------- Utils ----------------
-export const deleteSlipFromUrl = async (url) => {
+export const deleteSlipByPath = async (path) => {
   try {
-    if (!url) return;
+    if (!path) return;
 
     const bucket = process.env.SUPABASE_BUCKET;
-
-    // 🔥 ตัดตรง ๆ ไม่ใช้ regex
-    const prefix = `/object/public/${bucket}/`;
-    const path = url.split(prefix)[1];
-
-    if (!path) {
-      console.log("❌ path ไม่ถูก:", url);
-      return;
-    }
 
     console.log("🧾 ลบ:", path);
 
@@ -49,7 +40,7 @@ export const deleteSlipFromUrl = async (url) => {
     console.log("RESULT:", data, error);
 
   } catch (err) {
-    console.warn(err);
+    console.warn("❌ error:", err);
   }
 };
 
@@ -203,6 +194,7 @@ booking.post("/create", async (req, res) => {
           checkin: checkin ? new Date(checkin) : thailandTime(),
           approveStatus: 0,
           checkinStatus: 0,
+          approvedAt: thailandTime(),
         },
         include: { room: true, customer: true },
       });
@@ -234,16 +226,19 @@ booking.post("/create", async (req, res) => {
 booking.post("/:bookingId/uploadSlip", upload.single("slip"), async (req, res) => {
   try {
     const { bookingId } = req.params;
+
     const data = await prisma.booking.findUnique({ where: { bookingId } });
 
     if (!data || !req.file) throw new Error("ข้อมูลไม่ครบ");
 
-    const created = new Date().toISOString().replace(/[:.]/g, "-");
+    // 🔥 ลบไฟล์เก่าด้วย slipPath
+    if (data.slipPath) {
+      await deleteSlipByPath(data.slipPath);
+    }
 
-    // 🔥 ดึงนามสกุลไฟล์
+    const created = new Date().toISOString().replace(/[:.]/g, "-");
     const ext = req.file.originalname.split(".").pop();
 
-    // 🔥 ใส่นามสกุลเข้าไป
     const fileName = `Booking-slips/Booking-slip_${bookingId}_${created}.${ext}`;
 
     await supabase.storage
@@ -260,7 +255,8 @@ booking.post("/:bookingId/uploadSlip", upload.single("slip"), async (req, res) =
     await prisma.booking.update({
       where: { bookingId },
       data: {
-        slipUrl: pub.publicUrl, // ✔ ตอนนี้จะมี .jpeg แล้ว
+        slipUrl: pub.publicUrl,
+        slipPath: fileName,
         updatedAt: thailandTime(),
       }
     });
@@ -274,7 +270,6 @@ booking.post("/:bookingId/uploadSlip", upload.single("slip"), async (req, res) =
     res.status(400).json({ error: err.message });
   }
 });
-
 
 // ✅ APPROVE
 booking.put("/:bookingId/approve", async (req, res) => {
@@ -374,6 +369,7 @@ booking.put("/:bookingId/checkin", async (req, res) => {
 booking.put("/:bookingId", async (req, res) => {
   try {
     const { bookingId } = req.params;
+
     const {
       ctitle,
       cname,
@@ -389,23 +385,42 @@ booking.put("/:bookingId", async (req, res) => {
       include: { room: true },
     });
 
-    if (!data) throw new Error("ไม่พบข้อมูลการจอง");
+    if (!data) {
+      return res.status(404).json({ error: "ไม่พบข้อมูลการจอง" });
+    }
 
-    // 🔥 helper กัน undefined / null / ""
+    // 🔥 helper
     const pick = (val, old) =>
       val !== undefined && val !== null && val !== "" ? val : old;
 
+    // 👉 เตรียมค่าใหม่
     const newCtitle = pick(ctitle, data.ctitle);
     const newCname = pick(cname, data.cname);
     const newCsurname = pick(csurname, data.csurname);
+    const newCphone = pick(cphone, data.cphone);
+    const newCmumId = pick(cmumId, data.cmumId);
 
     const fullName = `${newCtitle ?? ""}${newCname ?? ""} ${newCsurname ?? ""}`.trim();
 
-    const isApproveChanged = approveStatus !== undefined;
+    // 🔥 แก้ตรงนี้ (สำคัญที่สุด)
+    const isApproveChanged =
+      approveStatus !== undefined &&
+      Number(approveStatus) !== data.approveStatus;
 
-    const nextApproveStatus = isApproveChanged
-      ? Number(approveStatus)
-      : data.approveStatus;
+    let nextApproveStatus = data.approveStatus;
+
+    if (approveStatus !== undefined) {
+      const parsed = Number(approveStatus);
+
+      if (![0, 1, 2].includes(parsed)) {
+        return res.status(400).json({ error: "approveStatus ไม่ถูกต้อง" });
+      }
+
+      nextApproveStatus = parsed;
+    }
+
+    // 👉 checkin
+    const newCheckin = pick(checkin, data.checkin);
 
     const updated = await prisma.$transaction(async (tx) => {
       const b = await tx.booking.update({
@@ -415,19 +430,23 @@ booking.put("/:bookingId", async (req, res) => {
           cname: newCname,
           csurname: newCsurname,
           fullName,
-          cphone: pick(cphone, data.cphone),
-          cmumId: pick(cmumId, data.cmumId),
+          cphone: newCphone,
+          cmumId: newCmumId,
           approveStatus: nextApproveStatus,
 
-          // ⭐ reset เฉพาะตอนมีการแก้ approveStatus
+          // ⭐ reset เฉพาะตอน "ค่าเปลี่ยนจริง"
           checkinStatus: isApproveChanged ? 0 : data.checkinStatus,
           checkinAt: isApproveChanged ? null : data.checkinAt,
 
           updatedAt: thailandTime(),
-          checkin: checkin ? thailandTime(checkin) : data.checkin,
+
+          checkin: newCheckin
+            ? thailandTime(newCheckin)
+            : null,
         },
       });
 
+      // 👉 room status
       const roomStatus = nextApproveStatus === 2 ? 0 : 1;
 
       await tx.room.update({
@@ -441,9 +460,16 @@ booking.put("/:bookingId", async (req, res) => {
       return b;
     });
 
-    res.json({ message: "แก้ไขข้อมูลสำเร็จ", booking: updated });
+    res.json({
+      message: "แก้ไขข้อมูลสำเร็จ",
+      booking: updated,
+    });
+
   } catch (err) {
-    res.status(400).json({ error: err.message });
+    console.error(err);
+    res.status(400).json({
+      error: err.message || "เกิดข้อผิดพลาด",
+    });
   }
 });
 
@@ -458,7 +484,6 @@ booking.delete("/:bookingId", async (req, res) => {
 
     if (!existing) throw new Error("ไม่พบข้อมูลการจอง");
 
-    // 🔥 ลบข้อมูลใน DB ก่อน (transaction)
     const deleted = await prisma.$transaction(async (tx) => {
       await tx.checkout.deleteMany({ where: { bookingId } });
 
@@ -477,14 +502,13 @@ booking.delete("/:bookingId", async (req, res) => {
       return deletedBooking;
     });
 
-    // 🔥 ค่อยลบไฟล์ (นอก transaction)
-    if (existing.slipUrl) {
-      deleteSlipFromUrl(existing.slipUrl).catch((err) => {
-        console.warn("ลบสลิปไม่สำเร็จ:", err);
-      });
+    // 🔥 ลบไฟล์ด้วย slipPath
+    if (existing.slipPath) {
+      await deleteSlipByPath(existing.slipPath);
     }
 
-    res.json({ message: "ลบการจองและข้อมูล checkout สำเร็จ" });
+    res.json({ message: "ลบการจองสำเร็จ" });
+
   } catch (err) {
     res.status(400).json({ error: err.message });
   }

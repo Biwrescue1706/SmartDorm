@@ -488,7 +488,7 @@ bill.put(
           overdueDays: newOverdueDays,
           fine: newFine,
           billStatus:
-            typeof billStatus === "number"
+            typeof billStatus === "number" 
               ? billStatus
               : billData.billStatus,
           billDate: thailandTime(),

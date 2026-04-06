@@ -21,10 +21,10 @@ const logTime = () => new Date().toISOString().replace("T", " ").split(".")[0];
 const formatThaiDate = (d) =>
   d
     ? new Date(d).toLocaleDateString("th-TH", {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-      })
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    })
     : "-";
 
 // CREATE PAYMENT + UPLOAD SLIP
@@ -41,11 +41,25 @@ payments.post("/create", upload.single("slip"), async (req, res) => {
 
     const customer = await prisma.customer.findFirst({ where: { userId } });
     if (!customer) throw new Error("ไม่พบข้อมูลลูกค้า");
-
+    
     const bill = await prisma.bill.findUnique({
       where: { billId },
       include: { room: true, booking: true, customer: true },
     });
+
+    // 🔥 เพิ่มตรงนี้
+    if (bill.slipPath) {
+      try {
+        await supabase.storage
+          .from(process.env.SUPABASE_BUCKET)
+          .remove([bill.slipPath]);
+
+        console.log("🧾 ลบสลิปเก่า:", bill.slipPath);
+      } catch (err) {
+        console.warn("ลบไฟล์เก่าไม่สำเร็จ:", err);
+      }
+    }
+
     if (!bill) throw new Error("ไม่พบบิลนี้");
     if (bill.billStatus === 1) throw new Error("บิลนี้ชำระแล้ว");
     if (bill.billStatus === 2) throw new Error("บิลนี้รอตรวจสอบอยู่");
@@ -55,11 +69,11 @@ payments.post("/create", upload.single("slip"), async (req, res) => {
       throw new Error("คุณไม่มีสิทธิ์ชำระบิลนี้");
     }
 
-    const created = new Date(bill.createdAt)
-      .toISOString()
-      .replace(/[:.]/g, "-");
+    const created = new Date(bill.createdAt).toISOString().replace(/[:.]/g, "-");
 
-    const filename = `Payment-slips/Payment-slip_${bill.billId}_${created}`;
+    const ext = req.file.originalname.split(".").pop();
+
+    const filename = `Payment-slips/Payment-slip_${bill.billId}_${created}.${ext}`;
 
     const { error } = await supabase.storage
       .from(process.env.SUPABASE_BUCKET)
@@ -78,29 +92,32 @@ payments.post("/create", upload.single("slip"), async (req, res) => {
 
     // สร้าง Payment + อัปเดต Bill
     const [payment, updatedBill] = await prisma.$transaction([
-  prisma.payment.upsert({
-    where: { billId },
-    update: {
-      slipUrl,
-      paidAt: new Date(),
-    },
-    create: {
-      billId,
-      customerId: customer.customerId,
-      slipUrl,
-      paidAt: new Date(),
-    },
-  }),
-  prisma.bill.update({
-    where: { billId },
-    data: {
-      billStatus: 2,
-      slipUrl,
-      billDate: new Date(),
-      paidAt: new Date(),
-    },
-  }),
-]);
+      prisma.payment.upsert({
+        where: { billId },
+        update: {
+          slipUrl,
+          slipPath: filename,
+          paidAt: new Date(),
+        },
+        create: {
+          billId,
+          customerId: customer.customerId,
+          slipUrl,
+          slipPath: filename,
+          paidAt: new Date(),
+        },
+      }),
+      prisma.bill.update({
+        where: { billId },
+        data: {
+          billStatus: 2,
+          slipUrl,
+          slipPath: filename,
+          billDate: new Date(),
+          paidAt: new Date(),
+        },
+      }),
+    ]);
 
     const customerUrl = `${BASE_URL}/bill/${bill.billId}`;
 

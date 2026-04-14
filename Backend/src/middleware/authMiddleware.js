@@ -6,8 +6,7 @@ if (!JWT_SECRET) {
   throw new Error("❌ JWT_SECRET must be defined in .env file");
 }
 
-/* ================= ADMIN ================= */
-
+// ✅ ตรวจสอบว่ามี token และถูกต้องหรือไม่
 export function authMiddleware(req, res, next) {
   const token =
     req.cookies?.token ||
@@ -20,8 +19,11 @@ export function authMiddleware(req, res, next) {
   }
 
   try {
-    const decoded = jwt.verify(token, JWT_SECRET);
+    const decoded = jwt.verify(token, JWT_SECRET, {
+      algorithms: ["HS256"],
+    });
 
+    // แนบข้อมูล admin เข้า req ตรง ๆ
     req.admin = {
       adminId: decoded.adminId,
       username: decoded.username,
@@ -31,10 +33,12 @@ export function authMiddleware(req, res, next) {
 
     next();
   } catch (err) {
+    console.error("❌ Token verification failed:", err.message);
     return res.status(401).json({ error: "Token ไม่ถูกต้องหรือหมดอายุ" });
   }
 }
 
+// ✅ Middleware ตรวจ role เฉพาะ
 export function roleMiddleware(requiredRole) {
   return (req, res, next) => {
     if (!req.admin) {
@@ -42,35 +46,9 @@ export function roleMiddleware(requiredRole) {
     }
 
     if (req.admin.role !== requiredRole) {
-      return res.status(403).json({ error: "ไม่มีสิทธิ์" });
+      return res.status(403).json({ error: "ไม่มีสิทธิ์เข้าถึงส่วนนี้" });
     }
 
     next();
   };
-}
-
-/* ================= USER (🔥 เพิ่มใหม่) ================= */
-
-export function userAuthMiddleware(req, res, next) {
-  try {
-    const token =
-      req.headers.authorization?.startsWith("Bearer ")
-        ? req.headers.authorization.split(" ")[1]
-        : null;
-
-    if (!token) {
-      return res.status(401).json({ error: "ไม่พบ Token" });
-    }
-
-    const decoded = jwt.verify(token, JWT_SECRET);
-
-    req.user = {
-      userId: decoded.userId,
-      customerId: decoded.customerId,
-    };
-
-    next();
-  } catch (err) {
-    return res.status(401).json({ error: "Token ไม่ถูกต้องหรือหมดอายุ" });
-  }
 }

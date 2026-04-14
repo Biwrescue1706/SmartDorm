@@ -1,54 +1,54 @@
+// src/modules/user.js
 import { Router } from "express";
 import prisma from "../prisma.js";
 import { verifyLineToken } from "../utils/verifyLineToken.js";
-import {
-  authMiddleware,
-  roleMiddleware,
-  userAuthMiddleware,
-} from "../middleware/authMiddleware.js";
-import { thailandTime } from "../utils/timezone.js";
-import { deleteSlip } from "../utils/deleteSlip.js";
+import { deleteSlip } from "./booking.js";
 
 const user = Router();
 
-/* ---------- helpers ---------- */
-
-async function getOrCreateCustomer(userId, displayName) {
-  let customer = await prisma.customer.findFirst({
-    where: { userId },
-  });
-
-  if (customer) {
-    customer = await prisma.customer.update({
-      where: { customerId: customer.customerId },
-      data: {
-        userName: displayName,
-        updatedAt: thailandTime(),
+// 📋 ดึงลูกค้าทั้งหมด (Admin)
+user.get("/getall", async (_req, res) => {
+  try {
+    const users = await prisma.customer.findMany({
+      include: {
+        bookings: { include: { room: true } },
       },
+      orderBy: { createdAt: "desc" },
     });
-  } else {
-    customer = await prisma.customer.create({
-      data: {
-        userId,
-        userName: displayName,
-        createdAt: thailandTime(),
-      },
+
+    res.json({
+      message: "ดึงข้อมูลลูกค้าทั้งหมดสำเร็จ",
+      count: users.length,
+      users,
     });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
+});
 
-  return customer;
-}
-
-/* ================= USER ================= */
-
-// ✅ LOGIN / REGISTER (ใช้ LINE แค่ตรงนี้)
+// 🧍‍♂️ Register / Update (LINE Login)
 user.post("/register", async (req, res) => {
   try {
     const { accessToken } = req.body;
-
     const { userId, displayName } = await verifyLineToken(accessToken);
 
-    const customer = await getOrCreateCustomer(userId, displayName);
+    let customer = await prisma.customer.findFirst({
+      where: { userId },
+    });
+
+    if (customer) {
+      customer = await prisma.customer.update({
+        where: { customerId: customer.customerId },
+        data: { userName: displayName },
+      });
+    } else {
+      customer = await prisma.customer.create({
+        data: {
+          userId,
+          userName: displayName,
+        },
+      });
+    }
 
     res.json({
       message: "สมัครหรืออัปเดตข้อมูลสำเร็จ",
@@ -59,39 +59,49 @@ user.post("/register", async (req, res) => {
   }
 });
 
-// 👤 profile
-user.post("/me", userAuthMiddleware, async (req, res) => {
+// 👤 /user/me (ตรวจ token)
+user.post("/me", async (req, res) => {
   try {
-    const userId = req.user.userId;
+    const { accessToken } = req.body;
+    const { userId, displayName } = await verifyLineToken(accessToken);
 
-    const customer = await prisma.customer.findFirst({
+    let customer = await prisma.customer.findFirst({
       where: { userId },
     });
+
+    if (!customer) {
+      customer = await prisma.customer.create({
+        data: {
+          userId,
+          userName: displayName,
+        },
+      });
+    }
 
     res.json({
       success: true,
       profile: customer,
     });
   } catch (err) {
-    res.status(401).json({ error: err.message });
+    res.status(401).json({
+      success: false,
+      error: err.message,
+    });
   }
 });
 
 // 💸 บิลที่ชำระแล้ว
-user.post("/payments", userAuthMiddleware, async (req, res) => {
+user.post("/payments", async (req, res) => {
   try {
-    const userId = req.user.userId;
-
-    const customer = await prisma.customer.findFirst({
-      where: { userId },
-    });
-
-    if (!customer) return res.json({ bills: [] });
+    const { accessToken } = req.body;
+    const { userId } = await verifyLineToken(accessToken);
 
     const bills = await prisma.bill.findMany({
       where: {
         billStatus: 1,
-        customerId: customer.customerId,
+        customer: {
+          userId,
+        },
       },
       include: {
         room: true,
@@ -110,21 +120,18 @@ user.post("/payments", userAuthMiddleware, async (req, res) => {
   }
 });
 
-// 💰 บิลยังไม่ชำระ
-user.post("/bills/unpaid", userAuthMiddleware, async (req, res) => {
+// 💰 บิลที่ยังไม่ชำระ
+user.post("/bills/unpaid", async (req, res) => {
   try {
-    const userId = req.user.userId;
-
-    const customer = await prisma.customer.findFirst({
-      where: { userId },
-    });
-
-    if (!customer) return res.json({ bills: [] });
+    const { accessToken } = req.body;
+    const { userId } = await verifyLineToken(accessToken);
 
     const bills = await prisma.bill.findMany({
       where: {
         billStatus: 0,
-        customerId: customer.customerId,
+        customer: {
+          userId,
+        },
       },
       include: { room: true },
       orderBy: { createdAt: "desc" },
@@ -140,10 +147,11 @@ user.post("/bills/unpaid", userAuthMiddleware, async (req, res) => {
   }
 });
 
-// 🚪 คืนห้อง
-user.post("/bookings/returnable", userAuthMiddleware, async (req, res) => {
+// 🚪 ห้องที่สามารถคืนได้
+user.post("/bookings/returnable", async (req, res) => {
   try {
-    const userId = req.user.userId;
+    const { accessToken } = req.body;
+    const { userId } = await verifyLineToken(accessToken);
 
     const customer = await prisma.customer.findFirst({
       where: { userId },
@@ -163,10 +171,11 @@ user.post("/bookings/returnable", userAuthMiddleware, async (req, res) => {
         approveStatus: 1,
       },
       include: { room: true },
+      orderBy: { createdAt: "desc" },
     });
 
     res.json({
-      message: "ดึงรายการคืนห้องสำเร็จ",
+      message: "ดึงรายการที่สามารถคืนห้องได้สำเร็จ",
       count: bookings.length,
       bookings,
     });
@@ -175,48 +184,80 @@ user.post("/bookings/returnable", userAuthMiddleware, async (req, res) => {
   }
 });
 
-/* ================= ADMIN DELETE ================= */
+// 🔍 ค้นหาลูกค้า (Admin)
+user.get("/search", async (req, res) => {
+  try {
+    const keyword = req.query.keyword?.toString().trim();
+    if (!keyword) return res.json({ users: [] });
 
-user.delete(
-  "/:customerId",
-  authMiddleware,
-  roleMiddleware(0),
-  async (req, res) => {
-    try {
-      const { customerId } = req.params;
+    const users = await prisma.customer.findMany({
+      where: {
+        OR: [
+          { userName: { contains: keyword, mode: "insensitive" } },
+          { userId: { contains: keyword, mode: "insensitive" } },
+          {
+            bookings: {
+              some: {
+                OR: [
+                  { fullName: { contains: keyword, mode: "insensitive" } },
+                  { cphone: { contains: keyword, mode: "insensitive" } },
+                  {
+                    room: {
+                      number: { contains: keyword, mode: "insensitive" },
+                    },
+                  },
+                ],
+              },
+            },
+          },
+        ],
+      },
+      include: {
+        bookings: { include: { room: true } },
+      },
+      orderBy: { createdAt: "desc" },
+    });
 
-      await prisma.$transaction(async (tx) => {
-        const bookings = await tx.booking.findMany({
-          where: { customerId },
-          select: { slipUrl: true, roomId: true },
-        });
+    res.json({
+      message: `ค้นหาสำเร็จ (${users.length})`,
+      users,
+    });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
 
-        const roomIds = bookings.map((b) => b.roomId);
+// ❌ ลบลูกค้า (Admin)
+user.delete("/:customerId", async (req, res) => {
+  try {
+    const { customerId } = req.params;
 
-        if (roomIds.length) {
-          await tx.room.updateMany({
-            where: { roomId: { in: roomIds } },
-            data: { status: 0 },
-          });
-        }
-
-        for (const b of bookings) {
-          if (b.slipUrl) await deleteSlip(b.slipUrl);
-        }
-
-        await tx.payment.deleteMany({ where: { customerId } });
-        await tx.bill.deleteMany({ where: { customerId } });
-        await tx.checkout.deleteMany({ where: { customerId } });
-        await tx.booking.deleteMany({ where: { customerId } });
-
-        await tx.customer.delete({ where: { customerId } });
+    await prisma.$transaction(async (tx) => {
+      const bookings = await tx.booking.findMany({
+        where: { customerId },
+        select: { slipUrl: true, roomId: true },
       });
 
-      res.json({ message: "ลบลูกค้าสำเร็จ" });
-    } catch (err) {
-      res.status(400).json({ error: err.message });
-    }
+      const roomIds = bookings.map((b) => b.roomId);
+      if (roomIds.length) {
+        await tx.room.updateMany({
+          where: { roomId: { in: roomIds } },
+          data: { status: 0 },
+        });
+      }
+
+      for (const b of bookings) {
+        if (b.slipUrl) await deleteSlip(b.slipUrl);
+      }
+
+      await tx.booking.deleteMany({ where: { customerId } });
+      await tx.customer.delete({ where: { customerId } });
+    });
+
+    res.json({ message: "ลบลูกค้าสำเร็จ" });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
   }
-);
+});
 
 export default user;

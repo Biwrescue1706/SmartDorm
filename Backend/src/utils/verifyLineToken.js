@@ -1,45 +1,36 @@
 // utils/verifyLineToken.js
+import fetch from "node-fetch";
 
-// ❌ ไม่ต้องใช้ node-fetch แล้ว (ลบทิ้ง)
-// import fetch from "node-fetch";
+// ---------------- ตรวจสอบ LINE LIFF Access Token ----------------
+//  * ตรวจสอบ Access Token ของ LINE LIFF ผ่าน API
+//  * - ถ้า token ถูกต้อง → คืน { userId, displayName }
+//  * - ถ้า token หมดอายุ / invalid → throw error ให้ frontend จัดการ
 
 export async function verifyLineToken(accessToken) {
   if (!accessToken) {
-    console.error("❌ ไม่พบ accessToken");
+    console.error("❌ ไม่พบ accessToken ที่ส่งมาจาก Frontend");
     throw new Error("missing_token");
   }
 
   try {
-    console.log("🔑 TOKEN:", accessToken.slice(0, 20), "...");
-
-    // 🔥 กันค้าง (timeout)
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 8000);
-
     const res = await fetch("https://api.line.me/v2/profile", {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-      signal: controller.signal,
+      headers: { Authorization: `Bearer ${accessToken}` },
     });
 
-    clearTimeout(timeout);
-
-    const text = await res.text();
-
     if (!res.ok) {
-      console.error("❌ LINE VERIFY FAIL:", text);
+      const errText = await res.text();
+      console.error("❌ LINE VERIFY FAIL:", errText);
 
-      if (text.includes("expired") || text.includes("invalid")) {
+      if (errText.includes("expired") || errText.includes("invalid")) {
         throw new Error("expired_token");
       }
 
       throw new Error("invalid_token");
     }
 
-    const data = JSON.parse(text);
+    const data = await res.json();
 
-    if (!data?.userId) {
+    if (!data?.userId || !data?.displayName) {
       throw new Error("invalid_response");
     }
 
@@ -48,21 +39,7 @@ export async function verifyLineToken(accessToken) {
       displayName: data.displayName,
     };
   } catch (err) {
-    console.error("❌ verifyLineToken ERROR:", err);
-
-    // 🔥 แยก error ให้ชัด (จะ debug ง่ายขึ้นมาก)
-    if (err.name === "AbortError") {
-      throw new Error("timeout_line_api");
-    }
-
-    if (err.code === "ENOTFOUND") {
-      throw new Error("dns_error");
-    }
-
-    if (err.message === "fetch failed") {
-      throw new Error("line_api_unreachable");
-    }
-
+    console.error("❌ verifyLineToken() error:", err.message || err);
     throw new Error(err.message || "verify_failed");
   }
 }

@@ -17,24 +17,19 @@ const supabase = createClient(
 );
 
 // Helpers
-const logTime = () =>
-  new Date().toISOString().replace("T", " ").split(".")[0];
-
+const logTime = () => new Date().toISOString().replace("T", " ").split(".")[0];
 const formatThaiDate = (d) =>
   d
     ? new Date(d).toLocaleDateString("th-TH", {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-      })
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    })
     : "-";
 
 // CREATE PAYMENT + UPLOAD SLIP
 payments.post("/create", upload.single("slip"), async (req, res) => {
   try {
-    console.log("📦 BODY:", req.body);
-    console.log("📎 FILE:", req.file);
-
     const { billId, accessToken } = req.body;
     const slip = req.file;
 
@@ -42,24 +37,18 @@ payments.post("/create", upload.single("slip"), async (req, res) => {
     if (!accessToken) throw new Error("ไม่มี accessToken");
     if (!slip) throw new Error("ต้องแนบสลิป");
 
-    // 🔥 verify LINE
     const { userId } = await verifyLineToken(accessToken);
 
-    const customer = await prisma.customer.findFirst({
-      where: { userId },
-    });
+    const customer = await prisma.customer.findFirst({ where: { userId } });
     if (!customer) throw new Error("ไม่พบข้อมูลลูกค้า");
-
+    
     const bill = await prisma.bill.findUnique({
       where: { billId },
       include: { room: true, booking: true, customer: true },
     });
 
-    // ✅ สำคัญ: เช็คก่อนใช้
-    if (!bill) throw new Error("ไม่พบบิลนี้");
-
-    // 🔥 ลบสลิปเก่า (ถ้ามี)
-    if (bill.slipPath && typeof bill.slipPath === "string") {
+    // 🔥 เพิ่มตรงนี้
+    if (bill.slipPath) {
       try {
         await supabase.storage
           .from(process.env.SUPABASE_BUCKET)
@@ -67,29 +56,25 @@ payments.post("/create", upload.single("slip"), async (req, res) => {
 
         console.log("🧾 ลบสลิปเก่า:", bill.slipPath);
       } catch (err) {
-        console.warn("⚠️ ลบไฟล์เก่าไม่สำเร็จ:", err.message);
+        console.warn("ลบไฟล์เก่าไม่สำเร็จ:", err);
       }
     }
 
-    if (bill.billStatus === 1)
-      throw new Error("บิลนี้ชำระแล้ว");
-    if (bill.billStatus === 2)
-      throw new Error("บิลนี้รอตรวจสอบอยู่");
+    if (!bill) throw new Error("ไม่พบบิลนี้");
+    if (bill.billStatus === 1) throw new Error("บิลนี้ชำระแล้ว");
+    if (bill.billStatus === 2) throw new Error("บิลนี้รอตรวจสอบอยู่");
 
     // กันจ่ายบิลคนอื่น
     if (bill.customerId && bill.customerId !== customer.customerId) {
       throw new Error("คุณไม่มีสิทธิ์ชำระบิลนี้");
     }
 
-    const created = new Date(bill.createdAt)
-      .toISOString()
-      .replace(/[:.]/g, "-");
+    const created = new Date(bill.createdAt).toISOString().replace(/[:.]/g, "-");
 
-    const ext = slip.originalname.split(".").pop();
+    const ext = req.file.originalname.split(".").pop();
 
     const filename = `Payment-slips/Payment-slip_${bill.billId}_${created}.${ext}`;
 
-    // 🔥 upload ไป Supabase
     const { error } = await supabase.storage
       .from(process.env.SUPABASE_BUCKET)
       .upload(filename, slip.buffer, {
@@ -105,7 +90,7 @@ payments.post("/create", upload.single("slip"), async (req, res) => {
 
     const slipUrl = data.publicUrl;
 
-    // 🔥 transaction
+    // สร้าง Payment + อัปเดต Bill
     const [payment, updatedBill] = await prisma.$transaction([
       prisma.payment.upsert({
         where: { billId },
@@ -136,7 +121,7 @@ payments.post("/create", upload.single("slip"), async (req, res) => {
 
     const customerUrl = `${BASE_URL}/bill/${bill.billId}`;
 
-    // 📩 แจ้งลูกค้า
+    // แจ้งลูกค้า
     if (bill.customer?.userId) {
       await sendFlexMessage(
         bill.customer.userId,
@@ -145,21 +130,14 @@ payments.post("/create", upload.single("slip"), async (req, res) => {
           { label: "รหัสบิล", value: bill.billId },
           { label: "ห้อง", value: bill.room?.number ?? "-" },
           { label: "ยอด", value: `${bill.total.toLocaleString()} บาท` },
-          {
-            label: "วันที่ชำระ",
-            value: formatThaiDate(payment.paidAt),
-          },
-          {
-            label: "สถานะ",
-            value: "รอตรวจสอบ",
-            color: "#f1c40f",
-          },
+          { label: "วันที่ชำระ", value: formatThaiDate(payment.paidAt) },
+          { label: "สถานะ", value: "รอตรวจสอบ", color: "#f1c40f" },
         ],
         [{ label: "ดูบิล", url: customerUrl, style: "primary" }]
       );
     }
 
-    // 📩 แจ้งแอดมิน
+    // แจ้งแอดมิน
     if (process.env.ADMIN_LINE_ID) {
       await sendFlexMessage(
         process.env.ADMIN_LINE_ID,
@@ -180,17 +158,10 @@ payments.post("/create", upload.single("slip"), async (req, res) => {
       );
     }
 
-    console.log(
-      `[${logTime()}] ✅ รับสลิปสำเร็จ บิล ${bill.billId}`
-    );
+    console.log(`[${logTime()}] รับสลิปชำระเงิน บิล ${bill.billId} สำเร็จ`);
 
-    res.json({
-      message: "ส่งสลิปสำเร็จ",
-      payment,
-      bill: updatedBill,
-    });
+    res.json({ message: "ส่งสลิปสำเร็จ", payment, bill: updatedBill });
   } catch (err) {
-    console.error("🔥 PAYMENT ERROR:", err);
     res.status(400).json({ error: err.message });
   }
 });

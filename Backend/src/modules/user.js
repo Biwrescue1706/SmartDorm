@@ -38,7 +38,7 @@ async function getOrCreateCustomer(userId, displayName) {
 /* ================= ADMIN ================= */
 
 // 📋 ดึงลูกค้าทั้งหมด
-user.get("/getall", roleMiddleware(0), async (_req, res) => {
+user.get("/getall", async (_req, res) => {
   try {
     const users = await prisma.customer.findMany({
       include: {
@@ -58,7 +58,7 @@ user.get("/getall", roleMiddleware(0), async (_req, res) => {
 });
 
 // 🔍 ค้นหาลูกค้า
-user.get("/search", roleMiddleware(0), async (req, res) => {
+user.get("/search", async (req, res) => {
   try {
     const keyword = req.query.keyword?.toString().trim();
     if (!keyword) return res.json({ users: [] });

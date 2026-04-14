@@ -2,7 +2,7 @@
 import { Router } from "express";
 import prisma from "../prisma.js";
 import { verifyLineToken } from "../utils/verifyLineToken.js";
-import { deleteSlip } from "../../utils/deleteSlip.js";
+import { deleteSlip } from "../utils/deleteSlip.js";
 
 const user = Router();
 

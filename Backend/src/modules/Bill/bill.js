@@ -1,3 +1,4 @@
+//src/modules/Bill/bill.js
 import { Router } from "express";
 import prisma from "../../prisma.js";
 import { authMiddleware, roleMiddleware } from "../../middleware/authMiddleware.js";
@@ -304,11 +305,11 @@ bill.put("/approve/:billId", authMiddleware, roleMiddleware(0), async (req, res)
       },
     });
 
-    clearCache();
-
     try {
       await notifyBillApproved(billData, updated);
-    } catch { }
+    } catch (e) {
+      console.error("แจ้งอนุมัติบิลล้มเหลว:", e.message);
+    }
 
     res.json({ message: "อนุมัติสำเร็จ", bill: updated });
 

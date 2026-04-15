@@ -3,7 +3,7 @@ import multer from "multer";
 import prisma from "../prisma.js";
 import { createClient } from "@supabase/supabase-js";
 import { authMiddleware, roleMiddleware } from "../middleware/authMiddleware.js";
-import { thailandTime, toThaiString } from "../utils/timezone.js";
+import { thailandTime } from "../utils/timezone.js";
 
 const dormProfile = Router();
 
@@ -27,12 +27,6 @@ function toNum(v) {
   return isNaN(n) ? 0 : n;
 }
 
-const formatProfile = (p) => ({
-  ...p,
-  createdAt: toThaiString(p.createdAt),
-  updatedAt: toThaiString(p.updatedAt),
-});
-
 /* ================= GET ================= */
 
 dormProfile.get("/", async (_req, res) => {
@@ -44,7 +38,7 @@ dormProfile.get("/", async (_req, res) => {
     if (!profile)
       return res.status(404).json({ error: "ยังไม่มีโปรไฟล์" });
 
-    res.json(formatProfile(profile));
+    res.json(profile);
 
   } catch (err) {
     console.error("getDormProfile:", err);

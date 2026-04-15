@@ -1,3 +1,4 @@
+//src/modules/Bill/payment.js
 import { Router } from "express";
 import multer from "multer";
 import prisma from "../../prisma.js";
@@ -27,18 +28,33 @@ payments.post("/create", upload.single("slip"), async (req, res) => {
     if (!accessToken) return res.status(400).json({ error: "no token" });
     if (!slip) return res.status(400).json({ error: "no file" });
 
+    // 🔥 verify user
     const { userId } = await verifyLineToken(accessToken);
 
-    const customer = await prisma.customer.findFirst({ where: { userId } });
+    const customer = await prisma.customer.findFirst({
+      where: { userId },
+    });
     if (!customer) return res.status(400).json({ error: "no customer" });
 
     const bill = await prisma.bill.findUnique({
       where: { billId },
     });
-
     if (!bill) return res.status(400).json({ error: "bill not found" });
 
-    // 🔥 safe
+    // 🔥 1. สร้าง payment ก่อน (เอา paymentId)
+    const payment = await prisma.payment.upsert({
+      where: { billId },
+      update: {
+        paidAt: new Date(),
+      },
+      create: {
+        billId,
+        customerId: customer.customerId,
+        paidAt: new Date(),
+      },
+    });
+
+    // 🔥 2. ลบไฟล์เก่า (ถ้ามี)
     if (bill.slipPath) {
       try {
         await supabase.storage
@@ -49,11 +65,13 @@ payments.post("/create", upload.single("slip"), async (req, res) => {
       }
     }
 
-    // 🔥 filename
+    // 🔥 3. ตั้งชื่อไฟล์ใหม่
     const ext = slip.originalname.split(".").pop();
-    const filename = `slip_${Date.now()}.${ext}`;
+    const now = new Date().toISOString().replace(/[:.]/g, "-");
 
-    // 🔥 upload
+    const filename = `Payment-slips/payment-slips-${payment.paymentId}-${now}.${ext}`;
+
+    // 🔥 4. upload
     let slipUrl = null;
 
     try {
@@ -76,24 +94,16 @@ payments.post("/create", upload.single("slip"), async (req, res) => {
       return res.status(500).json({ error: "upload failed" });
     }
 
-    // 🔥 save payment
-    const payment = await prisma.payment.upsert({
-      where: { billId },
-      update: {
+    // 🔥 5. update payment
+    await prisma.payment.update({
+      where: { paymentId: payment.paymentId },
+      data: {
         slipUrl,
         slipPath: filename,
-        paidAt: new Date(),
-      },
-      create: {
-        billId,
-        customerId: customer.customerId,
-        slipUrl,
-        slipPath: filename,
-        paidAt: new Date(),
       },
     });
 
-    // 🔥 update bill (กันพัง)
+    // 🔥 6. update bill
     try {
       await prisma.bill.update({
         where: { billId },
@@ -110,7 +120,7 @@ payments.post("/create", upload.single("slip"), async (req, res) => {
 
     console.log("✅ SUCCESS");
 
-    res.json({ message: "ok", payment });
+    res.json({ message: "ok", paymentId: payment.paymentId, slipUrl });
 
   } catch (err) {
     console.error("💥 PAYMENT CRASH:", err);

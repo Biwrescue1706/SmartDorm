@@ -4,6 +4,8 @@ import multer from "multer";
 import prisma from "../../prisma.js";
 import { createClient } from "@supabase/supabase-js";
 import { verifyLineToken } from "../../utils/verifyLineToken.js";
+import { sendFlexMessage } from "../../utils/lineFlex.js";
+import { toThaiString } from "../../utils/timezone.js";
 
 const payments = Router();
 
@@ -38,10 +40,15 @@ payments.post("/create", upload.single("slip"), async (req, res) => {
 
     const bill = await prisma.bill.findUnique({
       where: { billId },
+      include: {
+        customer: true,
+        room: true,
+        booking: true,
+      },
     });
     if (!bill) return res.status(400).json({ error: "bill not found" });
 
-    // 🔥 1. สร้าง payment ก่อน (เอา paymentId)
+    // 🔥 1. create/update payment
     const payment = await prisma.payment.upsert({
       where: { billId },
       update: {
@@ -54,22 +61,21 @@ payments.post("/create", upload.single("slip"), async (req, res) => {
       },
     });
 
-    // 🔥 2. ลบไฟล์เก่า (ถ้ามี)
+    // 🔥 2. delete old slip
     if (bill.slipPath) {
       try {
         await supabase.storage
           .from(process.env.SUPABASE_BUCKET)
           .remove([bill.slipPath]);
-      } catch (e) {
-        console.log("delete fail (skip)");
+      } catch {
+        console.log("⚠️ delete old slip fail (skip)");
       }
     }
 
-    // 🔥 3. ตั้งชื่อไฟล์ใหม่
+    // 🔥 3. generate filename
     const ext = slip.originalname.split(".").pop();
     const now = new Date().toISOString().replace(/[:.]/g, "-");
-
-    const filename = `Payment-slips/payment-slips-${payment.paymentId}-${now}.${ext}`;
+    const filename = `Payment-slips/payment-${payment.paymentId}-${now}.${ext}`;
 
     // 🔥 4. upload
     let slipUrl = null;
@@ -90,7 +96,7 @@ payments.post("/create", upload.single("slip"), async (req, res) => {
 
       slipUrl = data.publicUrl;
     } catch (err) {
-      console.error("UPLOAD ERROR:", err);
+      console.error("❌ UPLOAD ERROR:", err);
       return res.status(500).json({ error: "upload failed" });
     }
 
@@ -104,23 +110,77 @@ payments.post("/create", upload.single("slip"), async (req, res) => {
     });
 
     // 🔥 6. update bill
+    await prisma.bill.update({
+      where: { billId },
+      data: {
+        billStatus: 2,
+        slipUrl,
+        slipPath: filename,
+        paidAt: new Date(),
+      },
+    });
+
+    // 🔥 7. LINE NOTIFY
     try {
-      await prisma.bill.update({
-        where: { billId },
-        data: {
-          billStatus: 2,
-          slipUrl,
-          slipPath: filename,
-          paidAt: new Date(),
-        },
-      });
+      const ADMIN_URL = process.env.ADMIN_URL;
+      const customerUrl = `${process.env.details_URL}/bill/${bill.billId}`;
+
+      console.log("📩 LINE USER:", bill.customer?.userId);
+      console.log("🌐 CUSTOMER URL:", customerUrl);
+
+      // 👉 แจ้งลูกค้า
+      if (bill.customer?.userId) {
+        await sendFlexMessage(
+          bill.customer.userId,
+          "💰 รับสลิปการชำระเงินแล้ว",
+          [
+            { label: "รหัสบิล", value: bill.billId },
+            { label: "ห้อง", value: bill.room?.number ?? "-" },
+            { label: "ยอด", value: `${bill.total.toLocaleString()} บาท` },
+            { label: "วันที่ชำระ", value: toThaiString(payment.paidAt) },
+            { label: "สถานะ", value: "รอตรวจสอบ", color: "#f1c40f" },
+          ],
+          [
+            {
+              label: "ดูบิล",
+              url: customerUrl,
+              style: "primary",
+            },
+          ]
+        );
+      }
+
+      // 👉 แจ้งแอดมิน
+      if (process.env.ADMIN_LINE_ID) {
+        await sendFlexMessage(
+          process.env.ADMIN_LINE_ID,
+          "📢 มีการชำระเงินใหม่",
+          [
+            { label: "รหัสบิล", value: bill.billId },
+            { label: "ผู้เช่า", value: bill.booking?.fullName ?? "-" },
+            { label: "ห้อง", value: bill.room?.number ?? "-" },
+            { label: "ยอด", value: `${bill.total.toLocaleString()} บาท` },
+          ],
+          [
+            {
+              label: "เปิดระบบ Admin",
+              url: ADMIN_URL,
+              style: "primary",
+            },
+          ]
+        );
+      }
     } catch (err) {
-      console.error("BILL UPDATE FAIL:", err);
+      console.error("❌ LINE NOTIFY FAIL:", err.response?.data || err.message);
     }
 
     console.log("✅ SUCCESS");
 
-    res.json({ message: "ok", paymentId: payment.paymentId, slipUrl });
+    res.json({
+      message: "ok",
+      paymentId: payment.paymentId,
+      slipUrl,
+    });
 
   } catch (err) {
     console.error("💥 PAYMENT CRASH:", err);

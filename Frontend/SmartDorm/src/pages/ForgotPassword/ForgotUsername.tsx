@@ -41,7 +41,7 @@ export default function ForgotUsername() {
           <div className="d-flex flex-column align-items-center mx-auto">
             <div className="d-flex align-items-center gap-2">
               <img
-                src="/assets/SmartDorm.webp"
+                src="https://manage.smartdorm-biwboong.shop/assets/SmartDorm.webp"
                 alt="logo"
                 width="48"
                 height="48"

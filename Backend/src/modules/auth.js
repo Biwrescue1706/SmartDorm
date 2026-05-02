@@ -64,7 +64,7 @@ auth.post("/login", async (req, res) => {
       httpOnly: true,
       secure: isProd,
       sameSite: isProd ? "none" : "lax",
-domain: ".smartdorm-biwboong.shop",
+      domain: ".smartdorm-biwboong.shop",
       path: "/",
       maxAge: 90 * 60 * 1000,
     });
@@ -97,7 +97,7 @@ auth.post("/logout", (_req, res) => {
     httpOnly: true,
     secure: isProd,
     sameSite: isProd ? "none" : "lax",
-domain: ".smartdorm-biwboong.shop",
+    domain: ".smartdorm-biwboong.shop",
     path: "/",
   });
 
@@ -196,6 +196,34 @@ auth.put("/profile", authMiddleware, async (req, res) => {
     res.status(400).json({
       error: err.message,
     });
+  }
+});
+
+// 🔑 ลืมรหัสผ่าน - ตรวจสอบผู้ใช้
+auth.post("/forgot/check", async (req, res) => {
+  try {
+    const { username } = req.body;
+
+    if (!username) {
+      return res.status(400).json({ error: "กรุณากรอก username" });
+    }
+
+    const user = await prisma.admin.findUnique({
+      where: { username },
+      select: { name: true },
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: "ไม่พบผู้ใช้" });
+    }
+
+    res.json({
+      message: "พบผู้ใช้",
+      name: user.name,
+    });
+
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 });
 

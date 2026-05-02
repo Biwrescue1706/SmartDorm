@@ -22,8 +22,11 @@ export default function RoomRow({
   hideTenant,
   hideDelete,
 }: Props) {
-  const { deleteRoom } = useRooms(); // ✅ เอา fetchRooms ออก
+  const { deleteRoom } = useRooms();
   const isSuperAdmin = role === 0;
+
+  // ✅ เอาเฉพาะ booking ตอนห้อง "เต็ม"
+  const latestBooking = room.status === 1 && room.booking ? room.booking : null;
 
   const getStatus = (status?: number) => (
     <span
@@ -42,7 +45,7 @@ export default function RoomRow({
   const handleDelete = async () => {
     const success = await deleteRoom(room.roomId);
     if (success) {
-      onUpdated(); // ✅ รีเฟรชจาก parent พอ
+      onUpdated();
     }
   };
 
@@ -92,9 +95,9 @@ export default function RoomRow({
 
       {!hideTenant && (
         <>
-          <td>{room.booking?.fullName ?? "-"}</td>
-          <td>{formatThaiDate(room.booking?.bookingDate ?? null)}</td>
-          <td>{formatThaiDate(room.booking?.checkinAt ?? null)}</td>
+          <td>{latestBooking?.fullName ?? ""}</td>
+          <td>{formatThaiDate(latestBooking?.bookingDate ?? null)}</td>
+          <td>{formatThaiDate(latestBooking?.checkinAt ?? null)}</td>
         </>
       )}
     </tr>

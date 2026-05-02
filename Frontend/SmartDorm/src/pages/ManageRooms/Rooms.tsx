@@ -1,4 +1,4 @@
-// src/pages/Rooms.tsx
+// src/pages/ManageRooms/Rooms.tsx
 import { useState, useEffect } from "react";
 import RoomTable from "../../components/Room/RoomTable";
 import RoomCard from "../../components/Room/RoomCard";

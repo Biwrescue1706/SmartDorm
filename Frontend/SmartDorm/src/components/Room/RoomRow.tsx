@@ -19,14 +19,10 @@ export default function RoomRow({
   index,
   onUpdated,
   role,
-  hideTenant,
   hideDelete,
 }: Props) {
   const { deleteRoom } = useRooms();
   const isSuperAdmin = role === 0;
-
-  // ✅ เอาเฉพาะ booking ตอนห้อง "เต็ม"
-  const latestBooking = room.status === 1 && room.booking ? room.booking : null;
 
   const getStatus = (status?: number) => (
     <span

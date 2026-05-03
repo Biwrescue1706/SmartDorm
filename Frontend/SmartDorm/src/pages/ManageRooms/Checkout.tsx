@@ -229,8 +229,34 @@ export default function Checkout() {
       {viewing && (
         <CheckoutApproveDialog
           checkout={viewing}
-          onApprove={() => approveCheckout(viewing.checkoutId)}
-          onReject={() => rejectCheckout(viewing.checkoutId)}
+          onApprove={async () => {
+            await approveCheckout(viewing.checkoutId);
+
+            await Swal.fire({
+              icon: "success",
+              title: "อนุมัติสำเร็จ",
+              text: `ห้อง ${viewing.room?.number ?? "-"}`,
+              timer: 1500,
+              showConfirmButton: false,
+            });
+
+            setViewing(null); // 🔥 ปิด modal
+            fetchCheckouts(); // 🔄 รีโหลดข้อมูล
+          }}
+          onReject={async () => {
+            await rejectCheckout(viewing.checkoutId);
+
+            await Swal.fire({
+              icon: "success",
+              title: "ปฏิเสธสำเร็จ",
+              text: `ห้อง ${viewing.room?.number ?? "-"}`,
+              timer: 1500,
+              showConfirmButton: false,
+            });
+
+            setViewing(null); // 🔥 ปิด modal
+            fetchCheckouts(); // 🔄 รีโหลดข้อมูล
+          }}
           onClose={() => setViewing(null)}
         />
       )}

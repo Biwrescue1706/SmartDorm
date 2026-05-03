@@ -21,12 +21,11 @@ export default function AllBillsTable({
   onManage,
   onOverdue,
 }: Props) {
-
   // ตรวจว่ามีคอลัมน์ไหนต้องแสดงบ้าง
-  const showOverdue = bills.some(b => b.billStatus === 0 || b.overdueDays);
-  const showSlip = bills.some(b => b.payment?.slipUrl || b.slipUrl);
-  const showManage = bills.some(b => b.billStatus === 2);
-  const showEdit = bills.some(b => b.billStatus === 0 || b.billStatus === 2);
+  const showOverdue = bills.some((b) => b.billStatus === 0 || b.overdueDays);
+  const showSlip = bills.some((b) => b.payment?.slipUrl || b.slipUrl);
+  const showManage = bills.some((b) => b.billStatus === 2);
+  const showEdit = bills.some((b) => b.billStatus === 0 || b.billStatus === 2);
   const showDelete = role === 0;
 
   return (
@@ -50,8 +49,8 @@ export default function AllBillsTable({
 
             {showOverdue && <th>เกินกำหนด</th>}
             {showSlip && <th>สลิป</th>}
-            {showManage && role === 0 && <th>จัดการ</th>}
-            {showEdit && role === 0 && <th>แก้ไข</th>}
+            {showManage && (role === 0 || role === 1) && <th>จัดการ</th>}
+            {showEdit && (role === 0 || role === 1) && <th>แก้ไข</th>}
             {showDelete && <th>ลบ</th>}
           </tr>
         </thead>
@@ -70,13 +69,11 @@ export default function AllBillsTable({
                 index={i}
                 bill={bill}
                 role={role}
-
                 showOverdue={showOverdue}
                 showSlip={showSlip}
                 showManage={showManage}
                 showEdit={showEdit}
                 showDelete={showDelete}
-
                 onEdit={onEdit}
                 onDelete={onDelete}
                 onViewSlip={onViewSlip}

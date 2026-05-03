@@ -49,11 +49,12 @@ export default function AllBillsRow({
   const overdueDays = bill.overdueDays ?? 0;
 
   /* ---------- เช็คเกินกำหนด ---------- */
-
   const today = thaiNow();
   const dueDate = new Date(bill.dueDate);
-
   const isPastDue = today > dueDate;
+
+  /* ✅ ใช้ตัวแปรกลาง */
+  const isAdminOrStaff = role === 0 || role === 1;
 
   return (
     <tr>
@@ -121,7 +122,7 @@ export default function AllBillsRow({
                 {overdueDays > 0 ? `${overdueDays} วัน` : "ยังไม่เกินกำหนด"}
               </span>
 
-              {role === 0 && isPastDue && (
+              {isAdminOrStaff && isPastDue && (
                 <button
                   className="btn btn-warning btn-sm text-white"
                   onClick={() =>
@@ -133,7 +134,22 @@ export default function AllBillsRow({
               )}
             </div>
           ) : overdueDays > 0 ? (
-            <span>{overdueDays} วัน</span>
+            <div className="d-flex flex-column align-items-center gap-1">
+              <span className="fw-semibold">
+                {overdueDays > 0 ? `${overdueDays} วัน` : "ยังไม่เกินกำหนด"}
+              </span>
+
+              {isAdminOrStaff && isPastDue && (
+                <button
+                  className="btn btn-warning btn-sm text-white"
+                  onClick={() =>
+                    onOverdue(bill.billId, bill.room?.number ?? "-")
+                  }
+                >
+                  แจ้งเตือน
+                </button>
+              )}
+            </div>
           ) : (
             "-"
           )}
@@ -158,7 +174,7 @@ export default function AllBillsRow({
       {/* จัดการ */}
       {showManage && (
         <td>
-          {status === 2 && role === 0 && (
+          {isAdminOrStaff && status === 2 && (
             <button
               className="btn btn-info btn-sm text-white"
               onClick={() => onManage(bill)}
@@ -172,7 +188,7 @@ export default function AllBillsRow({
       {/* แก้ไข */}
       {showEdit && (
         <td>
-          {role === 0 && (status === 0 || status === 2) && (
+          {isAdminOrStaff && (status === 0 || status === 2) && (
             <button
               className="btn btn-warning btn-sm"
               onClick={() => onEdit(bill)}
@@ -183,7 +199,7 @@ export default function AllBillsRow({
         </td>
       )}
 
-      {/* ลบ */}
+      {/* ลบ (admin เท่านั้น) */}
       {showDelete && (
         <td>
           {role === 0 && (

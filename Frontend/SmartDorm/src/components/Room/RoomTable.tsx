@@ -46,9 +46,6 @@ export default function RoomTable({
 
             {isSuperAdmin && <th rowSpan={2}>แก้ไข</th>}
             {isSuperAdmin && !hideDelete && <th rowSpan={2}>ลบ</th>}
-
-            {/* ✅ แก้จาก 4 → 3 */}
-            {!hideTenant && <th colSpan={3}>ข้อมูลผู้เช่า</th>}
           </tr>
 
           <tr>
@@ -56,14 +53,6 @@ export default function RoomTable({
             <th>วันที่สร้าง</th>
             <th>ผู้แก้ไข</th>
             <th>วันแก้ไข</th>
-
-            {!hideTenant && (
-              <>
-                <th>ผู้เช่า</th>
-                <th>วันที่จอง</th>
-                <th>วันที่เข้าพัก</th>
-              </>
-            )}
           </tr>
         </thead>
 

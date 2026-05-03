@@ -93,13 +93,6 @@ export default function RoomRow({
         </>
       )}
 
-      {!hideTenant && (
-        <>
-          <td>{latestBooking?.fullName ?? ""}</td>
-          <td>{formatThaiDate(latestBooking?.bookingDate ?? null)}</td>
-          <td>{formatThaiDate(latestBooking?.checkinAt ?? null)}</td>
-        </>
-      )}
     </tr>
   );
 }

@@ -63,64 +63,46 @@ export default function RoomCard({ room, role, onUpdated }: Props) {
             <b>ผู้สร้าง :</b>
           </p>
           <p>{room.adminCreated?.name ?? "-"}</p>
-                  <p>
-          <b>วันที่สร้าง :</b>
-        </p>
-        <p>
-          {formatThaiDate(room.createdAt)} เวลา {formatThaiTime(room.createdAt)}{" "}
-          น.
-        </p>
+          <p>
+            <b>วันที่สร้าง :</b>
+          </p>
+          <p>
+            {formatThaiDate(room.createdAt)} เวลา{" "}
+            {formatThaiTime(room.createdAt)} น.
+          </p>
+          {room.adminUpdated?.name && (
+            <>
+              <p>
+                <b>ผู้แก้ไข :</b>
+              </p>
+              <p>{room.adminUpdated.name}</p>
+            </>
+          )}
+
+          {room.updatedAt && (
+            <>
+              <p>
+                <b>วันแก้ไข :</b>
+              </p>
+              <p>
+                {formatThaiDate(room.updatedAt)} เวลา{" "}
+                {formatThaiTime(room.updatedAt)} น.
+              </p>
+            </>
+          )}
+
+          <p>
+            <b>สถานะ :</b>{" "}
+            <span
+              className={`badge ${
+                room.status === 0 ? "bg-success" : "bg-danger"
+              }`}
+            >
+              {room.status === 0 ? "ว่าง" : "เต็ม"}
+            </span>
+          </p>
+          
         </div>
-
-
-
-        {room.adminUpdated?.name && (
-          <p>
-            <b>ผู้แก้ไข :</b> {room.adminUpdated.name}
-          </p>
-        )}
-
-        {room.updatedAt && (
-          <p>
-            <b>วันแก้ไข :</b> {formatThaiDate(room.updatedAt)} เวลา{" "}
-            {formatThaiTime(room.updatedAt)} น.
-          </p>
-        )}
-
-        <p>
-          <b>สถานะ :</b>{" "}
-          <span
-            className={`badge ${
-              room.status === 0 ? "bg-success" : "bg-danger"
-            }`}
-          >
-            {room.status === 0 ? "ว่าง" : "เต็ม"}
-          </span>
-        </p>
-        {room.booking && (
-          <>
-            <hr />
-            <h6 className="fw-bold">👤 ข้อมูลผู้เช่า</h6>
-
-            {room.booking.fullName && (
-              <p>
-                <b>ผู้เช่า :</b> {room.booking.fullName}
-              </p>
-            )}
-
-            {room.booking.bookingDate && (
-              <p>
-                <b>วันที่จอง :</b> {formatThaiDate(room.booking.bookingDate)}
-              </p>
-            )}
-
-            {room.booking.checkinAt && (
-              <p>
-                <b>วันที่เข้าพัก :</b> {formatThaiDate(room.booking.checkinAt)}
-              </p>
-            )}
-          </>
-        )}
       </div>
 
       {/* ===== ปุ่ม ADMIN ===== */}

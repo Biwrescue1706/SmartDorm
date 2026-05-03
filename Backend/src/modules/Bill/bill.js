@@ -161,7 +161,6 @@ bill.get("/:key", async (req, res) => {
 bill.post(
   "/createFromRoom/:roomId",
   authMiddleware,
-  roleMiddleware(0),
   async (req, res) => {
     try {
       const { roomId } = req.params;

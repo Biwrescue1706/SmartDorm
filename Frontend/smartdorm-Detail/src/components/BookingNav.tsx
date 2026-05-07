@@ -24,13 +24,13 @@ export default function BookingNav() {
         >
           <span
             className="fw-bold text-white"
-            style={{ fontSize: "1.3rem", lineHeight: "1" }}
+            style={{ fontSize: "1rem", lineHeight: "1" }}
           >
             🏫 SmartDorm
           </span>
           <span
             className="fw-bold text-white"
-            style={{ fontSize: "1.25rem", marginTop: "-3px" }}
+            style={{ fontSize: "1rem", marginTop: "-3px" }}
           >
             ระบบจัดการหอพัก
           </span>

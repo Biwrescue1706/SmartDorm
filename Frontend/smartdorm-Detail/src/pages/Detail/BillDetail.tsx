@@ -184,17 +184,8 @@ export default function BillDetail() {
   const vat = bill.total * 0.07;
   const beforeVat = bill.total - vat;
   const thaiText = numberToThaiBaht(bill.total);
-
-  const today = new Date();
-  const due = new Date(bill.dueDate);
+  const overdueDays = bill.overdueDays;
   let isOverdue = false;
-  let overdueDays = 0;
-
-  if (bill.billStatus === 0 && today > due) {
-    isOverdue = true;
-    const diff = today.getTime() - due.getTime();
-    overdueDays = Math.ceil(diff / (1000 * 60 * 60 * 24));
-  }
 
   return (
     <>
@@ -204,21 +195,23 @@ export default function BillDetail() {
         className="bg-light min-vh-100 py-3 pt-3 mt-5"
         style={{ fontFamily: "Prompt, sans-serif" }}
       >
-        <div className="d-flex justify-content-center no-pdf">
-          <button
-            className="btn btn-primary fw-bold px-5 py-2 mt-3"
-            onClick={() => {
-              if (isLine) {
-                alert("LINE ไม่รองรับการดาวน์โหลด PDF กรุณาเปิดใน Chrome");
-                openInChrome();
-              } else {
-                exportPdf();
-              }
-            }}
-          >
-            ดาวน์โหลด PDF
-          </button>
-        </div>
+        {[0, 1].includes(bill.billStatus) && (
+          <div className="d-flex justify-content-center no-pdf">
+            <button
+              className="btn btn-primary fw-bold px-5 py-2 mt-3"
+              onClick={() => {
+                if (isLine) {
+                  alert("LINE ไม่รองรับการดาวน์โหลด PDF กรุณาเปิดใน Chrome");
+                  openInChrome();
+                } else {
+                  exportPdf();
+                }
+              }}
+            >
+              ดาวน์โหลด PDF
+            </button>
+          </div>
+        )}
         <div className="container-fluid" ref={pdfRef}>
           <div className="row justify-content-center">
             <div className="col-12 col-sm-11 col-md-9 col-xl-7 col-xxl-6">

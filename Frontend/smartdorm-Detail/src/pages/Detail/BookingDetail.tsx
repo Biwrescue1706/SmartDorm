@@ -79,12 +79,11 @@ export default function BookingDetail() {
             <h4 className="fw-bold text-success text-center">
               🧾 รายละเอียดการจองหอพัก
             </h4>
-            <h6 className="text-secondary text-center mb-4">Bookings Detail</h6>
 
             {/* ข้อมูลผู้จอง */}
-            <h6 className="fw-bold text-primary text-center mb-2">
+            <h4 className="fw-bold text-primary text-center mb-2">
               ข้อมูลผู้จอง
-            </h6>
+            </h4>
 
             <table className="table table-bordered table-sm text-center align-middle mb-4">
               <tbody>
@@ -112,9 +111,9 @@ export default function BookingDetail() {
             </table>
 
             {/* รายละเอียดการจอง */}
-            <h6 className="fw-bold text-primary text-center mb-2">
+            <h4 className="fw-bold text-primary text-center mb-2">
               รายละเอียดการจอง
-            </h6>
+            </h4>
 
             <table className="table table-bordered table-sm text-center align-middle">
               <tbody>

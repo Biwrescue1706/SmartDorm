@@ -5,15 +5,11 @@ import { BASE_URL, ADMIN_URL } from "../utils/api.js";
 
 const adminId = process.env.ADMIN_LINE_ID;
 
-// =========================
 // STATE CONTROL
-// =========================
 let isRunning = false;
 let isScheduled = false;
 
-// =========================
 // CACHE DormProfile
-// =========================
 let dormCache = null;
 let lastFetch = 0;
 
@@ -51,9 +47,7 @@ export const getDormRates = async () => {
   return dormCache;
 };
 
-// =========================
 // RETRY SEND
-// =========================
 async function safeSend(fn, retry = 2) {
   while (retry >= 0) {
     try {
@@ -67,9 +61,7 @@ async function safeSend(fn, retry = 2) {
   }
 }
 
-// =========================
 // TIMEZONE (TH)
-// =========================
 const getTodayTH = () =>
   new Date(
     new Date().toLocaleString("en-US", {
@@ -77,9 +69,7 @@ const getTodayTH = () =>
     })
   );
 
-// =========================
 // CALCULATE OVERDUE DAYS
-// =========================
 const calcOverdueDays = (today, dueDate) => {
   const startOfToday = new Date(today);
   startOfToday.setHours(0, 0, 0, 0);
@@ -92,9 +82,7 @@ const calcOverdueDays = (today, dueDate) => {
   );
 };
 
-// =========================
 // PROCESS 1 BILL
-// =========================
 const processBill = async (bill, rates, today) => {
   try {
     const overdueDays = calcOverdueDays(today, bill.dueDate);
@@ -114,12 +102,13 @@ const processBill = async (bill, rates, today) => {
       overdueDays *
       (bill.overdueFinePerDay ?? rates.overdueFinePerDay);
 
-    const total =
+    const total = Math.round(
       safeNumber(bill.rent) +
       safeNumber(bill.service) +
       safeNumber(bill.waterCost) +
       safeNumber(bill.electricCost) +
-      safeNumber(fine);
+      safeNumber(fine)
+    );
 
     // update DB
     await prisma.bill.update({
@@ -134,9 +123,8 @@ const processBill = async (bill, rates, today) => {
 
     const billUrl = `${BASE_URL}/bill/${bill.billId}`;
 
-    // =========================
+    
     // SEND TO CUSTOMER
-    // =========================
     if (bill.customer?.userId) {
       await safeSend(() =>
         sendFlexMessage(
@@ -154,14 +142,13 @@ const processBill = async (bill, rates, today) => {
       );
     }
 
-    // =========================
     // SEND TO ADMIN
-    // =========================
+    
     if (adminId) {
       await safeSend(() =>
         sendFlexMessage(
           adminId,
-          "🏫SmartDorm🎉 ระบบแจ้งเตือนบิลค้างชำระ",
+          `🏫SmartDorm🎉 ระบบแจ้งเตือนบิลค้างชำระ ${bill.room?.number ?? "-" }`,
           [
             { label: "ห้อง", value: bill.room?.number ?? "-" },
             { label: "ชื่อ", value: bill.fullName ?? "-" },
@@ -178,9 +165,7 @@ const processBill = async (bill, rates, today) => {
   }
 };
 
-// =========================
 // MAIN PROCESS
-// =========================
 export const processOverdueAuto = async () => {
   if (isRunning) {
     console.log("⏳ Skip duplicate cron");
@@ -221,9 +206,7 @@ export const processOverdueAuto = async () => {
   }
 };
 
-// =========================
 // CRON SCHEDULER
-// =========================
 export const scheduleOverdueAuto = () => {
   if (isScheduled) return;
 

@@ -4,9 +4,7 @@ import { BASE_URL, ADMIN_URL } from "../utils/api.js";
 
 const ADMIN_LINE_ID = process.env.ADMIN_LINE_ID;
 
-// =========================
 // UTILS
-// =========================
 const safeNumber = (val) => Math.max(0, Number(val) || 0);
 
 const getTodayTH = () =>
@@ -41,9 +39,7 @@ async function safeSend(fn, retry = 2) {
   }
 }
 
-// =========================
 // LOAD RATE (จาก DB จริง)
-// =========================
 const getDormRates = async () => {
   const profile = await prisma.dormProfile.findUnique({
     where: { key: "MAIN" },
@@ -57,9 +53,7 @@ const getDormRates = async () => {
   return safeNumber(profile.overdueFinePerDay);
 };
 
-// =========================
 // MAIN
-// =========================
 export const processOverdueManual = async (billId) => {
   const bill = await prisma.bill.findUnique({
     where: { billId },
@@ -86,12 +80,13 @@ export const processOverdueManual = async (billId) => {
     overdueDays *
     (bill.overdueFinePerDay ?? overdueFinePerDay);
 
-  const total =
+  const total = Math.round(
     safeNumber(bill.rent) +
     safeNumber(bill.service) +
     safeNumber(bill.waterCost) +
     safeNumber(bill.electricCost) +
-    safeNumber(fine);
+    safeNumber(fine)
+  );
 
   const updated = await prisma.bill.update({
     where: { billId },
@@ -105,9 +100,7 @@ export const processOverdueManual = async (billId) => {
 
   const billUrl = `${BASE_URL}/bill/${bill.billId}`;
 
-  // =========================
   // SEND CUSTOMER
-  // =========================
   if (bill.customer?.userId) {
     await safeSend(() =>
       sendFlexMessage(
@@ -125,9 +118,8 @@ export const processOverdueManual = async (billId) => {
     );
   }
 
-  // =========================
+  
   // SEND ADMIN
-  // =========================
   if (ADMIN_LINE_ID) {
     await safeSend(() =>
       sendFlexMessage(

@@ -219,10 +219,10 @@ bill.post(
       const wUnits = wAfter - wBefore;
       const eUnits = eAfter - eBefore;
 
-      const waterCost = wUnits * waterRate;
-      const electricCost = eUnits * electricRate;
+      const waterCost = Math.round(wUnits * waterRate);
+      const electricCost = Math.round(eUnits * electricRate);
 
-      const total = rent + service + waterCost + electricCost;
+      const total = Math.round(rent + service + waterCost + electricCost);
 
       const billCreated = await prisma.bill.create({
         data: {
@@ -439,8 +439,8 @@ bill.put(
       const wUnits = newWAfter - newWBefore;
       const eUnits = newEAfter - newEBefore;
 
-      const waterCost = wUnits * waterRate;
-      const electricCost = eUnits * electricRate;
+      const waterCost = Math.round(wUnits * waterRate);
+      const electricCost = Math.round(eUnits * electricRate);
 
       let newOverdueDays = billData.overdueDays ?? 0;
       let newFine = billData.fine ?? 0;
@@ -462,12 +462,13 @@ bill.put(
         }
       }
 
-      const total =
+      const total = Math.round(
         billData.rent +
         service +
         waterCost +
         electricCost +
-        newFine;
+        newFine
+      );
 
       const updated = await prisma.bill.update({
         where: { billId },
@@ -488,7 +489,7 @@ bill.put(
           overdueDays: newOverdueDays,
           fine: newFine,
           billStatus:
-            typeof billStatus === "number" 
+            typeof billStatus === "number"
               ? billStatus
               : billData.billStatus,
           billDate: thailandTime(),

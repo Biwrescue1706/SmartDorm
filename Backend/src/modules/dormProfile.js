@@ -127,7 +127,7 @@ dormProfile.put(
 
       res.json({
         message: "บันทึกสำเร็จ",
-        updated: formatProfile(updated),
+        updated,
       });
 
     } catch (err) {

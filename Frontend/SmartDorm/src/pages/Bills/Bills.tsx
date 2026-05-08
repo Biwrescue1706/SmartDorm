@@ -42,7 +42,6 @@ export default function Bills() {
   const [todayStr, setTodayStr] =
     useState("");
 
-  // responsive
   const [windowWidth, setWindowWidth] =
     useState(window.innerWidth);
 
@@ -68,7 +67,7 @@ export default function Bills() {
     } ${date.getFullYear() + 543}`;
   };
 
-  // วันนี้
+  // today
   useEffect(() => {
     const now = new Date();
     setTodayStr(formatThaiDate(now));
@@ -91,7 +90,7 @@ export default function Bills() {
       );
   }, []);
 
-  // grid
+  // responsive grid
   const getGridColumns = () => {
     if (windowWidth >= 600)
       return "repeat(3, 1fr)";
@@ -115,54 +114,39 @@ export default function Bills() {
     },
   );
 
-  // bills เดือนปัจจุบัน
-  const billsOfCurrentCycle =
-    useMemo(() => {
-      const now = new Date();
+  // บิลของเดือนปัจจุบัน
+  const currentMonthBills = useMemo(() => {
+    const now = new Date();
 
-      // วันที่ 1 ของเดือน
-      const startOfMonth = new Date(
-        now.getFullYear(),
-        now.getMonth(),
-        1,
-        0,
-        0,
-        0,
-      );
+    const currentMonth = now.getMonth();
+    const currentYear =
+      now.getFullYear();
 
-      // วันสุดท้ายของเดือน
-      const endOfMonth = new Date(
-        now.getFullYear(),
-        now.getMonth() + 1,
-        0,
-        23,
-        59,
-        59,
-      );
+    return existingBills.filter(
+      (bill: any) => {
+        if (!bill.month)
+          return false;
 
-      return existingBills.filter(
-        (b: any) => {
-          const billDate = new Date(
-            b.month,
-          );
+        const billDate = new Date(
+          bill.month,
+        );
 
-          return (
-            billDate >=
-              startOfMonth &&
-            billDate <= endOfMonth
-          );
-        },
-      );
-    }, [existingBills]);
+        return (
+          billDate.getMonth() ===
+            currentMonth &&
+          billDate.getFullYear() ===
+            currentYear
+        );
+      },
+    );
+  }, [existingBills]);
 
-  // roomId ที่ออกบิลแล้ว
+  // room ที่ออกบิลแล้วเดือนนี้
   const billedRoomIdsOfCurrentMonth =
-    useMemo(() => {
-      return billsOfCurrentCycle.map(
-        (b: any) =>
-          String(b.roomId),
-      );
-    }, [billsOfCurrentCycle]);
+    currentMonthBills.map(
+      (bill: any) =>
+        String(bill.roomId),
+    );
 
   // count
   const billedCount =
@@ -176,7 +160,7 @@ export default function Bills() {
     allBookedRooms.length -
     billedCount;
 
-  // filter
+  // filter rooms
   const filteredRooms =
     allBookedRooms.filter((room) => {
       const hasBill =
@@ -235,54 +219,15 @@ export default function Bills() {
     setOpenDialog(true);
   };
 
-  // create bill rule
+  // create rule
   const canCreateBillForBooking = (
     booking: Booking,
   ) => {
     const alreadyHasBill =
-      existingBills.some(
-        (bill: any) => {
-          const now =
-            new Date();
-
-          const startOfMonth =
-            new Date(
-              now.getFullYear(),
-              now.getMonth(),
-              1,
-              0,
-              0,
-              0,
-            );
-
-          const endOfMonth =
-            new Date(
-              now.getFullYear(),
-              now.getMonth() + 1,
-              0,
-              23,
-              59,
-              59,
-            );
-
-          const billDate =
-            new Date(
-              bill.month,
-            );
-
-          return (
-            String(
-              bill.roomId,
-            ) ===
-              String(
-                booking.roomId,
-              ) &&
-            billDate >=
-              startOfMonth &&
-            billDate <=
-              endOfMonth
-          );
-        },
+      currentMonthBills.some(
+        (bill: any) =>
+          String(bill.roomId) ===
+          String(booking.roomId),
       );
 
     return !alreadyHasBill;
@@ -478,7 +423,7 @@ export default function Bills() {
                         );
 
                       const bill =
-                        billsOfCurrentCycle.find(
+                        currentMonthBills.find(
                           (b: any) =>
                             String(
                               b.roomId,

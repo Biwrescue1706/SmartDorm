@@ -240,30 +240,6 @@ export default function Home() {
             </button>
 
           </div>
-
-          {/* FOOTER */}
-          <div className="text-center mt-5">
-
-            <div
-              style={{
-                color: "#8C84A3",
-                fontSize: "14px",
-              }}
-            >
-              Powered by
-            </div>
-
-            <div
-              className="fw-bold mt-1"
-              style={{
-                color: "#4A0080",
-                fontSize: "18px",
-              }}
-            >
-              🏫 SmartDorm
-            </div>
-
-          </div>
         </div>
       </div>
     </div>

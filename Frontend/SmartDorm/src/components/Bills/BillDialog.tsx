@@ -246,12 +246,12 @@ export default function BillDialog({
 
           <div className="d-flex justify-content-between border-top p-3">
             <button
-              className="btn fw-bold px-4 text-white"
-              onClick={handleClose}
-              style={{ background: SCB_PURPLE }}
-            >
-              ยกเลิก
-            </button>
+  className="btn fw-bold px-4 text-white"
+  onClick={handleCancel}
+  style={{ background: SCB_PURPLE }}
+>
+  ยกเลิก
+</button>
 
             <button
               className="btn fw-bold px-4"

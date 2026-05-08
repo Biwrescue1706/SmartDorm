@@ -11,29 +11,42 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import type { Booking } from "../../types/All";
 
 export default function Bills() {
-  const { handleLogout, role, adminName, adminUsername } = useAuth();
+  const { handleLogout, role, adminName, adminUsername } =
+    useAuth();
 
-  const { rooms, bookings, existingBills, loading, reloadAll } =
-    useCreateBill();
+  const {
+    rooms,
+    bookings,
+    existingBills,
+    loading,
+    reloadAll,
+  } = useCreateBill();
 
-  const [openDialog, setOpenDialog] = useState(false);
-  const [selectedRoom, setSelectedRoom] = useState<any>(null);
+  const [openDialog, setOpenDialog] =
+    useState(false);
 
-  const [currentPage, setCurrentPage] = useState(1);
-  const [rowsPerPage, setRowsPerPage] = useState(15);
+  const [selectedRoom, setSelectedRoom] =
+    useState<any>(null);
 
-  const [statusFilter, setStatusFilter] = useState<
-    "billed" | "notBilled"
-  >("notBilled");
+  const [currentPage, setCurrentPage] =
+    useState(1);
 
-  const [todayStr, setTodayStr] = useState("");
+  const [rowsPerPage, setRowsPerPage] =
+    useState(15);
+
+  const [statusFilter, setStatusFilter] =
+    useState<"billed" | "notBilled">(
+      "notBilled",
+    );
+
+  const [todayStr, setTodayStr] =
+    useState("");
 
   // responsive
-  const [windowWidth, setWindowWidth] = useState(
-    window.innerWidth,
-  );
+  const [windowWidth, setWindowWidth] =
+    useState(window.innerWidth);
 
-  // helper
+  // format thai date
   const formatThaiDate = (date: Date) => {
     const monthsThai = [
       "ม.ค.",
@@ -89,47 +102,65 @@ export default function Bills() {
     return "1fr";
   };
 
-  // เดือนปัจจุบัน
-  const currentBillMonth = useMemo(() => {
-    const now = new Date();
-
-    return {
-      month: now.getMonth(),
-      year: now.getFullYear(),
-    };
-  }, []);
-
   // ห้องที่มีผู้เช่า
-  const allBookedRooms = rooms.filter((room) => {
-    const booking = bookings.find(
-      (b) =>
-        Number(b.roomId) ===
-        Number(room.roomId),
-    );
+  const allBookedRooms = rooms.filter(
+    (room) => {
+      const booking = bookings.find(
+        (b) =>
+          String(b.roomId) ===
+          String(room.roomId),
+      );
 
-    // ✅ เอาแค่มี checkinAt ก็พอ
-    return !!booking?.checkinAt;
-  });
+      return !!booking?.checkinAt;
+    },
+  );
 
   // bills เดือนปัจจุบัน
-  const billsOfCurrentCycle = useMemo(() => {
-    return existingBills.filter((b: any) => {
-      const bm = new Date(b.month);
+  const billsOfCurrentCycle =
+    useMemo(() => {
+      const now = new Date();
 
-      return (
-        bm.getMonth() ===
-          currentBillMonth.month &&
-        bm.getFullYear() ===
-          currentBillMonth.year
+      // วันที่ 1 ของเดือน
+      const startOfMonth = new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        1,
+        0,
+        0,
+        0,
       );
-    });
-  }, [existingBills, currentBillMonth]);
+
+      // วันสุดท้ายของเดือน
+      const endOfMonth = new Date(
+        now.getFullYear(),
+        now.getMonth() + 1,
+        0,
+        23,
+        59,
+        59,
+      );
+
+      return existingBills.filter(
+        (b: any) => {
+          const billDate = new Date(
+            b.month,
+          );
+
+          return (
+            billDate >=
+              startOfMonth &&
+            billDate <= endOfMonth
+          );
+        },
+      );
+    }, [existingBills]);
 
   // roomId ที่ออกบิลแล้ว
   const billedRoomIdsOfCurrentMonth =
     useMemo(() => {
       return billsOfCurrentCycle.map(
-        (b: any) => Number(b.roomId),
+        (b: any) =>
+          String(b.roomId),
       );
     }, [billsOfCurrentCycle]);
 
@@ -137,35 +168,41 @@ export default function Bills() {
   const billedCount =
     allBookedRooms.filter((r) =>
       billedRoomIdsOfCurrentMonth.includes(
-        Number(r.roomId),
+        String(r.roomId),
       ),
     ).length;
 
   const notBilledCount =
-    allBookedRooms.length - billedCount;
+    allBookedRooms.length -
+    billedCount;
 
   // filter
   const filteredRooms =
     allBookedRooms.filter((room) => {
       const hasBill =
         billedRoomIdsOfCurrentMonth.includes(
-          Number(room.roomId),
+          String(room.roomId),
         );
 
       if (statusFilter === "billed")
         return hasBill;
 
-      if (statusFilter === "notBilled")
+      if (
+        statusFilter ===
+        "notBilled"
+      )
         return !hasBill;
 
       return true;
     });
 
   // pagination
-  const totalItems = filteredRooms.length;
+  const totalItems =
+    filteredRooms.length;
 
   const startIndex =
-    (currentPage - 1) * rowsPerPage;
+    (currentPage - 1) *
+    rowsPerPage;
 
   const paginatedRooms =
     filteredRooms.slice(
@@ -191,7 +228,9 @@ export default function Bills() {
   ]);
 
   // open dialog
-  const handleOpenDialog = (room: any) => {
+  const handleOpenDialog = (
+    room: any,
+  ) => {
     setSelectedRoom(room);
     setOpenDialog(true);
   };
@@ -201,20 +240,50 @@ export default function Bills() {
     booking: Booking,
   ) => {
     const alreadyHasBill =
-      existingBills.some((bill: any) => {
-        const billMonth = new Date(
-          bill.month,
-        );
+      existingBills.some(
+        (bill: any) => {
+          const now =
+            new Date();
 
-        return (
-          Number(bill.roomId) ===
-            Number(booking.roomId) &&
-          billMonth.getMonth() ===
-            currentBillMonth.month &&
-          billMonth.getFullYear() ===
-            currentBillMonth.year
-        );
-      });
+          const startOfMonth =
+            new Date(
+              now.getFullYear(),
+              now.getMonth(),
+              1,
+              0,
+              0,
+              0,
+            );
+
+          const endOfMonth =
+            new Date(
+              now.getFullYear(),
+              now.getMonth() + 1,
+              0,
+              23,
+              59,
+              59,
+            );
+
+          const billDate =
+            new Date(
+              bill.month,
+            );
+
+          return (
+            String(
+              bill.roomId,
+            ) ===
+              String(
+                booking.roomId,
+              ) &&
+            billDate >=
+              startOfMonth &&
+            billDate <=
+              endOfMonth
+          );
+        },
+      );
 
     return !alreadyHasBill;
   };
@@ -393,17 +462,17 @@ export default function Bills() {
                       const booking =
                         bookings.find(
                           (b) =>
-                            Number(
+                            String(
                               b.roomId,
                             ) ===
-                            Number(
+                            String(
                               room.roomId,
                             ),
                         );
 
                       const hasBill =
                         billedRoomIdsOfCurrentMonth.includes(
-                          Number(
+                          String(
                             room.roomId,
                           ),
                         );
@@ -411,10 +480,10 @@ export default function Bills() {
                       const bill =
                         billsOfCurrentCycle.find(
                           (b: any) =>
-                            Number(
+                            String(
                               b.roomId,
                             ) ===
-                            Number(
+                            String(
                               room.roomId,
                             ),
                         );

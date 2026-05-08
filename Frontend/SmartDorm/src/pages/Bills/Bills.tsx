@@ -185,8 +185,17 @@ export default function Bills() {
             สร้างบิลห้องพัก
           </h2>
           <h5 className="text-center text-black mb-3">
-            วันนี้: <b>{todayStr}</b>
-          </h5>
+  วันนี้: <b>{todayStr}</b>
+</h5>
+
+<div className="d-flex justify-content-center mb-3">
+  <button
+    className="btn btn-primary fw-bold px-4"
+    onClick={() => window.location.reload()}
+  >
+    รีเฟรชหน้าจอ
+  </button>
+</div>
 
           {/* summary */}
           <div className="container mb-3">

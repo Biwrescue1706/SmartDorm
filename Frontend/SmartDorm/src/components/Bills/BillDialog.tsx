@@ -13,15 +13,6 @@ interface BillDialogProps {
   reloadExistingBills: () => void;
 }
 
-// ✅ default form
-const emptyForm = {
-  month: "",
-  wBefore: 0,
-  wAfter: 0,
-  eBefore: 0,
-  eAfter: 0,
-};
-
 export default function BillDialog({
   open,
   onClose,
@@ -81,11 +72,10 @@ export default function BillDialog({
     }));
   };
 
-  // ✅ cancel = reset + close
-  const handleClose = () => {
-    setForm(emptyForm);
-    onClose();
-  };
+  const handleCancel = () => {
+  onClose();
+  window.location.reload();
+};
 
   const handleSubmit = async () => {
     if (!room) return;

@@ -1,27 +1,46 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+
 import Swal from "sweetalert2";
+
 import NavBar from "../../components/NavBar";
 
 export default function ReturnSearch() {
-  const [checkoutId, setCheckoutId] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [checkoutId, setCheckoutId] =
+    useState("");
+
+  const [loading, setLoading] =
+    useState(false);
+
   const navigate = useNavigate();
 
-  const submit = async (e: React.FormEvent) => {
+  const submit = async (
+    e: React.FormEvent
+  ) => {
     e.preventDefault();
 
     if (!checkoutId.trim()) {
-      Swal.fire("แจ้งเตือน", "กรุณากรอกรหัสการคืนห้อง", "warning");
+      Swal.fire(
+        "แจ้งเตือน",
+        "กรุณากรอกรหัสการคืนห้อง",
+        "warning"
+      );
+
       return;
     }
 
     setLoading(true);
 
     try {
-      navigate(`/checkout/${checkoutId.trim()}`);
+      navigate(
+        `/checkout/${checkoutId.trim()}`
+      );
     } catch {
-      Swal.fire("ผิดพลาด", "ไม่สามารถค้นหาข้อมูลได้", "error");
+      Swal.fire(
+        "ผิดพลาด",
+        "ไม่สามารถค้นหาข้อมูลได้",
+        "error"
+      );
     } finally {
       setLoading(false);
     }
@@ -31,34 +50,145 @@ export default function ReturnSearch() {
     <>
       <NavBar />
 
+      {/* PAGE */}
       <div
-        className="container-fluid d-flex justify-content-center align-items-center"
-        style={{ minHeight: "calc(100vh - 70px)" }}
+        className="min-vh-100"
+        style={{
+          background:
+            "linear-gradient(180deg,#F7F4FB 0%, #F4F7FF 100%)",
+          fontFamily:
+            "Prompt, sans-serif",
+          paddingTop: "80px",
+        }}
       >
-        <div className="col-12 col-sm-10 col-md-6 col-lg-4 text-center">
+        <div className="container">
 
-          <h3 className="fw-bold mb-3">คืนห้องพัก</h3>
-
-          <p className="text-muted mb-4">
-            กรอกรหัสการคืนห้องเพื่อดูรายละเอียด
-          </p>
-
-          <form onSubmit={submit}>
-            <input
-              className="form-control form-control-lg text-center mb-3 rounded-4"
-              placeholder="เช่น CO240001"
-              value={checkoutId}
-              onChange={(e) => setCheckoutId(e.target.value)}
-            />
-
-            <button
-              className="btn btn-danger w-100 rounded-4 fw-bold"
-              disabled={loading}
+          <div
+            className="mx-auto"
+            style={{
+              maxWidth: "430px",
+            }}
+          >
+            {/* HERO CARD */}
+            <div
+              className="bg-white rounded-5 shadow-sm mb-4"
+              style={{
+                border:
+                  "1px solid rgba(123,44,191,0.08)",
+              }}
             >
-              {loading ? "กำลังค้นหา..." : "ค้นหาการคืนห้อง"}
-            </button>
-          </form>
+              <div className="p-4 text-center">
 
+                {/* ICON */}
+                <div
+                  className="mx-auto mb-3 d-flex align-items-center justify-content-center"
+                  style={{
+                    width: "64px",
+                    height: "64px",
+                    borderRadius: "22px",
+                    background:
+                      "linear-gradient(135deg,#DC2626,#EF4444)",
+                    boxShadow:
+                      "0 10px 25px rgba(220,38,38,.18)",
+                    fontSize: "30px",
+                  }}
+                >
+                  🔄
+                </div>
+
+                {/* TITLE */}
+                <h3
+                  className="fw-bold mb-2"
+                  style={{
+                    color: "#2D1A47",
+                  }}
+                >
+                  คืนห้องพัก
+                </h3>
+
+                {/* DESC */}
+                <p
+                  className="mb-0"
+                  style={{
+                    color: "#8C84A3",
+                    fontSize: "14px",
+                  }}
+                >
+                  กรอกรหัสการคืนห้องเพื่อดูรายละเอียด
+                </p>
+              </div>
+            </div>
+
+            {/* FORM CARD */}
+            <div
+              className="bg-white rounded-5 shadow-sm"
+              style={{
+                border:
+                  "1px solid rgba(123,44,191,0.08)",
+              }}
+            >
+              <div className="p-4">
+
+                {/* LABEL */}
+                <label
+                  className="fw-semibold mb-2"
+                  style={{
+                    color: "#DC2626",
+                    fontSize: "14px",
+                  }}
+                >
+                  รหัสการคืนห้อง
+                </label>
+
+                {/* FORM */}
+                <form onSubmit={submit}>
+
+                  <input
+                    className="form-control form-control-lg rounded-4 border-0 shadow-sm mb-4"
+                    placeholder="เช่น CO240001"
+                    value={checkoutId}
+                    onChange={(e) =>
+                      setCheckoutId(
+                        e.target.value
+                      )
+                    }
+                    style={{
+                      background:
+                        "#F7F4FB",
+                      padding:
+                        "14px 18px",
+                      fontWeight: 600,
+                    }}
+                  />
+
+                  {/* BUTTON */}
+                  <button
+                    className="btn w-100 rounded-4 fw-bold text-white py-3"
+                    disabled={loading}
+                    style={{
+                      background:
+                        "linear-gradient(135deg,#DC2626,#EF4444)",
+                      border: "none",
+                      boxShadow:
+                        "0 10px 20px rgba(220,38,38,.18)",
+                    }}
+                  >
+                    {loading ? (
+                      <>
+                        <span className="spinner-border spinner-border-sm me-2" />
+                        กำลังค้นหา...
+                      </>
+                    ) : (
+                      "ค้นหาการคืนห้อง"
+                    )}
+                  </button>
+
+                </form>
+
+              </div>
+            </div>
+
+          </div>
         </div>
       </div>
     </>

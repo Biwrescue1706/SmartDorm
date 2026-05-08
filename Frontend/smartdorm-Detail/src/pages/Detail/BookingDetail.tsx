@@ -53,7 +53,7 @@ export default function BookingDetail() {
             zIndex: 0,
             whiteSpace: "nowrap",
             color: "#198754",
-            fontWeight: 900,
+            fontWeight: 999,
           }}
         >
           CHECKED IN
@@ -62,7 +62,7 @@ export default function BookingDetail() {
 
       {/* PAGE */}
       <div
-        className="min-vh-100 py-4"
+        className="min-vh-100 py-4 mt-2"
         style={{
           background:
             "linear-gradient(180deg,#F7F4FB 0%, #F4F7FF 100%)",

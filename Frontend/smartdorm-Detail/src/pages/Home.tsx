@@ -13,12 +13,13 @@ export default function Home() {
       }}
     >
       {/* CONTENT */}
-      <div className="container py-5">
+      <div className="container pt-2 pb-5">
 
         <div
           className="mx-auto"
           style={{
             maxWidth: "430px",
+            marginTop: "0",
           }}
         >
           {/* HERO */}
@@ -119,6 +120,7 @@ export default function Home() {
                     background:
                       "rgba(255,255,255,.15)",
                     fontSize: "28px",
+                    flexShrink: 0,
                   }}
                 >
                   🏠
@@ -167,6 +169,7 @@ export default function Home() {
                     background:
                       "rgba(255,255,255,.15)",
                     fontSize: "28px",
+                    flexShrink: 0,
                   }}
                 >
                   🔄
@@ -215,6 +218,7 @@ export default function Home() {
                     background:
                       "rgba(255,255,255,.15)",
                     fontSize: "28px",
+                    flexShrink: 0,
                   }}
                 >
                   💰

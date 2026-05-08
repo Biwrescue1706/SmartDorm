@@ -23,68 +23,63 @@ export default function Home() {
         >
           {/* HERO */}
           <div
-            className="bg-white rounded-5 shadow-sm overflow-hidden mb-4"
+            className="bg-white rounded-5 shadow-sm mb-4"
             style={{
-              border: "1px solid rgba(123,44,191,0.08)",
+              border:
+                "1px solid rgba(123,44,191,0.08)",
             }}
           >
-            {/* TOP BAR */}
-            <div
-              style={{
-                height: "7px",
-                background:
-                  "linear-gradient(90deg,#4A0080,#7B2CBF)",
-              }}
-            />
-
             <div className="p-4 text-center">
 
               {/* LOGO */}
               <div
                 className="mx-auto mb-3 d-flex align-items-center justify-content-center"
                 style={{
-                  width: "50px",
-                  height: "50px",
-                  borderRadius: "28px",
+                  width: "64px",
+                  height: "64px",
+                  borderRadius: "22px",
                   background:
                     "linear-gradient(135deg,#4A0080,#7B2CBF)",
                   boxShadow:
-                    "0 10px 25px rgba(74,0,128,.25)",
+                    "0 10px 25px rgba(74,0,128,.18)",
                 }}
               >
                 <img
                   src="https://manage.smartdorm-biwboong.shop/assets/SmartDorm.webp"
                   alt="SmartDorm"
                   style={{
-                    width: "50px",
-                    height: "50px",
-                    borderRadius: "18px",
+                    width: "52px",
+                    height: "52px",
+                    borderRadius: "16px",
                     background: "#fff",
-                    padding: "6px",
+                    padding: "5px",
                   }}
                 />
               </div>
 
-              <h5
+              {/* SUB TITLE */}
+              <div
                 className="fw-semibold mb-2"
                 style={{
                   color: "#7A7391",
+                  fontSize: "14px",
                 }}
               >
-                ระบบจัดการหอพัก
-              </h5>
+                ดูรายละเอียดบริการ
+              </div>
 
-              <h4
+              {/* TITLE */}
+              <h3
                 className="fw-bold mb-2"
                 style={{
                   color: "#2D1A47",
-                  fontSize: "2.3rem",
                   lineHeight: 1.1,
                 }}
               >
                 SmartDorm
-              </h4>
+              </h3>
 
+              {/* DESCRIPTION */}
               <p
                 className="mb-0"
                 style={{
@@ -92,7 +87,7 @@ export default function Home() {
                   fontSize: "14px",
                 }}
               >
-                Dormitory Management System
+                ระบบจัดการหอพักออนไลน์
               </p>
             </div>
           </div>
@@ -108,10 +103,13 @@ export default function Home() {
                   "linear-gradient(135deg,#4A0080,#7B2CBF)",
                 color: "#fff",
               }}
-              onClick={() => navigate("/booking")}
+              onClick={() =>
+                navigate("/booking")
+              }
             >
               <div className="d-flex align-items-center">
 
+                {/* ICON */}
                 <div
                   className="d-flex align-items-center justify-content-center me-3"
                   style={{
@@ -126,6 +124,7 @@ export default function Home() {
                   🏠
                 </div>
 
+                {/* TEXT */}
                 <div>
                   <div className="fw-bold fs-5">
                     จองห้องพัก
@@ -133,11 +132,11 @@ export default function Home() {
 
                   <div
                     style={{
-                      opacity: 0.85,
+                      opacity: 0.9,
                       fontSize: "13px",
                     }}
                   >
-                    ดูห้องว่างและทำรายการจอง
+                    ดูรายละเอียดห้องว่างและทำรายการจอง
                   </div>
                 </div>
 
@@ -152,10 +151,13 @@ export default function Home() {
                   "linear-gradient(135deg,#0F9B8E,#38B2AC)",
                 color: "#fff",
               }}
-              onClick={() => navigate("/checkout")}
+              onClick={() =>
+                navigate("/checkout")
+              }
             >
               <div className="d-flex align-items-center">
 
+                {/* ICON */}
                 <div
                   className="d-flex align-items-center justify-content-center me-3"
                   style={{
@@ -170,6 +172,7 @@ export default function Home() {
                   🔄
                 </div>
 
+                {/* TEXT */}
                 <div>
                   <div className="fw-bold fs-5">
                     คืนห้องพัก
@@ -177,11 +180,11 @@ export default function Home() {
 
                   <div
                     style={{
-                      opacity: 0.85,
+                      opacity: 0.9,
                       fontSize: "13px",
                     }}
                   >
-                    ดำเนินการคืนห้องพัก
+                    ดูรายละเอียดและดำเนินการคืนห้องพัก
                   </div>
                 </div>
 
@@ -196,10 +199,13 @@ export default function Home() {
                   "linear-gradient(135deg,#F59E0B,#F97316)",
                 color: "#fff",
               }}
-              onClick={() => navigate("/bill")}
+              onClick={() =>
+                navigate("/bill")
+              }
             >
               <div className="d-flex align-items-center">
 
+                {/* ICON */}
                 <div
                   className="d-flex align-items-center justify-content-center me-3"
                   style={{
@@ -214,6 +220,7 @@ export default function Home() {
                   💰
                 </div>
 
+                {/* TEXT */}
                 <div>
                   <div className="fw-bold fs-5">
                     ชำระบิล
@@ -221,16 +228,41 @@ export default function Home() {
 
                   <div
                     style={{
-                      opacity: 0.85,
+                      opacity: 0.9,
                       fontSize: "13px",
                     }}
                   >
-                    ตรวจสอบและชำระค่าใช้จ่าย
+                    ดูรายละเอียดบิลและชำระค่าใช้จ่าย
                   </div>
                 </div>
 
               </div>
             </button>
+
+          </div>
+
+          {/* FOOTER */}
+          <div className="text-center mt-5">
+
+            <div
+              style={{
+                color: "#8C84A3",
+                fontSize: "14px",
+              }}
+            >
+              Powered by
+            </div>
+
+            <div
+              className="fw-bold mt-1"
+              style={{
+                color: "#4A0080",
+                fontSize: "18px",
+              }}
+            >
+              🏫 SmartDorm
+            </div>
+
           </div>
         </div>
       </div>

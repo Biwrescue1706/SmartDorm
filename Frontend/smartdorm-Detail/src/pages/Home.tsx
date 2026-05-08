@@ -43,8 +43,8 @@ export default function Home() {
               <div
                 className="mx-auto mb-3 d-flex align-items-center justify-content-center"
                 style={{
-                  width: "90px",
-                  height: "90px",
+                  width: "50px",
+                  height: "50px",
                   borderRadius: "28px",
                   background:
                     "linear-gradient(135deg,#4A0080,#7B2CBF)",
@@ -56,8 +56,8 @@ export default function Home() {
                   src="https://manage.smartdorm-biwboong.shop/assets/SmartDorm.webp"
                   alt="SmartDorm"
                   style={{
-                    width: "58px",
-                    height: "58px",
+                    width: "50px",
+                    height: "50px",
                     borderRadius: "18px",
                     background: "#fff",
                     padding: "6px",
@@ -74,7 +74,7 @@ export default function Home() {
                 ระบบจัดการหอพัก
               </h5>
 
-              <h1
+              <h4
                 className="fw-bold mb-2"
                 style={{
                   color: "#2D1A47",
@@ -83,7 +83,7 @@ export default function Home() {
                 }}
               >
                 SmartDorm
-              </h1>
+              </h4>
 
               <p
                 className="mb-0"
@@ -232,29 +232,6 @@ export default function Home() {
               </div>
             </button>
           </div>
-
-          {/* FOOTER */}
-          <div className="text-center mt-5">
-            <div
-              style={{
-                color: "#8C84A3",
-                fontSize: "14px",
-              }}
-            >
-              Powered by
-            </div>
-
-            <div
-              className="fw-bold mt-1"
-              style={{
-                color: "#4A0080",
-                fontSize: "18px",
-              }}
-            >
-              🏫 SmartDorm
-            </div>
-          </div>
-
         </div>
       </div>
     </div>

@@ -26,13 +26,14 @@ export default function Bills() {
     "billed" | "notBilled"
   >("notBilled");
 
-  // today string
   const [todayStr, setTodayStr] = useState("");
 
   // responsive
-  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+  const [windowWidth, setWindowWidth] = useState(
+    window.innerWidth,
+  );
 
-  // helper: format thai date
+  // helper
   const formatThaiDate = (date: Date) => {
     const monthsThai = [
       "ม.ค.",
@@ -49,9 +50,9 @@ export default function Bills() {
       "ธ.ค.",
     ];
 
-    return `${date.getDate()} ${monthsThai[date.getMonth()]} ${
-      date.getFullYear() + 543
-    }`;
+    return `${date.getDate()} ${
+      monthsThai[date.getMonth()]
+    } ${date.getFullYear() + 543}`;
   };
 
   // วันนี้
@@ -60,19 +61,31 @@ export default function Bills() {
     setTodayStr(formatThaiDate(now));
   }, []);
 
-  // responsive resize
+  // resize
   useEffect(() => {
-    const handleResize = () => setWindowWidth(window.innerWidth);
+    const handleResize = () =>
+      setWindowWidth(window.innerWidth);
 
-    window.addEventListener("resize", handleResize);
+    window.addEventListener(
+      "resize",
+      handleResize,
+    );
 
-    return () => window.removeEventListener("resize", handleResize);
+    return () =>
+      window.removeEventListener(
+        "resize",
+        handleResize,
+      );
   }, []);
 
-  // grid column control
+  // grid
   const getGridColumns = () => {
-    if (windowWidth >= 600) return "repeat(3, 1fr)";
-    if (windowWidth >= 481) return "repeat(2, 1fr)";
+    if (windowWidth >= 600)
+      return "repeat(3, 1fr)";
+
+    if (windowWidth >= 481)
+      return "repeat(2, 1fr)";
+
     return "1fr";
   };
 
@@ -86,22 +99,17 @@ export default function Bills() {
     };
   }, []);
 
-  // rule สร้างบิล
-  const canCreateBillForBooking = (booking: Booking) => {
-    if (!booking?.checkinAt) return false;
+  // ห้องที่มีผู้เช่า
+  const allBookedRooms = rooms.filter((room) => {
+    const booking = bookings.find(
+      (b) =>
+        Number(b.roomId) ===
+        Number(room.roomId),
+    );
 
-    const alreadyHasBill = existingBills.some((bill: any) => {
-      const billMonth = new Date(bill.month);
-
-      return (
-        Number(bill.roomId) === Number(booking.roomId) &&
-        billMonth.getMonth() === currentBillMonth.month &&
-        billMonth.getFullYear() === currentBillMonth.year
-      );
-    });
-
-    return !alreadyHasBill;
-  };
+    // ✅ เอาแค่มี checkinAt ก็พอ
+    return !!booking?.checkinAt;
+  });
 
   // bills เดือนปัจจุบัน
   const billsOfCurrentCycle = useMemo(() => {
@@ -109,51 +117,49 @@ export default function Bills() {
       const bm = new Date(b.month);
 
       return (
-        bm.getMonth() === currentBillMonth.month &&
-        bm.getFullYear() === currentBillMonth.year
+        bm.getMonth() ===
+          currentBillMonth.month &&
+        bm.getFullYear() ===
+          currentBillMonth.year
       );
     });
   }, [existingBills, currentBillMonth]);
 
   // roomId ที่ออกบิลแล้ว
-  const billedRoomIdsOfCurrentMonth = useMemo(() => {
-    return billsOfCurrentCycle.map((b: any) =>
-      Number(b.roomId),
-    );
-  }, [billsOfCurrentCycle]);
-
-  // ห้องที่มี booking
-  const allBookedRooms = rooms.filter((room) => {
-    const booking = bookings.find(
-      (b) => Number(b.roomId) === Number(room.roomId),
-    );
-
-    return booking?.approveStatus === 1 && booking?.checkinAt;
-  });
+  const billedRoomIdsOfCurrentMonth =
+    useMemo(() => {
+      return billsOfCurrentCycle.map(
+        (b: any) => Number(b.roomId),
+      );
+    }, [billsOfCurrentCycle]);
 
   // count
-  const billedCount = allBookedRooms.filter((r) =>
-    billedRoomIdsOfCurrentMonth.includes(
-      Number(r.roomId),
-    ),
-  ).length;
+  const billedCount =
+    allBookedRooms.filter((r) =>
+      billedRoomIdsOfCurrentMonth.includes(
+        Number(r.roomId),
+      ),
+    ).length;
 
   const notBilledCount =
     allBookedRooms.length - billedCount;
 
-  // filter rooms
-  const filteredRooms = allBookedRooms.filter((room) => {
-    const hasBill =
-      billedRoomIdsOfCurrentMonth.includes(
-        Number(room.roomId),
-      );
+  // filter
+  const filteredRooms =
+    allBookedRooms.filter((room) => {
+      const hasBill =
+        billedRoomIdsOfCurrentMonth.includes(
+          Number(room.roomId),
+        );
 
-    if (statusFilter === "billed") return hasBill;
+      if (statusFilter === "billed")
+        return hasBill;
 
-    if (statusFilter === "notBilled") return !hasBill;
+      if (statusFilter === "notBilled")
+        return !hasBill;
 
-    return true;
-  });
+      return true;
+    });
 
   // pagination
   const totalItems = filteredRooms.length;
@@ -161,20 +167,28 @@ export default function Bills() {
   const startIndex =
     (currentPage - 1) * rowsPerPage;
 
-  const paginatedRooms = filteredRooms.slice(
-    startIndex,
-    startIndex + rowsPerPage,
-  );
+  const paginatedRooms =
+    filteredRooms.slice(
+      startIndex,
+      startIndex + rowsPerPage,
+    );
 
   useEffect(() => {
     const totalPages = Math.ceil(
       totalItems / rowsPerPage,
     );
 
-    if (currentPage > totalPages && totalPages > 0) {
+    if (
+      currentPage > totalPages &&
+      totalPages > 0
+    ) {
       setCurrentPage(totalPages);
     }
-  }, [totalItems, rowsPerPage, currentPage]);
+  }, [
+    totalItems,
+    rowsPerPage,
+    currentPage,
+  ]);
 
   // open dialog
   const handleOpenDialog = (room: any) => {
@@ -182,13 +196,38 @@ export default function Bills() {
     setOpenDialog(true);
   };
 
-  const isDesktop = windowWidth >= 1400;
+  // create bill rule
+  const canCreateBillForBooking = (
+    booking: Booking,
+  ) => {
+    const alreadyHasBill =
+      existingBills.some((bill: any) => {
+        const billMonth = new Date(
+          bill.month,
+        );
+
+        return (
+          Number(bill.roomId) ===
+            Number(booking.roomId) &&
+          billMonth.getMonth() ===
+            currentBillMonth.month &&
+          billMonth.getFullYear() ===
+            currentBillMonth.year
+        );
+      });
+
+    return !alreadyHasBill;
+  };
+
+  const isDesktop =
+    windowWidth >= 1400;
 
   return (
     <div
       className="d-flex min-vh-100 mx-2 mt-0 mb-4"
       style={{
-        fontFamily: "Sarabun, sans-serif",
+        fontFamily:
+          "Sarabun, sans-serif",
       }}
     >
       <Nav
@@ -225,7 +264,9 @@ export default function Bills() {
           <div className="d-flex justify-content-center mb-3">
             <button
               className="btn btn-primary fw-bold px-4"
-              onClick={() => window.location.reload()}
+              onClick={() =>
+                window.location.reload()
+              }
             >
               รีเฟรชหน้าจอ
             </button>
@@ -239,14 +280,18 @@ export default function Bills() {
                 <div
                   className="p-3 rounded-4 shadow-sm fw-bold"
                   onClick={() => {
-                    setStatusFilter("notBilled");
+                    setStatusFilter(
+                      "notBilled",
+                    );
+
                     setCurrentPage(1);
                   }}
                   style={{
                     cursor: "pointer",
                     fontSize: "1.5rem",
                     background:
-                      statusFilter === "notBilled"
+                      statusFilter ===
+                      "notBilled"
                         ? "linear-gradient(135deg, #ef233c, #650011)"
                         : "linear-gradient(135deg, #6c0011, #ef233c)",
                     color: "white",
@@ -254,7 +299,11 @@ export default function Bills() {
                 >
                   ยังไม่ได้ออกบิล
 
-                  <div style={{ fontSize: "1.5rem" }}>
+                  <div
+                    style={{
+                      fontSize: "1.5rem",
+                    }}
+                  >
                     {notBilledCount}
                   </div>
                 </div>
@@ -265,14 +314,18 @@ export default function Bills() {
                 <div
                   className="p-3 rounded-4 shadow-sm fw-bold"
                   onClick={() => {
-                    setStatusFilter("billed");
+                    setStatusFilter(
+                      "billed",
+                    );
+
                     setCurrentPage(1);
                   }}
                   style={{
                     cursor: "pointer",
                     fontSize: "1.5rem",
                     background:
-                      statusFilter === "billed"
+                      statusFilter ===
+                      "billed"
                         ? "linear-gradient(135deg, #38b000, #008000)"
                         : "linear-gradient(135deg, #008000, #91ff5e)",
                     color: "white",
@@ -280,7 +333,11 @@ export default function Bills() {
                 >
                   ออกบิลแล้ว
 
-                  <div style={{ fontSize: "1.5rem" }}>
+                  <div
+                    style={{
+                      fontSize: "1.5rem",
+                    }}
+                  >
                     {billedCount}
                   </div>
                 </div>
@@ -298,21 +355,29 @@ export default function Bills() {
                 <BillTable
                   rooms={paginatedRooms}
                   bookings={bookings}
-                  existingBills={existingBills}
+                  existingBills={
+                    existingBills
+                  }
                   canCreateBill={true}
                   showBillDateColumn={
-                    statusFilter === "billed"
+                    statusFilter ===
+                    "billed"
                   }
                   showActionColumn={
-                    statusFilter === "notBilled"
+                    statusFilter ===
+                    "notBilled"
                   }
                   canCreateBillForBooking={
                     canCreateBillForBooking
                   }
                   formatThaiDate={(d) =>
-                    formatThaiDate(new Date(d))
+                    formatThaiDate(
+                      new Date(d),
+                    )
                   }
-                  onCreateBill={handleOpenDialog}
+                  onCreateBill={
+                    handleOpenDialog
+                  }
                 />
               ) : (
                 <div
@@ -323,58 +388,96 @@ export default function Bills() {
                     gap: 16,
                   }}
                 >
-                  {paginatedRooms.map((room) => {
-                    const booking = bookings.find(
-                      (b) =>
-                        Number(b.roomId) ===
-                        Number(room.roomId),
-                    );
+                  {paginatedRooms.map(
+                    (room) => {
+                      const booking =
+                        bookings.find(
+                          (b) =>
+                            Number(
+                              b.roomId,
+                            ) ===
+                            Number(
+                              room.roomId,
+                            ),
+                        );
 
-                    const hasBill =
-                      billedRoomIdsOfCurrentMonth.includes(
-                        Number(room.roomId),
+                      const hasBill =
+                        billedRoomIdsOfCurrentMonth.includes(
+                          Number(
+                            room.roomId,
+                          ),
+                        );
+
+                      const bill =
+                        billsOfCurrentCycle.find(
+                          (b: any) =>
+                            Number(
+                              b.roomId,
+                            ) ===
+                            Number(
+                              room.roomId,
+                            ),
+                        );
+
+                      return (
+                        <BillCard
+                          key={
+                            room.roomId
+                          }
+                          room={room}
+                          booking={
+                            booking
+                          }
+                          bill={bill}
+                          hasBill={
+                            hasBill
+                          }
+                          canCreateBill={
+                            true
+                          }
+                          canCreateBillForBooking={
+                            canCreateBillForBooking
+                          }
+                          formatThaiDate={(
+                            d,
+                          ) =>
+                            formatThaiDate(
+                              new Date(
+                                d,
+                              ),
+                            )
+                          }
+                          onCreateBill={
+                            handleOpenDialog
+                          }
+                        />
                       );
-
-                    const bill =
-                      billsOfCurrentCycle.find(
-                        (b: any) =>
-                          Number(b.roomId) ===
-                          Number(room.roomId),
-                      );
-
-                    return (
-                      <BillCard
-                        key={room.roomId}
-                        room={room}
-                        booking={booking}
-                        bill={bill}
-                        hasBill={hasBill}
-                        canCreateBill={true}
-                        canCreateBillForBooking={
-                          canCreateBillForBooking
-                        }
-                        formatThaiDate={(d) =>
-                          formatThaiDate(
-                            new Date(d),
-                          )
-                        }
-                        onCreateBill={
-                          handleOpenDialog
-                        }
-                      />
-                    );
-                  })}
+                    },
+                  )}
                 </div>
               )}
 
               {!openDialog && (
                 <Pagination
-                  currentPage={currentPage}
-                  totalItems={totalItems}
-                  rowsPerPage={rowsPerPage}
-                  onPageChange={setCurrentPage}
-                  onRowsPerPageChange={(rows) => {
-                    setRowsPerPage(rows);
+                  currentPage={
+                    currentPage
+                  }
+                  totalItems={
+                    totalItems
+                  }
+                  rowsPerPage={
+                    rowsPerPage
+                  }
+                  onPageChange={
+                    setCurrentPage
+                  }
+                  onRowsPerPageChange={(
+                    rows,
+                  ) => {
+                    setRowsPerPage(
+                      rows,
+                    );
+
                     setCurrentPage(1);
                   }}
                 />
@@ -386,9 +489,13 @@ export default function Bills() {
 
       <BillDialog
         open={openDialog}
-        onClose={() => setOpenDialog(false)}
+        onClose={() =>
+          setOpenDialog(false)
+        }
         room={selectedRoom}
-        reloadExistingBills={reloadAll}
+        reloadExistingBills={
+          reloadAll
+        }
       />
     </div>
   );

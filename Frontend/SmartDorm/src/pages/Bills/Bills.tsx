@@ -101,16 +101,14 @@ export default function Bills() {
     return "1fr";
   };
 
-  // ห้องที่มีผู้เช่า
+  // ห้องที่มี booking
   const allBookedRooms = rooms.filter(
     (room) => {
-      const booking = bookings.find(
+      return bookings.some(
         (b) =>
           String(b.roomId) ===
           String(room.roomId),
       );
-
-      return !!booking?.checkinAt;
     },
   );
 
@@ -141,7 +139,7 @@ export default function Bills() {
     );
   }, [existingBills]);
 
-  // room ที่ออกบิลแล้วเดือนนี้
+  // roomId ที่ออกบิลแล้วเดือนนี้
   const billedRoomIdsOfCurrentMonth =
     currentMonthBills.map(
       (bill: any) =>
@@ -150,9 +148,9 @@ export default function Bills() {
 
   // count
   const billedCount =
-    allBookedRooms.filter((r) =>
+    allBookedRooms.filter((room) =>
       billedRoomIdsOfCurrentMonth.includes(
-        String(r.roomId),
+        String(room.roomId),
       ),
     ).length;
 

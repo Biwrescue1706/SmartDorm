@@ -13,6 +13,15 @@ interface BillDialogProps {
   reloadExistingBills: () => void;
 }
 
+// ✅ default form
+const emptyForm = {
+  month: "",
+  wBefore: 0,
+  wAfter: 0,
+  eBefore: 0,
+  eAfter: 0,
+};
+
 export default function BillDialog({
   open,
   onClose,
@@ -42,6 +51,7 @@ export default function BillDialog({
         const res = await fetch(`${API_BASE}/bill/getall`, {
           credentials: "include",
         });
+
         const data = await res.json();
 
         const latest = data
@@ -52,13 +62,15 @@ export default function BillDialog({
           )[0];
 
         if (latest) {
-          setForm((prev) => ({
+          setForm((prev: typeof emptyForm) => ({
             ...prev,
             wBefore: latest.wAfter ?? 0,
             eBefore: latest.eAfter ?? 0,
           }));
         }
-      } catch {}
+      } catch (err) {
+        console.error(err);
+      }
     };
 
     loadPrev();
@@ -66,32 +78,42 @@ export default function BillDialog({
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value, type } = e.target;
-    setForm((prev) => ({
+
+    setForm((prev: typeof emptyForm) => ({
       ...prev,
       [id]: type === "number" ? Number(value) : value,
     }));
   };
 
+  // ปิด dialog ปกติ
+  const handleClose = () => {
+    onClose();
+  };
+
+  // กดยกเลิก = รีเฟรชหน้า
   const handleCancel = () => {
-  onClose();
-  window.location.reload();
-};
+    onClose();
+    window.location.reload();
+  };
 
   const handleSubmit = async () => {
     if (!room) return;
 
     if (!form.month) {
       handleClose();
+
       Swal.fire({
         title: "กรุณาเลือกเดือนก่อนออกบิล",
         icon: "error",
         timer: 1500,
         showConfirmButton: false,
       });
+
       return;
     }
 
     const selected = new Date(form.month);
+
     const billMonth = new Date(
       selected.getFullYear(),
       selected.getMonth(),
@@ -109,7 +131,9 @@ export default function BillDialog({
         {
           method: "POST",
           credentials: "include",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+          },
           body: JSON.stringify({
             wAfter: form.wAfter,
             eAfter: form.eAfter,
@@ -119,9 +143,13 @@ export default function BillDialog({
       );
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "ไม่สามารถสร้างบิลได้");
+
+      if (!res.ok) {
+        throw new Error(data.error || "ไม่สามารถสร้างบิลได้");
+      }
 
       await reloadExistingBills();
+
       handleClose();
 
       Swal.fire({
@@ -134,6 +162,7 @@ export default function BillDialog({
       });
     } catch (err: any) {
       handleClose();
+
       Swal.fire({
         title: "เกิดข้อผิดพลาด",
         text: err.message,
@@ -148,6 +177,7 @@ export default function BillDialog({
 
   const formatThaiDate = (date: string) => {
     if (!date) return "";
+
     return new Date(date).toLocaleDateString("th-TH", {
       day: "numeric",
       month: "short",
@@ -184,6 +214,7 @@ export default function BillDialog({
 
           <div className="p-4 text-black">
             <label className="fw-semibold">เดือนที่ออกบิล</label>
+
             <input
               id="month"
               type="date"
@@ -191,14 +222,19 @@ export default function BillDialog({
               value={form.month}
               onChange={handleChange}
             />
+
             {form.month && (
               <div className="text-muted mt-1">
                 {formatThaiDate(form.month)}
               </div>
             )}
-            <div className="row mb-3">
+
+            <div className="row mb-3 mt-3">
               <div className="col">
-                <label className="fw-semibold">มิเตอร์ปะปา ( ครั้งก่อน )</label>
+                <label className="fw-semibold">
+                  มิเตอร์ปะปา ( ครั้งก่อน )
+                </label>
+
                 <input
                   type="number"
                   className="form-control shadow-sm"
@@ -208,7 +244,10 @@ export default function BillDialog({
               </div>
 
               <div className="col">
-                <label className="fw-semibold">มิเตอร์ปะปา ( ปัจจุบัน )</label>
+                <label className="fw-semibold">
+                  มิเตอร์ปะปา ( ปัจจุบัน )
+                </label>
+
                 <input
                   id="wAfter"
                   type="number"
@@ -218,11 +257,13 @@ export default function BillDialog({
                 />
               </div>
             </div>
+
             <div className="row mb-3">
               <div className="col">
                 <label className="fw-semibold">
                   มิเตอร์ไฟฟ้า ( ครั้งก่อน )
                 </label>
+
                 <input
                   type="number"
                   className="form-control shadow-sm"
@@ -232,7 +273,10 @@ export default function BillDialog({
               </div>
 
               <div className="col">
-                <label className="fw-semibold">มิเตอร์ไฟฟ้า ( ปัจจุบัน )</label>
+                <label className="fw-semibold">
+                  มิเตอร์ไฟฟ้า ( ปัจจุบัน )
+                </label>
+
                 <input
                   id="eAfter"
                   type="number"
@@ -246,16 +290,19 @@ export default function BillDialog({
 
           <div className="d-flex justify-content-between border-top p-3">
             <button
-  className="btn fw-bold px-4 text-white"
-  onClick={handleCancel}
-  style={{ background: SCB_PURPLE }}
->
-  ยกเลิก
-</button>
+              className="btn fw-bold px-4 text-white"
+              onClick={handleCancel}
+              style={{ background: SCB_PURPLE }}
+            >
+              ยกเลิก
+            </button>
 
             <button
               className="btn fw-bold px-4"
-              style={{ background: SCB_GOLD, color: TEXT_DARK }}
+              style={{
+                background: SCB_GOLD,
+                color: TEXT_DARK,
+              }}
               disabled={loading}
               onClick={handleSubmit}
             >

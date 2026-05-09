@@ -11,41 +11,28 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import type { Booking } from "../../types/All";
 
 export default function Bills() {
-  const { handleLogout, role, adminName, adminUsername } =
-    useAuth();
+  const { handleLogout, role, adminName, adminUsername } = useAuth();
+  const { rooms, bookings, existingBills, loading, reloadAll } =
+    useCreateBill();
+  const [openDialog, setOpenDialog] = useState(false);
+  const [selectedRoom, setSelectedRoom] = useState<any>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(15);
+  const [statusFilter, setStatusFilter] = useState<"billed" | "notBilled">(
+    "notBilled",
+  );
 
-  const {
-    rooms,
-    bookings,
-    existingBills,
-    loading,
-    reloadAll,
-  } = useCreateBill();
+  // today string
+  const [todayStr, setTodayStr] = useState("");
 
-  const [openDialog, setOpenDialog] =
-    useState(false);
+  // ✅ grid column control (สำคัญมาก)
+  const getGridColumns = () => {
+    if (windowWidth >= 600) return "repeat(3, 1fr)";
+    if (windowWidth >= 481) return "repeat(2, 1fr)";
+    return "1fr";
+  };
 
-  const [selectedRoom, setSelectedRoom] =
-    useState<any>(null);
-
-  const [currentPage, setCurrentPage] =
-    useState(1);
-
-  const [rowsPerPage, setRowsPerPage] =
-    useState(15);
-
-  const [statusFilter, setStatusFilter] =
-    useState<"billed" | "notBilled">(
-      "notBilled",
-    );
-
-  const [todayStr, setTodayStr] =
-    useState("");
-
-  const [windowWidth, setWindowWidth] =
-    useState(window.innerWidth);
-
-  // format thai date
+  // helper: format thai date
   const formatThaiDate = (date: Date) => {
     const monthsThai = [
       "ม.ค.",
@@ -61,186 +48,117 @@ export default function Bills() {
       "พ.ย.",
       "ธ.ค.",
     ];
-
-    return `${date.getDate()} ${
-      monthsThai[date.getMonth()]
-    } ${date.getFullYear() + 543}`;
+    return `${date.getDate()} ${monthsThai[date.getMonth()]} ${
+      date.getFullYear() + 543
+    }`;
   };
 
-  // today
+  // วันนี้
   useEffect(() => {
     const now = new Date();
     setTodayStr(formatThaiDate(now));
   }, []);
 
-  // resize
-  useEffect(() => {
-    const handleResize = () =>
-      setWindowWidth(window.innerWidth);
-
-    window.addEventListener(
-      "resize",
-      handleResize,
-    );
-
-    return () =>
-      window.removeEventListener(
-        "resize",
-        handleResize,
-      );
+  const currentBillMonth = useMemo(() => {
+    const now = new Date();
+    return new Date(now.getFullYear(), now.getMonth(), 1);
   }, []);
 
-  // responsive grid
-  const getGridColumns = () => {
-    if (windowWidth >= 600)
-      return "repeat(3, 1fr)";
+  // rule 25 ต่อ booking
+  const canCreateBillForBooking = (booking: Booking) => {
+    if (!booking?.checkinAt) return false;
 
-    if (windowWidth >= 481)
-      return "repeat(2, 1fr)";
-
-    return "1fr";
-  };
-
-  // ห้องที่มี booking
-  const allBookedRooms = rooms.filter(
-    (room) => {
-      return bookings.some(
-        (b) =>
-          String(b.roomId) ===
-          String(room.roomId),
-      );
-    },
-  );
-
-  // บิลของเดือนปัจจุบัน
-  const currentMonthBills = useMemo(() => {
     const now = new Date();
-
     const currentMonth = now.getMonth();
-    const currentYear =
-      now.getFullYear();
+    const currentYear = now.getFullYear();
 
-    return existingBills.filter(
-      (bill: any) => {
-        if (!bill.month)
-          return false;
+    const alreadyHasBill = existingBills.some((bill: any) => {
+      const billMonth = new Date(bill.month);
 
-        const billDate = new Date(
-          bill.month,
-        );
-
-        return (
-          billDate.getMonth() ===
-            currentMonth &&
-          billDate.getFullYear() ===
-            currentYear
-        );
-      },
-    );
-  }, [existingBills]);
-
-  // roomId ที่ออกบิลแล้วเดือนนี้
-  const billedRoomIdsOfCurrentMonth =
-    currentMonthBills.map(
-      (bill: any) =>
-        String(bill.roomId),
-    );
-
-  // count
-  const billedCount =
-    allBookedRooms.filter((room) =>
-      billedRoomIdsOfCurrentMonth.includes(
-        String(room.roomId),
-      ),
-    ).length;
-
-  const notBilledCount =
-    allBookedRooms.length -
-    billedCount;
-
-  // filter rooms
-  const filteredRooms =
-    allBookedRooms.filter((room) => {
-      const hasBill =
-        billedRoomIdsOfCurrentMonth.includes(
-          String(room.roomId),
-        );
-
-      if (statusFilter === "billed")
-        return hasBill;
-
-      if (
-        statusFilter ===
-        "notBilled"
-      )
-        return !hasBill;
-
-      return true;
-    });
-
-  // pagination
-  const totalItems =
-    filteredRooms.length;
-
-  const startIndex =
-    (currentPage - 1) *
-    rowsPerPage;
-
-  const paginatedRooms =
-    filteredRooms.slice(
-      startIndex,
-      startIndex + rowsPerPage,
-    );
-
-  useEffect(() => {
-    const totalPages = Math.ceil(
-      totalItems / rowsPerPage,
-    );
-
-    if (
-      currentPage > totalPages &&
-      totalPages > 0
-    ) {
-      setCurrentPage(totalPages);
-    }
-  }, [
-    totalItems,
-    rowsPerPage,
-    currentPage,
-  ]);
-
-  // open dialog
-  const handleOpenDialog = (
-    room: any,
-  ) => {
-    setSelectedRoom(room);
-    setOpenDialog(true);
-  };
-
-  // create rule
-  const canCreateBillForBooking = (
-    booking: Booking,
-  ) => {
-    const alreadyHasBill =
-      currentMonthBills.some(
-        (bill: any) =>
-          String(bill.roomId) ===
-          String(booking.roomId),
+      return (
+        bill.roomId === booking.roomId &&
+        billMonth.getMonth() === currentMonth &&
+        billMonth.getFullYear() === currentYear
       );
+    });
 
     return !alreadyHasBill;
   };
 
-  const isDesktop =
-    windowWidth >= 1400;
+  // bills ของรอบปัจจุบัน (object เต็ม)
+  const billsOfCurrentCycle = useMemo(() => {
+    if (!currentBillMonth) return [];
 
+    return existingBills.filter((b: any) => {
+      const bm = new Date(b.month);
+      return (
+        bm.getFullYear() === currentBillMonth.getFullYear() &&
+        bm.getMonth() === currentBillMonth.getMonth()
+      );
+    });
+  }, [existingBills, currentBillMonth]);
+
+  // roomId ที่ออกบิลแล้วในรอบนี้
+  const billedRoomIdsOfCurrentMonth = useMemo(() => {
+    return billsOfCurrentCycle.map((b: any) => b.roomId);
+  }, [billsOfCurrentCycle]);
+
+  // ห้องที่มี booking และผ่าน rule รอบบิล
+  const allBookedRooms = rooms.filter((room) => {
+    const booking = bookings.find((b) => b.roomId === room.roomId);
+    return booking?.approveStatus === 1 && booking?.checkinAt;
+  });
+
+  // count
+  const billedCount = allBookedRooms.filter((r) =>
+    billedRoomIdsOfCurrentMonth.includes(r.roomId),
+  ).length;
+
+  const notBilledCount = allBookedRooms.length - billedCount;
+
+  // filter rooms
+  const filteredRooms = allBookedRooms.filter((room) => {
+    const hasBill = billedRoomIdsOfCurrentMonth.includes(room.roomId);
+    if (statusFilter === "billed") return hasBill;
+    if (statusFilter === "notBilled") return !hasBill;
+    return true;
+  });
+
+  // pagination logic
+  const totalItems = filteredRooms.length;
+  const startIndex = (currentPage - 1) * rowsPerPage;
+  const paginatedRooms = filteredRooms.slice(
+    startIndex,
+    startIndex + rowsPerPage,
+  );
+
+  useEffect(() => {
+    const totalPages = Math.ceil(totalItems / rowsPerPage);
+    if (currentPage > totalPages && totalPages > 0) {
+      setCurrentPage(totalPages);
+    }
+  }, [totalItems, rowsPerPage, currentPage]);
+
+  // dialog handler
+  const handleOpenDialog = (room: any) => {
+    setSelectedRoom(room);
+    setOpenDialog(true);
+  };
+
+  // responsive
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+  useEffect(() => {
+    const handleResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  const isDesktop = windowWidth >= 1400;
+  // render
   return (
     <div
       className="d-flex min-vh-100 mx-2 mt-0 mb-4"
-      style={{
-        fontFamily:
-          "Sarabun, sans-serif",
-      }}
+      style={{ fontFamily: "Sarabun, sans-serif" }}
     >
       <Nav
         onLogout={handleLogout}
@@ -248,7 +166,6 @@ export default function Bills() {
         adminName={adminName}
         adminUsername={adminUsername}
       />
-
       <main
         className="main-content flex-grow-1 px-2 py-3 mt-6 mt-lg-7"
         style={{
@@ -267,229 +184,128 @@ export default function Bills() {
           <h2 className="fw-bold text-center text-black mb-2">
             สร้างบิลห้องพัก
           </h2>
-
           <h5 className="text-center text-black mb-3">
             วันนี้: <b>{todayStr}</b>
           </h5>
-
-          {/* refresh */}
+          {/* refresh */}{" "}
           <div className="d-flex justify-content-center mb-3">
+            {" "}
             <button
               className="btn btn-primary fw-bold px-4"
-              onClick={() =>
-                window.location.reload()
-              }
+              onClick={() => window.location.reload()}
             >
-              รีเฟรชหน้าจอ
-            </button>
+              {" "}
+              รีเฟรชหน้าจอ{" "}
+            </button>{" "}
           </div>
-
           {/* summary */}
           <div className="container mb-3">
             <div className="row g-3 justify-content-center text-center">
-              {/* not billed */}
               <div className="col-6 col-md-3">
                 <div
                   className="p-3 rounded-4 shadow-sm fw-bold"
                   onClick={() => {
-                    setStatusFilter(
-                      "notBilled",
-                    );
-
+                    setStatusFilter("notBilled");
                     setCurrentPage(1);
                   }}
                   style={{
                     cursor: "pointer",
                     fontSize: "1.5rem",
                     background:
-                      statusFilter ===
-                      "notBilled"
+                      statusFilter === "notBilled"
                         ? "linear-gradient(135deg, #ef233c, #650011)"
                         : "linear-gradient(135deg, #6c0011, #ef233c)",
-                    color: "white",
+                    color: statusFilter === "notBilled" ? "white" : "white",
                   }}
                 >
                   ยังไม่ได้ออกบิล
-
-                  <div
-                    style={{
-                      fontSize: "1.5rem",
-                    }}
-                  >
-                    {notBilledCount}
-                  </div>
+                  <div style={{ fontSize: "1.5rem" }}>{notBilledCount}</div>
                 </div>
               </div>
 
-              {/* billed */}
               <div className="col-6 col-md-3">
                 <div
                   className="p-3 rounded-4 shadow-sm fw-bold"
                   onClick={() => {
-                    setStatusFilter(
-                      "billed",
-                    );
-
+                    setStatusFilter("billed");
                     setCurrentPage(1);
                   }}
                   style={{
-                    cursor: "pointer",
                     fontSize: "1.5rem",
+                    cursor: "pointer",
                     background:
-                      statusFilter ===
-                      "billed"
+                      statusFilter === "billed"
                         ? "linear-gradient(135deg, #38b000, #008000)"
                         : "linear-gradient(135deg, #008000, #91ff5e)",
-                    color: "white",
+                    color: statusFilter === "billed" ? "white" : "white",
                   }}
                 >
                   ออกบิลแล้ว
-
-                  <div
-                    style={{
-                      fontSize: "1.5rem",
-                    }}
-                  >
-                    {billedCount}
-                  </div>
+                  <div style={{ fontSize: "1.5rem" }}>{billedCount}</div>
                 </div>
               </div>
             </div>
           </div>
-
           {loading ? (
-            <p className="text-center">
-              กำลังโหลดข้อมูล...
-            </p>
+            <p className="text-center">กำลังโหลดข้อมูล...</p>
           ) : (
             <>
               {isDesktop ? (
                 <BillTable
                   rooms={paginatedRooms}
                   bookings={bookings}
-                  existingBills={
-                    existingBills
-                  }
-                  canCreateBill={true}
-                  showBillDateColumn={
-                    statusFilter ===
-                    "billed"
-                  }
-                  showActionColumn={
-                    statusFilter ===
-                    "notBilled"
-                  }
-                  canCreateBillForBooking={
-                    canCreateBillForBooking
-                  }
-                  formatThaiDate={(d) =>
-                    formatThaiDate(
-                      new Date(d),
-                    )
-                  }
-                  onCreateBill={
-                    handleOpenDialog
-                  }
+                  existingBills={existingBills}
+                  canCreateBill={!!currentBillMonth}
+                  showBillDateColumn={statusFilter === "billed"}
+                  showActionColumn={statusFilter === "notBilled"}
+                  canCreateBillForBooking={canCreateBillForBooking}
+                  formatThaiDate={(d) => formatThaiDate(new Date(d))}
+                  onCreateBill={handleOpenDialog}
                 />
               ) : (
                 <div
                   className="d-grid"
                   style={{
-                    gridTemplateColumns:
-                      getGridColumns(),
+                    gridTemplateColumns: getGridColumns(),
                     gap: 16,
                   }}
                 >
-                  {paginatedRooms.map(
-                    (room) => {
-                      const booking =
-                        bookings.find(
-                          (b) =>
-                            String(
-                              b.roomId,
-                            ) ===
-                            String(
-                              room.roomId,
-                            ),
-                        );
+                  {paginatedRooms.map((room) => {
+                    const booking = bookings.find(
+                      (b) => b.roomId === room.roomId,
+                    );
+                    const hasBill = billedRoomIdsOfCurrentMonth.includes(
+                      room.roomId,
+                    );
+                    const bill = billsOfCurrentCycle.find(
+                      (b: any) => b.roomId === room.roomId,
+                    );
 
-                      const hasBill =
-                        billedRoomIdsOfCurrentMonth.includes(
-                          String(
-                            room.roomId,
-                          ),
-                        );
-
-                      const bill =
-                        currentMonthBills.find(
-                          (b: any) =>
-                            String(
-                              b.roomId,
-                            ) ===
-                            String(
-                              room.roomId,
-                            ),
-                        );
-
-                      return (
-                        <BillCard
-                          key={
-                            room.roomId
-                          }
-                          room={room}
-                          booking={
-                            booking
-                          }
-                          bill={bill}
-                          hasBill={
-                            hasBill
-                          }
-                          canCreateBill={
-                            true
-                          }
-                          canCreateBillForBooking={
-                            canCreateBillForBooking
-                          }
-                          formatThaiDate={(
-                            d,
-                          ) =>
-                            formatThaiDate(
-                              new Date(
-                                d,
-                              ),
-                            )
-                          }
-                          onCreateBill={
-                            handleOpenDialog
-                          }
-                        />
-                      );
-                    },
-                  )}
+                    return (
+                      <BillCard
+                        key={room.roomId}
+                        room={room}
+                        booking={booking}
+                        bill={bill}
+                        hasBill={hasBill}
+                        canCreateBill={!!currentBillMonth}
+                        canCreateBillForBooking={canCreateBillForBooking}
+                        formatThaiDate={(d) => formatThaiDate(new Date(d))}
+                        onCreateBill={handleOpenDialog}
+                      />
+                    );
+                  })}
                 </div>
               )}
 
               {!openDialog && (
                 <Pagination
-                  currentPage={
-                    currentPage
-                  }
-                  totalItems={
-                    totalItems
-                  }
-                  rowsPerPage={
-                    rowsPerPage
-                  }
-                  onPageChange={
-                    setCurrentPage
-                  }
-                  onRowsPerPageChange={(
-                    rows,
-                  ) => {
-                    setRowsPerPage(
-                      rows,
-                    );
-
+                  currentPage={currentPage}
+                  totalItems={totalItems}
+                  rowsPerPage={rowsPerPage}
+                  onPageChange={setCurrentPage}
+                  onRowsPerPageChange={(rows) => {
+                    setRowsPerPage(rows);
                     setCurrentPage(1);
                   }}
                 />
@@ -498,16 +314,11 @@ export default function Bills() {
           )}
         </div>
       </main>
-
       <BillDialog
         open={openDialog}
-        onClose={() =>
-          setOpenDialog(false)
-        }
+        onClose={() => setOpenDialog(false)}
         room={selectedRoom}
-        reloadExistingBills={
-          reloadAll
-        }
+        reloadExistingBills={reloadAll}
       />
     </div>
   );

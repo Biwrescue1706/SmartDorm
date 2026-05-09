@@ -50,10 +50,10 @@ export default function BookingDetail() {
               "translate(-50%, -50%) rotate(-25deg)",
             pointerEvents: "none",
             userSelect: "none",
-            zIndex: 0,
+            zIndex: 999,
             whiteSpace: "nowrap",
             color: "#198754",
-            fontWeight: 999,
+            fontWeight: 900,
           }}
         >
           CHECKED IN
@@ -129,13 +129,13 @@ export default function BookingDetail() {
                     <div
                       className="mx-auto mb-3 d-flex align-items-center justify-content-center"
                       style={{
-                        width: "68px",
-                        height: "68px",
+                        width: "50px",
+                        height: "50px",
                         borderRadius: "22px",
                         background:
                           "linear-gradient(135deg,#4A0080,#7B2CBF)",
                         color: "#fff",
-                        fontSize: "30px",
+                        fontSize: "20px",
                         boxShadow:
                           "0 10px 25px rgba(74,0,128,.18)",
                       }}

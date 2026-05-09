@@ -62,13 +62,14 @@ export default function BookingDetail() {
 
       {/* PAGE */}
       <div
-        className="min-vh-100 py-4 mt-2"
-        style={{
-          background:
-            "linear-gradient(180deg,#F7F4FB 0%, #F4F7FF 100%)",
-          fontFamily: "Prompt, sans-serif",
-        }}
-      >
+  className="min-vh-100 py-4"
+  style={{
+    paddingTop: "72px",
+    background:
+      "linear-gradient(180deg,#F7F4FB 0%, #F4F7FF 100%)",
+    fontFamily: "Prompt, sans-serif",
+  }}
+>
         <div className="container">
 
           {/* LOADING */}

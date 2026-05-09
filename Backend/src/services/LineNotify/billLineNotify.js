@@ -156,3 +156,30 @@ export const notifyBillEdited = async (billData, updated) => {
     [{ label: "ดูรายละเอียดบิล", url: detailedBill }]
   );
 };
+
+export const notifyBillRejected = async (billData) => {
+  const detailedBill = `${BASE_URL}/bill/${billData.billId}`;
+
+  if (!billData.customer?.userId) return;
+  await sendFlexMessage(
+    billData.customer.userId,
+    "🏫SmartDorm🎉 แจ้งผลการชำระเงิน",
+    [
+      { label: "รหัสบิล", value: billData.billId },
+      { label: "เลขที่บิล", value: billData.billNumber },
+      { label: "ห้อง", value: billData.room?.number ?? "-" },
+      { label: "เดือนที่ชำระ", value: formatThaiMonth(billData.month) },
+      {
+        label: "ยอดชำระ",
+        value: `${billData.total.toLocaleString()} บาท`,
+      },
+      {
+        label: "สถานะ",
+        value: getBillStatusText(billData.billStatus),
+        color: getBillStatusColour(billData.billStatus),
+      },
+      { label: "วันที่ปฏิเสธ", value: formatThaiDate(billData.billDate) },
+    ],
+    [{ label: "ดูรายละเอียดบิล", url: detailedBill }]
+  );
+}

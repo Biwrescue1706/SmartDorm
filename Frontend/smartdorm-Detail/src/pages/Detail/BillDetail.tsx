@@ -568,11 +568,26 @@ export default function BillDetail() {
                     </>
                   )}
                 </div>
-                {/* ===== DOWNLOAD PDF ===== */}
-                <div className="d-flex justify-content-center no-pdf">
+                {/* ===== PAYMENT BUTTON ===== */}
+                <div className="d-flex justify-content-center no-pdf mt-4 mb-5">
                   {bill.billStatus === 0 && (
                     <button
-                      className="btn btn-success fw-bold w-50 py-3 mt-1 mb-5 no-pdf"
+                      className="btn border-0 fw-bold rounded-4 px-4 py-3 d-flex align-items-center justify-content-center gap-2"
+                      style={{
+                        width: "100%",
+                        maxWidth: "320px",
+                        background: "linear-gradient(135deg,#06C755,#00B900)",
+                        color: "#fff",
+                        fontSize: "16px",
+                        boxShadow: "0 10px 24px rgba(6,199,85,.25)",
+                        transition: "0.2s",
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.transform = "translateY(-2px)";
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.transform = "translateY(0)";
+                      }}
                       onClick={() =>
                         window.open(
                           `https://liff.line.me/2008099518-RGPO9wep?billId=${bill.billId}`,
@@ -580,6 +595,7 @@ export default function BillDetail() {
                         )
                       }
                     >
+                      <span style={{ fontSize: "20px" }}>💬</span>
                       ชำระเงินผ่าน LINE
                     </button>
                   )}

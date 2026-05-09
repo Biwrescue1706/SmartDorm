@@ -8,7 +8,8 @@ import { thailandTime } from "../../utils/timezone.js";
 import {
   notifyBillCreated,
   notifyBillApproved,
-  notifyBillEdited
+  notifyBillEdited ,
+  notifyBillRejected
 } from "../../services/LineNotify/billLineNotify.js";
 
 const bill = Router();
@@ -499,7 +500,7 @@ bill.put(
       });
 
       try {
-        await notifyBillEdited(billData, updated);
+        await notifyBillRejected(billData, updated);
       } catch (e) {
         console.error("แจ้งแก้ไขบิลล้มเหลว:", e.message);
       }

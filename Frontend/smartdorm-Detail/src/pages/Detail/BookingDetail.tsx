@@ -16,23 +16,27 @@ const formatThaiDate = (d?: string | null) =>
 export default function BookingDetail() {
   const { bookingId } = useParams();
 
-  const { booking, loading } =
-    useBookingDetail(bookingId);
+  const { booking, loading } = useBookingDetail(bookingId);
 
   /* ---------- STATUS ---------- */
   const approveText =
     booking?.approveStatus === 0
       ? "รออนุมัติ"
       : booking?.approveStatus === 1
-      ? "อนุมัติแล้ว"
-      : "ไม่อนุมัติ";
+        ? "อนุมัติแล้ว"
+        : "ไม่อนุมัติ";
+
+  const checkinText =
+    booking?.checkinStatus === 0 ? "ยังไม่เช็คอิน" : "เช็คอินแล้ว";
 
   const approveClass =
     booking?.approveStatus === 0
       ? "warning"
       : booking?.approveStatus === 1
-      ? "success"
-      : "danger";
+        ? "success"
+        : "danger";
+
+  const checkinClass = booking?.checkinStatus === 0 ? "secondary" : "success";
 
   return (
     <>
@@ -43,35 +47,30 @@ export default function BookingDetail() {
         <div
           className="position-fixed top-50 start-50 fw-bold"
           style={{
-            fontSize:
-              "clamp(2.8rem, 7vw, 5rem)",
-            opacity: 0.08,
-            transform:
-              "translate(-50%, -50%) rotate(-25deg)",
+            fontSize: "clamp(2.8rem, 7vw, 5rem)",
+            opacity: 0.60,
+            transform: "translate(-50%, -50%) rotate(-25deg)",
             pointerEvents: "none",
             userSelect: "none",
             zIndex: 999,
             whiteSpace: "nowrap",
-            color: "#198754",
+            color: "#ff0000",
             fontWeight: 900,
           }}
         >
-          CHECKED IN
+          เช็คอินแล้ว
         </div>
       )}
 
       {/* PAGE */}
       <div
-  className="min-vh-100 py-4"
-  style={{
-    paddingTop: "80px",
-    background:
-      "linear-gradient(180deg,#F7F4FB 0%, #F4F7FF 100%)",
-    fontFamily: "Prompt, sans-serif",
-  }}
->
+        className="min-vh-100 py-4"
+        style={{
+          background: "linear-gradient(180deg,#F7F4FB 0%, #F4F7FF 100%)",
+          fontFamily: "Prompt, sans-serif",
+        }}
+      >
         <div className="container">
-
           {/* LOADING */}
           {loading ? (
             <div className="d-flex justify-content-center align-items-center py-5 mt-5">
@@ -86,11 +85,8 @@ export default function BookingDetail() {
             /* NOT FOUND */
             <div className="row justify-content-center">
               <div className="col-12 col-md-7 col-lg-5">
-
                 <div className="card border-0 shadow-sm rounded-5 text-center p-5 mt-5">
-                  <div style={{ fontSize: "54px" }}>
-                    ❌
-                  </div>
+                  <div style={{ fontSize: "54px" }}>❌</div>
 
                   <h4 className="fw-bold mt-3 text-danger">
                     ไม่พบข้อมูลการจอง
@@ -100,68 +96,63 @@ export default function BookingDetail() {
                     กรุณาตรวจสอบรหัสการจองอีกครั้ง
                   </p>
                 </div>
-
               </div>
             </div>
           ) : (
             /* CONTENT */
             <div className="row justify-content-center">
-              <div className="col-12 col-md-10 col-lg-8 col-xl-6">
-
+              <div className="col-12 col-md-10 col-lg-8 mt-5 col-xl-6">
                 {/* HERO */}
                 <div
                   className="card border-0 shadow-sm rounded-5 overflow-hidden mb-4"
                   style={{
-                    border:
-                      "1px solid rgba(123,44,191,0.08)",
+                    border: "1px solid rgba(0, 0, 0, 0.08)",
                   }}
                 >
                   {/* TOP BAR */}
                   <div
                     style={{
-                      height: "6px",
-                      background:
-                        "linear-gradient(90deg,#4A0080,#7B2CBF)",
+                      height: "8px",
+                      background: "linear-gradient(90deg,#4A0080,#7B2CBF)",
                     }}
                   />
 
                   <div className="card-body text-center p-4">
-
                     <div
-                      className="mx-auto mb-3 d-flex align-items-center justify-content-center"
+                      className="mx-auto mb-2 d-flex align-items-center justify-content-center"
                       style={{
                         width: "50px",
                         height: "50px",
                         borderRadius: "22px",
-                        background:
-                          "linear-gradient(135deg,#4A0080,#7B2CBF)",
+                        background: "linear-gradient(135deg,#4A0080,#7B2CBF)",
                         color: "#fff",
-                        fontSize: "20px",
-                        boxShadow:
-                          "0 10px 25px rgba(74,0,128,.18)",
+                        fontSize: "30px",
+                        boxShadow: "0 10px 25px rgba(74,0,128,.18)",
                       }}
                     >
                       🧾
                     </div>
 
-                    <div
+                    <h3
                       className="fw-semibold mb-2"
                       style={{
-                        color: "#7A7391",
-                        fontSize: "14px",
+                        color: "#000000",
+                        fontSize: "20px",
                       }}
                     >
                       รายละเอียดการจอง
-                    </div>
+                    </h3>
 
-                    <h3
+                    <h6
                       className="fw-bold mb-2"
                       style={{
-                        color: "#2D1A47",
+                        color: "#000000",
                       }}
                     >
                       {booking.bookingId}
-                    </h3>
+                    </h6>
+
+                    <br />
 
                     <span
                       className={`badge rounded-pill text-bg-${approveClass} px-3 py-2`}
@@ -172,15 +163,25 @@ export default function BookingDetail() {
                       {approveText}
                     </span>
 
+                    <br />
+                    <br />
+
+                    <span
+                      className={`badge rounded-pill text-bg-${checkinClass} px-3 py-2`}
+                      style={{
+                        fontSize: "13px",
+                      }}
+                    >
+                      {checkinText}
+                    </span>
                   </div>
                 </div>
 
                 {/* CUSTOMER */}
                 <div className="card border-0 shadow-sm rounded-5 mb-4">
                   <div className="card-body p-4">
-
                     <h5
-                      className="fw-bold mb-4"
+                      className="fw-bold mb-4 text-center"
                       style={{
                         color: "#4A0080",
                       }}
@@ -189,7 +190,6 @@ export default function BookingDetail() {
                     </h5>
 
                     <div className="d-flex flex-column gap-3">
-
                       <InfoBox
                         label="หมายเลขห้อง"
                         value={booking.room.number}
@@ -197,40 +197,27 @@ export default function BookingDetail() {
 
                       <InfoBox
                         label="ชื่อ - นามสกุล"
-                        value={
-                          booking.fullName ??
-                          "-"
-                        }
+                        value={booking.fullName ?? "-"}
                       />
 
                       <InfoBox
                         label="เบอร์โทรศัพท์"
-                        value={
-                          booking.cphone ??
-                          "-"
-                        }
+                        value={booking.cphone ?? "-"}
                       />
 
                       <InfoBox
                         label="LINE ผู้ใช้"
-                        value={
-                          booking.customer
-                            ?.userName ??
-                          "-"
-                        }
+                        value={booking.customer?.userName ?? "-"}
                       />
-
                     </div>
-
                   </div>
                 </div>
 
                 {/* BOOKING DETAIL */}
                 <div className="card border-0 shadow-sm rounded-5">
                   <div className="card-body p-4">
-
                     <h5
-                      className="fw-bold mb-4"
+                      className="fw-bold mb-4 text-center"
                       style={{
                         color: "#4A0080",
                       }}
@@ -239,33 +226,23 @@ export default function BookingDetail() {
                     </h5>
 
                     <div className="d-flex flex-column gap-3">
-
                       <InfoBox
                         label="วันที่จอง"
-                        value={formatThaiDate(
-                          booking.createdAt
-                        )}
+                        value={formatThaiDate(booking.createdAt)}
                       />
 
                       <InfoBox
                         label="วันที่แจ้งเข้าพัก"
-                        value={formatThaiDate(
-                          booking.checkin
-                        )}
+                        value={formatThaiDate(booking.checkin)}
                       />
 
-                      <InfoBox
-                        label="สถานะการจอง"
-                        value={approveText}
-                      />
+                      <InfoBox label="สถานะการจอง" value={approveText} />
 
-                      {booking.approveStatus ===
-                        1 && (
+                      {booking.approveStatus === 1 && (
                         <InfoBox
                           label="สถานะเช็คอิน"
                           value={
-                            booking.checkinStatus ===
-                            1
+                            booking.checkinStatus === 1
                               ? "เช็คอินแล้ว"
                               : "ยังไม่เช็คอิน"
                           }
@@ -275,35 +252,27 @@ export default function BookingDetail() {
                       {booking.checkinAt && (
                         <InfoBox
                           label="วันเข้าเช็คอิน"
-                          value={formatThaiDate(
-                            booking.checkinAt
-                          )}
+                          value={formatThaiDate(booking.checkinAt)}
                         />
                       )}
-
                     </div>
 
                     {/* FOOT NOTE */}
                     <div
                       className="text-center mt-4 p-3 rounded-4"
                       style={{
-                        background:
-                          "#F8F6FC",
-                        color: "#7A7391",
+                        background: "#F8F6FC",
+                        color: "#000000",
                         fontSize: "13px",
                       }}
                     >
-                      📌 หากข้อมูลไม่ถูกต้อง
-                      กรุณาติดต่อเจ้าหน้าที่
+                      📌 หากข้อมูลไม่ถูกต้อง กรุณาติดต่อเจ้าหน้าที่
                     </div>
-
                   </div>
                 </div>
-
               </div>
             </div>
           )}
-
         </div>
       </div>
     </>
@@ -312,20 +281,13 @@ export default function BookingDetail() {
 
 /* ---------- INFO BOX ---------- */
 
-function InfoBox({
-  label,
-  value,
-}: {
-  label: string;
-  value: string;
-}) {
+function InfoBox({ label, value }: { label: string; value: string }) {
   return (
     <div
       className="d-flex justify-content-between align-items-center"
       style={{
         background: "#FAF9FC",
-        border:
-          "1px solid rgba(123,44,191,0.08)",
+        border: "1px solid rgba(123,44,191,0.08)",
         borderRadius: "18px",
         padding: "15px 16px",
         gap: "12px",
@@ -333,7 +295,7 @@ function InfoBox({
     >
       <div
         style={{
-          color: "#7A7391",
+          color: "#000000",
           fontSize: "13px",
           fontWeight: 600,
         }}
@@ -344,7 +306,7 @@ function InfoBox({
       <div
         className="fw-bold text-end"
         style={{
-          color: "#2D1A47",
+          color: "#000000",
           fontSize: "15px",
         }}
       >

@@ -26,6 +26,11 @@ export default function MobileView({
             <p className="fw-bold h6 text-center">
               <b>ชื่อ :</b> {a.name}
             </p>
+            
+            <p className="fw-bold h6 text-center">
+              <b>เบอร์โทร :</b> {a.phone || "-"}
+            </p>
+
             <p className="fw-bold h6 text-center">
               <b>สิทธิ์ :</b> {a.role === 0 ? "แอดมิน" : "พนักงาน"}
             </p>

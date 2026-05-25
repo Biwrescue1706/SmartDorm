@@ -25,6 +25,9 @@ export default function TabletView({
             <p>
               <b>ชื่อ :</b> {a.name}
             </p>
+            <p >
+              <b>เบอร์โทร :</b> {a.phone || "-"}
+            </p>
             <p>
               <b>สิทธิ์ :</b> {a.role === 0 ? "แอดมิน" : "พนักงาน"}
             </p>

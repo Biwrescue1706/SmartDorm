@@ -129,8 +129,9 @@ admin.put(
         data.name = name.trim();
       }
 
-      if (phone?.trim()) {
-        data.phone = phone.trim();
+      // ✅ แก้ไขเบอร์โทร
+      if (phone !== undefined) {
+        data.phone = phone?.trim() || null;
       }
 
       if (password?.trim()) {
@@ -184,6 +185,8 @@ admin.put(
       });
 
     } catch (err) {
+
+      console.error(err);
 
       res.status(500).json({
         error: err.message,
@@ -338,11 +341,13 @@ admin.post(
             username,
             name,
             phone: phone ?? null,
+
             password:
               await bcrypt.hash(
                 password,
                 10,
               ),
+
             role: role ?? 1,
           },
 
@@ -368,6 +373,8 @@ admin.post(
       });
 
     } catch (err) {
+
+      console.error(err);
 
       res.status(400).json({
         error: err.message,

@@ -38,6 +38,7 @@ export default function DesktopView({
             <th>#</th>
             <th>ชื่อผู้ใช้</th>
             <th>ชื่อ</th>
+            <th>เบอร์โทร</th>
             <th>สิทธิ์</th>
             {role === 0 && <th>แก้ไข</th>}
             {role === 0 && <th>ลบ</th>}
@@ -50,6 +51,7 @@ export default function DesktopView({
               <td>{(currentPage - 1) * rowsPerPage + i + 1}</td>
               <td>{a.username}</td>
               <td>{a.name}</td>
+              <td>{a.phone || "-"}</td>
               <td>{a.role === 0 ? "แอดมิน" : "พนักงาน"}</td>
 
               {role === 0 && (

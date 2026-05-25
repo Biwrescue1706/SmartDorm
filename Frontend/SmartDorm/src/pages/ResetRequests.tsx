@@ -64,7 +64,7 @@ export default function ResetRequests() {
     if (!confirm.isConfirmed) return;
 
     try {
-      const res = await api.post("/auth/admin/reset-password", {
+      const res = await api.post("/auth/admin/reset-requests", {
         requestId,
       });
 

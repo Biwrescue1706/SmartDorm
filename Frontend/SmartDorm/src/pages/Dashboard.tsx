@@ -10,7 +10,7 @@ import DashboardRevenue from "../components/Dashboard/DashboardRevenue";
 import type { Booking } from "../types/Booking";
 import { usePendingBookings } from "../hooks/ManageRooms/usePendingBookings";
 import { usePendingCheckouts } from "../hooks/ManageRooms/usePendingCheckouts";
-import { usePendingResetRequests } from "../hooks/usePendingResetRequests";
+import { usePendingResetRequests } from "../hooks/ManageRooms/usePendingResetRequests";
 
 export default function Dashboard() {
   const { handleLogout, role, adminName, adminUsername } = useAuth();

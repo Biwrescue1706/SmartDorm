@@ -402,4 +402,34 @@ auth.post(
   }
 );
 
+// 🔑 จำนวนคำร้องรีเซ็ตรหัส
+auth.get(
+  "/admin/reset-requests/count",
+  async (req, res) => {
+
+    try {
+
+      const count =
+        await prisma.passwordResetRequest.count();
+
+      res.json({
+        count,
+      });
+
+    } catch (err) {
+
+      console.error(
+        "RESET REQUEST COUNT ERROR:",
+        err
+      );
+
+      res.status(500).json({
+        error: err.message,
+      });
+
+    }
+
+  }
+);
+
 export default auth;

@@ -21,6 +21,8 @@ import BillOverviewPage from "./pages/BillOverviewPage";
 import BillDetailPage from "./pages/BillDetailPage";
 import DormProfile from "./pages/DormProfile";
 import ResetRequests from "./pages/ResetRequests";
+import ResetPassword from "./pages/ForgotPassword/ResetPassword";
+
 
 function App() {
   return (
@@ -40,6 +42,15 @@ function App() {
         element={
           <GuestRoute>
             <ForgotUsername />
+          </GuestRoute>
+        }
+      />
+
+<Route
+        path="/reset-password"
+        element={
+          <GuestRoute>
+            <ResetPassword />
           </GuestRoute>
         }
       />

@@ -319,118 +319,6 @@ auth.post("/forgot/check", async (req, res) => {
 
 });
 
-/* ================= CHANGE PASSWORD ================= */
-
-auth.post(
-  "/change-password",
-  authMiddleware,
-  async (req, res) => {
-
-    try {
-
-      const {
-        oldPassword,
-        newPassword,
-      } = req.body;
-
-      if (!newPassword) {
-
-        return res.status(400).json({
-          error: "กรุณากรอกรหัสใหม่",
-        });
-
-      }
-
-      // ✅ หา user
-      const admin =
-        await prisma.admin.findUnique({
-
-          where: {
-            adminId:
-              req.admin.adminId,
-          },
-
-        });
-
-      if (!admin) {
-
-        return res.status(404).json({
-          error: "ไม่พบผู้ใช้",
-        });
-
-      }
-
-      // ✅ ถ้าไม่ได้บังคับเปลี่ยน
-      // ต้องเช็ครหัสเดิม
-      if (
-        !admin.mustChangePassword
-      ) {
-
-        const valid =
-          await bcrypt.compare(
-            oldPassword || "",
-            admin.password,
-          );
-
-        if (!valid) {
-
-          return res.status(401).json({
-            error:
-              "รหัสผ่านเดิมไม่ถูกต้อง",
-          });
-
-        }
-
-      }
-
-      // ✅ hash รหัสใหม่
-      const hashed =
-        await bcrypt.hash(
-          newPassword,
-          8,
-        );
-
-      // ✅ update
-      await prisma.admin.update({
-
-        where: {
-          adminId:
-            admin.adminId,
-        },
-
-        data: {
-          password: hashed,
-
-          mustChangePassword:
-            false,
-
-          updatedAt:
-            thailandTime(),
-        },
-
-      });
-
-      res.json({
-        message:
-          "เปลี่ยนรหัสผ่านสำเร็จ",
-      });
-
-    } catch (err) {
-
-      console.error(
-        "CHANGE PASSWORD ERROR:",
-        err,
-      );
-
-      res.status(500).json({
-        error: err.message,
-      });
-
-    }
-
-  }
-);
-
 /* ================= RESET PASSWORD ================= */
 
 auth.post(
@@ -583,5 +471,49 @@ auth.get(
 
   }
 );
+
+auth.put("/change-password", authMiddleware, async (req, res) => {
+  try {
+    const { oldPassword, newPassword } = req.body || {};
+
+    if (!oldPassword || !newPassword) {
+      return res.status(400).json({ error: "ข้อมูลไม่ครบ" });
+    }
+
+    const admin = await prisma.admin.findUnique({
+      where: { adminId: req.admin.adminId },
+      select: { password: true },
+    });
+
+    if (!admin || !admin.password) {
+      return res.status(400).json({ error: "ไม่พบข้อมูลผู้ใช้" });
+    }
+
+    const valid = await bcrypt.compare(oldPassword, admin.password);
+
+    if (!valid) {
+      return res.status(400).json({ error: "รหัสผ่านเดิมไม่ถูกต้อง" });
+    }
+
+    const hashed = await bcrypt.hash(newPassword, 8);
+
+    await prisma.admin.update({
+      where: { adminId: req.admin.adminId },
+      data: {
+        password: hashed,
+        updatedAt: thailandTime(),
+      },
+    });
+
+    res.json({ message: "เปลี่ยนรหัสผ่านสำเร็จ" });
+
+  } catch (err) {
+    console.error("CHANGE PASSWORD ERROR:", err);
+
+    res.status(400).json({
+      error: err.message,
+    });
+  }
+});
 
 export default auth;

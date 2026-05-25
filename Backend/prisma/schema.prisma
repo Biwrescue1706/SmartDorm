@@ -28,7 +28,7 @@ model Admin {
 
 model PasswordResetRequest {
 
-  requestId Int @id @default(autoincrement())
+  requestId String @id @default(uuid())
 
   username String @unique
   phone    String?

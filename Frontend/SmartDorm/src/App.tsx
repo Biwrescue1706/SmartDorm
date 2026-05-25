@@ -23,7 +23,6 @@ import DormProfile from "./pages/DormProfile";
 import ResetRequests from "./pages/ResetRequests";
 import ResetPassword from "./pages/ForgotPassword/ResetPassword";
 
-
 function App() {
   return (
     <Routes>
@@ -46,16 +45,16 @@ function App() {
         }
       />
 
-<Route
+      {/* ProtectedRoute ป้องกันไปหน้า login  */}
+
+      <Route
         path="/reset-password"
         element={
-          <GuestRoute>
+          <ProtectedRoute>
             <ResetPassword />
-          </GuestRoute>
+          </ProtectedRoute>
         }
       />
-
-      {/* ProtectedRoute ป้องกันไปหน้า login  */}
 
       <Route
         path="/dashboard"

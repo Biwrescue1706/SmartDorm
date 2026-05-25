@@ -30,9 +30,9 @@ export default function Login() {
 
     if (!res) return;
 
-    // ✅ บังคับเปลี่ยนรหัส
-    if (res.admin?.mustChangePassword) {
-      navigate("/change-password");
+    // ✅ บังคับ reset password
+    if (res.admin?.mustChangePassword === true) {
+      navigate("/reset-password");
     } else {
       navigate("/dashboard");
     }

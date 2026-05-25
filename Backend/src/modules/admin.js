@@ -20,15 +20,8 @@ const formatAdmin = (a) => ({
 
 admin.get("/getall", async (req, res) => {
   try {
-    const page = Number(req.query.page ?? 1);
-
-    const limit = Number(req.query.limit ?? 20);
 
     const admins = await prisma.admin.findMany({
-      skip: (page - 1) * limit,
-
-      take: limit,
-
       orderBy: {
         createdAt: "desc",
       },
@@ -39,6 +32,7 @@ admin.get("/getall", async (req, res) => {
         name: true,
         role: true,
         phone: true,
+        mustChangePassword: true,
         createdAt: true,
         updatedAt: true,
       },
@@ -75,6 +69,7 @@ admin.get("/:adminId", async (req, res) => {
           name: true,
           role: true,
           phone: true,
+          mustChangePassword: true,
           createdAt: true,
           updatedAt: true,
         },
@@ -342,6 +337,8 @@ admin.post(
             name,
             phone: phone ?? null,
 
+            mustChangePassword: true,
+
             password:
               await bcrypt.hash(
                 password,
@@ -357,6 +354,7 @@ admin.post(
             name: true,
             role: true,
             phone: true,
+            mustChangePassword: true,
             createdAt: true,
             updatedAt: true,
           },

@@ -33,7 +33,6 @@ export interface ChangePasswordResponse {
 
 /* ✅ ใช้กับ “ลืมรหัสผ่าน” (Forgot Password / Reset Password) */
 export interface ForgotPasswordInput {
-  username: string;
   newPassword: string;
 }
 
@@ -66,7 +65,6 @@ export interface CheckUsernameResponse {
 }
 
 export interface ForgotPasswordInput {
-  username: string;
   newPassword: string;
 }
 

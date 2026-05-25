@@ -24,6 +24,10 @@ export default function ForgotUsername() {
         html: `
           <div>
 
+            <p class="fw-bold text-danger">
+              กรุณาบันทึกภาพนี้ไว้ เพื่อใช้ในการรีเซ็ตรหัสผ่าน ติดต่อ Admin
+            </p>
+
             <p>
               ชื่อ:
               <b>${data.name}</b>

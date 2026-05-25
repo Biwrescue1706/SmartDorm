@@ -96,8 +96,8 @@ export default function Nav({
             style={{ borderRadius: "10px" }}
           />
           <div className="text-center">
-            <h6 className="fw-bold text-warning m-0">🏠SmartDorm</h6>
-            <h6 className="text-white">ระบบจัดการหอพัก</h6>
+            <h6 className="fw-bold text-warning m-0 ">🏠SmartDorm</h6>
+            <h6 className="text-white fw-bold">ระบบจัดการหอพัก</h6>
           </div>
         </div>
 
@@ -179,7 +179,7 @@ export default function Nav({
             className={`btn text-start ${
               isActive("/dashboard")
                 ? "btn-warning text-dark fw-bold"
-                : "btn-warning"
+                : "btn-warning fw-bold"
             }`}
             onClick={() => navigate("/dashboard")}
           >
@@ -190,7 +190,7 @@ export default function Nav({
             className={`btn text-start ${
               isActive("/rooms")
                 ? "btn-warning text-dark fw-bold"
-                : "btn-warning"
+                : "btn-warning fw-bold"
             }`}
             onClick={() => navigate("/rooms")}
           >
@@ -213,7 +213,7 @@ export default function Nav({
                   className={`btn text-start w-100 ${
                     isActive("/bookings")
                       ? "btn-warning text-dark fw-bold"
-                      : "btn-warning"
+                      : "btn-warning fw-bold"
                   }`}
                   onClick={() => navigate("/bookings")}
                 >
@@ -229,7 +229,7 @@ export default function Nav({
                   className={`btn text-start w-100 ${
                     isActive("/checkout")
                       ? "btn-warning text-dark fw-bold"
-                      : "btn-warning"
+                      : "btn-warning fw-bold"
                   }`}
                   onClick={() => navigate("/checkout")}
                 >
@@ -248,7 +248,7 @@ export default function Nav({
             className={`btn text-start ${
               isActive("/booking-history")
                 ? "btn-warning text-dark fw-bold"
-                : "btn-warning"
+                : "btn-warning fw-bold"
             }`}
             onClick={() => navigate("/booking-history")}
           >
@@ -271,7 +271,7 @@ export default function Nav({
                   className={`btn text-start w-100 ${
                     isActive("/bills")
                       ? "btn-warning text-dark fw-bold"
-                      : "btn-warning"
+                      : "btn-warning fw-bold "
                   }`}
                   onClick={() => navigate("/bills")}
                 >
@@ -282,7 +282,7 @@ export default function Nav({
                   className={`btn text-start w-100 ${
                     isActive("/allbills")
                       ? "btn-warning text-dark fw-bold"
-                      : "btn-warning"
+                      : "btn-warning fw-bold"
                   }`}
                   onClick={() => navigate("/allbills")}
                 >
@@ -296,7 +296,7 @@ export default function Nav({
             className={`btn text-start ${
               isActive("/bill-overview")
                 ? "btn-warning text-dark fw-bold"
-                : "btn-warning"
+                : "btn-warning fw-bold"
             }`}
             onClick={() => navigate("/bill-overview")}
           >
@@ -307,7 +307,7 @@ export default function Nav({
             className={`btn text-start ${
               isActive("/admin/manage")
                 ? "btn-warning text-dark fw-bold"
-                : "btn-warning"
+                : "btn-warning fw-bold"
             }`}
             onClick={() => navigate("/admin/manage")}
           >
@@ -318,7 +318,7 @@ export default function Nav({
             className={`btn text-start ${
               isActive("/users")
                 ? "btn-warning text-dark fw-bold"
-                : "btn-warning"
+                : "btn-warning fw-bold"
             }`}
             onClick={() => navigate("/users")}
           >
@@ -329,7 +329,7 @@ export default function Nav({
             className={`btn text-start ${
               isActive("/dorm-profile")
                 ? "btn-warning text-dark fw-bold"
-                : "btn-warning"
+                : "btn-warning fw-bold"
             }`}
             onClick={() => navigate("/dorm-profile")}
           >
@@ -340,7 +340,7 @@ export default function Nav({
             className={`btn text-start ${
               isActive("/reset-requests")
                 ? "btn-warning text-dark fw-bold"
-                : "btn-warning"
+                : "btn-warning fw-bold"
             }`}
             onClick={() => navigate("/reset-requests")}
           >
@@ -398,7 +398,7 @@ export default function Nav({
               </button>
 
               <button
-                className="btn btn-warning fw-bold  text-start"
+                className="btn btn-warning fw-bold text-start"
                 onClick={() => {
                   navigate("/rooms");
                   setMenuOpen(false);
@@ -538,7 +538,7 @@ export default function Nav({
                 className={`btn text-start ${
                   isActive("/reset-requests")
                     ? "btn-warning text-dark fw-bold"
-                    : "btn-warning"
+                    : "btn-warning fw-bold"
                 }`}
                 onClick={() => navigate("/reset-requests")}
               >

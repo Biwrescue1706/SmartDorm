@@ -1,54 +1,88 @@
 // src/hooks/useAuth.ts
-import { useNavigate, useLocation } from "react-router-dom";
+import {
+  useNavigate,
+  useLocation,
+} from "react-router-dom";
 
 import { toast } from "../utils/toast";
 
 import { API_BASE } from "../config";
 
-import { Login, Register, Verify, Logout } from "../apis/endpoint.api";
+import {
+  Login,
+  Register,
+  Verify,
+  Logout,
+} from "../apis/endpoint.api";
 
-import type { LoginCredentials, RegisterData } from "../types/Auth";
+import type {
+  LoginCredentials,
+  RegisterData,
+} from "../types/Auth";
 
-import { useEffect, useRef, useState } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 
 export function useAuth() {
-  const [loading, setLoading] = useState(false);
 
-  const [isAuth, setIsAuth] = useState<boolean | null>(null);
+  const [loading, setLoading] =
+    useState(false);
 
-  const [role, setRole] = useState<number | null>(null);
+  const [isAuth, setIsAuth] =
+    useState<boolean | null>(null);
 
-  const [adminName, setAdminName] = useState<string>("");
+  const [role, setRole] =
+    useState<number | null>(null);
 
-  const [adminUsername, setAdminUsername] = useState<string>("");
+  const [adminName, setAdminName] =
+    useState<string>("");
 
-  const [message, setMessage] = useState("กำลังโหลด...");
+  const [
+    adminUsername,
+    setAdminUsername,
+  ] = useState<string>("");
+
+  const [message, setMessage] =
+    useState("กำลังโหลด...");
 
   const navigate = useNavigate();
 
   const location = useLocation();
 
-  const hasVerified = useRef(false);
+  const hasVerified =
+    useRef(false);
 
   /* ---------------- Register ---------------- */
 
-  const register = async (data: RegisterData) => {
+  const register = async (
+    data: RegisterData,
+  ) => {
+
     setLoading(true);
 
     try {
-      const res = await fetch(`${API_BASE}${Register}`, {
-        method: "POST",
 
-        headers: {
-          "Content-Type": "application/json",
+      const res = await fetch(
+        `${API_BASE}${Register}`,
+        {
+          method: "POST",
+
+          headers: {
+            "Content-Type":
+              "application/json",
+          },
+
+          body: JSON.stringify(data),
+
+          credentials: "include",
         },
-
-        body: JSON.stringify(data),
-
-        credentials: "include",
-      }).catch(() => null);
+      ).catch(() => null);
 
       if (!res) {
+
         toast(
           "error",
           "ไม่สามารถโหลดข้อมูลได้",
@@ -56,142 +90,222 @@ export function useAuth() {
         );
 
         return false;
+
       }
 
-      const result = await res.json();
+      const result =
+        await res.json();
 
       if (res.ok) {
-        toast("success", "เพิ่มสมาชิกสำเร็จ", "ระบบได้บันทึกข้อมูลของคุณแล้ว");
+
+        toast(
+          "success",
+          "เพิ่มสมาชิกสำเร็จ",
+          "ระบบได้บันทึกข้อมูลของคุณแล้ว",
+        );
 
         return true;
+
       } else {
-        toast("error", "เพิ่มสมาชิกไม่สำเร็จ", result.error);
+
+        toast(
+          "error",
+          "เพิ่มสมาชิกไม่สำเร็จ",
+          result.error,
+        );
 
         return false;
+
       }
+
     } finally {
+
       setLoading(false);
+
     }
+
   };
 
   /* ---------------- Login ---------------- */
 
-  const login = async (credentials: LoginCredentials) => {
+  const login = async (
+    credentials:
+      LoginCredentials,
+  ) => {
+
     setLoading(true);
 
     try {
-      const res = await fetch(`${API_BASE}${Login}`, {
-        method: "POST",
 
-        headers: {
-          "Content-Type": "application/json",
+      const res = await fetch(
+        `${API_BASE}${Login}`,
+        {
+          method: "POST",
+
+          headers: {
+            "Content-Type":
+              "application/json",
+          },
+
+          body: JSON.stringify(
+            credentials,
+          ),
+
+          credentials: "include",
         },
-
-        body: JSON.stringify(credentials),
-
-        credentials: "include",
-      }).catch(() => null);
+      ).catch(() => null);
 
       if (!res) {
-        toast("error", "ข้อผิดพลาด", "ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้");
 
-        return null;
-      }
-
-      const data = await res.json();
-
-      if (!res.ok) {
         toast(
           "error",
-          "เข้าสู่ระบบไม่สำเร็จ",
-          data.error || "กรุณาตรวจสอบข้อมูลอีกครั้ง",
+          "ข้อผิดพลาด",
+          "ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้",
         );
 
         return null;
+
+      }
+
+      const data =
+        await res.json();
+
+      if (!res.ok) {
+
+        toast(
+          "error",
+          "เข้าสู่ระบบไม่สำเร็จ",
+          data.error ||
+            "กรุณาตรวจสอบข้อมูลอีกครั้ง",
+        );
+
+        return null;
+
       }
 
       toast(
         "success",
         "เข้าสู่ระบบสำเร็จ",
-        `ยินดีต้อนรับ ${data.admin?.name || credentials.username}`,
+        `ยินดีต้อนรับ ${
+          data.admin?.name ||
+          credentials.username
+        }`,
       );
 
       if (import.meta.env.PROD) {
         console.clear();
       }
 
-      await new Promise((r) => setTimeout(r, 1500));
+      await new Promise((r) =>
+        setTimeout(r, 1500),
+      );
 
       // ✅ ส่ง data กลับ
       return data;
+
     } finally {
+
       setLoading(false);
+
     }
+
   };
 
   /* ---------------- Logout ---------------- */
 
-  const handleLogout = async () => {
-    const res = await fetch(`${API_BASE}${Logout}`, {
-      method: "POST",
-      credentials: "include",
-    }).catch(() => null);
+  const handleLogout =
+    async () => {
 
-    toast(
-      res?.ok ? "success" : "error",
+      const res = await fetch(
+        `${API_BASE}${Logout}`,
+        {
+          method: "POST",
+          credentials: "include",
+        },
+      ).catch(() => null);
 
-      res?.ok ? "ออกจากระบบสำเร็จ" : "ออกจากระบบไม่สำเร็จ",
+      toast(
+        res?.ok
+          ? "success"
+          : "error",
 
-      res?.ok ? "กรุณาเข้าสู่ระบบ" : "ออกจากระบบไม่สำเร็จ",
-    );
+        res?.ok
+          ? "ออกจากระบบสำเร็จ"
+          : "ออกจากระบบไม่สำเร็จ",
 
-    console.clear();
+        res?.ok
+          ? "กรุณาเข้าสู่ระบบ"
+          : "ออกจากระบบไม่สำเร็จ",
+      );
 
-    if (import.meta.env.PROD) {
-      console.clear();
-    }
-
-    setIsAuth(false);
-
-    setRole(null);
-
-    setMessage("กำลังโหลด...");
-
-    setAdminName("");
-
-    setAdminUsername("");
-
-    setTimeout(() => navigate("/"), 1500);
-  };
-
-  /* ---------------- Verify Auth ---------------- */
-
-  useEffect(() => {
-    const publicPaths = ["/", "/forgot-username", "/change-password"];
-
-    // ✅ หน้า public ไม่ต้องเช็ค token
-    if (publicPaths.includes(location.pathname)) {
-      return;
-    }
-
-    if (hasVerified.current) return;
-
-    hasVerified.current = true;
-
-    const verify = async () => {
       console.clear();
 
       if (import.meta.env.PROD) {
         console.clear();
       }
 
-      const res = await fetch(`${API_BASE}${Verify}`, {
-        method: "GET",
+      setIsAuth(false);
 
-        credentials: "include",
-      }).catch(() => null);
+      setRole(null);
+
+      setMessage("กำลังโหลด...");
+
+      setAdminName("");
+
+      setAdminUsername("");
+
+      setTimeout(
+        () => navigate("/"),
+        1500,
+      );
+
+    };
+
+  /* ---------------- Verify Auth ---------------- */
+
+  useEffect(() => {
+
+    const publicPaths = [
+      "/",
+      "/forgot-username",
+      "/reset-password",
+      "/change-password",
+    ];
+
+    // ✅ หน้า public ไม่ต้องเช็ค token
+    if (
+      publicPaths.includes(
+        location.pathname,
+      )
+    ) {
+      return;
+    }
+
+    if (hasVerified.current)
+      return;
+
+    hasVerified.current = true;
+
+    const verify = async () => {
+
+      console.clear();
+
+      if (import.meta.env.PROD) {
+        console.clear();
+      }
+
+      const res = await fetch(
+        `${API_BASE}${Verify}`,
+        {
+          method: "GET",
+
+          credentials:
+            "include",
+        },
+      ).catch(() => null);
 
       if (!res || !res.ok) {
+
         setIsAuth(false);
 
         setRole(null);
@@ -200,38 +314,70 @@ export function useAuth() {
 
         setAdminUsername("");
 
-        toast("warning", "กรุณาเข้าสู่ระบบ", "กรุณาเข้าสู่ระบบ");
+        toast(
+          "warning",
+          "กรุณาเข้าสู่ระบบ",
+          "กรุณาเข้าสู่ระบบ",
+        );
 
         console.clear();
 
-        if (import.meta.env.PROD) {
+        if (
+          import.meta.env.PROD
+        ) {
           console.clear();
         }
 
-        setTimeout(() => navigate("/"), 2000);
+        setTimeout(
+          () => navigate("/"),
+          2000,
+        );
 
         return;
+
       }
 
-      const data = await res.json().catch(() => null);
+      const data =
+        await res.json().catch(
+          () => null,
+        );
 
       if (data?.valid) {
+
         setIsAuth(true);
 
-        setRole(data.admin?.role ?? 1);
+        setRole(
+          data.admin?.role ?? 1,
+        );
 
-        setAdminName(data.admin?.name ?? "");
+        setAdminName(
+          data.admin?.name ?? "",
+        );
 
-        setAdminUsername(data.admin?.username ?? "");
+        setAdminUsername(
+          data.admin?.username ??
+            "",
+        );
 
-        setMessage(data.admin?.name || "ไม่พบชื่อ");
+        setMessage(
+          data.admin?.name ||
+            "ไม่พบชื่อ",
+        );
+
       } else {
+
         setIsAuth(false);
+
       }
+
     };
 
     verify();
-  }, [navigate, location.pathname]);
+
+  }, [
+    navigate,
+    location.pathname,
+  ]);
 
   return {
     register,
@@ -245,15 +391,20 @@ export function useAuth() {
     adminUsername,
     setAdminName,
   };
+
 }
 
 /* ---------------- Route Guard ---------------- */
 
 export async function verifyAuth(): Promise<boolean> {
-  const res = await fetch(`${API_BASE}${Verify}`, {
-    method: "GET",
-    credentials: "include",
-  }).catch(() => null);
+
+  const res = await fetch(
+    `${API_BASE}${Verify}`,
+    {
+      method: "GET",
+      credentials: "include",
+    },
+  ).catch(() => null);
 
   console.clear();
 
@@ -261,9 +412,16 @@ export async function verifyAuth(): Promise<boolean> {
     console.clear();
   }
 
-  if (!res || !res.ok) return false;
+  if (!res || !res.ok)
+    return false;
 
-  const data = await res.json().catch(() => null);
+  const data =
+    await res.json().catch(
+      () => null,
+    );
 
-  return data?.valid === true;
+  return (
+    data?.valid === true
+  );
+
 }

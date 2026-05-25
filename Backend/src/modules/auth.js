@@ -29,7 +29,7 @@ auth.post("/login", async (req, res) => {
         username: true,
         name: true,
         role: true,
-        phone : true,
+        phone: true,
         password: true,
         mustChangePassword: true,
       },
@@ -263,9 +263,9 @@ auth.post("/forgot/check", async (req, res) => {
         phone:
           user.phone
             ? user.phone.replace(
-                /^(\d{3})\d{4}(\d{3})$/,
-                "$1-xxxx-$2"
-              )
+              /^(\d{3})\d{4}(\d{3})$/,
+              "$1-xxxx-$2"
+            )
             : null,
 
       });
@@ -297,9 +297,9 @@ auth.post("/forgot/check", async (req, res) => {
       phone:
         user.phone
           ? user.phone.replace(
-              /^(\d{3})\d{4}(\d{3})$/,
-              "$1-xxxx-$2"
-            )
+            /^(\d{3})\d{4}(\d{3})$/,
+            "$1-xxxx-$2"
+          )
           : null,
 
     });
@@ -320,7 +320,71 @@ auth.post("/forgot/check", async (req, res) => {
 });
 
 /* ================= RESET PASSWORD ================= */
+auth.put(
+  "/forgot/reset",
+  authMiddleware,
+  async (req, res) => {
 
+    try {
+
+      const { newPassword } =
+        req.body || {};
+
+      if (!newPassword) {
+
+        return res.status(400).json({
+          error: "ข้อมูลไม่ครบ",
+        });
+
+      }
+
+      const hashed =
+        await bcrypt.hash(
+          newPassword,
+          8
+        );
+
+      await prisma.admin.update({
+
+        where: {
+          adminId:
+            req.admin.adminId,
+        },
+
+        data: {
+          password: hashed,
+
+          mustChangePassword:
+            false,
+
+          updatedAt:
+            thailandTime(),
+        },
+
+      });
+
+      res.json({
+        message:
+          "รีเซ็ตรหัสผ่านสำเร็จ",
+      });
+
+    } catch (err) {
+
+      console.error(
+        "RESET PASSWORD ERROR:",
+        err
+      );
+
+      res.status(400).json({
+        error: err.message,
+      });
+
+    }
+
+  }
+);
+
+/* 🔑 รีเซ็ตรหัสผ่านจากคำร้อง*/
 auth.post(
   "/admin/reset-password",
   authMiddleware,
@@ -501,7 +565,6 @@ auth.put("/change-password", authMiddleware, async (req, res) => {
       where: { adminId: req.admin.adminId },
       data: {
         password: hashed,
-        mustChangePassword: false,
         updatedAt: thailandTime(),
       },
     });

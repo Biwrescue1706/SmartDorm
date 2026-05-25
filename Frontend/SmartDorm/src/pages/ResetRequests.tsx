@@ -23,7 +23,7 @@ export default function ResetRequests() {
     try {
       setLoading(true);
 
-      const res = await api.get("/auth/admin/reset-requests");
+      const res = await api.get("/auth/admin/reset-password");
 
       setRequests(res.data);
     } catch (err) {
@@ -64,7 +64,7 @@ export default function ResetRequests() {
     if (!confirm.isConfirmed) return;
 
     try {
-      const res = await api.post("/auth/admin/reset-requests", {
+      const res = await api.post("/auth/admin/reset-password", {
         requestId,
       });
 

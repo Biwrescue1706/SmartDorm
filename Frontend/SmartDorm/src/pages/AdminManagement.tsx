@@ -24,22 +24,28 @@ export const roleStyle = (role: number) => ({
 
 export default function AdminManagement() {
   const { admins, loading, fetchAdmins } = useAdmins();
+
   const { handleLogout, role, adminName, adminUsername } = useAuth();
 
   const [filterRole, setFilterRole] = useState("all");
-  const [currentPage, setCurrentPage] = useState(1);
-  const [rowsPerPage, setRowsPerPage] = useState(15);
 
-  const getFilterColor = (key: string) => {
-    if (key === "admin") return "#463c1d"; // แอดมิน (ทอง)
-    if (key === "staff") return "#3f3636"; // พนักงาน (เขียว)
-    return THEME.purple; // ทั้งหมด (ม่วง)
-  };
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const [rowsPerPage, setRowsPerPage] = useState(15);
 
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
 
   const pendingBookings = usePendingBookings();
+
   const pendingCheckouts = usePendingCheckouts();
+
+  const getFilterColor = (key: string) => {
+    if (key === "admin") return "#463c1d";
+
+    if (key === "staff") return "#3f3636";
+
+    return THEME.purple;
+  };
 
   const Toast = Swal.mixin({
     showConfirmButton: false,
@@ -52,7 +58,9 @@ export default function AdminManagement() {
 
   useEffect(() => {
     const resize = () => setWindowWidth(window.innerWidth);
+
     window.addEventListener("resize", resize);
+
     return () => window.removeEventListener("resize", resize);
   }, []);
 
@@ -72,38 +80,93 @@ export default function AdminManagement() {
         : admins;
 
   const totalItems = filteredAdmins.length;
+
   const currentAdmins = filteredAdmins.slice(
     (currentPage - 1) * rowsPerPage,
     currentPage * rowsPerPage,
   );
 
+  /* ================= ADD ================= */
+
   const openAddDialog = async () => {
     const result = await Swal.fire({
       html: `
       <div style="color:${THEME.purpleDark}">
-        <h2 class="fw-bold" style="color:${THEME.purple}">เพิ่มผู้ดูแลระบบใหม่</h2>
+        
+        <h2 
+          class="fw-bold"
+          style="color:${THEME.purple}"
+        >
+          เพิ่มผู้ดูแลระบบใหม่
+        </h2>
+
         <hr style="border:1px solid ${THEME.gold};opacity:.6">
 
         <div class="mb-2 text-start">
-          <label class="fw-bold">ชื่อผู้ใช้</label>
-          <input id="add-username" class="form-control" placeholder="ชื่อผู้ใช้">
+          <label class="fw-bold">
+            ชื่อผู้ใช้
+          </label>
+
+          <input
+            id="add-username"
+            class="form-control"
+            placeholder="ชื่อผู้ใช้"
+          >
         </div>
 
         <div class="mb-2 text-start">
-          <label class="fw-bold">ชื่อจริง</label>
-          <input id="add-name" class="form-control" placeholder="ชื่อจริง">
+          <label class="fw-bold">
+            ชื่อจริง
+          </label>
+
+          <input
+            id="add-name"
+            class="form-control"
+            placeholder="ชื่อจริง"
+          >
         </div>
 
         <div class="mb-2 text-start">
-          <label class="fw-bold">รหัสผ่าน (ขั้นต่ำ 6 ตัว)</label>
-          <input id="add-password" class="form-control" type="password" placeholder="รหัสผ่าน">
+          <label class="fw-bold">
+            เบอร์โทรศัพท์
+          </label>
+
+          <input
+            id="add-phone"
+            class="form-control"
+            placeholder="08xxxxxxxx"
+          >
         </div>
 
         <div class="mb-2 text-start">
-          <label class="fw-bold">สิทธิ์</label>
-          <select id="add-role" class="form-select">
-            <option value="0">แอดมิน</option>
-            <option value="1" selected>พนักงาน</option>
+          <label class="fw-bold">
+            รหัสผ่าน (ขั้นต่ำ 6 ตัว)
+          </label>
+
+          <input
+            id="add-password"
+            class="form-control"
+            type="password"
+            placeholder="รหัสผ่าน"
+          >
+        </div>
+
+        <div class="mb-2 text-start">
+          <label class="fw-bold">
+            สิทธิ์
+          </label>
+
+          <select
+            id="add-role"
+            class="form-select"
+          >
+            <option value="0">
+              แอดมิน
+            </option>
+
+            <option value="1" selected>
+              พนักงาน
+            </option>
           </select>
         </div>
       </div>
@@ -115,12 +178,19 @@ export default function AdminManagement() {
       width: "480px",
       confirmButtonColor: THEME.purple,
       cancelButtonColor: "#777",
+
       preConfirm: () => ({
         username: (document.getElementById("add-username") as HTMLInputElement)
           ?.value,
+
         name: (document.getElementById("add-name") as HTMLInputElement)?.value,
+
+        phone: (document.getElementById("add-phone") as HTMLInputElement)
+          ?.value,
+
         password: (document.getElementById("add-password") as HTMLInputElement)
           ?.value,
+
         role: parseInt(
           (document.getElementById("add-role") as HTMLSelectElement)?.value,
         ),
@@ -128,69 +198,143 @@ export default function AdminManagement() {
     });
 
     const v = result.value;
+
     if (!v) return;
 
-    if (v.password.length < 6)
-      return Toast.fire({ icon: "warning", title: "รหัสผ่านต้อง 6 ตัวขึ้นไป" });
+    if (v.password.length < 6) {
+      return Toast.fire({
+        icon: "warning",
+        title: "รหัสผ่านต้อง 6 ตัวขึ้นไป",
+      });
+    }
 
     try {
       const res = await fetch(`${API_BASE}/admin/create`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+
+        headers: {
+          "Content-Type": "application/json",
+        },
+
         credentials: "include",
+
         body: JSON.stringify(v),
       });
 
-      if (!res.ok) throw new Error("เพิ่มผู้ดูแลไม่สำเร็จ");
+      if (!res.ok) {
+        throw new Error("เพิ่มผู้ดูแลไม่สำเร็จ");
+      }
 
       await fetchAdmins();
+
       Toast.fire({
         icon: "success",
         title: `<b>${v.name}</b> ถูกเพิ่มแล้ว`,
       });
     } catch (e: any) {
-      Toast.fire({ icon: "error", title: e.message });
+      Toast.fire({
+        icon: "error",
+        title: e.message,
+      });
     }
   };
+
+  /* ================= EDIT ================= */
 
   const openEditDialog = async (admin: Admin) => {
     const result = await Swal.fire({
       html: `
-      <h2 class="fw-bold" style="color:${THEME.purple}">แก้ไขข้อมูล</h2>
+      <h2 
+        class="fw-bold"
+        style="color:${THEME.purple}"
+      >
+        แก้ไขข้อมูล
+      </h2>
+
       <hr style="border:1px solid ${THEME.gold};opacity:.6">
 
       <div class="text-start">
-        <label class="fw-bold">ชื่อจริง</label>
-        <input id="edit-name" class="form-control" value="${admin.name}">
+        <label class="fw-bold">
+          ชื่อจริง
+        </label>
+
+        <input
+          id="edit-name"
+          class="form-control"
+          value="${admin.name}"
+        >
       </div>
 
       <div class="mt-2 text-start">
-        <label class="fw-bold">รหัสผ่านใหม่</label>
-        <input id="edit-pass" class="form-control" placeholder="(ไม่บังคับ)" type="password">
+        <label class="fw-bold">
+          เบอร์โทร
+        </label>
+
+        <input
+          id="edit-phone"
+          class="form-control"
+          value="${admin.phone || ""}"
+        >
       </div>
 
       <div class="mt-2 text-start">
-        <label class="fw-bold">สิทธิ์</label>
-        <select id="edit-role" class="form-select">
-          <option value="0" ${
-            admin.role === 0 ? "selected" : ""
-          }>แอดมิน</option>
-          <option value="1" ${
-            admin.role === 1 ? "selected" : ""
-          }>พนักงาน</option>
+        <label class="fw-bold">
+          รหัสผ่านใหม่
+        </label>
+
+        <input
+          id="edit-pass"
+          class="form-control"
+          placeholder="(ไม่บังคับ)"
+          type="password"
+        >
+      </div>
+
+      <div class="mt-2 text-start">
+        <label class="fw-bold">
+          สิทธิ์
+        </label>
+
+        <select
+          id="edit-role"
+          class="form-select"
+        >
+          <option value="0"
+            ${admin.role === 0 ? "selected" : ""}
+          >
+            แอดมิน
+          </option>
+
+          <option value="1"
+            ${admin.role === 1 ? "selected" : ""}
+          >
+            พนักงาน
+          </option>
         </select>
       </div>
       `,
+
       showCancelButton: true,
+
       confirmButtonText: "บันทึก",
+
       background: "#fff",
+
       width: "480px",
+
       confirmButtonColor: THEME.purple,
+
       cancelButtonColor: "#777",
+
       preConfirm: () => ({
         name: (document.getElementById("edit-name") as HTMLInputElement)?.value,
+
+        phone: (document.getElementById("edit-phone") as HTMLInputElement)
+          ?.value,
+
         password: (document.getElementById("edit-pass") as HTMLInputElement)
           ?.value,
+
         role: parseInt(
           (document.getElementById("edit-role") as HTMLSelectElement)?.value,
         ),
@@ -198,47 +342,68 @@ export default function AdminManagement() {
     });
 
     const v = result.value;
+
     if (!v) return;
 
-    if (v.password && v.password.length < 6)
+    if (v.password && v.password.length < 6) {
       return Toast.fire({
         icon: "warning",
         title: "รหัสผ่านต้องมากกว่า 6 ตัว",
       });
+    }
 
     try {
       const res = await fetch(`${API_BASE}/admin/${admin.adminId}`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+
+        headers: {
+          "Content-Type": "application/json",
+        },
+
         credentials: "include",
+
         body: JSON.stringify(v),
       });
 
-      if (!res.ok) throw new Error("บันทึกไม่สำเร็จ");
+      if (!res.ok) {
+        throw new Error("บันทึกไม่สำเร็จ");
+      }
 
       await fetchAdmins();
+
       Toast.fire({
         icon: "success",
-        title: `อัปเดตข้อมูลสำเร็จ`,
+        title: "อัปเดตข้อมูลสำเร็จ",
       });
     } catch (e: any) {
-      Toast.fire({ icon: "error", title: e.message });
+      Toast.fire({
+        icon: "error",
+        title: e.message,
+      });
     }
   };
 
+  /* ================= DELETE ================= */
+
   const handleDelete = async (adminId: string) => {
-    if (adminId === oldestAdminId)
+    if (adminId === oldestAdminId) {
       return Toast.fire({
         icon: "warning",
         title: "❌ ห้ามลบแอดมินคนแรก",
       });
+    }
 
     const ok = await Swal.fire({
       title: "ต้องการลบ?",
+
       icon: "warning",
+
       showCancelButton: true,
+
       confirmButtonText: "ลบ",
+
       cancelButtonText: "ยกเลิก",
+
       confirmButtonColor: THEME.purple,
     });
 
@@ -250,19 +415,30 @@ export default function AdminManagement() {
         credentials: "include",
       });
 
-      if (!res.ok) throw new Error("ลบไม่สำเร็จ");
+      if (!res.ok) {
+        throw new Error("ลบไม่สำเร็จ");
+      }
+
       await fetchAdmins();
 
-      Toast.fire({ icon: "success", title: "ลบแล้ว" });
+      Toast.fire({
+        icon: "success",
+        title: "ลบแล้ว",
+      });
     } catch (e: any) {
-      Toast.fire({ icon: "error", title: e.message });
+      Toast.fire({
+        icon: "error",
+        title: e.message,
+      });
     }
   };
 
   return (
     <div
       className="d-flex min-vh-100 mx-2 mt-0 mb-4"
-      style={{ fontFamily: "Sarabun, sans-serif" }}
+      style={{
+        fontFamily: "Sarabun, sans-serif",
+      }}
     >
       <Nav
         onLogout={handleLogout}
@@ -280,10 +456,17 @@ export default function AdminManagement() {
           paddingRight: "20px",
         }}
       >
-        <div className="mx-auto" style={{ maxWidth: "1400px" }}>
+        <div
+          className="mx-auto"
+          style={{
+            maxWidth: "1400px",
+          }}
+        >
           <h2
             className="text-center fw-bold mb-4"
-            style={{ color: THEME.purple }}
+            style={{
+              color: THEME.purple,
+            }}
           >
             🛡️ จัดการผู้ดูแลระบบ SmartDorm
           </h2>
@@ -304,16 +487,24 @@ export default function AdminManagement() {
           )}
 
           {/* FILTER */}
+
           {windowWidth < 1400 ? (
             <div className="d-flex justify-content-center gap-2 flex-wrap mb-4">
               {[
-                { key: "all", label: `ทั้งหมด (${admins.length})` },
+                {
+                  key: "all",
+                  label: `ทั้งหมด (${admins.length})`,
+                },
+
                 {
                   key: "admin",
+
                   label: `แอดมิน (${admins.filter((a) => a.role === 0).length})`,
                 },
+
                 {
                   key: "staff",
+
                   label: `พนักงาน (${admins.filter((a) => a.role === 1).length})`,
                 },
               ].map((f) => (
@@ -322,14 +513,18 @@ export default function AdminManagement() {
                   className="px-3 py-2 fw-bold"
                   style={{
                     cursor: "pointer",
+
                     borderRadius: "8px",
+
                     fontSize: 14,
+
                     background:
                       filterRole === f.key
                         ? getFilterColor(f.key)
                         : THEME.cardBg,
 
                     color: filterRole === f.key ? "#fff" : THEME.text,
+
                     border:
                       filterRole === f.key
                         ? "2px solid #fff"
@@ -344,13 +539,20 @@ export default function AdminManagement() {
           ) : (
             <div className="d-flex justify-content-center gap-3 mb-4">
               {[
-                { key: "all", label: `ทั้งหมด (${admins.length})` },
+                {
+                  key: "all",
+                  label: `ทั้งหมด (${admins.length})`,
+                },
+
                 {
                   key: "admin",
+
                   label: `แอดมิน (${admins.filter((a) => a.role === 0).length})`,
                 },
+
                 {
                   key: "staff",
+
                   label: `พนักงาน (${admins.filter((a) => a.role === 1).length})`,
                 },
               ].map((f) => (
@@ -359,14 +561,18 @@ export default function AdminManagement() {
                   className="px-4 py-2 fw-bold"
                   style={{
                     cursor: "pointer",
+
                     borderRadius: "8px",
+
                     fontSize: 16,
+
                     background:
                       filterRole === f.key
                         ? getFilterColor(f.key)
                         : THEME.cardBg,
 
                     color: filterRole === f.key ? "#ffffff" : THEME.text,
+
                     border:
                       filterRole === f.key
                         ? "2px solid #fff"

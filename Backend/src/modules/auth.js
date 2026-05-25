@@ -4,7 +4,6 @@ import jwt from "jsonwebtoken";
 import prisma from "../prisma.js";
 import { authMiddleware } from "../middleware/authMiddleware.js";
 import { thailandTime } from "../utils/timezone.js";
-import { useLocation } from "react-router-dom";
 
 const auth = Router();
 

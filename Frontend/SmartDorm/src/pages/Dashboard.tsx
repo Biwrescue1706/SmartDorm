@@ -10,6 +10,7 @@ import DashboardRevenue from "../components/Dashboard/DashboardRevenue";
 import type { Booking } from "../types/Booking";
 import { usePendingBookings } from "../hooks/ManageRooms/usePendingBookings";
 import { usePendingCheckouts } from "../hooks/ManageRooms/usePendingCheckouts";
+import { usePendingResetRequests } from "../hooks/usePendingResetRequests";
 
 export default function Dashboard() {
   const { handleLogout, role, adminName, adminUsername } = useAuth();
@@ -22,6 +23,8 @@ export default function Dashboard() {
 
   const pendingBookings = usePendingBookings();
   const pendingCheckouts = usePendingCheckouts();
+
+  const pendingResetRequests = usePendingResetRequests();
 
   //     LOAD DATA
   useEffect(() => {

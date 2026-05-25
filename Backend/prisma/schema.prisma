@@ -12,6 +12,8 @@ model Admin {
   username String @unique
   password String
   name     String
+  phone    String?
+  
   role     Int    @default(1)
 
   createdAt DateTime @default(now())
@@ -21,6 +23,16 @@ model Admin {
   updatedBills Bill[] @relation("AdminUpdated")
   roomsCreated Room[] @relation("RoomCreatedBy")
   roomsUpdated Room[] @relation("RoomUpdatedBy")
+}
+
+model PasswordResetRequest {
+
+  requestId Int @id @default(autoincrement())
+
+  username String @unique
+  phone    String?
+
+  createdAt DateTime @default(now())
 }
 
 model Room {

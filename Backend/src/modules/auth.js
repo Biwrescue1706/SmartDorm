@@ -29,6 +29,7 @@ auth.post("/login", async (req, res) => {
         username: true,
         name: true,
         role: true,
+        phone : true,
         password: true,
       },
     });
@@ -53,6 +54,7 @@ auth.post("/login", async (req, res) => {
         username: admin.username,
         name: admin.name,
         role: admin.role,
+        phone: admin.phone,
       },
       JWT_SECRET,
       { expiresIn: "90m" }
@@ -76,6 +78,7 @@ auth.post("/login", async (req, res) => {
         username: admin.username,
         name: admin.name,
         role: admin.role,
+        phone: admin.phone,
       },
     });
 
@@ -137,6 +140,7 @@ auth.get("/profile", authMiddleware, async (req, res) => {
         username: true,
         name: true,
         role: true,
+        phone: true,
         createdAt: true,
         updatedAt: true,
       },
@@ -180,6 +184,7 @@ auth.put("/profile", authMiddleware, async (req, res) => {
         username: true,
         name: true,
         role: true,
+        phone: true,
         createdAt: true,
         updatedAt: true,
       },
@@ -201,107 +206,200 @@ auth.put("/profile", authMiddleware, async (req, res) => {
 
 // 🔑 ลืมรหัสผ่าน - ตรวจสอบผู้ใช้
 auth.post("/forgot/check", async (req, res) => {
+
   try {
+
     const { username } = req.body;
 
     if (!username) {
-      return res.status(400).json({ error: "กรุณากรอก username" });
+      return res.status(400).json({
+        error: "กรุณากรอก username",
+      });
     }
 
+    // ✅ ตรวจสอบ user
     const user = await prisma.admin.findUnique({
+
       where: { username },
-      select: { name: true },
+
+      select: {
+        name: true,
+        phone: true,
+      },
+
     });
 
     if (!user) {
-      return res.status(404).json({ error: "ไม่พบผู้ใช้" });
+      return res.status(404).json({
+        error: "ไม่พบผู้ใช้",
+      });
     }
 
+    // ✅ เช็กว่ามีคำร้องไหม
+    const existingRequest =
+      await prisma.passwordResetRequest.findUnique({
+
+        where: {
+          username,
+        },
+
+      });
+
+    // ✅ ถ้ามีแล้ว
+    if (existingRequest) {
+
+      return res.json({
+
+        alreadyRequested: true,
+
+        message:
+          "คุณได้ส่งคำร้องไปแล้ว กรุณารอ Admin ติดต่อกลับ",
+
+        name: user.name,
+
+        phone:
+          user.phone
+            ? user.phone.replace(
+                /^(\d{3})\d{4}(\d{3})$/,
+                "$1-xxxx-$2"
+              )
+            : null,
+
+      });
+
+    }
+
+    // ✅ สร้างคำร้องใหม่
+    await prisma.passwordResetRequest.create({
+
+      data: {
+
+        username,
+
+        phone: user.phone,
+
+      },
+
+    });
+
     res.json({
-      message: "พบผู้ใช้",
+
+      alreadyRequested: false,
+
+      message:
+        "ส่งคำร้องรีเซ็ตรหัสผ่านสำเร็จ",
+
       name: user.name,
+
+      phone:
+        user.phone
+          ? user.phone.replace(
+              /^(\d{3})\d{4}(\d{3})$/,
+              "$1-xxxx-$2"
+            )
+          : null,
+
     });
 
   } catch (err) {
-    res.status(500).json({ error: err.message });
+
+    console.error(
+      "FORGOT CHECK ERROR:",
+      err
+    );
+
+    res.status(500).json({
+      error: err.message,
+    });
+
   }
+
 });
 
 /* ================= RESET PASSWORD ================= */
+auth.post(
+  "/admin/reset-password",
+  authMiddleware,
+  async (req, res) => {
 
-auth.put("/forgot/reset", async (req, res) => {
-  try {
-    const { username, newPassword } = req.body || {};
+    try {
 
-    if (!username || !newPassword) {
-      return res.status(400).json({ error: "ข้อมูลไม่ครบ" });
+      const { requestId } = req.body;
+
+      // ✅ หาคำร้อง
+      const request =
+        await prisma.passwordResetRequest.findUnique({
+
+          where: {
+            requestId,
+          },
+
+        });
+
+      if (!request) {
+
+        return res.status(404).json({
+          error: "ไม่พบคำร้อง",
+        });
+
+      }
+
+      // ✅ รหัสใหม่
+      const tempPassword = "123456";
+
+      // ✅ hash password
+      const hashed =
+        await bcrypt.hash(
+          tempPassword,
+          8
+        );
+
+      // ✅ update password
+      await prisma.admin.update({
+
+        where: {
+          username: request.username,
+        },
+
+        data: {
+          password: hashed,
+          updatedAt: thailandTime(),
+        },
+
+      });
+
+      // ✅ ลบคำร้อง
+      await prisma.passwordResetRequest.delete({
+
+        where: {
+          requestId,
+        },
+
+      });
+
+      res.json({
+
+        message:
+          "รีเซ็ตรหัสผ่านสำเร็จ",
+
+        tempPassword,
+
+      });
+
+    } catch (err) {
+
+      console.error(
+        "RESET PASSWORD ERROR:",
+        err
+      );
+
+      res.status(500).json({
+        error: err.message,
+      });
+
     }
 
-    const hashed = await bcrypt.hash(newPassword, 8);
-
-    await prisma.admin.update({
-      where: { username },
-      data: {
-        password: hashed,
-        updatedAt: thailandTime(),
-      },
-    });
-
-    res.json({ message: "รีเซ็ตรหัสผ่านสำเร็จ" });
-
-  } catch (err) {
-    console.error("RESET PASSWORD ERROR:", err);
-
-    res.status(400).json({
-      error: err.message,
-    });
   }
-});
-
-/* ================= CHANGE PASSWORD ================= */
-
-auth.put("/change-password", authMiddleware, async (req, res) => {
-  try {
-    const { oldPassword, newPassword } = req.body || {};
-
-    if (!oldPassword || !newPassword) {
-      return res.status(400).json({ error: "ข้อมูลไม่ครบ" });
-    }
-
-    const admin = await prisma.admin.findUnique({
-      where: { adminId: req.admin.adminId },
-      select: { password: true },
-    });
-
-    if (!admin || !admin.password) {
-      return res.status(400).json({ error: "ไม่พบข้อมูลผู้ใช้" });
-    }
-
-    const valid = await bcrypt.compare(oldPassword, admin.password);
-
-    if (!valid) {
-      return res.status(400).json({ error: "รหัสผ่านเดิมไม่ถูกต้อง" });
-    }
-
-    const hashed = await bcrypt.hash(newPassword, 8);
-
-    await prisma.admin.update({
-      where: { adminId: req.admin.adminId },
-      data: {
-        password: hashed,
-        updatedAt: thailandTime(),
-      },
-    });
-
-    res.json({ message: "เปลี่ยนรหัสผ่านสำเร็จ" });
-
-  } catch (err) {
-    console.error("CHANGE PASSWORD ERROR:", err);
-
-    res.status(400).json({
-      error: err.message,
-    });
-  }
-});
+);
 
 export default auth;

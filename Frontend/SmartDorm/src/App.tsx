@@ -16,11 +16,11 @@ import Users from "./pages/Users";
 import Profile from "./pages/Profile/Profile";
 import ChangePassword from "./pages/Profile/ChangePassword";
 import ForgotUsername from "./pages/ForgotPassword/ForgotUsername";
-import ResetPassword from "./pages/ForgotPassword/ResetPassword";
 import BookingHistory from "./pages/BookingHistory";
 import BillOverviewPage from "./pages/BillOverviewPage";
 import BillDetailPage from "./pages/BillDetailPage";
 import DormProfile from "./pages/DormProfile";
+import ResetRequests from "./pages/ResetRequests";
 
 function App() {
   return (
@@ -40,15 +40,6 @@ function App() {
         element={
           <GuestRoute>
             <ForgotUsername />
-          </GuestRoute>
-        }
-      />
-
-      <Route
-        path="/reset-password"
-        element={
-          <GuestRoute>
-            <ResetPassword />
           </GuestRoute>
         }
       />
@@ -177,6 +168,15 @@ function App() {
         element={
           <ProtectedRoute>
             <DormProfile />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/admin/reset-requests"
+        element={
+          <ProtectedRoute>
+            <ResetRequests />
           </ProtectedRoute>
         }
       />

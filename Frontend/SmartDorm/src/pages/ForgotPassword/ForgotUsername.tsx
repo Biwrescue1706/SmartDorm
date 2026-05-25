@@ -1,18 +1,70 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useForgotPassword } from "../../hooks/ForgotPassword/useForgotPassword";
+import Swal from "sweetalert2";
 
 export default function ForgotUsername() {
   const [username, setUsername] = useState("");
+
   const { checkUsername } = useForgotPassword();
+
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
     try {
-      const data = await checkUsername(username);
-      navigate("/reset-password", { state: { username, name: data.name } });
-    } catch {}
+      const data: any = await checkUsername(username);
+
+      await Swal.fire({
+        icon: "info",
+
+        title: "พบข้อมูลผู้ใช้",
+
+        html: `
+          <div>
+
+            <p>
+              ชื่อ:
+              <b>${data.name}</b>
+            </p>
+
+            <p>
+              เบอร์ผู้ใช้:
+              <b>${data.phone}</b>
+            </p>
+
+            <br/>
+
+            <p class="fw-bold text-danger">
+              กรุณาติดต่อ Admin
+            </p>
+
+            <p>
+              โทร:
+              <b>061-174-7731</b>
+            </p>
+
+            <p>
+              เพื่อรีเซ็ตรหัสผ่าน
+            </p>
+
+          </div>
+        `,
+
+        confirmButtonText: "ตกลง",
+      });
+
+      navigate("/");
+    } catch (err: any) {
+      Swal.fire({
+        icon: "error",
+
+        title: "ผิดพลาด",
+
+        text: err.response?.data?.error || "ไม่พบผู้ใช้",
+      });
+    }
   };
 
   return (
@@ -26,10 +78,12 @@ export default function ForgotUsername() {
       {/* NAVBAR */}
       <nav
         className="navbar navbar-dark px-3 py-2"
-        style={{ backgroundColor: "rgba(0,0,0,0.18)" }}
+        style={{
+          backgroundColor: "rgba(0,0,0,0.18)",
+        }}
       >
         <div className="container-fluid d-flex justify-content-between align-items-center">
-          {/* ปุ่มย้อนกลับซ้าย */}
+          {/* BACK */}
           <button
             className="btn btn-warning fw-semibold text-dark text-center fs-4"
             onClick={() => navigate("/")}
@@ -37,7 +91,7 @@ export default function ForgotUsername() {
             &larr;
           </button>
 
-          {/* BRAND กลาง */}
+          {/* BRAND */}
           <div className="d-flex flex-column align-items-center mx-auto">
             <div className="d-flex align-items-center gap-2">
               <img
@@ -49,19 +103,21 @@ export default function ForgotUsername() {
                   borderRadius: "20px",
                 }}
               />
+
               <span className="fw-bold h4 text-warning mb-0">SmartDorm</span>
             </div>
-            <small className="text-light ">ระบบจัดการหอพักสำหรับผู้ดูแล</small>
+
+            <small className="text-light">ระบบจัดการหอพักสำหรับผู้ดูแล</small>
           </div>
 
-          {/* Dummy พื้นที่ขวาเพื่อบาลานซ์ */}
+          {/* BALANCE */}
           <div className="invisible">
             <button className="btn btn-warning">X</button>
           </div>
         </div>
       </nav>
 
-      {/* FORM CARD */}
+      {/* FORM */}
       <div className="flex-grow-1 d-flex justify-content-center align-items-center">
         <div
           className="card shadow-lg border-0 text-center p-4"
@@ -79,11 +135,16 @@ export default function ForgotUsername() {
               width="48"
               height="48"
               className="img-fluid"
-              style={{ borderRadius: "20px" }}
+              style={{
+                borderRadius: "20px",
+              }}
             />
+
             <h3 className="fw-bold text-warning mb-0">SmartDorm</h3>
           </div>
+
           <h2 className="fw-bold text-warning mb-2">🔑 ลืมรหัสผ่าน</h2>
+
           <p className="text-white-50 mb-4">
             กรุณากรอกชื่อผู้ใช้เพื่อตรวจสอบข้อมูล
           </p>
@@ -93,6 +154,7 @@ export default function ForgotUsername() {
               <label className="form-label text-warning fw-semibold">
                 ชื่อผู้ใช้ (Username)
               </label>
+
               <input
                 type="text"
                 className="form-control text-center"

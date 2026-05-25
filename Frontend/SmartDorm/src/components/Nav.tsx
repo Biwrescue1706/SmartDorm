@@ -9,12 +9,14 @@ export interface NavProps {
   role?: number | null;
   adminName?: string;
   adminUsername?: string;
+  pendingResetRequests?: number;
 }
 
 export default function Nav({
   onLogout,
   pendingBookings = 0,
   pendingCheckouts = 0,
+  pendingResetRequests = 0,
   role,
   adminName,
   adminUsername,
@@ -322,6 +324,9 @@ export default function Nav({
           >
             👤 ข้อมูลลูกค้า
           </button>
+
+
+
           <button
             className={`btn text-start ${
               isActive("/dorm-profile")

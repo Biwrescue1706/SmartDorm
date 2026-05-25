@@ -317,6 +317,93 @@ auth.post("/forgot/check", async (req, res) => {
 });
 
 /* ================= RESET PASSWORD ================= */
+/* ================= RESET PASSWORD ================= */
+
+auth.post(
+  "/admin/reset-password",
+  authMiddleware,
+  async (req, res) => {
+
+    try {
+
+      const { requestId } = req.body;
+
+      // ✅ หาคำร้อง
+      const request =
+        await prisma.passwordResetRequest.findUnique({
+
+          where: {
+            requestId,
+          },
+
+        });
+
+      if (!request) {
+
+        return res.status(404).json({
+          error: "ไม่พบคำร้อง",
+        });
+
+      }
+
+      // ✅ รหัสใหม่
+      const tempPassword = "123456";
+
+      // ✅ hash password
+      const hashed =
+        await bcrypt.hash(
+          tempPassword,
+          8
+        );
+
+      // ✅ update password
+      await prisma.admin.update({
+
+        where: {
+          username: request.username,
+        },
+
+        data: {
+          password: hashed,
+          updatedAt: thailandTime(),
+        },
+
+      });
+
+      // ✅ ลบคำร้อง
+      await prisma.passwordResetRequest.delete({
+
+        where: {
+          requestId,
+        },
+
+      });
+
+      res.json({
+
+        message:
+          "รีเซ็ตรหัสผ่านสำเร็จ",
+
+        tempPassword,
+
+      });
+
+    } catch (err) {
+
+      console.error(
+        "RESET PASSWORD ERROR:",
+        err
+      );
+
+      res.status(500).json({
+        error: err.message,
+      });
+
+    }
+
+  }
+);
+
 // 🔑 รายการคำร้องรีเซ็ตรหัส
 auth.get(
   "/admin/reset-requests",

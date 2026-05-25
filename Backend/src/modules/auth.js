@@ -501,6 +501,7 @@ auth.put("/change-password", authMiddleware, async (req, res) => {
       where: { adminId: req.admin.adminId },
       data: {
         password: hashed,
+        mustChangePassword: false,
         updatedAt: thailandTime(),
       },
     });

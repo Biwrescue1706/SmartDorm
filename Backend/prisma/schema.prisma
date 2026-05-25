@@ -13,9 +13,10 @@ model Admin {
   password String
   name     String
   phone    String?
-  
-  role     Int    @default(1)
 
+  role     Int    @default(1)
+  mustChangePassword  Boolean  @default(false)
+  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

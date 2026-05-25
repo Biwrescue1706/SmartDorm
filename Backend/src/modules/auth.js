@@ -4,6 +4,7 @@ import jwt from "jsonwebtoken";
 import prisma from "../prisma.js";
 import { authMiddleware } from "../middleware/authMiddleware.js";
 import { thailandTime } from "../utils/timezone.js";
+import { useLocation } from "react-router-dom";
 
 const auth = Router();
 
@@ -31,6 +32,7 @@ auth.post("/login", async (req, res) => {
         role: true,
         phone : true,
         password: true,
+        mustChangePassword: true,
       },
     });
 
@@ -55,6 +57,7 @@ auth.post("/login", async (req, res) => {
         name: admin.name,
         role: admin.role,
         phone: admin.phone,
+        mustChangePassword: admin.mustChangePassword,
       },
       JWT_SECRET,
       { expiresIn: "90m" }
@@ -79,6 +82,7 @@ auth.post("/login", async (req, res) => {
         name: admin.name,
         role: admin.role,
         phone: admin.phone,
+        mustChangePassword: admin.mustChangePassword,
       },
     });
 
@@ -317,7 +321,6 @@ auth.post("/forgot/check", async (req, res) => {
 });
 
 /* ================= RESET PASSWORD ================= */
-/* ================= RESET PASSWORD ================= */
 
 auth.post(
   "/admin/reset-password",
@@ -328,7 +331,7 @@ auth.post(
 
       const { requestId } = req.body;
 
-      // ✅ หาคำร้อง
+      //หาคำร้อง
       const request =
         await prisma.passwordResetRequest.findUnique({
 
@@ -365,6 +368,7 @@ auth.post(
 
         data: {
           password: hashed,
+          mustChangePassword: true,
           updatedAt: thailandTime(),
         },
 

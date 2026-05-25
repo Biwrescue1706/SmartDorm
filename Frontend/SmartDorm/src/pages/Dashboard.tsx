@@ -23,9 +23,7 @@ export default function Dashboard() {
 
   const pendingBookings = usePendingBookings();
   const pendingCheckouts = usePendingCheckouts();
-
   const pendingResetRequests = usePendingResetRequests();
-
   //     LOAD DATA
   useEffect(() => {
     fetchRooms();

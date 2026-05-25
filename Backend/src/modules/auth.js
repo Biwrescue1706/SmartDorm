@@ -318,7 +318,7 @@ auth.post("/forgot/check", async (req, res) => {
 
 /* ================= RESET PASSWORD ================= */
 auth.post(
-  "/admin/reset-password",
+  "/admin/reset-requests",
   authMiddleware,
   async (req, res) => {
 

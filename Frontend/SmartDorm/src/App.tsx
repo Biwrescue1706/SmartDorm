@@ -173,7 +173,7 @@ function App() {
       />
 
       <Route
-        path="/admin/reset-requests"
+        path="/reset-requests"
         element={
           <ProtectedRoute>
             <ResetRequests />

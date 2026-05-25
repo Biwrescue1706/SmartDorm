@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { api } from "../../utils/api";
+import { API_BASE } from "../../config";
 
 export const usePendingResetRequests =
   () => {
@@ -15,10 +16,8 @@ export const usePendingResetRequests =
           try {
 
             const res =
-              await api.get(
-                "/auth/admin/reset-requests/count"
-              );
-
+              await api.get(`${API_BASE}/auth/admin/reset-requests/count`);
+            
             setCount(
               res.data.count || 0
             );

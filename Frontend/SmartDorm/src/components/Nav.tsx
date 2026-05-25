@@ -325,8 +325,6 @@ export default function Nav({
             👤 ข้อมูลลูกค้า
           </button>
 
-
-
           <button
             className={`btn text-start ${
               isActive("/dorm-profile")
@@ -336,6 +334,22 @@ export default function Nav({
             onClick={() => navigate("/dorm-profile")}
           >
             ⚙️ ตั้งค่าหอพัก
+          </button>
+
+          <button
+            className={`btn text-start ${
+              isActive("/reset-requests")
+                ? "btn-warning text-dark fw-bold"
+                : "btn-warning"
+            }`}
+            onClick={() => navigate("/reset-requests")}
+          >
+            🔑 คำร้องรีเซ็ตรหัส
+            {pendingResetRequests > 0 && (
+              <span className="badge bg-danger ms-2">
+                {pendingResetRequests}
+              </span>
+            )}
           </button>
         </div>
       </div>
@@ -519,6 +533,21 @@ export default function Nav({
                 }}
               >
                 ⚙️ ตั้งค่าหอพัก
+              </button>
+              <button
+                className={`btn text-start ${
+                  isActive("/reset-requests")
+                    ? "btn-warning text-dark fw-bold"
+                    : "btn-warning"
+                }`}
+                onClick={() => navigate("/reset-requests")}
+              >
+                🔑 คำร้องรีเซ็ตรหัส
+                {pendingResetRequests > 0 && (
+                  <span className="badge bg-danger ms-2">
+                    {pendingResetRequests}
+                  </span>
+                )}
               </button>
             </div>
           </div>

@@ -131,11 +131,14 @@ export default function AdminManagement() {
             เบอร์โทรศัพท์
           </label>
 
-          <input
-            id="add-phone"
-            class="form-control"
-            placeholder="08xxxxxxxx"
-          >
+<input
+  id="add-phone"
+  class="form-control"
+  placeholder="08xxxxxxxx"
+  maxlength="10"
+  inputmode="numeric"
+  oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,10)"
+>
         </div>
 
         <div class="mb-2 text-start">
@@ -271,10 +274,13 @@ export default function AdminManagement() {
         </label>
 
         <input
-          id="edit-phone"
-          class="form-control"
-          value="${admin.phone || ""}"
-        >
+  id="edit-phone"
+  class="form-control"
+  value="${admin.phone || ""}"
+  maxlength="10"
+  inputmode="numeric"
+  oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,10)"
+>
       </div>
 
       <div class="mt-2 text-start">

@@ -23,7 +23,7 @@ export default function ResetRequests() {
     try {
       setLoading(true);
 
-      const res = await api.get("/auth/admin/reset-password");
+      const res = await api.get("/auth/admin/reset-requests");
 
       setRequests(res.data);
     } catch (err) {
@@ -107,7 +107,7 @@ export default function ResetRequests() {
 
   return (
     <div
-      className="d-flex min-vh-100"
+      className="d-flex min-vh-100 mx-2 mt-0 mb-4"
       style={{
         fontFamily: "Sarabun, sans-serif",
       }}
@@ -122,15 +122,16 @@ export default function ResetRequests() {
 
       {/* CONTENT */}
       <main
-        className="flex-grow-1 px-3 py-4"
+        className="main-content flex-grow-1 px-2 py-3 mt-6 mt-lg-7"
         style={{
-          marginTop: "70px",
+          paddingLeft: "20px",
+          paddingRight: "20px",
         }}
       >
         <div
           className="mx-auto"
           style={{
-            maxWidth: "1200px",
+            maxWidth: "1400px",
           }}
         >
           {/* TITLE */}
@@ -175,7 +176,19 @@ export default function ResetRequests() {
 
                       <td>{req.phone || "-"}</td>
 
-                      <td>{new Date(req.createdAt).toLocaleString("th-TH")}</td>
+                      <td>
+                        {new Date(req.createdAt).toLocaleDateString("th-TH", {
+                          day: "numeric",
+                          month: "long",
+                          year: "numeric",
+                        })}{" "}
+                        เวลา{" "}
+                        {new Date(req.createdAt).toLocaleTimeString("th-TH", {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}{" "}
+                        น.
+                      </td>
 
                       <td>
                         <button

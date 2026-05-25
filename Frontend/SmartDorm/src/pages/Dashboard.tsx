@@ -24,14 +24,15 @@ export default function Dashboard() {
   const pendingBookings = usePendingBookings();
   const pendingCheckouts = usePendingCheckouts();
   const pendingResetRequests = usePendingResetRequests();
-  //     LOAD DATA
+
+  /* ================= LOAD DATA ================= */
   useEffect(() => {
     fetchRooms();
     fetchBookings();
     fetchBills();
   }, []);
 
-  //     MAP BOOKINGS ให้ตรง type
+  /* ================= MAP BOOKINGS ================= */
   useEffect(() => {
     if (Array.isArray(rawBookings)) {
       const mapped: Booking[] = rawBookings.map((b) => ({
@@ -61,6 +62,7 @@ export default function Dashboard() {
 
         room: b.room,
         customer: b.customer,
+
         checkout: b.checkout?.map((c) => ({
           checkoutId: c.checkoutId,
           checkout: c.checkout,
@@ -75,11 +77,13 @@ export default function Dashboard() {
     }
   }, [rawBookings]);
 
-  //     ROOM STATS
+  /* ================= ROOM STATS ================= */
   const totalRooms = Array.isArray(rooms) ? rooms.length : 0;
+
   const availableRooms = Array.isArray(rooms)
     ? rooms.filter((r) => r.status === 0).length
     : 0;
+
   const bookedRooms = Array.isArray(rooms)
     ? rooms.filter((r) => r.status === 1).length
     : 0;
@@ -87,7 +91,9 @@ export default function Dashboard() {
   return (
     <div
       className="d-flex min-vh-100 mx-2 mt-0 mb-4"
-      style={{ fontFamily: "Sarabun, sans-serif" }}
+      style={{
+        fontFamily: "Sarabun, sans-serif",
+      }}
     >
       <Nav
         onLogout={handleLogout}
@@ -96,15 +102,22 @@ export default function Dashboard() {
         adminUsername={adminUsername}
         pendingBookings={pendingBookings}
         pendingCheckouts={pendingCheckouts}
+        pendingResetRequests={pendingResetRequests}
       />
 
       <main
         className="main-content flex-grow-1 px-2 py-3 mt-6 mt-lg-7"
-        style={{ paddingLeft: "20px", paddingRight: "20px" }}
+        style={{
+          paddingLeft: "20px",
+          paddingRight: "20px",
+        }}
       >
         <div
           className="mx-auto"
-          style={{ borderRadius: 20, maxWidth: "1400px" }}
+          style={{
+            borderRadius: 20,
+            maxWidth: "1400px",
+          }}
         >
           <h2
             className="fw-bold text-center mb-4 mt-3"
@@ -122,6 +135,7 @@ export default function Dashboard() {
             bookedRooms={bookedRooms}
             pendingBookings={pendingBookings}
             pendingCheckouts={pendingCheckouts}
+            
           />
 
           <DashboardRevenue bills={bills} bookings={bookings} />
